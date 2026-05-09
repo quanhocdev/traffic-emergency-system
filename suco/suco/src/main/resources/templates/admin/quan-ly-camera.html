@@ -1,0 +1,908 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý Camera - SOS System</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      /* Giữ nguyên CSS cũ của bạn và thêm một chút cho đẹp */
+      :root {
+        --sidebar-width: 260px;
+        --sidebar-collapsed-width: 75px;
+        --primary-color: #1a1a1a;
+        --accent-color: #3b82f6;
+        --font-main: "Inter", system-ui, sans-serif;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-main);
+        background-color: #f8fafc;
+        overflow: hidden;
+      }
+      #main-container {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+      }
+
+      /* SIDEBAR (Giữ nguyên CSS của bạn) */
+      #sidebar {
+        width: var(--sidebar-width);
+        background: var(--primary-color);
+        color: white;
+        transition: width 0.3s ease;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        z-index: 1001;
+      }
+      #sidebar.collapsed {
+        width: var(--sidebar-collapsed-width);
+      }
+      .sidebar-header {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #333;
+        min-height: 70px;
+      }
+      .sidebar-menu {
+        list-style: none;
+        padding: 15px 0;
+        margin: 0;
+        flex-grow: 1;
+      }
+      .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 25px;
+        color: #aaa;
+        text-decoration: none;
+        transition: 0.2s;
+        border-left: 4px solid transparent;
+        white-space: nowrap;
+      }
+      .menu-item:hover,
+      .menu-item.active {
+        background: #262626;
+        color: white;
+        border-left-color: var(--accent-color);
+      }
+      .menu-item i {
+        min-width: 25px;
+        text-align: center;
+        font-size: 18px;
+      }
+      .menu-item span {
+        margin-left: 15px;
+        font-weight: 500;
+      }
+      #sidebar.collapsed .menu-item span,
+      #sidebar.collapsed .sidebar-header span {
+        display: none;
+      }
+      .toggle-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 18px;
+      }
+
+      /* NỘI DUNG */
+      .main-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 40px;
+        box-sizing: border-box;
+      }
+      .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+      .header-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        border-left: 5px solid var(--accent-color);
+        padding-left: 15px;
+        margin: 0;
+      }
+
+      .toolbar {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 25px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+      .search-box {
+        flex-grow: 1;
+        position: relative;
+      }
+      .search-box i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+      }
+      .search-box input {
+        width: 100%;
+        padding: 10px 10px 10px 40px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+      }
+
+      .btn-add {
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 11px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+      }
+      .btn-add:hover {
+        background: #2563eb;
+      }
+
+      .table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        background: #f8fafc;
+        padding: 15px 20px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+      }
+      td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+      }
+
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .status-ready {
+        background: #dcfce7;
+        color: #16a34a;
+      }
+      .status-pending {
+        background: #fff7ed;
+        color: #ea580c;
+      }
+
+      .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .btn-edit {
+        background: #eff6ff;
+        color: var(--accent-color);
+      }
+      .btn-delete {
+        background: #fee2e2;
+        color: #ef4444;
+        margin-left: 5px;
+      }
+
+      /* MODAL */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        width: 500px;
+        max-width: 90vw;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Modal xem chi tiết camera */
+      .modal-detail-content {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        width: 800px;
+        max-width: 90vw;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+
+      .camera-detail-video {
+        width: 100%;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        background: #000;
+      }
+
+      .camera-detail-info {
+        background: #f8fafc;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 15px;
+      }
+
+      .camera-detail-info h4 {
+        margin: 0 0 15px 0;
+        color: #1e293b;
+        font-size: 18px;
+      }
+
+      .info-row {
+        display: flex;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .info-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
+
+      .info-label {
+        font-weight: 600;
+        color: #64748b;
+        width: 120px;
+        flex-shrink: 0;
+      }
+
+      .info-value {
+        color: #1e293b;
+        flex: 1;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 5px;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-sizing: border-box;
+      }
+      .modal-footer {
+        margin-top: 25px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main-container">
+      <nav id="sidebar">
+        <div class="sidebar-header">
+          <span>SOS ADMIN</span>
+          <button class="toggle-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-chevron-left" id="toggle-icon"></i>
+          </button>
+        </div>
+        <ul class="sidebar-menu">
+          <li>
+            <a th:href="@{/admin/trang-chu}" class="menu-item"
+              ><i class="fa-solid fa-house"></i><span>Trang Chủ</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-user" class="menu-item"
+              ><i class="fa-solid fa-users"></i><span>Quản Lý User</span></a
+            >
+          </li>
+
+          <li>
+            <a th:href="@{/admin/loai-su-co}" class="menu-item"
+              ><i class="fa-solid fa-triangle-exclamation"></i
+              ><span>Quản Lý Sự Cố</span></a
+            >
+          </li>
+          <li>
+            <a th:href="@{/admin/bao-cao-su-co}" class="menu-item"
+              ><i class="fa-solid fa-file-signature"></i
+              ><span>Quản Lý Báo Cáo</span></a
+            >
+          </li>
+          <li>
+            <a th:href="@{/admin/quan-ly-tru-so}" class="menu-item"
+              ><i class="fa-solid fa-building"></i
+              ><span>Quản Lý Trụ Sở</span></a
+            >
+          </li>
+          <li>
+            <a th:href="@{/admin/quan-ly-camera}" class="menu-item active"
+              ><i class="fa-solid fa-camera"></i><span>Quản Lý Camera</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/goi" class="menu-item"
+              ><i class="fa-solid fa-box"></i><span>Quản Lý Gói SOS</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-qua" class="menu-item"
+              ><i class="fa-solid fa-gift"></i><span>Quản Lý Quà</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-doanh-thu" class="menu-item">
+              <i class="fas fa-money-bill-wave"></i
+              ><span>Quản Lý Doanh Thu</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="main-content">
+        <div class="header-section">
+          <h2 class="header-title">Danh Sách Camera Hệ Thống</h2>
+          <button class="btn-add" onclick="openModal()">
+            <i class="fa-solid fa-plus"></i> Thêm Camera Mới
+          </button>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input
+              type="text"
+              id="searchInput"
+              onkeyup="filterTable()"
+              placeholder="Tìm kiếm tên camera hoặc vị trí..."
+            />
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table id="cameraTable">
+            <thead>
+              <tr>
+                <th>Ảnh Camera</th>
+                <th>Tên Camera</th>
+                <th>Kinh độ (Lng)</th>
+                <th>Vĩ độ (Lat)</th>
+                <th>Trạng thái</th>
+                <th style="text-align: center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="cam : ${danhSachCamera}">
+                <td>
+                  <div
+                    style="
+                      width: 80px;
+                      height: 60px;
+                      overflow: hidden;
+                      border-radius: 6px;
+                      cursor: pointer;
+                    "
+                    th:onclick="'openCameraDetail(' + ${cam.id} + ')'"
+                    title="Click để xem chi tiết"
+                  >
+                    <img
+                      th:if="${cam.anhCamera}"
+                      th:src="${cam.anhCamera}"
+                      style="width: 100%; height: 100%; object-fit: cover"
+                      onerror="
+                        this.src =
+                          'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'60\'%3E%3Crect fill=\'%23ddd\' width=\'80\' height=\'60\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\' font-size=\'12\'%3ENo Image%3C/text%3E%3C/svg%3E'
+                      "
+                    />
+                    <div
+                      th:unless="${cam.anhCamera}"
+                      style="
+                        width: 100%;
+                        height: 100%;
+                        background: #f1f5f9;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #94a3b8;
+                      "
+                    >
+                      <i class="fa-solid fa-camera" style="font-size: 20px"></i>
+                    </div>
+                  </div>
+                </td>
+                <td th:text="${cam.tenCamera}" style="font-weight: 600"></td>
+                <td th:text="${cam.kinhDo != 0 ? cam.kinhDo : '---'}"></td>
+                <td th:text="${cam.viDo != 0 ? cam.viDo : '---'}"></td>
+                <td>
+                  <span
+                    th:class="${cam.kinhDo != 0 ? 'status-badge status-ready' : 'status-badge status-pending'}"
+                    th:text="${cam.kinhDo != 0 ? 'Hoạt động' : 'Chờ định vị'}"
+                  >
+                  </span>
+                </td>
+                <td style="text-align: center">
+                  <a
+                    th:href="@{/admin/trang-chu}"
+                    class="btn-action btn-edit"
+                    title="Gán vị trí trên bản đồ"
+                  >
+                    <i class="fa-solid fa-location-crosshairs"></i> Định vị
+                  </a>
+                  <button 
+    type="button"
+    class="btn-action btn-delete" 
+    th:onclick="'confirmDelete(' + ${cam.id} + ')'"
+    title="Xóa camera"
+>
+    <i class="fa-solid fa-trash"></i>
+</button>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal thêm camera -->
+    <div id="cameraModal" class="modal">
+      <div class="modal-content">
+        <div
+          class="modal-header"
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+          "
+        >
+          <h3 style="margin: 0">Thêm Camera Mới</h3>
+          <i
+            class="fa-solid fa-xmark"
+            style="cursor: pointer"
+            onclick="closeModal()"
+          ></i>
+        </div>
+        <form
+          id="addCameraForm"
+          onsubmit="handleFormSubmit(event)"
+          enctype="multipart/form-data"
+        >
+          <div class="form-group">
+            <label>Tên Camera <span style="color: red">*</span></label>
+            <input
+              type="text"
+              name="tenCamera"
+              id="tenCamera"
+              placeholder="Nhập tên camera (VD: Camera Cổng Chính)"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label>Miêu tả vị trí chính xác</label>
+            <textarea
+              name="moTa"
+              id="moTa"
+              rows="3"
+              placeholder="VD: Camera đặt tại cổng chính, góc phải, cao 3m..."
+              style="
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+                box-sizing: border-box;
+                font-family: inherit;
+                resize: vertical;
+              "
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Ảnh chụp camera</label>
+            <input
+              type="file"
+              name="anhCamera"
+              id="anhCamera"
+              accept="image/*"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+              "
+            />
+            <small
+              style="
+                color: #64748b;
+                font-size: 12px;
+                display: block;
+                margin-top: 5px;
+              "
+            >
+              Chọn ảnh chụp thực tế của camera (JPG, PNG)
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label>Video demo camera (tùy chọn)</label>
+            <input
+              type="file"
+              name="videoFile"
+              id="videoFile"
+              accept="video/*"
+              style="
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #e2e8f0;
+                border-radius: 8px;
+              "
+            />
+            <small
+              style="
+                color: #64748b;
+                font-size: 12px;
+                display: block;
+                margin-top: 5px;
+              "
+            >
+              Upload video giả để demo (MP4, MOV, AVI)
+            </small>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              type="button"
+              onclick="closeModal()"
+              style="
+                padding: 10px 20px;
+                border: none;
+                background: #f1f5f9;
+                border-radius: 8px;
+                cursor: pointer;
+              "
+            >
+              Hủy
+            </button>
+            <button type="submit" class="btn-add">Lưu Camera</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal xem chi tiết camera -->
+    <div id="cameraDetailModal" class="modal" style="display: none">
+      <div class="modal-detail-content">
+        <div
+          class="modal-header"
+          style="
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+          "
+        >
+          <h3 style="margin: 0" id="detailCameraName">Chi tiết Camera</h3>
+          <i
+            class="fa-solid fa-xmark"
+            style="cursor: pointer; font-size: 20px"
+            onclick="closeCameraDetail()"
+          ></i>
+        </div>
+
+        <div id="cameraDetailVideoContainer" style="display: none">
+          <video id="cameraDetailVideo" class="camera-detail-video" controls>
+            <source id="videoSource" src="" type="video/mp4" />
+            Trình duyệt của bạn không hỗ trợ video.
+          </video>
+        </div>
+
+        <div
+          id="cameraDetailImageContainer"
+          style="display: none; margin-bottom: 20px"
+        >
+          <img
+            id="cameraDetailImage"
+            src=""
+            style="
+              width: 100%;
+              border-radius: 8px;
+              max-height: 400px;
+              object-fit: contain;
+              background: #f1f5f9;
+            "
+          />
+        </div>
+
+        <div class="camera-detail-info">
+          <h4><i class="fa-solid fa-info-circle"></i> Thông tin Camera</h4>
+          <div class="info-row">
+            <span class="info-label">Tên Camera:</span>
+            <span class="info-value" id="detailName">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Miêu tả:</span>
+            <span class="info-value" id="detailMoTa">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Kinh độ:</span>
+            <span class="info-value" id="detailKinhDo">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Vĩ độ:</span>
+            <span class="info-value" id="detailViDo">-</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Vị trí:</span>
+            <span class="info-value">
+              <a
+                id="detailMapLink"
+                href="#"
+                target="_blank"
+                style="color: #3b82f6; text-decoration: none"
+              >
+                <i class="fa-solid fa-map-marker-alt"></i> Xem trên Google Maps
+              </a>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const icon = document.getElementById("toggle-icon");
+        sidebar.classList.toggle("collapsed");
+        icon.classList.toggle("fa-chevron-left");
+        icon.classList.toggle("fa-chevron-right");
+      }
+
+      function openModal() {
+        document.getElementById("cameraModal").style.display = "flex";
+      }
+      function closeModal() {
+        document.getElementById("cameraModal").style.display = "none";
+      }
+
+      function filterTable() {
+        let input = document.getElementById("searchInput").value.toUpperCase();
+        let rows = document
+          .querySelector("#cameraTable tbody")
+          .getElementsByTagName("tr");
+        for (let row of rows) {
+          let text = row.innerText.toUpperCase();
+          row.style.display = text.includes(input) ? "" : "none";
+        }
+      }
+
+      function handleFormSubmit(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        fetch("/admin/quan-ly-camera/them", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => {
+            if (response.ok) {
+              alert("Thêm camera thành công!");
+              closeModal();
+              window.location.reload();
+            } else {
+              response.text().then((txt) => {
+                alert("Có lỗi xảy ra: " + txt);
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Lỗi kết nối đến máy chủ.");
+          });
+      }
+
+      function openMapPicker() {
+        // Mở trang chủ admin với map để chọn vị trí
+        window.open(
+          "/admin/trang-chu?pickLocation=true",
+          "_blank",
+          "width=1200,height=800",
+        );
+
+        // Lắng nghe message từ cửa sổ con
+        window.addEventListener("message", function (event) {
+          if (event.data.type === "locationPicked") {
+            document.getElementById("kinhDo").value = event.data.lng;
+            document.getElementById("viDo").value = event.data.lat;
+          }
+        });
+      }
+
+      function openCameraDetail(id) {
+        // Fetch chi tiết camera từ server
+        fetch(`/admin/quan-ly-camera/${id}/detail`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Không tìm thấy camera");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            displayCameraDetail(data);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Không thể tải thông tin camera");
+          });
+      }
+
+      function displayCameraDetail(data) {
+        const modal = document.getElementById("cameraDetailModal");
+        const videoContainer = document.getElementById(
+          "cameraDetailVideoContainer",
+        );
+        const imageContainer = document.getElementById(
+          "cameraDetailImageContainer",
+        );
+        const videoElement = document.getElementById("cameraDetailVideo");
+        const videoSource = document.getElementById("videoSource");
+        const imageElement = document.getElementById("cameraDetailImage");
+
+        // Điền thông tin
+        document.getElementById("detailCameraName").textContent =
+          data.tenCamera || "Camera";
+        document.getElementById("detailName").textContent =
+          data.tenCamera || "-";
+        document.getElementById("detailMoTa").textContent =
+          data.moTa || "Chưa có miêu tả";
+
+        // Xử lý tọa độ - kiểm tra null và 0
+        const kinhDo =
+          data.kinhDo != null && data.kinhDo != 0 ? data.kinhDo : null;
+        const viDo = data.viDo != null && data.viDo != 0 ? data.viDo : null;
+        document.getElementById("detailKinhDo").textContent =
+          kinhDo != null ? kinhDo : "Chưa có";
+        document.getElementById("detailViDo").textContent =
+          viDo != null ? viDo : "Chưa có";
+
+        // Xử lý video
+        if (
+          data.videoUrl &&
+          data.videoUrl.trim() !== "" &&
+          data.videoUrl !== "null"
+        ) {
+          videoSource.src = data.videoUrl;
+          videoElement.load();
+          videoContainer.style.display = "block";
+          imageContainer.style.display = "none";
+        } else if (
+          data.anhCamera &&
+          data.anhCamera.trim() !== "" &&
+          data.anhCamera !== "null"
+        ) {
+          // Nếu không có video thì hiển thị ảnh
+          imageElement.src = data.anhCamera;
+          imageContainer.style.display = "block";
+          videoContainer.style.display = "none";
+        } else {
+          videoContainer.style.display = "none";
+          imageContainer.style.display = "none";
+        }
+
+        // Link Google Maps
+        const mapLink = document.getElementById("detailMapLink");
+        if (kinhDo != null && viDo != null) {
+          mapLink.href = `https://www.google.com/maps?q=${viDo},${kinhDo}`;
+          mapLink.style.display = "inline";
+        } else {
+          mapLink.style.display = "none";
+        }
+
+        modal.style.display = "flex";
+      }
+
+      // 
+      function closeCameraDetail() {
+        const modal = document.getElementById("cameraDetailModal");
+        const videoElement = document.getElementById("cameraDetailVideo");
+        videoElement.pause();
+        videoElement.currentTime = 0;
+        modal.style.display = "none";
+      }
+
+      // Xử lý click ngoài modal để đóng
+      window.onclick = (e) => {
+        const cameraModal = document.getElementById("cameraModal");
+        const cameraDetailModal = document.getElementById("cameraDetailModal");
+        if (e.target == cameraModal) closeModal();
+        if (e.target == cameraDetailModal) closeCameraDetail();
+      };
+      function confirmDelete(id) {
+    if (confirm("Bạn có chắc chắn muốn xóa camera này?")) {
+        // Gửi yêu cầu POST đến server
+        fetch(`/admin/quan-ly-camera/${id}`, {
+    method: 'DELETE'
+})
+        .then(response => {
+            if (response.ok) {
+                alert("Xóa camera thành công!");
+                window.location.reload(); // Load lại trang để cập nhật danh sách
+            } else {
+                response.text().then(txt => alert("Lỗi: " + txt));
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Không thể kết nối đến máy chủ");
+        });
+    }
+}
+    </script>
+  </body>
+</html>

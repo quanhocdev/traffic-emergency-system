@@ -1,0 +1,80 @@
+{
+  "info": {
+    "name": "Updated Collection",
+    "description": "This collection has been updated to use the latest Postman API standards.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Sign In",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\":\"user@example.com\",\"password\":\"password\"}"
+            },
+            "url": {
+              "raw": "https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=AIzaSyAewjZxPO5iGy-AboVG4mMYRH3FHSCxHJM",
+              "protocol": "https",
+              "host": [
+                "identitytoolkit",
+                "googleapis",
+                "com"
+              ],
+              "path": [
+                "v1",
+                "accounts:signInWithIdp"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "AIzaSyAewjZxPO5iGy-AboVG4mMYRH3FHSCxHJM"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Status code is 200', function () {",
+          "    pm.response.to.have.status(200);",
+          "});",
+          "pm.execution.setNextRequest('Next Request Name');"
+        ]
+      }
+    }
+  ]
+}
+
+{
+  "id": "local",
+  "name": "Local Environment",
+  "values": [
+    {
+      "key": "api_key",
+      "value": "AIzaSyAewjZxPO5iGy-AboVG4mMYRH3FHSCxHJM",
+      "enabled": true
+    },
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "enabled": true
+    }
+  ],
+  "timestamp": 0,
+  "version": 1
+}
+
+<binary data for icon.png>

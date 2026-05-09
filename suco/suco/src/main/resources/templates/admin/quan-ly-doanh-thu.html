@@ -1,0 +1,299 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quản Lý Doanh Thu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    />
+
+    <style>
+      :root {
+        --primary-color: #1a1a1a;
+        --accent-color: #3b82f6;
+        --sidebar-width: 260px;
+        --sidebar-collapsed-width: 75px;
+        --font-main: "Inter", system-ui, sans-serif;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        font-family: var(--font-main);
+        background: #f1f5f9;
+        overflow: hidden;
+      }
+      #main-container {
+        display: flex;
+        height: 100vh;
+        width: 100%;
+      }
+      /* Sidebar Styles */
+      #sidebar {
+        width: var(--sidebar-width);
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        transition: width 0.3s ease;
+        flex-shrink: 0;
+      }
+      .sidebar-header {
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #333;
+      }
+      .toggle-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 18px;
+      }
+      .sidebar-menu {
+        list-style: none;
+        padding: 15px 0;
+        margin: 0;
+        flex-grow: 1;
+        overflow-y: auto;
+      }
+      .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 25px;
+        color: #aaa;
+        text-decoration: none;
+        border-left: 4px solid transparent;
+        transition: 0.2s;
+      }
+      .menu-item i {
+        min-width: 25px;
+        text-align: center;
+      }
+      .menu-item span {
+        margin-left: 15px;
+      }
+      .menu-item:hover,
+      .menu-item.active {
+        background: #262626;
+        color: white;
+        border-left-color: var(--accent-color);
+      }
+      /* Main Content Styles */
+      .main-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 30px;
+        min-width: 0;
+      }
+      .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        border-left: 5px solid var(--accent-color);
+        padding-left: 15px;
+        margin-bottom: 25px;
+        color: #0f172a;
+      }
+      /* Sidebar Collapsed State */
+      #sidebar.collapsed {
+        width: var(--sidebar-collapsed-width);
+      }
+      #sidebar.collapsed .menu-item span,
+      #sidebar.collapsed .sidebar-header span {
+        display: none;
+      }
+      #sidebar.collapsed .menu-item {
+        justify-content: center;
+      }
+      #sidebar.collapsed .toggle-btn i {
+        transform: rotate(180deg);
+      }
+      .toggle-btn i {
+        transition: transform 0.3s;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="main-container">
+      <nav id="sidebar">
+        <div class="sidebar-header">
+          <span>DASHBOARD</span>
+          <button class="toggle-btn">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+        </div>
+        <ul class="sidebar-menu">
+          <li>
+            <a href="/admin/trang-chu" class="menu-item">
+              <i class="fa-solid fa-house"></i><span>Trang Chủ</span>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/quan-ly-user" class="menu-item">
+              <i class="fa-solid fa-users"></i><span>Quản Lý User</span>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/loai-su-co" class="menu-item">
+              <i class="fa-solid fa-triangle-exclamation"></i
+              ><span>Quản Lý Sự Cố</span>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/bao-cao-su-co" class="menu-item">
+              <i class="fa-solid fa-file-signature"></i
+              ><span>Quản Lý Báo Cáo</span>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/quan-ly-tru-so" class="menu-item">
+              <i class="fa-solid fa-building"></i><span>Quản Lý Trụ Sở</span>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/quan-ly-camera" class="menu-item">
+              <i class="fa-solid fa-camera"></i><span>Quản Lý Camera</span>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/goi" class="menu-item">
+              <i class="fa-solid fa-box"></i><span>Quản Lý Gói SOS</span>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/quan-ly-qua" class="menu-item">
+              <i class="fa-solid fa-gift"></i><span>Quản Lý Quà</span>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/quan-ly-doanh-thu" class="menu-item active">
+              <i class="fas fa-money-bill-wave"></i
+              ><span>Quản Lý Doanh Thu</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="main-content">
+        <h2 class="page-title">Quản lý Doanh Thu</h2>
+
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <div class="card text-white bg-success shadow-sm border-0">
+              <div class="card-body p-4">
+                <h6 class="text-uppercase mb-2" style="opacity: 0.8">
+                  Tổng Doanh Thu
+                </h6>
+                <h3
+                  class="card-title mb-0"
+                  th:text="${#numbers.formatDecimal(tongDoanhThu, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"
+                >
+                  0 VNĐ
+                </h3>
+                <small class="mt-2 d-block"
+                  >Tổng số tiền từ hóa đơn đã thanh toán.</small
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="m-0 font-weight-bold text-primary">Danh sách Hóa Đơn</h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0" id="dataTable">
+                <thead class="table-light">
+                  <tr>
+                    <th class="ps-4">ID</th>
+                    <th>Mã SOS</th>
+                    <th>Người dùng</th>
+                    <th>Nội dung</th>
+                    <th>Thành tiền</th>
+                    <th>Giảm giá</th>
+                    <th>Thực thu</th>
+                    <th class="text-center">Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr th:each="hd : ${listHoaDon}">
+                    <td class="ps-4" th:text="${hd.id}">1</td>
+                    <td th:text="${hd.sosId}">101</td>
+                    <td th:text="${hd.userId}">user123</td>
+                    <td th:text="${hd.tenSos}">Cứu hộ xe máy</td>
+                    <td
+                      th:text="${#numbers.formatDecimal(hd.thanhTien, 0, 'COMMA', 0, 'POINT')}"
+                    >
+                      50,000
+                    </td>
+                    <td
+                      th:text="${#numbers.formatDecimal(hd.soTienGiam, 0, 'COMMA', 0, 'POINT')}"
+                    >
+                      0
+                    </td>
+                    <td
+                      th:text="${#numbers.formatDecimal(hd.tongThanhToan, 0, 'COMMA', 0, 'POINT')}"
+                      class="fw-bold text-success"
+                    >
+                      50,000
+                    </td>
+                    <td class="text-center">
+                      <span
+                        th:if="${hd.trangThai == 'PAID'}"
+                        class="badge bg-success"
+                        >Đã thanh toán</span
+                      >
+                      <span
+                        th:if="${hd.trangThai == 'PENDING'}"
+                        class="badge bg-warning text-dark"
+                        >Chờ thanh toán</span
+                      >
+                      <span
+                        th:if="${hd.trangThai != 'PAID' and hd.trangThai != 'PENDING'}"
+                        th:text="${hd.trangThai}"
+                        class="badge bg-secondary"
+                        >Khác</span
+                      >
+                    </td>
+                  </tr>
+                  <tr th:if="${#lists.isEmpty(listHoaDon)}">
+                    <td colspan="8" class="text-center py-4 text-muted">
+                      Không có dữ liệu hóa đơn
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Toggle Sidebar Logic
+      const toggleBtn = document.querySelector(".toggle-btn");
+      const sidebar = document.getElementById("sidebar");
+
+      toggleBtn.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
+      });
+    </script>
+  </body>
+</html>

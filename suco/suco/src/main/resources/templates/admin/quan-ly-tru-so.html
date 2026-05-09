@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản lý trụ sở - SOS System</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <style>
+      :root {
+        --sidebar-width: 260px;
+        --sidebar-collapsed-width: 75px;
+        --primary-color: #1a1a1a;
+        --accent-color: #3b82f6;
+        --font-main: "Inter", system-ui, sans-serif;
+      }
+
+      /* LAYOUT CHÍNH */
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-main);
+        background-color: #f8fafc;
+        overflow: hidden;
+      }
+      #main-container {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+      }
+
+      /* SIDEBAR (Giống loai-su-co) */
+      #sidebar {
+        width: var(--sidebar-width);
+        background: var(--primary-color);
+        color: white;
+        transition: width 0.3s ease;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        z-index: 1001;
+      }
+      #sidebar.collapsed {
+        width: var(--sidebar-collapsed-width);
+      }
+      .sidebar-header {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #333;
+        min-height: 70px;
+      }
+      .sidebar-menu {
+        list-style: none;
+        padding: 15px 0;
+        margin: 0;
+        flex-grow: 1;
+      }
+      .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 25px;
+        color: #aaa;
+        text-decoration: none;
+        transition: 0.2s;
+        border-left: 4px solid transparent;
+        white-space: nowrap;
+      }
+      .menu-item:hover,
+      .menu-item.active {
+        background: #262626;
+        color: white;
+        border-left-color: var(--accent-color);
+      }
+      .menu-item i {
+        min-width: 25px;
+        text-align: center;
+        font-size: 18px;
+      }
+      .menu-item span {
+        margin-left: 15px;
+        font-weight: 500;
+      }
+      #sidebar.collapsed .menu-item span,
+      #sidebar.collapsed .sidebar-header span {
+        display: none;
+      }
+      #sidebar.collapsed .menu-item {
+        justify-content: center;
+        padding: 15px 0;
+      }
+      .toggle-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 18px;
+      }
+
+      /* NỘI DUNG CHÍNH */
+      .main-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 40px;
+        box-sizing: border-box;
+      }
+      .header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+      .header-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        border-left: 5px solid var(--accent-color);
+        padding-left: 15px;
+        margin: 0;
+      }
+
+      /* THANH TÌM KIẾM & BỘ LỌC */
+      .toolbar {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 25px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+      }
+      .search-box {
+        flex-grow: 1;
+        position: relative;
+      }
+      .search-box i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+      }
+      .search-box input {
+        width: 100%;
+        padding: 10px 10px 10px 40px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-sizing: border-box;
+      }
+      .btn-add {
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 11px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* BẢNG DANH SÁCH */
+      .table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        background: #f8fafc;
+        padding: 15px 20px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+      }
+      td {
+        padding: 15px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+      }
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .status-ready {
+        background: #dcfce7;
+        color: #16a34a;
+      }
+      .status-pending {
+        background: #fef9c3;
+        color: #ca8a04;
+      }
+
+      .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .btn-edit {
+        background: #eff6ff;
+        color: var(--accent-color);
+      }
+      .btn-delete {
+        background: #fee2e2;
+        color: #ef4444;
+        margin-left: 5px;
+      }
+
+      /* MODAL FORM */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 16px;
+        width: 450px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .modal-header {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 5px;
+      }
+      .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-sizing: border-box;
+      }
+      .modal-footer {
+        margin-top: 25px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main-container">
+      <nav id="sidebar">
+        <div class="sidebar-header">
+          <span>DASHBOARD</span>
+          <button class="toggle-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-chevron-left" id="toggle-icon"></i>
+          </button>
+        </div>
+        <ul class="sidebar-menu">
+          <li>
+            <a href="/admin/trang-chu" class="menu-item"
+              ><i class="fa-solid fa-house"></i><span>Trang Chủ</span></a
+            >
+          </li>
+                              <li><a href="/admin/quan-ly-user" class="menu-item"><i class="fa-solid fa-users"></i><span>Quản Lý User</span></a></li>
+
+          <li>
+            <a href="/admin/loai-su-co" class="menu-item"
+              ><i class="fa-solid fa-triangle-exclamation"></i
+              ><span>Quản Lý Sự Cố</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/bao-cao-su-co" class="menu-item"
+              ><i class="fa-solid fa-file-signature"></i
+              ><span>Quản Lý Báo Cáo</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-tru-so" class="menu-item active"
+              ><i class="fa-solid fa-building"></i
+              ><span>Quản Lý Trụ Sở</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-camera" class="menu-item"
+              ><i class="fa-solid fa-camera"></i><span>Quản Lý Camera</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/goi" class="menu-item"
+              ><i class="fa-solid fa-box"></i><span>Quản Lý Gói SOS</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-qua" class="menu-item"
+              ><i class="fa-solid fa-gift"></i><span>Quản Lý Quà</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-doanh-thu" class="menu-item">
+              <i class="fas fa-money-bill-wave"></i
+              ><span>Quản Lý Doanh Thu</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="main-content">
+        <div class="header-section">
+          <h2 class="header-title">Quản Lý Danh Sách Trụ Sở</h2>
+          <button class="btn-add" onclick="openModal()">
+            <i class="fa-solid fa-plus"></i> Thêm trụ sở mới
+          </button>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input
+              type="text"
+              id="searchInput"
+              onkeyup="filterTable()"
+              placeholder="Tìm kiếm tên trụ sở hoặc tài khoản..."
+            />
+          </div>
+          <select
+            style="
+              padding: 10px;
+              border-radius: 8px;
+              border: 1px solid #e2e8f0;
+              color: #64748b;
+            "
+          >
+            <option value="">Tất cả trạng thái</option>
+            <option value="ready">Đã có vị trí</option>
+            <option value="pending">Chưa có vị trí</option>
+          </select>
+        </div>
+
+        <div class="table-container">
+          <table id="stationTable">
+            <thead>
+              <tr>
+                <th>Tên trụ sở</th>
+                <th>Tài khoản</th>
+                <th>Tọa độ (Kinh độ, Vĩ độ)</th>
+                <th>Trạng thái</th>
+                <th style="text-align: center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="st : ${danhSachTruSo}">
+                <td th:text="${st.tenTruSo}" style="font-weight: 600"></td>
+                <td th:text="${st.tenDangNhap}"></td>
+                <td>
+                  <span
+                    th:if="${st.kinhDo != 0}"
+                    th:text="${st.kinhDo} + ', ' + ${st.viDo}"
+                  ></span>
+                  <span
+                    th:if="${st.kinhDo == 0}"
+                    style="color: #94a3b8; font-style: italic"
+                    >Chưa gán vị trí</span
+                  >
+                </td>
+                <td>
+                  <span
+                    th:class="${st.kinhDo != 0 ? 'status-badge status-ready' : 'status-badge status-pending'}"
+                    th:text="${st.kinhDo != 0 ? 'Đã sẵn sàng' : 'Chờ định vị'}"
+                  >
+                  </span>
+                </td>
+                <td style="text-align: center">
+                  <a
+                    th:href="@{/admin/trang-chu(assignId=${st.id})}"
+                    class="btn-action btn-edit"
+                    title="Gán vị trí trên bản đồ"
+                  >
+                    <i class="fa-solid fa-location-crosshairs"></i> Gán tọa độ
+                  </a>
+                  <button 
+    type="button"
+    class="btn-action btn-delete"
+    th:onclick="'confirmDeleteTruSo(' + ${st.id} + ')'">
+    <i class="fa-solid fa-trash"></i>
+</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+
+    <div id="addModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="margin: 0">Thêm Trụ Sở Mới</h3>
+      <i class="fa-solid fa-xmark" style="cursor: pointer" onclick="closeModal()"></i>
+    </div>
+    <form id="addStationForm" onsubmit="handleStationSubmit(event)">
+      <div class="form-group">
+        <label>Tên trụ sở</label>
+        <input type="text" name="tenTruSo" placeholder="Ví dụ: Trạm cứu hỏa Quận 1" required />
+      </div>
+      <div class="form-group">
+        <label>Tài khoản đăng nhập</label>
+        <input type="text" name="tenDangNhap" required />
+      </div>
+      <div class="form-group">
+        <label>Mật khẩu</label>
+        <input type="password" name="matKhau" required />
+      </div>
+
+      <input type="hidden" name="kinhDo" value="0" />
+      <input type="hidden" name="viDo" value="0" />
+
+      <div class="modal-footer">
+        <button type="button" onclick="closeModal()" style="padding: 10px 20px; border: none; background: #f1f5f9; border-radius: 8px; cursor: pointer;">
+          Hủy
+        </button>
+        <button type="submit" class="btn-add">Lưu thông tin</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+    <script>
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const icon = document.getElementById("toggle-icon");
+        sidebar.classList.toggle("collapsed");
+        icon.classList.replace(
+          sidebar.classList.contains("collapsed")
+            ? "fa-chevron-left"
+            : "fa-chevron-right",
+          sidebar.classList.contains("collapsed")
+            ? "fa-chevron-right"
+            : "fa-chevron-left"
+        );
+      }
+
+      function openModal() {
+        document.getElementById("addModal").style.display = "flex";
+      }
+      function closeModal() {
+        document.getElementById("addModal").style.display = "none";
+      }
+
+      function filterTable() {
+        let input = document.getElementById("searchInput").value.toUpperCase();
+        let rows = document
+          .getElementById("stationTable")
+          .getElementsByTagName("tr");
+        for (let i = 1; i < rows.length; i++) {
+          let text = rows[i].textContent || rows[i].innerText;
+          rows[i].style.display =
+            text.toUpperCase().indexOf(input) > -1 ? "" : "none";
+        }
+      }
+
+      // Đóng modal khi click ra ngoài
+      window.onclick = function (event) {
+        if (event.target == document.getElementById("addModal")) closeModal();
+      };
+      function handleStationSubmit(event) {
+    event.preventDefault();
+
+    const form = document.getElementById("addStationForm");
+    const formData = new FormData(form);
+
+    fetch('/admin/quan-ly-tru-so/them', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (response.ok) {
+            alert("Thêm trụ sở thành công!");
+            closeModal();
+            window.location.reload();
+        } else {
+            response.text().then(text => alert("Lỗi: " + text));
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+function confirmDeleteTruSo(id) {
+    if (confirm("Bạn có chắc chắn muốn xóa trụ sở này?")) {
+        fetch(`/admin/quan-ly-tru-so/delete/${id}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (response.ok) {
+                alert("Xóa trụ sở thành công!");
+                window.location.reload();
+            } else if (response.status === 404) {
+                alert("Trụ sở không tồn tại!");
+            } else {
+                response.text().then(txt => alert("Lỗi: " + txt));
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            alert("Không thể kết nối server");
+        });
+    }
+}
+    </script>
+  </body>
+</html>

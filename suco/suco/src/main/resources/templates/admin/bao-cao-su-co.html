@@ -1,0 +1,1300 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quản Lý Báo Cáo Sự Cố</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-color: #1a1a1a;
+        --accent-color: #3b82f6;
+        --sidebar-width: 260px;
+        --sidebar-collapsed-width: 75px;
+        --font-main: "Inter", system-ui, -apple-system, sans-serif;
+      }
+
+      /* RESET & LAYOUT */
+      html,
+      body {
+        font-family: var(--font-main);
+        margin: 0;
+        padding: 0;
+        background-color: #f1f5f9;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #main-container {
+        display: flex;
+        width: 100%;
+        height: 100vh;
+      }
+
+      /* SIDEBAR */
+      #sidebar {
+        width: var(--sidebar-width);
+        background: var(--primary-color);
+        color: white;
+        transition: width 0.3s ease;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        z-index: 1001;
+      }
+      #sidebar.collapsed {
+        width: var(--sidebar-collapsed-width);
+      }
+      .sidebar-header {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #333;
+        min-height: 70px;
+      }
+      .toggle-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 18px;
+      }
+      .sidebar-menu {
+        list-style: none;
+        padding: 15px 0;
+        margin: 0;
+        flex-grow: 1;
+        overflow-y: auto;
+      }
+      .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 25px;
+        color: #aaa;
+        text-decoration: none;
+        transition: 0.2s;
+        border-left: 4px solid transparent;
+        white-space: nowrap;
+      }
+      .menu-item i {
+        min-width: 25px;
+        text-align: center;
+        font-size: 18px;
+      }
+      .menu-item span {
+        margin-left: 15px;
+      }
+      .menu-item:hover,
+      .menu-item.active {
+        background: #262626;
+        color: white;
+        border-left-color: var(--accent-color);
+      }
+      #sidebar.collapsed .menu-item span,
+      #sidebar.collapsed .sidebar-header span {
+        display: none;
+      }
+
+      /* MAIN CONTENT */
+      .main-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 30px;
+        box-sizing: border-box;
+      }
+      .header-area {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .header-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0f172a;
+        border-left: 5px solid var(--accent-color);
+        padding-left: 15px;
+        margin: 0;
+      }
+
+      /* LIST CONTAINER */
+      .card-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-width: 1000px; /* Giới hạn độ rộng để dễ nhìn trên màn hình lớn */
+        margin: 0 auto;
+      }
+
+      /* LIST ITEM STYLE (Thay đổi từ Grid sang Row) */
+      .card {
+        background: white;
+        border-radius: 12px;
+        display: flex; /* Hiển thị theo hàng ngang */
+        flex-direction: row;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        transition: 0.2s;
+        height: 140px; /* Cố định chiều cao dòng */
+      }
+
+      .card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Thumbnail bên trái */
+      .card-img-wrapper {
+        width: 180px;
+        height: 100%;
+        flex-shrink: 0;
+      }
+      .card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Nội dung ở giữa */
+      .card-content {
+        flex-grow: 1;
+        padding: 15px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .incident-type-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 5px;
+      }
+      .type-icon {
+        width: 16px;
+        height: 16px;
+      }
+      .type-name {
+        font-weight: 700;
+        color: #64748b;
+        font-size: 11px;
+        text-transform: uppercase;
+      }
+
+      .incident-desc {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0 0 10px 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .info-grid {
+        display: flex;
+        gap: 20px;
+      }
+      .info-row {
+        font-size: 13px;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .info-row i {
+        color: var(--accent-color);
+      }
+
+      /* Actions bên phải */
+      .actions {
+        width: 150px;
+        background: #f8fafc;
+        border-left: 1px solid #edf2f7;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 10px;
+      }
+      .btn {
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 12px;
+        transition: 0.2s;
+      }
+      .btn-ok {
+        background: #22c55e;
+        color: white;
+      }
+      .btn-fail {
+        background: #ef4444;
+        color: white;
+      }
+      .btn:hover {
+        opacity: 0.85;
+        transform: scale(1.02);
+      }
+      /* Container chính cho vùng Camera */
+      .camera-suggest {
+        margin-top: 15px;
+        display: flex;
+        align-items: center; /* Căn giữa chữ và icon theo chiều dọc */
+        gap: 15px;
+        padding-top: 10px;
+        border-top: 1px dashed #e2e8f0;
+      }
+
+      .camera-label {
+        font-size: 11px;
+        color: #3b82f6;
+        font-weight: 700;
+        white-space: nowrap; /* Không cho chữ nhảy xuống dòng */
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      /* Danh sách icon camera */
+      .camera-list-wrapper {
+        display: flex;
+        flex-wrap: wrap; /* Tự xuống hàng nếu quá nhiều camera */
+        gap: 8px;
+      }
+
+      /* Từng item camera cụ thể */
+      .camera-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: #eff6ff;
+        padding: 3px 8px;
+        border-radius: 15px; /* Bo tròn kiểu capsule */
+        border: 1px solid #dbeafe;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .camera-item:hover {
+        background: #dbeafe;
+        transform: translateY(-1px);
+      }
+
+      .camera-item i {
+        font-size: 10px;
+        color: #2563eb;
+      }
+
+      .camera-item span {
+        font-size: 11px;
+        color: #1e40af;
+        font-weight: 500;
+      }
+      /* Slider cho báo cáo chờ duyệt */
+      .pending-slider-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        background: #fff;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
+
+      .pending-cards-wrapper {
+        display: grid;
+        grid-template-columns: repeat(
+          3,
+          1fr
+        ); /* Luôn hiện 3 card trên 1 hàng */
+        gap: 20px;
+        flex-grow: 1;
+      }
+
+      .pending-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        height: 180px;
+      }
+
+      .pending-card .card-img {
+        width: 140px;
+        object-fit: cover;
+      }
+      .pending-card .card-info {
+        padding: 12px;
+        flex-grow: 1;
+        font-size: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .pending-card .actions-mini {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding: 10px;
+        background: #f8fafc;
+      }
+
+      /* Tabs & Tables */
+      .nav-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 10px;
+      }
+      .tab-btn {
+        padding: 8px 16px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: #64748b;
+        border-radius: 6px;
+      }
+      .tab-btn.active {
+        background: var(--accent-color);
+        color: white;
+      }
+      .badge {
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        margin-left: 5px;
+        background: rgba(0, 0, 0, 0.1);
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        font-size: 13px;
+      }
+      .data-table th {
+        background: #f8fafc;
+        padding: 12px;
+        text-align: left;
+        border-bottom: 2px solid #e2e8f0;
+      }
+      .data-table td {
+        padding: 12px;
+        border-bottom: 1px solid #f1f5f9;
+      }
+      .table-img {
+        width: 45px;
+        height: 45px;
+        border-radius: 4px;
+        object-fit: cover;
+      }
+      /* Tối ưu Slider ngang cho 3 sự cố */
+      .pending-horizontal-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 30px;
+      }
+
+      .pending-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        width: 100%;
+      }
+
+      .card-mini {
+        background: white;
+        border-radius: 10px;
+        display: flex;
+        height: 160px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+      }
+
+      .card-mini-img {
+        width: 120px;
+        object-fit: cover;
+      }
+      .card-mini-body {
+        padding: 10px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        font-size: 12px;
+        gap: 3px;
+        position: relative;
+      }
+      .card-mini-body b {
+        color: #1e293b;
+      }
+      .card-mini-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding: 10px;
+        background: #f8fafc;
+        border-left: 1px solid #eee;
+      }
+
+      /* Tabs Hệ thống */
+      .system-tabs {
+        display: flex;
+        gap: 10px;
+        margin: 30px 0 15px 0;
+        border-bottom: 2px solid #e2e8f0;
+      }
+      .tab-item {
+        padding: 10px 20px;
+        cursor: pointer;
+        font-weight: 600;
+        color: #64748b;
+        border-bottom: 3px solid transparent;
+        transition: 0.3s;
+      }
+      .tab-item.active {
+        color: var(--accent-color);
+        border-bottom-color: var(--accent-color);
+      }
+      .tab-count {
+        font-size: 11px;
+        background: #e2e8f0;
+        padding: 2px 6px;
+        border-radius: 8px;
+        margin-left: 5px;
+      }
+
+      /* Bảng dữ liệu */
+      .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      .admin-table th {
+        background: #f8fafc;
+        padding: 12px;
+        text-align: left;
+        font-size: 13px;
+        color: #64748b;
+        border-bottom: 2px solid #edf2f7;
+      }
+      .admin-table td {
+        padding: 12px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 13px;
+        vertical-align: middle;
+      }
+      .img-table {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        object-fit: cover;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main-container">
+      <nav id="sidebar">
+        <div class="sidebar-header">
+          <span>DASHBOARD</span>
+          <button class="toggle-btn" onclick="toggleSidebar()">
+            <i class="fa-solid fa-chevron-left" id="toggle-icon"></i>
+          </button>
+        </div>
+        <ul class="sidebar-menu">
+          <li>
+            <a href="/admin/trang-chu" class="menu-item"
+              ><i class="fa-solid fa-house"></i><span>Trang Chủ</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-user" class="menu-item"
+              ><i class="fa-solid fa-users"></i><span>Quản Lý User</span></a
+            >
+          </li>
+
+          <li>
+            <a href="/admin/loai-su-co" class="menu-item"
+              ><i class="fa-solid fa-triangle-exclamation"></i
+              ><span>Quản Lý Sự Cố</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/bao-cao-su-co" class="menu-item active"
+              ><i class="fa-solid fa-file-signature"></i
+              ><span>Quản Lý Báo Cáo</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-tru-so" class="menu-item"
+              ><i class="fa-solid fa-building"></i
+              ><span>Quản Lý Trụ Sở</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-camera" class="menu-item"
+              ><i class="fa-solid fa-camera"></i><span>Quản Lý Camera</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/goi" class="menu-item"
+              ><i class="fa-solid fa-box"></i><span>Quản Lý Gói SOS</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-qua" class="menu-item"
+              ><i class="fa-solid fa-gift"></i><span>Quản Lý Quà</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-doanh-thu" class="menu-item">
+              <i class="fas fa-money-bill-wave"></i
+              ><span>Quản Lý Doanh Thu</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="main-content">
+        <div class="header-area">
+          <h2 class="header-title">Duyệt nhanh (Chờ duyệt)</h2>
+          <div style="display: flex; gap: 10px">
+            <button
+              class="toggle-btn"
+              style="color: #333"
+              onclick="prevPendingPage()"
+            >
+              <i class="fa-solid fa-circle-arrow-left"></i>
+            </button>
+            <button
+              class="toggle-btn"
+              style="color: #333"
+              onclick="nextPendingPage()"
+            >
+              <i class="fa-solid fa-circle-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="pending-horizontal-container">
+          <div class="pending-grid" id="pending-slider">
+            <div
+              th:each="suCo : ${listPending}"
+              class="card-mini pending-item"
+              th:id="'pending-report-' + ${suCo.id}"
+              th:data-lat="${suCo.viDo}"
+              th:data-lng="${suCo.kinhDo}"
+            >
+              <img
+                th:src="${suCo.hinhAnhUrl != null ? suCo.hinhAnhUrl : '/images/no-image.png'}"
+                class="card-mini-img"
+              />
+
+              <div class="card-mini-body">
+                <span
+                  style="
+                    color: var(--accent-color);
+                    font-weight: 700;
+                    font-size: 10px;
+                  "
+                  th:text="${suCo.loaiSuCo.ten}"
+                  >SỰ CỐ</span
+                >
+                <span
+                  ><i class="fa-solid fa-user"></i>
+                  <b th:text="${suCo.reporter.name}">Người dân</b></span
+                >
+                <span class="text-truncate" th:title="${suCo.diaChi}">
+                  <i class="fa-solid fa-location-dot"></i> [[${suCo.diaChi !=
+                  null ? suCo.diaChi : 'Không rõ vị trí'}]]
+                </span>
+                <span
+                  >Tin cậy:
+                  <b class="confidence-val" th:text="${suCo.doTinCay}"
+                    >1</b
+                  ></span
+                >
+                <div
+                  th:id="'cam-list-pending-' + ${suCo.id}"
+                  style="display: flex; gap: 5px; margin-top: 5px"
+                ></div>
+              </div>
+
+              <div class="card-mini-actions">
+                <button
+                  class="btn btn-ok"
+                  th:onclick="'verify(' + ${suCo.id} + ', true)'"
+                >
+                  <i class="fa-solid fa-check"></i>
+                </button>
+                <button
+                  class="btn btn-fail"
+                  th:onclick="'verify(' + ${suCo.id} + ', false)'"
+                >
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+
+            <div
+              id="no-pending-msg"
+              th:style="${#lists.isEmpty(listPending) ? 'display: block' : 'display: none'}"
+              style="
+                width: 100%;
+                text-align: center;
+                padding: 20px;
+                color: #94a3b8;
+              "
+            >
+              <i
+                class="fa-solid fa-bell-slash"
+                style="font-size: 24px; margin-bottom: 10px; display: block"
+              ></i>
+              <span>Hiện chưa có báo cáo mới cần duyệt gấp...</span>
+            </div>
+          </div>
+        </div>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0" />
+        <div class="system-tabs">
+          <div class="tab-item active" onclick="switchTab('all')">
+            Tất cả
+            <span class="tab-count" th:text="${#lists.size(allSuCo)}">0</span>
+          </div>
+          <div class="tab-item" onclick="switchTab('pending')">
+            Chờ xử lý <span class="tab-count" th:text="${countCho}">0</span>
+          </div>
+          <div class="tab-item" onclick="switchTab('processing')">
+            Đang xử lý <span class="tab-count" th:text="${countDang}">0</span>
+          </div>
+          <div class="tab-item" onclick="switchTab('done')">
+            Hoàn thành <span class="tab-count" th:text="${countXong}">0</span>
+          </div>
+          <div class="tab-item" onclick="switchTab('spam')">
+            Spam
+            <span class="tab-count" th:text="${#lists.size(listSpam)}">0</span>
+          </div>
+        </div>
+
+        <div id="incident-table-container">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Ảnh</th>
+                <th>Loại</th>
+                <th>Người báo / Email</th>
+                <th>Địa chỉ</th>
+                <th>Tin cậy</th>
+                <th>Trụ sở tiếp nhận</th>
+                <th>Camera gần đó</th>
+              </tr>
+            </thead>
+            <tbody id="table-body-main">
+              <tr
+                th:each="item : ${allSuCo}"
+                class="incident-row"
+                th:id="'report-' + ${item.id}"
+                th:data-lat="${item.viDo}"
+                th:data-lng="${item.kinhDo}"
+                th:data-status="${item.trangThaiXuLy}"
+              >
+                <td th:text="${item.id}"></td>
+                <td><img th:src="${item.hinhAnhUrl}" class="img-table" /></td>
+                <td th:text="${item.loaiSuCo.ten}"></td>
+                <td>
+                  <div th:text="${item.reporter.name}"></div>
+                  <div
+                    style="font-size: 11px; color: #94a3b8"
+                    th:text="${item.reporter.email}"
+                  ></div>
+                </td>
+                <td th:text="${item.diaChi}"></td>
+                <td class="confidence-val" th:text="${item.doTinCay}"></td>
+
+                <td>
+                  <span
+                    th:if="${item.trangThaiXuLy == 'CHO_XU_LY'}"
+                    style="color: #f59e0b; font-style: italic"
+                    >Đang chờ...</span
+                  >
+                  <span
+                    th:if="${item.trangThaiXuLy != 'CHO_XU_LY'}"
+                    th:text="${'Trụ sở #' + item.idTruSoTiepNhan}"
+                  ></span>
+                </td>
+
+                <td>
+                  <div
+                    th:id="'cam-area-' + ${item.id}"
+                    style="display: none; flex-direction: column; gap: 5px"
+                  >
+                    <div
+                      th:id="'cam-list-' + ${item.id}"
+                      style="display: flex; gap: 5px; flex-wrap: wrap"
+                    ></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="spam-table-container" style="display: none">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>UID Người báo</th>
+                <th>Ảnh</th>
+                <th>Mô tả lỗi</th>
+                <th>Địa chỉ báo sai</th>
+                <th>Thời gian</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="s : ${listSpam}">
+                <td th:text="${s.id}"></td>
+                <td th:text="${s.userId}"></td>
+                <td><img th:src="${s.hinhAnhUrl}" class="img-table" /></td>
+                <td th:text="${s.moTa}"></td>
+                <td th:text="${s.diaChi}"></td>
+                <td
+                  th:text="${#temporals.format(s.thoiGianSpam, 'HH:mm dd/MM/yyyy')}"
+                ></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script>
+      // --- KHỞI TẠO WEBSOCKET ---
+      const socket = new SockJS("/ws-suco");
+      const stompClient = Stomp.over(socket);
+
+      stompClient.connect({}, function (frame) {
+        console.log("Connected to WebSocket");
+
+        stompClient.subscribe("/topic/su-co", function (message) {
+          const suCoDto = JSON.parse(message.body);
+          const id = suCoDto.id;
+
+          const cardPending = document.getElementById("pending-report-" + id);
+          const tableRow = document.getElementById("report-" + id);
+
+          console.log("Dữ liệu realtime:", suCoDto);
+
+          // 1. CẬP NHẬT DÒNG TRONG BẢNG (Realtime hoàn toàn)
+          if (tableRow) {
+            // Cập nhật thuộc tính data-status để filter Tab không bị sai
+            tableRow.setAttribute("data-status", suCoDto.trangThaiXuLy);
+
+            // Cập nhật cột "Trụ sở tiếp nhận / Trạng thái" (Cột số 6)
+            const statusCell = tableRow.cells[6];
+            if (suCoDto.trangThaiXuLy === "CHO_XU_LY") {
+              statusCell.innerHTML = `<span style="color: #f59e0b; font-style: italic">Đang chờ...</span>`;
+            } else if (suCoDto.trangThaiXuLy === "DANG_XU_LY") {
+              statusCell.innerHTML = `<span style="color: #3b82f6;">Trụ sở #${suCoDto.idTruSoTiepNhan || id} (Đang xử lý)</span>`;
+            } else if (suCoDto.trangThaiXuLy === "HOAN_THANH") {
+              statusCell.innerHTML = `<span style="color: #10b981;">Đã hoàn thành</span>`;
+            } else if (
+              suCoDto.trangThaiXuLy === "REJECTED" ||
+              suCoDto.trangThaiDuyet === "REJECTED"
+            ) {
+              statusCell.innerHTML = `<span style="color: #ef4444;">Đã từ chối/Spam</span>`;
+              tableRow.style.opacity = "0.6";
+            }
+
+            // Hiệu ứng highlight dòng vừa cập nhật
+            tableRow.style.backgroundColor = "#f0f9ff";
+            setTimeout(() => {
+              tableRow.style.backgroundColor = "";
+            }, 2000);
+          }
+
+          // 2. XỬ LÝ CARD TRÊN SLIDER
+          const ketThuc =
+            ["HUY_BO", "HOAN_THANH", "VERIFIED", "REJECTED"].includes(
+              suCoDto.trangThaiXuLy,
+            ) || ["VERIFIED", "REJECTED"].includes(suCoDto.trangThaiDuyet);
+
+          if (ketThuc) {
+            if (cardPending) {
+              cardPending.remove();
+              updateSliderVisibility(); // Cập nhật lại số lượng hiển thị slider
+            }
+          } else {
+            // Cập nhật độ tin cậy nếu chưa kết thúc
+            const updateConfidence = (parent) => {
+              if (!parent) return;
+              const confElem = parent.querySelector(".confidence-val");
+              if (confElem) {
+                confElem.innerText = suCoDto.doTinCay;
+                confElem.style.color = "#ef4444";
+                setTimeout(() => {
+                  confElem.style.color = "";
+                }, 1000);
+              }
+            };
+            if (cardPending) updateConfidence(cardPending);
+            if (tableRow) updateConfidence(tableRow);
+          }
+
+          // 3. NẾU LÀ BÁO CÁO MỚI (AI duyệt xong)
+          if (
+            !cardPending &&
+            !tableRow &&
+            suCoDto.trangThaiDuyet === "AI_APPROVED"
+          ) {
+            renderNewCard(suCoDto); // Vẽ card ở trên
+            renderNewRow(suCoDto); // VẼ DÒNG Ở DƯỚI (Thêm dòng này)
+
+            if (typeof playNotificationSound === "function")
+              playNotificationSound();
+          }
+
+          // 4. CẬP NHẬT LẠI CÁC CON SỐ TRÊN TAB
+          updateTabCounts();
+        });
+      });
+
+      function renderNewRow(suCoDto) {
+        const tableBody = document.getElementById("table-body-main");
+        if (!tableBody) return;
+
+        // Kiểm tra nếu dòng này đã tồn tại thì không chèn nữa
+        if (document.getElementById("report-" + suCoDto.id)) return;
+
+        const row = document.createElement("tr");
+        row.className = "incident-row";
+        row.id = "report-" + suCoDto.id;
+        row.setAttribute("data-lat", suCoDto.viDo);
+        row.setAttribute("data-lng", suCoDto.kinhDo);
+        row.setAttribute("data-status", suCoDto.trangThaiXuLy); // Thường là CHO_XU_LY
+
+        row.innerHTML = `
+        <td>${suCoDto.id}</td>
+        <td><img src="${suCoDto.hinhAnhUrl || "/images/no-image.png"}" class="img-table" /></td>
+        <td>${suCoDto.tenLoai || "Sự cố"}</td>
+        <td>
+            <div>${suCoDto.tenNguoiBao || "Người dân"}</div>
+            <div style="font-size: 11px; color: #94a3b8">${suCoDto.emailNguoiBao || ""}</div>
+        </td>
+        <td>${suCoDto.diaChi || "Không rõ vị trí"}</td>
+        <td class="confidence-val">${suCoDto.doTinCay || 1}</td>
+        <td>
+            <span style="color: #f59e0b; font-style: italic">Đang chờ...</span>
+        </td>
+        <td>
+            <div id="cam-area-${suCoDto.id}" style="display: none; flex-direction: column; gap: 5px">
+                <div id="cam-list-${suCoDto.id}" style="display: flex; gap: 5px; flex-wrap: wrap"></div>
+            </div>
+        </td>
+    `;
+
+        // Chèn lên đầu bảng
+        tableBody.insertBefore(row, tableBody.firstChild);
+
+        // Sau khi chèn xong, quét camera cho dòng này luôn
+        loadNearbyCameras(suCoDto.id);
+      }
+
+      function checkIfEmpty() {
+        const container = document.querySelector(".card-container");
+        // Nếu không còn card nào, load lại trang để Thymeleaf hiện div "Tạm thời không có báo cáo"
+        if (container && container.querySelectorAll(".card").length === 0) {
+          location.reload();
+        }
+      }
+      function playNotificationSound() {
+        // Sử dụng âm thanh Siren hoặc Emergency Alert
+        const audio = new Audio(
+          "https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3", // Tiếng còi báo động nhanh
+        );
+        audio.volume = 0.7; // Chỉnh âm lượng vừa phải
+        audio.play().catch((e) => {
+          console.log("Cần tương tác với trang web để phát thanh báo động");
+        });
+      }
+      function renderNewCard(suCoDto) {
+        const slider = document.getElementById("pending-slider");
+        const noMsg = document.getElementById("no-pending-msg");
+
+        if (noMsg) noMsg.style.display = "none";
+        if (document.getElementById("pending-report-" + suCoDto.id)) return;
+
+        const card = document.createElement("div");
+        card.className = "card-mini pending-item new-card-highlight";
+        card.id = "pending-report-" + suCoDto.id;
+
+        // --- SỬA 1: Gán tọa độ để hàm loadNearbyCameras có dữ liệu để chạy ---
+        card.setAttribute("data-lat", suCoDto.viDo);
+        card.setAttribute("data-lng", suCoDto.kinhDo);
+
+        // --- SỬA 2: Thêm div cam-list-pending để có chỗ hiển thị camera ---
+        card.innerHTML = `
+        <img src="${suCoDto.hinhAnhUrl || "/images/no-image.png"}" class="card-mini-img" />
+        <div class="card-mini-body">
+            <span style="color: var(--accent-color); font-weight: 700; font-size: 10px;">${suCoDto.tenLoai || "SỰ CỐ"}</span>
+            <span><i class="fa-solid fa-user"></i> <b>${suCoDto.tenNguoiBao || "Người dân"}</b></span>
+            <span class="text-truncate" title="${suCoDto.diaChi}">
+                <i class="fa-solid fa-location-dot"></i> ${suCoDto.diaChi || "Không rõ vị trí"}
+            </span>
+            <span>Tin cậy: <b class="confidence-val">${suCoDto.doTinCay || 1}</b></span>
+            
+            <div id="cam-list-pending-${suCoDto.id}" style="display: flex; gap: 5px; margin-top: 5px"></div>
+
+            <a href="javascript:void(0)" onclick="alert('Mô tả: ${suCoDto.moTa}')" style="margin-top: auto; color: #64748b">
+                <i class="fa-solid fa-circle-info"></i> Chi tiết
+            </a>
+        </div>
+        <div class="card-mini-actions">
+            <button class="btn btn-ok" onclick="verify(${suCoDto.id}, true)">
+                <i class="fa-solid fa-check"></i>
+            </button>
+            <button class="btn btn-fail" onclick="verify(${suCoDto.id}, false)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    `;
+
+        slider.insertBefore(card, slider.firstChild);
+
+        // Bây giờ gọi cái này mới thực sự có tác dụng
+        loadNearbyCameras(suCoDto.id);
+        updateSliderVisibility();
+      }
+      // --- CÁC HÀM LOGIC GIAO DIỆN ---
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const icon = document.getElementById("toggle-icon");
+        sidebar.classList.toggle("collapsed");
+        icon.classList.toggle("fa-chevron-left");
+        icon.classList.toggle("fa-chevron-right");
+      }
+
+      async function verify(id, isCorrect) {
+        if (!confirm("Xác nhận xử lý báo cáo này?")) return;
+        try {
+          const res = await fetch(
+            `/admin/bao-cao-su-co/${id}/verify?isCorrect=${isCorrect}`,
+            { method: "POST" },
+          );
+
+          if (res.ok) {
+            // 1. Xóa Card ở Slider phía trên
+            const pendingCard = document.getElementById("pending-report-" + id);
+            if (pendingCard) pendingCard.remove();
+
+            // 2. Xử lý dòng trong bảng
+            const row = document.getElementById("report-" + id);
+            if (row) {
+              if (isCorrect) {
+                row.setAttribute("data-status", "DANG_XU_LY");
+                row.cells[6].innerHTML = `<span style="color: #3b82f6;">Đã xác minh (Đang xử lý)</span>`;
+              } else {
+                // --- ĐOẠN QUAN TRỌNG: CHUYỂN SANG BẢNG SPAM ---
+                const spamTableBody = document.querySelector(
+                  "#spam-table-container tbody",
+                );
+                const newSpamRow = document.createElement("tr");
+
+                // Lấy dữ liệu hiện tại từ dòng cũ để đưa sang bảng spam
+                const imgUrl = row.cells[1].querySelector("img").src;
+                const reporterName =
+                  row.cells[3].querySelector("div").innerText;
+                const address = row.cells[4].innerText;
+                const currentTime = new Date().toLocaleString("vi-VN");
+
+                newSpamRow.innerHTML = `
+                        <td>${id}</td>
+                        <td>${reporterName}</td>
+                        <td><img src="${imgUrl}" class="img-table" /></td>
+                        <td>Báo cáo bị từ chối bởi Admin</td>
+                        <td>${address}</td>
+                        <td>${currentTime}</td>
+                    `;
+                spamTableBody.insertBefore(
+                  newSpamRow,
+                  spamTableBody.firstChild,
+                );
+
+                // Xóa dòng cũ ở bảng chính vì nó đã là Spam
+                row.remove();
+              }
+            }
+
+            // 3. Cập nhật lại tất cả con số
+            updateTabCounts();
+            updateSliderVisibility();
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+      // Hàm bổ trợ để tính lại số lượng trên các Tab mà không cần load trang
+      function updateTabCounts() {
+        // Đếm hàng ở bảng chính
+        const rows = document.querySelectorAll(
+          "#table-body-main .incident-row",
+        );
+        let pending = 0,
+          processing = 0,
+          done = 0;
+
+        rows.forEach((row) => {
+          const status = row.getAttribute("data-status");
+          if (status === "CHO_XU_LY") pending++;
+          else if (status === "DANG_XU_LY") processing++;
+          else if (status === "HOAN_THANH") done++;
+        });
+
+        // Đếm hàng ở bảng Spam
+        const spamRows = document.querySelectorAll(
+          "#spam-table-container tbody tr",
+        ).length;
+
+        const tabCounts = document.querySelectorAll(".tab-count");
+        if (tabCounts.length >= 5) {
+          tabCounts[0].innerText = rows.length; // Tất cả
+          tabCounts[1].innerText = pending; // Chờ
+          tabCounts[2].innerText = processing; // Đang
+          tabCounts[3].innerText = done; // Xong
+          tabCounts[4].innerText = spamRows; // Spam (Tab cuối cùng)
+        }
+      }
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".pending-item").forEach((item) => {
+          const reportId = item.id.replace("pending-report-", "");
+          loadNearbyCameras(reportId);
+        });
+
+        // Load cho các item trong bảng bên dưới
+        document.querySelectorAll(".incident-row").forEach((row) => {
+          const reportId = row.id.replace("report-", "");
+          loadNearbyCameras(reportId);
+        });
+
+        // Highlight item nếu có query parameter id
+        const urlParams = new URLSearchParams(window.location.search);
+        const highlightId = urlParams.get("id");
+        if (highlightId) {
+          const targetCard = document.getElementById("report-" + highlightId);
+          if (targetCard) {
+            // Highlight card
+            targetCard.style.backgroundColor = "#fef3c7";
+            targetCard.style.border = "2px solid #f59e0b";
+            targetCard.style.boxShadow = "0 0 20px rgba(245, 158, 11, 0.5)";
+
+            // Scroll vào view
+            setTimeout(() => {
+              targetCard.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+              });
+            }, 100);
+
+            // Bỏ highlight sau 3 giây
+            setTimeout(() => {
+              targetCard.style.backgroundColor = "";
+              targetCard.style.border = "";
+              targetCard.style.boxShadow = "";
+            }, 3000);
+          }
+        }
+        updateSliderVisibility();
+      });
+
+      async function loadNearbyCameras(reportId) {
+        // 1. Tìm tọa độ từ Card Duyệt nhanh hoặc Dòng trong bảng
+        const sourceElement =
+          document.getElementById("pending-report-" + reportId) ||
+          document.getElementById("report-" + reportId);
+
+        if (!sourceElement) return;
+
+        const lat = sourceElement.getAttribute("data-lat");
+        const lng = sourceElement.getAttribute("data-lng");
+
+        if (!lat || !lng || lat === "0.0") return;
+
+        try {
+          const res = await fetch(
+            `/admin/quan-ly-camera/nearby-incident?lat=${lat}&lng=${lng}`,
+          );
+          const cameras = await res.json();
+
+          if (cameras && cameras.length > 0) {
+            // --- CẬP NHẬT CHO CARD DUYỆT NHANH (Phần trên) ---
+            // --- CẬP NHẬT CHO CARD DUYỆT NHANH (Phần trên) ---
+            const pendingList = document.getElementById(
+              "cam-list-pending-" + reportId,
+            );
+            if (pendingList) {
+              pendingList.innerHTML = "";
+              cameras.forEach((cam) => {
+                const badge = document.createElement("div");
+                // Style này giúp badge chứa cả icon và tên trên một hàng, trông chuyên nghiệp hơn
+                badge.style = `
+            background: #fee2e2; 
+            padding: 2px 8px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            border: 1px solid #fecaca; 
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #b91c1c;
+            font-weight: 600;
+        `;
+
+                // Chèn cả Icon và Tên camera vào đây
+                badge.innerHTML = `
+            <i class="fa-solid fa-video" style="color: #ef4444;"></i>
+            <span>${cam.tenCamera}</span>
+        `;
+
+                badge.title = "Bấm để xem trực tiếp " + cam.tenCamera;
+                badge.onclick = (e) => {
+                  e.stopPropagation();
+                  cam.videoUrl
+                    ? window.open(cam.videoUrl, "_blank")
+                    : alert("Camera này không có luồng trực tiếp!");
+                };
+                pendingList.appendChild(badge);
+              });
+            }
+            // --- CẬP NHẬT CHO BẢNG TẤT CẢ (Phần dưới - Cột Camera mới) ---
+            const tableArea = document.getElementById("cam-area-" + reportId);
+            const tableList = document.getElementById("cam-list-" + reportId);
+
+            if (tableArea && tableList) {
+              tableArea.style.display = "flex";
+              tableList.innerHTML = "";
+              cameras.forEach((cam) => {
+                const camItem = document.createElement("div");
+                // Style cho item camera trong bảng: có viền, icon và tên
+                camItem.style = `
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        `;
+
+                camItem.innerHTML = `
+            <i class="fa-solid fa-camera" style="color: #475569;"></i>
+            <span style="font-weight: 500;">${cam.tenCamera}</span>
+        `;
+
+                camItem.onclick = () =>
+                  cam.videoUrl
+                    ? window.open(cam.videoUrl, "_blank")
+                    : alert("Không có luồng!");
+
+                tableList.appendChild(camItem);
+              });
+            }
+          }
+        } catch (e) {
+          console.error("Lỗi quét camera cho ID: " + reportId, e);
+        }
+      }
+      let currentPendingPage = 0;
+      const itemsPerPage = 3;
+
+      // Logic Chuyển trang cho Slider phía trên
+      function updateSliderVisibility() {
+        const items = document.querySelectorAll(".pending-item");
+        items.forEach((item, index) => {
+          const start = currentPendingPage * itemsPerPage;
+          const end = start + itemsPerPage;
+          item.style.display = index >= start && index < end ? "flex" : "none";
+        });
+      }
+
+      function nextPendingPage() {
+        const totalItems = document.querySelectorAll(".pending-item").length;
+        if ((currentPendingPage + 1) * itemsPerPage < totalItems) {
+          currentPendingPage++;
+          updateSliderVisibility();
+        }
+      }
+
+      function prevPendingPage() {
+        if (currentPendingPage > 0) {
+          currentPendingPage--;
+          updateSliderVisibility();
+        }
+      }
+
+      // Logic Chuyển Tab bên dưới
+      function switchTab(type) {
+        // Cập nhật UI nút tab
+        document
+          .querySelectorAll(".tab-item")
+          .forEach((tab) => tab.classList.remove("active"));
+        event.currentTarget.classList.add("active");
+
+        const mainContainer = document.getElementById(
+          "incident-table-container",
+        );
+        const spamContainer = document.getElementById("spam-table-container");
+        const rows = document.querySelectorAll(".incident-row");
+
+        if (type === "spam") {
+          mainContainer.style.display = "none";
+          spamContainer.style.display = "block";
+        } else {
+          mainContainer.style.display = "block";
+          spamContainer.style.display = "none";
+
+          rows.forEach((row) => {
+            const status = row.getAttribute("data-status");
+            if (type === "all") row.style.display = "";
+            else if (type === "pending" && status === "CHO_XU_LY")
+              row.style.display = "";
+            else if (type === "processing" && status === "DANG_XU_LY")
+              row.style.display = "";
+            else if (type === "done" && status === "HOAN_THANH")
+              row.style.display = "";
+            else row.style.display = "none";
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

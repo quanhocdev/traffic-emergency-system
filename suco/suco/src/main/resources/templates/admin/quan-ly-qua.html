@@ -1,0 +1,738 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quản Lý Quà</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    />
+
+    <style>
+      :root {
+        --primary-color: #1a1a1a;
+        --accent-color: #3b82f6;
+        --sidebar-width: 260px;
+        --sidebar-collapsed-width: 75px;
+        --font-main: "Inter", system-ui, sans-serif;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        font-family: var(--font-main);
+        background: #f1f5f9;
+        overflow: hidden;
+      }
+      #main-container {
+        display: flex;
+        height: 100vh;
+        width: 100%;
+      }
+      #sidebar {
+        width: var(--sidebar-width);
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        transition: width 0.3s ease;
+      }
+      .sidebar-header {
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #333;
+      }
+      .toggle-btn {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 18px;
+      }
+      .sidebar-menu {
+        list-style: none;
+        padding: 15px 0;
+        margin: 0;
+        flex-grow: 1;
+        overflow-y: auto;
+      }
+      .menu-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 25px;
+        color: #aaa;
+        text-decoration: none;
+        border-left: 4px solid transparent;
+        transition: 0.2s;
+      }
+      .menu-item i {
+        min-width: 25px;
+        text-align: center;
+      }
+      .menu-item span {
+        margin-left: 15px;
+      }
+      .menu-item:hover,
+      .menu-item.active {
+        background: #262626;
+        color: white;
+        border-left-color: var(--accent-color);
+      }
+      .main-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 30px;
+        width: 0; /* Quan trọng: giúp flexbox tính toán lại độ rộng chính xác */
+        min-width: 0;
+      }
+      .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        border-left: 5px solid var(--accent-color);
+        padding-left: 15px;
+        margin-bottom: 25px;
+        color: #0f172a;
+      }
+      #sidebar.collapsed {
+        width: var(--sidebar-collapsed-width);
+      }
+      #sidebar.collapsed .menu-item span,
+      #sidebar.collapsed .sidebar-header span {
+        display: none;
+      }
+      #sidebar.collapsed .menu-item {
+        justify-content: center;
+      }
+      #sidebar.collapsed .toggle-btn i {
+        transform: rotate(180deg);
+      }
+      .toggle-btn i {
+        transition: transform 0.3s;
+      }
+      /* Style cho khung Voucher */
+      .voucher-box {
+        background: #eff6ff;
+        border: 1px dashed #3b82f6;
+        padding: 15px;
+        border-radius: 8px;
+      }
+      .modal-content {
+        background: white;
+        width: 500px;
+        margin: 80px auto;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .modal h4 {
+        font-weight: 600;
+        border-left: 4px solid #3b82f6;
+        padding-left: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="main-container">
+      <nav id="sidebar">
+        <div class="sidebar-header">
+          <span>DASHBOARD</span
+          ><button class="toggle-btn">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+        </div>
+        <ul class="sidebar-menu">
+          <li>
+            <a href="/admin/trang-chu" class="menu-item"
+              ><i class="fa-solid fa-house"></i><span>Trang Chủ</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-user" class="menu-item"
+              ><i class="fa-solid fa-users"></i><span>Quản Lý User</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/loai-su-co" class="menu-item"
+              ><i class="fa-solid fa-triangle-exclamation"></i
+              ><span>Quản Lý Sự Cố</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/bao-cao-su-co" class="menu-item"
+              ><i class="fa-solid fa-file-signature"></i
+              ><span>Quản Lý Báo Cáo</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-tru-so" class="menu-item"
+              ><i class="fa-solid fa-building"></i
+              ><span>Quản Lý Trụ Sở</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-camera" class="menu-item"
+              ><i class="fa-solid fa-camera"></i><span>Quản Lý Camera</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/goi" class="menu-item"
+              ><i class="fa-solid fa-box"></i><span>Quản Lý Gói SOS</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-qua" class="menu-item active"
+              ><i class="fa-solid fa-gift"></i><span>Quản Lý Quà</span></a
+            >
+          </li>
+          <li>
+            <a href="/admin/quan-ly-doanh-thu" class="menu-item">
+              <i class="fas fa-money-bill-wave"></i
+              ><span>Quản Lý Doanh Thu</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="main-content">
+        <h2 class="page-title">Quản Lý Quà & Voucher</h2>
+
+        <form
+          id="formAddQua"
+          th:object="${quaDto}"
+          enctype="multipart/form-data"
+          class="row g-3 bg-white p-4 rounded shadow-sm"
+        >
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Tên quà / Voucher</label>
+            <input
+              type="text"
+              th:field="*{ten}"
+              class="form-control"
+              required
+              placeholder="Nhập tên..."
+            />
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Loại</label>
+            <select th:field="*{loai}" id="selectLoaiQua" class="form-select">
+              <option
+                th:each="l : ${loaiQua}"
+                th:value="${l}"
+                th:text="${l}"
+              ></option>
+            </select>
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Điểm đổi</label>
+            <input
+              type="number"
+              th:field="*{diem}"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-bold">Mô tả</label>
+            <textarea
+              th:field="*{moTa}"
+              class="form-control"
+              rows="2"
+            ></textarea>
+          </div>
+
+          <div class="col-12" id="voucherFields" style="display: none">
+            <div
+              class="p-3 border rounded"
+              style="
+                background-color: #f8faff;
+                border-color: #3b82f6 !important;
+              "
+            >
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label text-primary fw-bold"
+                    >Giá trị giảm (%)</label
+                  >
+                  <input
+                    type="number"
+                    th:field="*{giaTriGiamPercent}"
+                    class="form-control"
+                    placeholder="Ví dụ: 20"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-primary fw-bold"
+                    >Giảm tối đa (VNĐ)</label
+                  >
+                  <input
+                    type="number"
+                    th:field="*{giaTriToiDa}"
+                    class="form-control"
+                    placeholder="Ví dụ: 50000"
+                  />
+                </div>
+              </div>
+              <div class="form-text text-primary mt-2">
+                <i class="fa-solid fa-info-circle"></i> Chỉ áp dụng cho loại
+                hình Voucher cứu trợ.
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Ngày kết thúc</label>
+            <input
+              type="datetime-local"
+              th:field="*{ngayKetThuc}"
+              class="form-control"
+            />
+          </div>
+
+          <div class="col-12">
+            <label class="form-label fw-bold">Hình ảnh</label>
+            <input type="file" name="hinhAnh" class="form-control" />
+          </div>
+
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="fa-solid fa-save me-2"></i>Lưu Thông Tin
+            </button>
+          </div>
+        </form>
+
+        <hr class="my-5" />
+
+        <h4 class="mb-3">Danh sách Quà & Voucher</h4>
+        <table class="table table-bordered align-middle bg-white shadow-sm">
+          <thead class="table-light text-center">
+            <tr>
+              <th>ID</th>
+              <th>Hình ảnh</th>
+              <th>Tên</th>
+              <th>Loại</th>
+              <th>Điểm</th>
+              <th>Cấu hình Voucher</th>
+              <th>Thời hạn</th>
+              <th>Trạng thái</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="q : ${listQua}">
+              <td class="text-center" th:text="${q.id}"></td>
+              <td class="text-center">
+                <img
+                  th:src="@{'/uploads/' + ${q.hinhAnh}}"
+                  width="50"
+                  height="50"
+                  class="rounded border"
+                />
+              </td>
+              <td th:text="${q.ten}" class="fw-bold"></td>
+              <td class="text-center">
+                <span
+                  th:class="${q.loai.name() == 'VOUCHER' ? 'badge bg-info' : 'badge bg-secondary'}"
+                  th:text="${q.loai}"
+                ></span>
+              </td>
+              <td class="text-center" th:text="${q.diem}"></td>
+              <td>
+                <div th:if="${q.loai.name() == 'VOUCHER'}">
+                  <small class="d-block text-success"
+                    >Giảm: <b th:text="${q.giaTriGiamPercent}"></b>%</small
+                  >
+                  <small class="d-block text-danger"
+                    >Tối đa:
+                    <b
+                      th:text="${#numbers.formatDecimal(q.giaTriToiDa, 0, 'COMMA', 0, 'POINT')}"
+                    ></b
+                    >đ</small
+                  >
+                </div>
+                <span
+                  th:unless="${q.loai.name() == 'VOUCHER'}"
+                  class="text-muted small"
+                  >N/A</span
+                >
+              </td>
+
+              <td class="text-center">
+                <span
+                  th:if="${q.ngayKetThuc != null}"
+                  th:text="${#temporals.format(q.ngayKetThuc, 'dd/MM/yyyy HH:mm')}"
+                >
+                </span>
+                <span th:if="${q.ngayKetThuc == null}">Không giới hạn</span>
+              </td>
+              <td class="text-center">
+                <!-- Nếu đã hết hạn -->
+                <span
+                  th:if="${q.ngayKetThuc != null 
+      and q.ngayKetThuc.isBefore(T(java.time.LocalDateTime).now())}"
+                  class="badge bg-danger"
+                >
+                  Hết hạn
+                </span>
+
+                <!-- Nếu chưa hết hạn -->
+                <div
+                  th:if="${q.ngayKetThuc == null 
+      or q.ngayKetThuc.isAfter(T(java.time.LocalDateTime).now())}"
+                >
+                  <select
+                    class="form-select form-select-sm"
+                    th:data-id="${q.id}"
+                    onchange="changeStatus(this)"
+                  >
+                    <option
+                      value="HOAT_DONG"
+                      th:selected="${q.trangThai.name() == 'HOAT_DONG'}"
+                    >
+                      Hoạt động
+                    </option>
+
+                    <option
+                      value="NGUNG"
+                      th:selected="${q.trangThai.name() == 'NGUNG'}"
+                    >
+                      Ngưng
+                    </option>
+                  </select>
+                </div>
+              </td>
+              <td class="text-center">
+                <button
+                  class="btn btn-outline-primary btn-sm"
+                  onclick="openEditModal(this)"
+                  th:data-id="${q.id}"
+                  th:data-ten="${q.ten}"
+                  th:data-mota="${q.moTa}"
+                  th:data-loai="${q.loai}"
+                  th:data-diem="${q.diem}"
+                  th:data-hinhanh="${q.hinhAnh}"
+                  th:data-giam="${q.giaTriGiamPercent}"
+                  th:data-toida="${q.giaTriToiDa}"
+                  th:data-ngayketthuc="${#temporals.format(q.ngayKetThuc, 'yyyy-MM-dd''T''HH:mm')}"
+                >
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button
+                  class="btn btn-outline-danger btn-sm"
+                  th:onclick="'deleteQua(' + ${q.id} + ')'"
+                >
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <h4 class="mb-4">Chỉnh sửa quà / voucher</h4>
+
+        <input type="hidden" id="editId" />
+
+        <div class="row mb-3 align-items-center">
+          <label class="col-4 fw-bold">Tên</label>
+          <div class="col-8">
+            <input id="editTen" class="form-control" />
+          </div>
+        </div>
+
+        <div class="row mb-3 align-items-center">
+          <label class="col-4 fw-bold">Hình ảnh</label>
+          <div class="col-8">
+            <img
+              id="previewHinhAnh"
+              style="width: 80px; height: 80px; border-radius: 8px"
+            />
+          </div>
+        </div>
+
+        <div class="row mb-3 align-items-center">
+          <label class="col-4 fw-bold"></label>
+          <div class="col-8">
+            <input id="editHinhAnh" type="file" class="form-control" />
+          </div>
+        </div>
+
+        <div class="row mb-3 align-items-center">
+          <label class="col-4 fw-bold">Mô tả</label>
+          <div class="col-8">
+            <textarea id="editMoTa" class="form-control"></textarea>
+          </div>
+        </div>
+
+        <div class="row mb-3 align-items-center">
+          <label class="col-4 fw-bold">Loại</label>
+          <div class="col-8">
+            <select
+              id="editLoai"
+              class="form-select"
+              onchange="toggleEditVoucherFields()"
+            >
+              <option value="SAN_PHAM">Sản phẩm</option>
+              <option value="VOUCHER">Voucher</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row mb-3 align-items-center">
+          <label class="col-4 fw-bold">Điểm đổi</label>
+          <div class="col-8">
+            <input id="editDiem" type="number" class="form-control" />
+          </div>
+        </div>
+
+        <!-- Voucher fields -->
+        <div id="editVoucherFields" style="display: none">
+          <div class="row mb-3 align-items-center">
+            <label class="col-4 text-primary fw-bold">% giảm</label>
+            <div class="col-8">
+              <input id="editGiam" type="number" class="form-control" />
+            </div>
+          </div>
+
+          <div class="row mb-3 align-items-center">
+            <label class="col-4 text-primary fw-bold">Giảm tối đa</label>
+            <div class="col-8">
+              <input id="editToiDa" type="number" class="form-control" />
+            </div>
+          </div>
+        </div>
+        <div class="row mb-3 align-items-center">
+          <label class="col-4 fw-bold">Ngày kết thúc</label>
+          <div class="col-8">
+            <input
+              id="editNgayKetThuc"
+              type="datetime-local"
+              class="form-control"
+            />
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button onclick="submitEdit()" class="btn btn-success w-100">
+            💾 Lưu
+          </button>
+          <button onclick="closeModal()" class="btn btn-secondary w-100">
+            ❌ Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      function toggleEditVoucherFields() {
+        const loai = document.getElementById("editLoai").value;
+        const box = document.getElementById("editVoucherFields");
+
+        if (loai === "VOUCHER") {
+          box.style.display = "block";
+        } else {
+          box.style.display = "none";
+
+          // reset
+          document.getElementById("editGiam").value = "";
+          document.getElementById("editToiDa").value = "";
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // Toggle Sidebar
+        const toggleBtn = document.querySelector(".toggle-btn");
+        const sidebar = document.getElementById("sidebar");
+
+        if (toggleBtn && sidebar) {
+          toggleBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("collapsed");
+          });
+        }
+        document
+          .getElementById("formAddQua")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch("/admin/quan-ly-qua/add", {
+              method: "POST",
+              body: formData,
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                alert(data.message);
+                location.reload();
+              })
+              .catch(() => alert("Lỗi server"));
+          });
+
+        // Voucher logic
+        const loaiSelect = document.getElementById("selectLoaiQua");
+        const voucherFields = document.getElementById("voucherFields");
+
+        function updateFields() {
+          if (!loaiSelect || !voucherFields) return;
+
+          if (loaiSelect.value === "VOUCHER") {
+            voucherFields.style.display = "block";
+          } else {
+            voucherFields.style.display = "none";
+
+            // reset field
+            const percent = document.querySelector(
+              '[name="giaTriGiamPercent"]',
+            );
+            const max = document.querySelector('[name="giaTriToiDa"]');
+
+            if (percent) percent.value = "";
+            if (max) max.value = "";
+          }
+        }
+
+        if (loaiSelect) {
+          loaiSelect.addEventListener("change", updateFields);
+          updateFields(); // chạy ngay khi load
+        }
+
+        // Xóa quà
+        window.deleteQua = function (id) {
+          if (!confirm("Xóa mục này?")) return;
+
+          fetch(`/admin/quan-ly-qua/delete/${id}`, {
+            method: "DELETE",
+          })
+            .then((res) => {
+              if (res.ok) {
+                const row = document
+                  .querySelector(`button[onclick="deleteQua(${id})"]`)
+                  .closest("tr");
+                row.remove();
+              } else {
+                alert("Xóa thất bại");
+              }
+            })
+            .catch(() => alert("Lỗi server"));
+        };
+      });
+
+      // Đổ dữ liệu hiện tại vào modal
+      function openEditModal(btn) {
+        const q = btn.dataset;
+
+        document.getElementById("editId").value = q.id;
+        document.getElementById("editTen").value = q.ten;
+        document.getElementById("editMoTa").value = q.mota;
+        document.getElementById("editLoai").value = q.loai;
+        document.getElementById("editDiem").value = q.diem;
+
+        document.getElementById("editGiam").value = q.giam || "";
+        document.getElementById("editToiDa").value = q.toida || "";
+        document.getElementById("editNgayKetThuc").value = q.ngayketthuc || "";
+
+        document.getElementById("previewHinhAnh").src = q.hinhanh
+          ? "/uploads/" + q.hinhanh
+          : "/uploads/default.png";
+
+        toggleEditVoucherFields();
+
+        document.getElementById("editModal").style.display = "block";
+      }
+
+      function closeModal() {
+        document.getElementById("editModal").style.display = "none";
+      }
+      function submitEdit() {
+        const id = document.getElementById("editId").value;
+
+        const formData = new FormData();
+        formData.append("ten", document.getElementById("editTen").value);
+        formData.append("moTa", document.getElementById("editMoTa").value);
+        formData.append("loai", document.getElementById("editLoai").value);
+        formData.append("diem", document.getElementById("editDiem").value);
+        formData.append(
+          "giaTriGiamPercent",
+          document.getElementById("editGiam").value || "",
+        );
+        formData.append(
+          "giaTriToiDa",
+          document.getElementById("editToiDa").value || "",
+        );
+        formData.append(
+          "ngayKetThuc",
+          document.getElementById("editNgayKetThuc").value || "",
+        );
+
+        // 👇 QUAN TRỌNG NHẤT
+        const file = document.getElementById("editHinhAnh").files[0];
+        if (file) {
+          formData.append("hinhAnh", file);
+        }
+
+        fetch(`/admin/quan-ly-qua/edit/${id}`, {
+          method: "PATCH",
+          body: formData,
+        }).then((res) => {
+          if (res.ok) {
+            alert("Cập nhật thành công");
+            location.reload();
+          } else {
+            alert("Lỗi update");
+          }
+        });
+      }
+      function changeStatus(select) {
+        const id = select.dataset.id;
+        const trangThai = select.value;
+
+        const confirmChange = confirm(
+          "Bạn có chắc muốn thay đổi trạng thái không?",
+        );
+
+        if (!confirmChange) {
+          // Hủy → reset lại giá trị cũ (tránh UI bị đổi)
+          location.reload(); // hoặc giữ nguyên trạng thái cũ
+          return;
+        }
+
+        fetch(`/admin/quan-ly-qua/edit/${id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            trangThai: trangThai,
+          }),
+        })
+          .then((res) => {
+            if (!res.ok) throw new Error();
+
+            alert("Cập nhật trạng thái thành công ✅");
+            location.reload(); // OK → reload lại trang
+          })
+          .catch(() => {
+            alert("Lỗi cập nhật trạng thái ❌");
+            location.reload(); // lỗi cũng reload để về trạng thái cũ
+          });
+      }
+    </script>
+  </body>
+</html>
