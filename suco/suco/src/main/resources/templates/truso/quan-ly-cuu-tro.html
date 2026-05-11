@@ -1052,19 +1052,20 @@
           btn.innerText = "Đang xử lý...";
         }
 
-        fetch(
-          `/api/map/su-co/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${TRUSO_ID}`,
-          {
-            method: "POST",
+        fetch(`/api/map/su-co/cap-nhat-trang-thai/${id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
           },
-        )
+          body: JSON.stringify({
+            status: status,
+          }),
+        })
           .then((res) => {
             if (!res.ok) throw new Error("Lỗi Server: " + res.status);
             return res.json().catch(() => ({}));
           })
           .then(() => {
-            // CHUẨN: Chuyển sang trang "Đang cứu trợ" thay vì "Trang chủ"
-            // để người dùng thấy ngay kết quả vừa tiếp nhận
             alert("Tiếp nhận thành công! Đang chuyển đến danh sách cứu trợ.");
             window.location.href = "/truso/dang-cuu-tro";
           })

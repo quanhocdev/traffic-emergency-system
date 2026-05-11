@@ -1002,31 +1002,45 @@
           });
       }
       function doiTrangThaiSuCo(id, status) {
-        const url = `/api/map/su-co/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${idTruSo}`;
 
-        fetch(url, { method: "POST" }).then((res) => {
-          if (res.ok) {
-            // NẾU LÀ HOÀN THÀNH, XÓA MARKER NGAY TRÊN BẢN ĐỒ TRỤ SỞ
-            if (status === "HOAN_THANH") {
-              const markerKey = "SU_CO_" + id;
-              if (activeMarkers[markerKey]) {
-                activeMarkers[markerKey].marker.remove(); // Xóa khỏi bản đồ
-                delete activeMarkers[markerKey]; // Xóa khỏi bộ nhớ
-              }
-              closeDetail(); // Đóng bảng thông tin
-              alert("Đã hoàn thành và gỡ bỏ sự cố!");
-            } else {
-              // Nếu là TIẾP NHẬN, chỉ cần đổi trạng thái để mất hiệu ứng nháy
-              const markerKey = "SU_CO_" + id;
-              if (activeMarkers[markerKey]) {
-                activeMarkers[markerKey].data.trangThaiXuLy = status;
-                addSOSMarker(activeMarkers[markerKey].data, "SU_CO");
-              }
-              alert("Đã tiếp nhận sự cố!");
-            }
-          }
-        });
+  fetch(`/api/map/su-co/cap-nhat-trang-thai/${id}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      status: status
+    })
+  })
+  .then((res) => {
+    if (res.ok) {
+
+      if (status === "HOAN_THANH") {
+
+        const markerKey = "SU_CO_" + id;
+
+        if (activeMarkers[markerKey]) {
+          activeMarkers[markerKey].marker.remove();
+          delete activeMarkers[markerKey];
+        }
+
+        closeDetail();
+        alert("Đã hoàn thành và gỡ bỏ sự cố!");
+
+      } else {
+
+        const markerKey = "SU_CO_" + id;
+
+        if (activeMarkers[markerKey]) {
+          activeMarkers[markerKey].data.trangThaiXuLy = status;
+          addSOSMarker(activeMarkers[markerKey].data, "SU_CO");
+        }
+
+        alert("Đã tiếp nhận sự cố!");
       }
+    }
+  });
+}
       function loadExistingSuCo() {
         return fetch(`/api/map/su-co?idTruSo=${idTruSo}`)
           .then((res) => res.json())
