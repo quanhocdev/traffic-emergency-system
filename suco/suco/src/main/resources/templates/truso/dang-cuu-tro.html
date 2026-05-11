@@ -422,12 +422,18 @@
           // Chọn đúng API endpoint tùy theo loại (SOS hoặc Sự cố)
           const url =
             type === "SOS"
-              ? `/api/tin-hieu-sos/cap-nhat-trang-thai/${id}?status=HOAN_THANH`
-              : `/api/map/su-co/cap-nhat-trang-thai/${id}?status=HOAN_THANH`;
+              ? `/api/tin-hieu-sos/cap-nhat-trang-thai/${id}`
+              : `/api/map/su-co/cap-nhat-trang-thai/${id}`;
 
           console.log("Calling API:", url);
 
-          const res = await fetch(url, { method: "POST" });
+          const res = await fetch(url, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              status: "HOAN_THANH", // Trạng thái mới sau khi hoàn thành
+            }),
+          });
 
           if (res.ok) {
             // Cập nhật mảng local để item biến mất ngay lập tức nhờ hàm filter trong renderData
