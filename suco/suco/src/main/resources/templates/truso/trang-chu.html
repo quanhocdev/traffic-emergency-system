@@ -1001,6 +1001,8 @@
             return data;
           });
       }
+
+      
       function doiTrangThaiSuCo(id, status) {
 
   fetch(`/api/map/su-co/cap-nhat-trang-thai/${id}`, {
@@ -1032,8 +1034,9 @@
         const markerKey = "SU_CO_" + id;
 
         if (activeMarkers[markerKey]) {
-          activeMarkers[markerKey].data.trangThaiXuLy = status;
-          addSOSMarker(activeMarkers[markerKey].data, "SU_CO");
+          activeMarkers[markerKey].data.trangThaiXuLy = status; // Cập nhật trạng thái xử lý trong dữ liệu cục bộ
+          addSOSMarker(activeMarkers[markerKey].data, "SU_CO"); // Cập nhật lại marker để đổi màu hoặc hiệu ứng
+          showSuCoDetail(activeMarkers[markerKey].data); // Cập nhật lại panel nếu đang mở
         }
 
         alert("Đã tiếp nhận sự cố!");
