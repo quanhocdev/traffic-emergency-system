@@ -21,6 +21,7 @@ public class SuCoMapDto {
     private String huyenHoac;
     private String thanhPho;
     private String diaChi;
+    private String reporterUid;
 
     // Constructor rút gọn (thường dùng cho Socket nhanh)
     public SuCoMapDto(Long id, Double viDo, Double kinhDo, String moTa, String tenLoai, 
@@ -52,6 +53,15 @@ public class SuCoMapDto {
         this.thanhPho = thanhPho;
         this.diaChi = diaChi;
     }
+    public SuCoMapDto(Long id,Double viDo,Double kinhDo,String moTa,String tenLoai,String trangThaiDuyet,
+    String trangThaiXuLy,String iconUrl,String mucDoNghiemTrong,String hinhAnhUrl,Integer doTinCay,
+    String tenDuong,String quan,String huyenHoac,String thanhPho,String diaChi,String tenNguoiBao,String reporterUid
+) {
+    this(id,viDo,kinhDo,moTa,tenLoai,trangThaiDuyet,trangThaiXuLy,iconUrl,mucDoNghiemTrong,hinhAnhUrl,doTinCay,
+        tenDuong,quan,huyenHoac,thanhPho,diaChi,tenNguoiBao
+    );
+    this.reporterUid = reporterUid;
+}
 
     // GETTERS (Bắt buộc phải có đủ để Jackson render JSON)
     public Long getId() { return id; }
@@ -73,6 +83,7 @@ public class SuCoMapDto {
     public String getHuyenHoac() { return huyenHoac; }
     public String getThanhPho() { return thanhPho; }
     public String getDiaChi() { return diaChi; }
+    public String getReporterUid() { return reporterUid; }
 
     // SETTERS
     public void setDoTinCay(Integer doTinCay) { this.doTinCay = doTinCay; }
@@ -85,6 +96,7 @@ public class SuCoMapDto {
     public void setQuan(String quan) { this.quan = quan; }
     public void setHuyenHoac(String huyenHoac) { this.huyenHoac = huyenHoac; }
     public void setThanhPho(String thanhPho) { this.thanhPho = thanhPho; }
+    public void setReporterUid(String reporterUid) { this.reporterUid = reporterUid; }
 
     
 

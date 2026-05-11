@@ -79,6 +79,10 @@ public class BaoCaoSuCoService {
             tenNguoiBao
     );
 
+    if (b.getReporter() != null) {
+    dto.setReporterUid(b.getReporter().getUid());
+    }
+
     if (b.getIdTruSoDeXuat() != null) {
         TruSo ts = truSoRepository.findById(b.getIdTruSoDeXuat()).orElse(null);
 
