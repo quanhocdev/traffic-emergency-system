@@ -817,7 +817,11 @@
         const mucDo = mucDoSelect.value;
 
         fetch(`/api/map/su-co/cap-nhat-muc-do/${id}?mucDo=${mucDo}`, {
-          method: "POST",
+          method: "PATCH", 
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ mucDo }),
         }).then((res) => {
           if (res.ok) {
             alert("Đã cập nhật mức độ nghiêm trọng!");
