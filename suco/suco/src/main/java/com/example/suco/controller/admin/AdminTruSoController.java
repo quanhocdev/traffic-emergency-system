@@ -36,6 +36,7 @@ public class AdminTruSoController {
     @GetMapping
     public String hienThiDanhSach(Model model) {
         model.addAttribute("danhSachTruSo", truSoRepository.findAll());
+        model.addAttribute("activePage", "quan-ly-tru-so");
         return "admin/quan-ly-tru-so";
     }
     @GetMapping("/all")

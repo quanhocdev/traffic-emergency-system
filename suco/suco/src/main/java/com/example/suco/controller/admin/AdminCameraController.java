@@ -39,6 +39,7 @@ public class AdminCameraController {
         // Gọi Service thay vì Repository
         model.addAttribute("danhSachCamera", cameraService.getAllCameras());
         model.addAttribute("listCameraChuaGan", cameraService.getCamerasChuaGan());
+        model.addAttribute("activePage", "quan-ly-camera");
         
         return "admin/quan-ly-camera";
     }

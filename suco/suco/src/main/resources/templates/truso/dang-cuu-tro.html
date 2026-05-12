@@ -11,14 +11,14 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" th:href="@{/css/fragments/sidebar.css}" />
+    <link rel="stylesheet" th:href="@{/css/fragments/truso/sidebar.css}" />
     <link rel="stylesheet" th:href="@{/css/truso/dang-cuu-tro.css}" />
 
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
   </head>
   <body>
-    <div th:replace="fragments/sidebar :: sidebar('doing')"></div>
+    <div th:replace="fragments/truso/sidebar :: sidebar('doing')"></div>
 
     <main class="main-content">
       <div class="d-flex align-items-center justify-content-between mb-4">

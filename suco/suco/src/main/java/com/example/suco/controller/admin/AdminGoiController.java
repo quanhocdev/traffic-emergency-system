@@ -17,19 +17,9 @@ public class AdminGoiController {
     @GetMapping
     public String hienThiQuanLyGoi(Model model) {
         model.addAttribute("listGoi", goiService.getAllGoi());
-        model.addAttribute("goiMoi", new GoiDto()); // Dùng cho form thêm mới
+        model.addAttribute("goiMoi", new GoiDto()); 
+        model.addAttribute("activePage", "quan-ly-goi");
         return "admin/quan-ly-goi";
     }
 
-    // @PostMapping("/save")
-    // public String luuGoi(@ModelAttribute("goiMoi") GoiDto goiDto) {
-    //     goiService.saveGoi(goiDto);
-    //     return "redirect:/admin/goi";
-    // }
-
-    // @GetMapping("/xoa/{id}")
-    // public String xoaGoi(@PathVariable Long id) {
-    //     goiService.deleteGoi(id);
-    //     return "redirect:/admin/goi";
-    // }
 }
