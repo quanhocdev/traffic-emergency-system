@@ -1,6 +1,6 @@
 mapboxgl.accessToken = MAPBOX_TOKEN;
 
-const map = new mapboxgl.Map({
+window.map = new mapboxgl.Map({
   container: "map",
   style: "mapbox://styles/mapbox/streets-v12",
   center: [tsLng, tsLat],
