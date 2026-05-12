@@ -36,6 +36,9 @@ public class UserController {
             model.addAttribute("listUsers", userService.getAllUsers());
         }
 
+            model.addAttribute("activePage", "quan-ly-user");
+
+
         return "admin/quan-ly-user";
     }
 

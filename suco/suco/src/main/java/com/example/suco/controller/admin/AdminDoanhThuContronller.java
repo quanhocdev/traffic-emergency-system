@@ -19,6 +19,7 @@ public class AdminDoanhThuContronller {
     public String viewDoanhThu(Model model) {
         model.addAttribute("tongDoanhThu", doanhThuService.layTongDoanhThu());
         model.addAttribute("listHoaDon", doanhThuService.layDanhSachHoaDon());
+        model.addAttribute("activePage", "quan-ly-doanh-thu");
         return "admin/quan-ly-doanh-thu";
     }
 }

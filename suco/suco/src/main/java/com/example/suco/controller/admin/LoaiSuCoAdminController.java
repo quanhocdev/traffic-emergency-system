@@ -29,6 +29,7 @@ public class LoaiSuCoAdminController {
     @GetMapping
     public String page(Model model) {
         model.addAttribute("list", service.getLoaiSuCo());
+        model.addAttribute("activePage", "loai-su-co");
         return "admin/loai-su-co"; // trỏ tới loai-su-co.html
     }
 

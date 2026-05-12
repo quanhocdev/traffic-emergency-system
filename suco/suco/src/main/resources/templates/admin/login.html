@@ -3,61 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Admin Login</title>
-
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #f4f6f9;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-      }
-
-      .box {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        width: 350px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-      }
-
-      h2 {
-        text-align: center;
-        margin-bottom: 20px;
-        color: #008588;
-      }
-
-      input {
-        width: 100%;
-        padding: 12px;
-        margin: 10px 0;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-      }
-
-      button {
-        width: 100%;
-        padding: 12px;
-        background: #008588;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-        cursor: pointer;
-      }
-
-      button:hover {
-        background: #006c70;
-      }
-
-      .error {
-        color: red;
-        text-align: center;
-        margin-top: 10px;
-        display: none;
-      }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/admin/login.css}" />
   </head>
 
   <body>
@@ -77,53 +23,6 @@
 
       <div id="error" class="error"></div>
     </div>
-
-    <script>
-      document
-        .getElementById("loginForm")
-        .addEventListener("submit", async function (e) {
-          e.preventDefault();
-
-          const form = e.target;
-          const errorBox = document.getElementById("error");
-
-          errorBox.style.display = "none";
-
-          try {
-            const res = await fetch("/admin/login", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                email: form.email.value,
-                password: form.password.value,
-              }),
-            });
-
-            const contentType = res.headers.get("content-type") || "";
-            const data = contentType.includes("application/json")
-              ? await res.json()
-              : await res.text();
-
-            if (res.ok) {
-              // lưu JWT
-              localStorage.setItem("token", data.token);
-
-              // chuyển thẳng sang dashboard admin
-              window.location.href = "/admin/trang-chu";
-            } else {
-              errorBox.style.display = "block";
-              errorBox.innerText =
-                typeof data === "string"
-                  ? data
-                  : data?.message || "Đăng nhập thất bại";
-            }
-          } catch (err) {
-            errorBox.style.display = "block";
-            errorBox.innerText = "Lỗi kết nối server";
-          }
-        });
-    </script>
+    <script th:src="@{/js/admin/login.js}"></script>
   </body>
 </html>

@@ -30,6 +30,7 @@ public class TrangChuController {
     public String trangChuAdmin(Model model) {
         model.addAttribute("mapboxToken", appConfig.getMapboxToken());
         model.addAttribute("listLoaiSuCo", loaiSuCoRepository.findAll());
+        model.addAttribute("activePage", "trang-chu");
         
         // 1. Lấy các trụ sở chưa gán
         List<TruSo> listTruSoChuaGan = truSoRepository.findAll().stream()

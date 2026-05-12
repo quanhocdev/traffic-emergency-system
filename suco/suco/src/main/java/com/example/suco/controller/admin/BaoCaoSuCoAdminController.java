@@ -67,6 +67,9 @@ List<BaoCaoSuCo> allSuCo = reportRepository.findByTrangThaiDuyetIn(List.of("VERI
     model.addAttribute("countCho", countCho);
     model.addAttribute("countDang", countDang);
     model.addAttribute("countXong", countXong);
+    model.addAttribute("activePage", "bao-cao-su-co");
+
+    
 
     return "admin/bao-cao-su-co";
 }

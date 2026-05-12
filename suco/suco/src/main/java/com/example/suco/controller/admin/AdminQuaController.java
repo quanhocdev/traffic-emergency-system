@@ -27,6 +27,8 @@ public class AdminQuaController {
         model.addAttribute("listQua", quaService.getAllQua());
         model.addAttribute("quaDto", new QuaDto());
         model.addAttribute("loaiQua", Qua.LoaiQua.values());
+        model.addAttribute("activePage", "quan-ly-qua");
+
         return "admin/quan-ly-qua";
     }
 
