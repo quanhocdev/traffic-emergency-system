@@ -2,9 +2,17 @@
 function openEdit(btn) {
   const id = btn.getAttribute("data-id");
   const ten = btn.getAttribute("data-ten");
+  const icon = btn.getAttribute("data-icon");
 
   document.getElementById("editId").value = id;
   document.getElementById("editTen").value = ten;
+  const preview = document.getElementById("previewIcon");
+  if (icon) {
+    preview.src = icon;
+    preview.style.display = "block";
+  } else {
+    preview.style.display = "none";
+  }
 
   document.getElementById("editModal").style.display = "block";
 }
@@ -19,7 +27,7 @@ document.getElementById("createForm").addEventListener("submit", function (e) {
 
   const formData = new FormData(this);
 
-  fetch("/admin/loai-su-co/api/create", {
+  fetch("/admin/loai-su-co", {
     method: "POST",
     body: formData,
   })
@@ -49,8 +57,8 @@ function submitEdit() {
   if (ten) formData.append("ten", ten);
   if (file) formData.append("iconFile", file);
 
-  fetch(`/admin/loai-su-co/api/update/${id}`, {
-    method: "PUT",
+  fetch(`/admin/loai-su-co/${id}`, {
+    method: "PATCH",
     body: formData,
   }).then((res) => {
     if (res.ok) {
@@ -74,7 +82,7 @@ document.getElementById("editFile").onchange = function (e) {
 function deleteSuCo(id) {
   if (!confirm("Bạn có chắc muốn xóa loại sự cố này?")) return;
 
-  fetch(`/admin/loai-su-co/delete/${id}`, {
+  fetch(`/admin/loai-su-co/${id}`, {
     method: "DELETE",
   })
     .then((response) => {

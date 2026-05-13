@@ -86,7 +86,9 @@
                   <button
                     type="button"
                     class="btn-edit"
-                    th:attr="data-id=${item.id}, data-ten=${item.ten}"
+                    th:attr=" data-id=${item.id},
+                              data-ten=${item.ten},
+                              data-icon=${item.iconUrl} "
                     onclick="openEdit(this)"
                   >
                     <i class="fa-solid fa-pen"></i> Sửa

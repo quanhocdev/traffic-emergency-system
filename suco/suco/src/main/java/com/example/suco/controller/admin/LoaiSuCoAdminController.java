@@ -33,9 +33,7 @@ public class LoaiSuCoAdminController {
         return "admin/loai-su-co"; // trỏ tới loai-su-co.html
     }
 
-
-
-@PostMapping("/api/create")
+@PostMapping
 @ResponseBody
 public ResponseEntity<?> createApi(
         @RequestParam String ten,
@@ -45,13 +43,13 @@ public ResponseEntity<?> createApi(
     LoaiSuCo saved = service.createLoaiSuCo(ten, file);
     return ResponseEntity.ok(saved);
 }
-@DeleteMapping("/delete/{id}")
+@DeleteMapping("/{id}")
 @ResponseBody
 public ResponseEntity<?> delete(@PathVariable Long id) {
     service.deleteLoaiSuCo(id);
     return ResponseEntity.ok(Map.of("message", "Xóa thành công"));
 }
-@PutMapping("/api/update/{id}")
+@PatchMapping("/{id}")
 @ResponseBody
 public ResponseEntity<?> updateApi(
         @PathVariable Long id,
