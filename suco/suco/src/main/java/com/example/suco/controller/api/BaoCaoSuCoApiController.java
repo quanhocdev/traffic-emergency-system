@@ -78,7 +78,6 @@ private TinHieuSOSRepository tinHieuSOSRepository; // Thêm dòng này vào đ�
             // Gán người báo cáo là User vừa tìm được
             report.setReporter(user);
 
-            // 3. KIỂM TRA HÌNH ẢNH BẰNG AI (Giữ nguyên logic của bạn)
             AiVerifyResult ai = baoCaoSuCoService.submitReport(uid, report, report.getHinhAnhUrl());
             if (!ai.isValid()) {
 
@@ -114,28 +113,6 @@ public List<SuCoMapDto> getAllForMap() {
     return reportRepository.findAllForMap(); 
 }
 
-
-@GetMapping("/my-reports/me")
-public ResponseEntity<?> getMyReports(@RequestHeader("Authorization") String authHeader) {
-    try {
-        // 1. Giải mã token y hệt các hàm khác của bạn
-        String token = authHeader.replace("Bearer ", "");
-        String uid;
-        if ("dev-token".equals(token)) {
-            uid = "test-user";
-        } else {
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-            uid = decodedToken.getUid();
-        }
-
-        // 2. Lấy dữ liệu
-        // List<SuCoMapDto> myReports = reportRepository.findDtoByReporterUid(uid);
-        List<SuCoMapDto> myReports = baoCaoSuCoService.getMyReports(uid);
-        return ResponseEntity.ok(myReports);
-    } catch (Exception e) {
-        return ResponseEntity.status(401).body("Xác thực thất bại");
-    }
-}
 
 @PostMapping("/cancel/{id}")
 public ResponseEntity<?> cancelReport(
@@ -188,67 +165,6 @@ private SuCoMapDto convertToDto(BaoCaoSuCo b) {
         tenNguoiBao             
     );
 }
- @GetMapping("/all-history")
-public ResponseEntity<?> getLichSuTongHop(
-    @RequestParam(required = false) String uid, 
-    @RequestParam(required = false) String maThietBi,
-    @RequestParam(required = false) String type, // <--- THÊM DÒNG NÀY
-    @RequestHeader("Authorization") String authHeader
-) {
-    try {
-        // 1. Lấy và kiểm tra Token (Giữ nguyên logic của Quân)
-        String token = authHeader.replace("Bearer ", "");
-        String finalUid;
 
-        if ("dev-token".equals(token)) {
-            finalUid = (uid != null && !uid.isEmpty()) ? uid : "test-user";
-        } else {
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-            finalUid = decodedToken.getUid();
-        }
-
-        List<LichSuDto> danhSachHistory = new ArrayList<>();
-
-        // 2. Lọc lấy SỰ CỐ (Chỉ chạy nếu type null hoặc type là SU_CO)
-        if (type == null || type.equalsIgnoreCase("SU_CO")) {
-            List<BaoCaoSuCo> suCoList = reportRepository.findByReporterUid(finalUid);
-            for (BaoCaoSuCo sc : suCoList) {
-                danhSachHistory.add(new LichSuDto(
-                    sc.getId(), "SU_CO",
-                    (sc.getLoaiSuCo() != null) ? sc.getLoaiSuCo().getTen() : "Sự cố",
-                    sc.getMoTa(), sc.getTrangThaiXuLy(), sc.getTrangThaiDuyet(),
-                    sc.getHinhAnhUrl(), sc.getViDo(), sc.getKinhDo(), null,
-                    sc.getIdTruSoTiepNhan() != null ? "Trụ sở đã tiếp nhận" : "Đang chờ điều phối",
-                    sc.getThoiGianTao() != null ? sc.getThoiGianTao().toString() : "",
-                    sc.getDiaChi(), null 
-                ));
-            }
-        }
-
-        // 3. Lọc lấy SOS (Chỉ chạy nếu type null hoặc type là SOS)
-        if (type == null || type.equalsIgnoreCase("SOS")) {
-            List<TinHieuSOS> sosList = tinHieuSOSRepository.findByUserUid(finalUid);
-            for (TinHieuSOS s : sosList) {
-                HoaDon hd = hoaDonRepository.findFirstBySosIdOrderByIdDesc(s.getId()).orElse(null);
-                danhSachHistory.add(new LichSuDto(
-                    s.getId(), "SOS", "Yêu cầu cứu hộ khẩn cấp",
-                    s.getGhiChu(), s.getTrangThai(), "VERIFIED",
-                    s.getHinhAnh(), s.getViDo(), s.getKinhDo(), s.getGhiAm(),
-                    s.getIdTruSoTiepNhan() != null ? "Lực lượng đang đến" : "Đang tìm trụ sở gần nhất",
-                    s.getCreatedAt() != null ? s.getCreatedAt().toString() : "",
-                    s.getDiaChi(), hd
-                ));
-            }
-        }
-
-        // 4. Sắp xếp (Giữ nguyên)
-        danhSachHistory.sort((a, b) -> b.getId().compareTo(a.getId()));
-
-        return ResponseEntity.ok(danhSachHistory);
-
-    } catch (Exception e) {
-        return ResponseEntity.status(401).body(Map.of("message", "Xác thực thất bại: " + e.getMessage()));
-    }
-}
 
 }
