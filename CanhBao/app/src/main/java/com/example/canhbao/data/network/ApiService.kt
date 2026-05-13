@@ -36,6 +36,11 @@ interface BaoCaoSuCoApi {
         @Header("Authorization") token: String,
         @Body request: BaoCaoSuCoRequest
     ): Response<AiVerifyResponse>
+    @POST("/api/su-co/cancel/{id}")
+    suspend fun cancelSuCo(
+        @Header("Authorization") token: String,
+        @Path("id") id: Long
+    ): Response<Map<String, Any>>
 
     @GET("/api/su-co/map-data") // Đổi từ /api/map/su-co thành /api/su-co/map-data
     suspend fun getSuCoForMap(): List<SuCoMapDto>
@@ -53,31 +58,19 @@ interface BaoCaoSuCoApi {
         @Body request: TinHieuSOSRequest
     ): Response<Map<String, Any>>
 
-    @GET("/api/su-co/my-reports/{uid}")
-    suspend fun getMyReports(
-        @Path("uid") uid: String
-    ): List<SuCoMapDto>
 
     @GET("/api/auth/me")
     suspend fun getUserInfo(
         @Header("Authorization") token: String
     ): SuCoUserDto
 
-//    @GET("/api/auth/{uid}")
-//    suspend fun getUserInfo(
-//        @Path("uid") uid: String
-//    ): SuCoUserDto
 
-    @GET("/api/su-co/all-history")
+    @GET("/api/lich-su/all")
     suspend fun getAllHistory(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
+        @Query("type") type: String? = null
     ): List<LichSuDto>
 
-    @POST("/api/su-co/cancel/{id}")
-    suspend fun cancelSuCo(
-        @Header("Authorization") token: String,
-        @Path("id") id: Long
-    ): Response<Map<String, Any>>
 
     @POST("/api/tin-hieu-sos/cancel/{id}")
     suspend fun cancelSOS(
