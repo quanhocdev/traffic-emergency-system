@@ -1,3 +1,4 @@
+// Mở modal chỉnh sửa
 function openEdit(btn) {
   const id = btn.getAttribute("data-id");
   const ten = btn.getAttribute("data-ten");
@@ -11,17 +12,34 @@ function openEdit(btn) {
 function closeEdit() {
   document.getElementById("editModal").style.display = "none";
 }
-function toggleSidebar() {
-  const sidebar = document.getElementById("sidebar");
-  const icon = document.getElementById("toggle-icon");
-  sidebar.classList.toggle("collapsed");
 
-  if (sidebar.classList.contains("collapsed")) {
-    icon.classList.replace("fa-chevron-left", "fa-chevron-right");
-  } else {
-    icon.classList.replace("fa-chevron-right", "fa-chevron-left");
-  }
-}
+// Xử lý submit form tạo mới
+document.getElementById("createForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+
+  fetch("/admin/loai-su-co/api/create", {
+    method: "POST",
+    body: formData,
+  })
+    .then((res) => {
+      if (res.ok) {
+        alert("Tạo thành công!");
+        location.reload();
+      } else {
+        return res.json().then((data) => {
+          alert(data.message || "Có lỗi xảy ra");
+        });
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      alert("Lỗi kết nối server");
+    });
+});
+
+// Xử lý submit form chỉnh sửa
 function submitEdit() {
   const id = document.getElementById("editId").value;
   const ten = document.getElementById("editTen").value;
@@ -51,6 +69,8 @@ document.getElementById("editFile").onchange = function (e) {
     img.style.display = "block";
   }
 };
+
+// Xử lý xóa
 function deleteSuCo(id) {
   if (!confirm("Bạn có chắc muốn xóa loại sự cố này?")) return;
 

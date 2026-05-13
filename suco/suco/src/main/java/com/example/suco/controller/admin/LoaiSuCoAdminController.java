@@ -33,37 +33,7 @@ public class LoaiSuCoAdminController {
         return "admin/loai-su-co"; // trỏ tới loai-su-co.html
     }
 
-  @PostMapping("/create")
-public String create(@RequestParam String ten,
-                     @RequestParam(value = "iconFile", required = false) MultipartFile file) throws IOException {
-    
-    LoaiSuCo l = new LoaiSuCo();
-    l.setTen(ten);
 
-    if (file != null && !file.isEmpty()) {
-        System.out.println("Nhận được file: " + file.getOriginalFilename()); // Kiểm tra log này
-        
-        String filename = file.getOriginalFilename();
-        // Dùng đường dẫn tuyệt đối để tránh lỗi FileNotFound
-        String uploadDir = System.getProperty("user.dir") + "/uploads/icons/";
-        Path uploadPath = Paths.get(uploadDir);
-
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
-        Files.copy(file.getInputStream(), uploadPath.resolve(filename), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-        
-        // Gán giá trị vào object trước khi lưu
-        l.setIconUrl("/uploads/icons/" + filename);
-        System.out.println("Đã gán iconUrl: " + l.getIconUrl());
-    } else {
-        System.out.println("File bị null hoặc trống!");
-    }
-
-    service.createLoaiSuCo(ten, file);
-    return "redirect:/admin/loai-su-co";
-}
 
 @PostMapping("/api/create")
 @ResponseBody
