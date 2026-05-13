@@ -53,7 +53,7 @@ private TinHieuSOSRepository tinHieuSOSRepository; // Thêm dòng này vào đ�
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @PostMapping("/submit")
+    @PostMapping
     public ResponseEntity<AiRejectResponse> submitReport(
             @RequestHeader("Authorization") String authHeader,
             @Valid @RequestBody BaoCaoSuCo report
@@ -114,7 +114,7 @@ public List<SuCoMapDto> getAllForMap() {
 }
 
 
-@PostMapping("/cancel/{id}")
+@PatchMapping("/{id}")
 public ResponseEntity<?> cancelReport(
         @RequestHeader("Authorization") String authHeader,
         @PathVariable Long id
