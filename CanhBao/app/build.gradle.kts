@@ -24,6 +24,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField(
             "String",
+            "BASE_IP",
+            "\"${localProperties.getProperty("BASE_IP") ?: "192.168.1.13"}\""
+        )
+        buildConfigField(
+            "String",
             "MAPBOX_PUBLIC_TOKEN",
             "\"${localProperties.getProperty("MAPBOX_PUBLIC_TOKEN")}\""
         )
