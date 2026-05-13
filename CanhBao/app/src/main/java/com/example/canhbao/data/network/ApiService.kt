@@ -23,6 +23,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -31,12 +32,12 @@ interface BaoCaoSuCoApi {
     @GET("/api/loai-su-co")
     suspend fun getAllLoaiSuCo(): List<LoaiSuCo>
 
-    @POST("/api/su-co/submit")
+    @POST("/api/su-co")
     suspend fun submitReport(
         @Header("Authorization") token: String,
         @Body request: BaoCaoSuCoRequest
     ): Response<AiVerifyResponse>
-    @POST("/api/su-co/cancel/{id}")
+    @PATCH("/api/su-co/{id}")
     suspend fun cancelSuCo(
         @Header("Authorization") token: String,
         @Path("id") id: Long
