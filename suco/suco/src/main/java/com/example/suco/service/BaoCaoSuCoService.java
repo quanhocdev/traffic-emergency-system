@@ -225,10 +225,6 @@ public List<SuCoMapDto> getMyReports(String uid) {
             result.setDistance(matchedDistance);
             return result;
             }
-  
-
-            
-
             // Lưu user góp
             baoCaoTrungLapRepository.save(
                     new BaoCaoTrungLap(existingReport, currentUserId));

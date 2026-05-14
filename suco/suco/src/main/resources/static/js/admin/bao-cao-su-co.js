@@ -1,7 +1,7 @@
 // --- KHỞI TẠO WEBSOCKET ---
 const socket = new SockJS("/ws-suco");
 const stompClient = Stomp.over(socket);
-
+const cameraLoaded = new Set();
 stompClient.connect({}, function (frame) {
   console.log("Connected to WebSocket");
 
@@ -120,6 +120,7 @@ function renderNewRow(suCoDto) {
   // Chèn lên đầu bảng
   tableBody.insertBefore(row, tableBody.firstChild);
 
+  cameraLoaded.delete(suCoDto.id);
   // Sau khi chèn xong, quét camera cho dòng này luôn
   loadNearbyCameras(suCoDto.id);
 }
@@ -184,9 +185,6 @@ function renderNewCard(suCoDto) {
     `;
 
   slider.insertBefore(card, slider.firstChild);
-
-  // Bây giờ gọi cái này mới thực sự có tác dụng
-  loadNearbyCameras(suCoDto.id);
   updateSliderVisibility();
 }
 
@@ -317,6 +315,10 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 async function loadNearbyCameras(reportId) {
+  if (cameraLoaded.has(reportId)) {
+    return;
+  }
+  cameraLoaded.add(reportId);
   // 1. Tìm tọa độ từ Card Duyệt nhanh hoặc Dòng trong bảng
   const sourceElement =
     document.getElementById("pending-report-" + reportId) ||

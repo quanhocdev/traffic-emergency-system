@@ -75,40 +75,41 @@ public List<Object> getSuCoForMap(@RequestParam(value = "idTruSo", required = fa
 
     return result;
 }
+
     // API 1: Lấy danh sách việc cần làm (Chờ xử lý + Đang xử lý)
-@GetMapping("/su-co/danh-sach-hien-tai")
-@ResponseBody
-public List<SuCoMapDto> getSuCoHienTai(
-        @RequestParam(required = false) String status, 
-        HttpSession session) {
+// @GetMapping("/su-co/danh-sach-hien-tai")
+// @ResponseBody
+// public List<SuCoMapDto> getSuCoHienTai(
+//         @RequestParam(required = false) String status, 
+//         HttpSession session) {
         
-    TruSo current = (TruSo) session.getAttribute("currentTruSo");
-    if (current == null) return List.of(); 
+//     TruSo current = (TruSo) session.getAttribute("currentTruSo");
+//     if (current == null) return List.of(); 
 
-    // Lấy tất cả (Chờ + Đang)
-    List<SuCoMapDto> allActive = repo.findActiveByTruSo(current.getId());
+//     // Lấy tất cả (Chờ + Đang)
+//     List<SuCoMapDto> allActive = repo.findActiveByTruSo(current.getId());
 
-    // Nếu có truyền status (ví dụ: "CHO_XU_LY"), thì lọc lại danh sách
-    if (status != null && !status.isEmpty()) {
-        return allActive.stream()
-                .filter(s -> s.getTrangThaiXuLy().equalsIgnoreCase(status))
-                .collect(Collectors.toList());
-    }
+//     // Nếu có truyền status (ví dụ: "CHO_XU_LY"), thì lọc lại danh sách
+//     if (status != null && !status.isEmpty()) {
+//         return allActive.stream()
+//                 .filter(s -> s.getTrangThaiXuLy().equalsIgnoreCase(status))
+//                 .collect(Collectors.toList());
+//     }
 
-    return allActive;
-}
+//     return allActive;
+// }
 
-// API 2: Lấy danh sách lịch sử (Đã hoàn thành)
-@GetMapping("/su-co/lich-su")
-@ResponseBody
-public List<BaoCaoSuCo> getSuCoHistory(HttpSession session) {
-    // Tự động lấy trụ sở từ phiên đăng nhập
-    TruSo current = (TruSo) session.getAttribute("currentTruSo");
-    if (current == null) return List.of();
+// // API 2: Lấy danh sách lịch sử (Đã hoàn thành)
+// @GetMapping("/su-co/lich-su")
+// @ResponseBody
+// public List<BaoCaoSuCo> getSuCoHistory(HttpSession session) {
+//     // Tự động lấy trụ sở từ phiên đăng nhập
+//     TruSo current = (TruSo) session.getAttribute("currentTruSo");
+//     if (current == null) return List.of();
 
-    // Gọi hàm Query lấy lịch sử trong Repo của bạn
-    return repo.findHistoryByTruSo(current.getId());
-}
+//     // Gọi hàm Query lấy lịch sử trong Repo của bạn
+//     return repo.findHistoryByTruSo(current.getId());
+// }
 
     // 2. CẬP NHẬT SOS - Đã sửa Topic đồng nhất
     @PostMapping("/sos/cap-nhat-trang-thai/{id}")
@@ -148,49 +149,8 @@ public List<BaoCaoSuCo> getSuCoHistory(HttpSession session) {
         }).orElse(ResponseEntity.notFound().build());
     }
 
-   @PatchMapping("/su-co/cap-nhat-trang-thai/{id}")
-public ResponseEntity<?> updateSuCoStatus(
-        @PathVariable Long id,
-        @RequestBody Map<String, String> body,
-        HttpSession session
-) {
-    String status = body.get("status");
 
-    TruSo current = (TruSo) session.getAttribute("currentTruSo");
+    // Cập nhật trạng thái sự cố (Chờ xử lý -> Đang xử lý -> Hoàn thành)
 
-    if (current == null) {
-        return ResponseEntity.status(401)
-                .body(Map.of("message", "Vui lòng đăng nhập tài khoản trụ sở!"));
-    }
 
-    Map<String, Object> result =
-            baoCaoSuCoService.updateSuCoStatus(id, status, current);
-
-    return ResponseEntity.ok(result);
-}
-    // 4. CẬP NHẬT MỨC ĐỘ - Đã sửa gửi nguyên Object DTO
-@PatchMapping("/su-co/cap-nhat-muc-do/{id}")
-public ResponseEntity<?> capNhatMucDo(
-        @PathVariable Long id,
-        @RequestBody Map<String, String> body,
-        HttpSession session
-) {
-    String mucDo = body.get("mucDo");
-
-    TruSo current = (TruSo) session.getAttribute("currentTruSo");
-
-    if (current == null) {
-        return ResponseEntity.status(401)
-                .body(Map.of("message", "Vui lòng đăng nhập!"));
-    }
-
-    Map<String, Object> result =
-            baoCaoSuCoService.capNhatMucDo(id, mucDo, current);
-
-    return ResponseEntity.ok(result);
-}
-    // @GetMapping("/su-co/history")
-    // public List<BaoCaoSuCo> getSuCoHistory(@RequestParam Long idTruSo) {
-    //     return repo.findHistoryByTruSo(idTruSo);
-    // }
 }
