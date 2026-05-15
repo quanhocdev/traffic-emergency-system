@@ -66,7 +66,7 @@ public class BaoCaoSuCoApiController {
             report.setReporter(user);
 
             // AiVerifyResult ai = baoCaoSuCoService.submitReport(uid, report, report.getHinhAnhUrl());
-                AiVerifyResult ai = userBaoCaoService.submitReport(uid, report, null);
+                AiVerifyResult ai = userBaoCaoService.submitReport(uid, report, report.getHinhAnhUrl());
             if (!ai.isValid()) {
                 String code = ai.getReason().contains("trước đó") 
                     ? "DUPLICATE" 

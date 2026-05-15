@@ -20,7 +20,7 @@ async function loadHistory() {
   try {
     const [sosRes, sucoRes] = await Promise.all([
       fetch("/api/tin-hieu-sos/history").then((r) => r.json()),
-      fetch("/api/map/su-co/lich-su").then((r) => r.json()),
+      fetch("/su-co/lich-su").then((r) => r.json()),
     ]);
 
     console.log("Dữ liệu Sự cố:", sucoRes);
