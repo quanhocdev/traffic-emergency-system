@@ -788,7 +788,7 @@ function doiTrangThaiSuCo(id, status) {
     btn.innerText = "Đang xử lý...";
   }
 
-  fetch(`/api/map/su-co/cap-nhat-trang-thai/${id}`, {
+  fetch(`/su-co/cap-nhat-trang-thai/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

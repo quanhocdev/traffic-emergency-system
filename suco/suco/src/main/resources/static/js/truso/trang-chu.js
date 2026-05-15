@@ -284,7 +284,7 @@ function updateMucDo(id) {
   const mucDoSelect = document.getElementById(`select-muc-do-${id}`);
   const mucDo = mucDoSelect.value;
 
-  fetch(`/api/map/su-co/cap-nhat-muc-do/${id}?mucDo=${mucDo}`, {
+  fetch(`/su-co/cap-nhat-muc-do/${id}?mucDo=${mucDo}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -472,7 +472,7 @@ function loadExistingSOS() {
 }
 
 function doiTrangThaiSuCo(id, status) {
-  fetch(`/api/map/su-co/cap-nhat-trang-thai/${id}`, {
+  fetch(`/su-co/cap-nhat-trang-thai/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",

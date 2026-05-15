@@ -8,10 +8,8 @@ function fixUrl(path) {
 /*<![CDATA[*/
 var TRUSO_ID = /*[[${session.currentTruSo != null ? session.currentTruSo.id : 0}]]*/ 0;
 /*]]>*/
-// current filter: 'su-co' or 'sos'
-var currentFilter = "su-co";
-// cached combined data (SOS + SuCo) for rendering
-var allData = [];
+let currentFilter = "su-co";
+let allData = [];
 function formatTime(iso) {
   try {
     const d = new Date(iso);
@@ -20,7 +18,6 @@ function formatTime(iso) {
     return iso;
   }
 }
-
 // 1. Sửa hàm render để hiện nút Tạo thanh toán
 function renderRescueItem(sos) {
   // Debug: Kiểm tra ID
@@ -111,7 +108,7 @@ async function completeRescue(id, type) {
     const url =
       type === "SOS"
         ? `/api/tin-hieu-sos/cap-nhat-trang-thai/${id}`
-        : `/api/map/su-co/cap-nhat-trang-thai/${id}`;
+        : `/su-co/cap-nhat-trang-thai/${id}`;
 
     console.log("Calling API:", url);
 
@@ -224,16 +221,34 @@ async function loadActiveRescues() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
 
   try {
-    // CHỈ CẦN 1 LẦN FETCH - Server tự biết TRUSO_ID qua Session
-    const res = await fetch("/api/map/su-co/danh-sach-hien-tai");
-    if (!res.ok) throw new Error("Không thể lấy dữ liệu");
+    const [sosRes, sucoRes] = await Promise.all([
+      fetch("/api/sos-cua-toi"),
+      fetch("/su-co/danh-sach-hien-tai"),
+    ]);
 
-    const data = await res.json();
-    console.log("Dữ liệu SOS Active nhận được:", data);
-    allData = data.map((s) => formatItem(s, "SUCO"));
+    if (!sosRes.ok && !sucoRes.ok) {
+      throw new Error("Không thể lấy dữ liệu đang cứu trợ");
+    }
+
+    const sosData = sosRes.ok ? await sosRes.json() : [];
+    const sucoData = sucoRes.ok ? await sucoRes.json() : [];
+
+    console.log("RAW SOS API:", sosData);
+    console.log("RAW SUCO API:", sucoData);
+
+    const formattedSos = (sosData || []).map((s) => formatItem(s, "SOS"));
+    const formattedSuCo = (sucoData || []).map((s) => formatItem(s, "SUCO"));
+
+    allData = [...formattedSuCo, ...formattedSos].filter(
+      (item, index, arr) =>
+        arr.findIndex(
+          (other) => other.id === item.id && other.itemType === item.itemType,
+        ) === index,
+    );
+
+    console.log("FORMATTED allData:", allData);
 
     renderData();
-    console.log("Dữ liệu đã được cập nhật qua Session.");
   } catch (err) {
     console.error("Lỗi khi tải dữ liệu mới:", err);
   }
@@ -282,23 +297,32 @@ function renderData() {
   let noDataElem = document.getElementById("no-data");
   if (!list) return;
 
-  list.innerHTML = "";
-
+  list.querySelectorAll(".rescue-card").forEach((e) => e.remove());
   let filtered = allData.filter((item) => {
-    if (currentFilter === "sos" && item.itemType !== "SOS") return false;
-    if (currentFilter === "su-co" && item.itemType !== "SUCO") return false;
+    console.log("ITEM:", item);
 
-    const st = String(item.trangThaiXuLy || "").toUpperCase();
+    if (currentFilter) {
+      if (currentFilter === "sos" && item.itemType !== "SOS") {
+        return false;
+      }
 
-    // CHỈ HIỆN những trạng thái đang thực tế diễn ra
-    // DANG_XU_LY: Đang cứu hộ
-    // PENDING: Đã tạo hóa đơn, đang đợi khách trả tiền
-    // Sửa dòng này trong hàm renderData()
+      if (currentFilter === "su-co" && item.itemType !== "SUCO") {
+        return false;
+      }
+    }
+
+    const st = String(item.trangThaiXuLy || "")
+      .toUpperCase()
+      .trim();
+
+    console.log("STATUS:", st);
+
     const activeStates = ["CHO_XU_LY", "DANG_XU_LY", "PENDING"];
 
     return activeStates.includes(st);
   });
-
+  console.log("CURRENT FILTER:", currentFilter);
+  console.log("FILTERED DATA:", filtered);
   // Sắp xếp (giữ nguyên logic của bạn)
   filtered.sort((a, b) => {
     if (a.isVip !== b.isVip) return a.isVip ? -1 : 1;

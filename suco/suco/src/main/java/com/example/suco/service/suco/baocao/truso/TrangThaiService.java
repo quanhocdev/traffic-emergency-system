@@ -15,6 +15,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class TrangThaiService {
@@ -28,30 +30,40 @@ public class TrangThaiService {
     @Autowired
     private BaoCaoRealtimeService realtimeService;
 
+    private static final Logger log =
+        LoggerFactory.getLogger(TrangThaiService.class);
+
     @Transactional
     public Map<String, Object> updateSuCoStatus(
             Long id,
             String status,
             TruSo current
     ) {
-
+        log.info("=== UPDATE STATUS START ===");
+log.info("Report ID: {}", id);
+log.info("Requested status: {}", status);
+log.info("TruSo ID: {}", current != null ? current.getId() : null);
         BaoCaoSuCo suCo = reportRepository.findById(id)
+        
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Không tìm thấy sự cố"
                 ));
-
+                log.info("=== DB STATE ===");
+log.info("CurrentStatus: {}", suCo.getTrangThaiXuLy());
+log.info("CurrentTiepNhanId: {}", suCo.getIdTruSoTiepNhan());
+log.info("Reporter: {}", 
+        suCo.getReporter() != null ? suCo.getReporter().getUid() : null);
         String currentStatus = suCo.getTrangThaiXuLy();
         Long currentTiepNhanId = suCo.getIdTruSoTiepNhan();
 
         if (status == null || status.trim().isEmpty()) {
-
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Status không được để trống"
             );
         }
-
+        
         List<String> valid = List.of(
                 "CHO_XU_LY",
                 "DANG_XU_LY",
@@ -66,7 +78,6 @@ public class TrangThaiService {
                     "Trạng thái không hợp lệ"
             );
         }
-
         if ("HOAN_THANH".equals(currentStatus)
                 || "HUY_BO".equals(currentStatus)) {
 
@@ -103,7 +114,7 @@ public class TrangThaiService {
             }
 
             suCo.setIdTruSoTiepNhan(current.getId());
-            suCo.setIdTruSoDeXuat(null);
+            
         }
 
         else if ("HOAN_THANH".equals(status)) {
@@ -169,7 +180,6 @@ public class TrangThaiService {
                 status
         );
     }
-
     @Transactional
     public void updateProcessStatus(
             Long reportId,
