@@ -2,8 +2,8 @@ package com.example.suco.service.suco.baocao.system.validation;
 
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.BaoCaoTrungLap;
-import com.example.suco.repository.BaoCaoSuCoRepository;
 import com.example.suco.repository.BaoCaoTrungLapRepository;
+import com.example.suco.repository.BaoCaoSuCoRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

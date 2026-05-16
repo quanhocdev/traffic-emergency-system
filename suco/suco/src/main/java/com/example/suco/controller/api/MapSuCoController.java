@@ -1,23 +1,14 @@
 package com.example.suco.controller.api;
 
-import com.example.suco.dto.SuCoMapDto;
-import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TinHieuSOS;
-import com.example.suco.model.TruSo;
 import com.example.suco.repository.BaoCaoSuCoRepository;
 import com.example.suco.repository.TinHieuSOSRepository;
 import com.example.suco.service.DieuPhoiSOSService;
-import com.example.suco.service.BaoCaoSuCoService;
-
-import jakarta.servlet.http.HttpSession;
-
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,9 +16,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/map")
 public class MapSuCoController {
-
-    @Autowired
-    private BaoCaoSuCoService baoCaoSuCoService;
 
     @Autowired
     private BaoCaoSuCoRepository repo;
@@ -41,12 +29,8 @@ public class MapSuCoController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    @Autowired
-    private com.example.suco.mapper.SuCoMapDtoMapper suCoMapDtoMapper;
-
-    // 1. Lấy danh sách sự cố
     @GetMapping("/su-co")
-public List<Object> getSuCoForMap(@RequestParam(value = "idTruSo", required = false) Long idTruSo) {
+    public List<Object> getSuCoForMap(@RequestParam(value = "idTruSo", required = false) Long idTruSo) {
 
     List<Object> result = new ArrayList<>();
 
@@ -74,15 +58,13 @@ public List<Object> getSuCoForMap(@RequestParam(value = "idTruSo", required = fa
     result.addAll(sosList);
 
     return result;
-}
+    }
 
 
-    // 2. CẬP NHẬT SOS - Đã sửa Topic đồng nhất
     @PostMapping("/sos/cap-nhat-trang-thai/{id}")
     public ResponseEntity<?> updateSosStatus(@PathVariable Long id, @RequestParam String status, @RequestParam(required = false) Long idTruSo) {
         return tinHieuSOSRepository.findById(id).map(sos -> {
             sos.setTrangThai(status);
-            
             if ("DANG_XU_LY".equals(status)) {
                 Long idTruSoTiepNhan = idTruSo != null ? idTruSo : sos.getIdTruSoDeXuat();
                 sos.setIdTruSoTiepNhan(idTruSoTiepNhan);
@@ -114,6 +96,4 @@ public List<Object> getSuCoForMap(@RequestParam(value = "idTruSo", required = fa
             return ResponseEntity.ok(Map.of("message", "Cập nhật thành công", "status", status));
         }).orElse(ResponseEntity.notFound().build());
     }
-
-
 }

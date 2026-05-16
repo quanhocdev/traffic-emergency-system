@@ -24,17 +24,14 @@ import com.example.suco.dto.SuCoMapDto;
 import com.example.suco.mapper.SuCoMapDtoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
-import com.example.suco.repository.BaoCaoSuCoRepository;
 import com.example.suco.repository.LoaiSuCoRepository;
 import com.example.suco.repository.SpamRepository;
-import com.example.suco.service.BaoCaoSuCoService;
+import com.example.suco.repository.BaoCaoSuCoRepository;
 
 @Controller
 @RequestMapping("/admin/bao-cao-su-co")
 public class BaoCaoSuCoAdminController {
 
-    @Autowired
-    private BaoCaoSuCoService reportService;
 
     @Autowired
     private BaoCaoSuCoRepository reportRepository;

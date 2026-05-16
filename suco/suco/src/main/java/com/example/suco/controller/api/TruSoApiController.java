@@ -16,7 +16,6 @@ public class TruSoApiController {
     @Autowired
     private TruSoService truSoService;
 
-    // App Android sẽ gọi link: http://ip-cua-ban:8080/api/tru-so/all
     @GetMapping("/all")
     public List<TruSoMapDto> getAllTruSo() {
         return truSoService.getAllTruSoForMap();
