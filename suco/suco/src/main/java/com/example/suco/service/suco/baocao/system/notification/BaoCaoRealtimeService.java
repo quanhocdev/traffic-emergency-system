@@ -1,4 +1,4 @@
-package com.example.suco.service.suco.baocao.system.realtime;
+package com.example.suco.service.suco.baocao.system.notification;
 
 import com.example.suco.dto.SuCoMapDto;
 
