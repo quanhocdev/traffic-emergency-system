@@ -203,7 +203,7 @@ async function submitPayment(e) {
         // Cập nhật dữ liệu để renderData() nhận diện được
         allData[idx].hoaDon = hoaDonMoi;
         // Ép trạng thái về PENDING để logic hiển thị nút "Đang đợi trả tiền" kích hoạt
-        allData[idx].trangThaiXuLy = "PENDING";
+        //allData[idx].trangThaiXuLy = "PENDING";
 
         console.log("Cập nhật Local thành công cho đơn #" + currentSosId);
         renderData(); // Vẽ lại giao diện ngay lập tức
@@ -218,20 +218,18 @@ async function submitPayment(e) {
 }
 
 async function loadActiveRescues() {
-  if (!TRUSO_ID || TRUSO_ID === 0) return;
-
   try {
     const [sosRes, sucoRes] = await Promise.all([
-      fetch("/api/sos-cua-toi"),
+      fetch("/truso/api/sos-cua-toi"),
       fetch("/su-co/danh-sach-hien-tai"),
     ]);
 
-    if (!sosRes.ok && !sucoRes.ok) {
+    if (!sosRes.ok || !sucoRes.ok) {
       throw new Error("Không thể lấy dữ liệu đang cứu trợ");
     }
 
-    const sosData = sosRes.ok ? await sosRes.json() : [];
-    const sucoData = sucoRes.ok ? await sucoRes.json() : [];
+    const sosData = await sosRes.json();
+    const sucoData = await sucoRes.json();
 
     console.log("RAW SOS API:", sosData);
     console.log("RAW SUCO API:", sucoData);
@@ -278,35 +276,39 @@ function formatItem(s, type) {
     _raw: s,
   };
 }
+// function filterType(type) {
+//   currentFilter = type;
+//   const btnSuCo = document.getElementById("btn-filter-su-co");
+//   const btnSOS = document.getElementById("btn-filter-sos");
+//   if (type === "su-co") {
+//     btnSuCo.classList.add("active");
+//     btnSOS.classList.remove("active");
+//   } else {
+//     btnSOS.classList.add("active");
+//     btnSuCo.classList.remove("active");
+//   }
+//   renderData();
+// }
 function filterType(type) {
   currentFilter = type;
-  const btnSuCo = document.getElementById("btn-filter-su-co");
-  const btnSOS = document.getElementById("btn-filter-sos");
-  if (type === "su-co") {
-    btnSuCo.classList.add("active");
-    btnSOS.classList.remove("active");
-  } else {
-    btnSOS.classList.add("active");
-    btnSuCo.classList.remove("active");
-  }
   renderData();
 }
 
 function renderData() {
   const list = document.getElementById("rescue-list");
-  let noDataElem = document.getElementById("no-data");
   if (!list) return;
 
-  list.querySelectorAll(".rescue-card").forEach((e) => e.remove());
+  // Xóa sạch trước khi render
+  list.innerHTML = "";
+
   let filtered = allData.filter((item) => {
-    console.log("ITEM:", item);
-
     if (currentFilter) {
-      if (currentFilter === "sos" && item.itemType !== "SOS") {
-        return false;
-      }
+      const map = {
+        sos: "SOS",
+        "su-co": "SUCO",
+      };
 
-      if (currentFilter === "su-co" && item.itemType !== "SUCO") {
+      if (item.itemType !== map[currentFilter]) {
         return false;
       }
     }
@@ -315,37 +317,28 @@ function renderData() {
       .toUpperCase()
       .trim();
 
-    console.log("STATUS:", st);
-
-    const activeStates = ["CHO_XU_LY", "DANG_XU_LY", "PENDING"];
-
-    return activeStates.includes(st);
+    return ["CHO_XU_LY", "DANG_XU_LY"].includes(st);
   });
-  console.log("CURRENT FILTER:", currentFilter);
-  console.log("FILTERED DATA:", filtered);
-  // Sắp xếp (giữ nguyên logic của bạn)
+
   filtered.sort((a, b) => {
     if (a.isVip !== b.isVip) return a.isVip ? -1 : 1;
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
   if (filtered.length === 0) {
-    // Kiểm tra an toàn trước khi dùng .style
-    if (noDataElem) {
-      noDataElem.style.display = "block";
-      list.appendChild(noDataElem);
-    } else {
-      // Nếu lỡ bị xóa mất thì tạo lại nhanh
-      list.innerHTML = `<div class="alert alert-secondary py-4" id="no-data">Hiện không có cứu trợ đang diễn ra.</div>`;
-    }
-  } else {
-    if (noDataElem) noDataElem.style.display = "none";
-    filtered.forEach((it) => {
-      const wrapper = document.createElement("div");
-      wrapper.innerHTML = renderRescueItem(it);
-      list.appendChild(wrapper.firstElementChild);
-    });
+    list.innerHTML = `
+      <div class="alert alert-secondary py-4">
+        Hiện không có cứu trợ đang diễn ra.
+      </div>
+    `;
+    return;
   }
+
+  filtered.forEach((it) => {
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = renderRescueItem(it);
+    list.appendChild(wrapper.firstElementChild);
+  });
 }
 
 function openDetailFromRow(id) {

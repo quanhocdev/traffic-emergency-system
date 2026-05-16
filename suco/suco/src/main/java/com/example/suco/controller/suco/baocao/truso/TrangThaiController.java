@@ -4,6 +4,7 @@ import com.example.suco.dto.SuCoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.BaoCaoSuCoRepository;
+import com.example.suco.service.suco.baocao.system.mapper.SuCoMapper;
 import com.example.suco.service.suco.baocao.truso.TrangThaiService;
 
 import jakarta.servlet.http.HttpSession;
@@ -17,37 +18,42 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping
+@RequestMapping("/su-co")
 public class TrangThaiController {
 
     @Autowired
     private BaoCaoSuCoRepository repo;
 
     @Autowired
+private SuCoMapper suCoMapper;
+
+    @Autowired
     private TrangThaiService trangThaiServiceService;
+@GetMapping("/danh-sach-hien-tai")
+public List<SuCoMapDto> getSuCoHienTai(
+        @RequestParam(required = false) String status,
+        HttpSession session) {
 
-    @GetMapping("/su-co/danh-sach-hien-tai")
-    public List<SuCoMapDto> getSuCoHienTai(
-            @RequestParam(required = false) String status,
-            HttpSession session) {
+    TruSo current = (TruSo) session.getAttribute("currentTruSo");
+    if (current == null) return List.of();
 
-        TruSo current = (TruSo) session.getAttribute("currentTruSo");
-        if (current == null) return List.of();
+    List<BaoCaoSuCo> entities = repo.findAll();
 
-        List<SuCoMapDto> allActive =
-                repo.findActiveByTruSo(current.getId());
+    List<SuCoMapDto> allActive = entities.stream()
+            .map(suCoMapper::convertToDto)
+            .toList();
 
-        if (status != null && !status.isEmpty()) {
-            return allActive.stream()
-                    .filter(s -> s.getTrangThaiXuLy() != null
-                            && s.getTrangThaiXuLy().equalsIgnoreCase(status))
-                    .collect(Collectors.toList());
-        }
-        return allActive;
+    if (status != null && !status.isEmpty()) {
+        return allActive.stream()
+                .filter(s -> s.getTrangThaiXuLy() != null
+                        && s.getTrangThaiXuLy().equalsIgnoreCase(status))
+                .toList();
     }
 
+    return allActive;
+}
   
-    @GetMapping("/su-co/lich-su")
+    @GetMapping("/lich-su")
     public List<BaoCaoSuCo> getSuCoHistory(HttpSession session) {
 
         TruSo current = (TruSo) session.getAttribute("currentTruSo");
@@ -56,7 +62,7 @@ public class TrangThaiController {
         return repo.findHistoryByTruSo(current.getId());
     }
 
-    @PatchMapping("/su-co/cap-nhat-trang-thai/{id}")
+    @PatchMapping("/cap-nhat-trang-thai/{id}")
     public ResponseEntity<?> updateSuCoStatus(
             @PathVariable Long id,
             @RequestBody Map<String, String> body,
