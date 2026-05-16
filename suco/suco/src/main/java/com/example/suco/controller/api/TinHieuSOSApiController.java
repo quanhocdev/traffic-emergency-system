@@ -26,9 +26,6 @@
         public class TinHieuSOSApiController {
 
             @Autowired
-            private com.example.suco.util.GeocodingUtil geocodingUtil;
-
-            @Autowired
             private TinHieuSOSService tinHieuSOSService;
 
             @Autowired
@@ -43,8 +40,6 @@
             @Autowired
         private MuaGoiRepository muaGoiRepository; 
 
-        @Autowired
-    private com.example.suco.repository.HoaDonRepository hoaDonRepository;
 
 @PostMapping("/submit")
 public ResponseEntity<?> tiepNhanTinHieu(
@@ -106,116 +101,6 @@ public ResponseEntity<?> getSosActive(
     return ResponseEntity.ok(list);
 }
 
-    @PostMapping("/cap-nhat-trang-thai/{id}")
-    public ResponseEntity<?> updateStatus(
-            @PathVariable Long id,
-            @RequestParam("status") String status,
-            HttpSession session
-    ) {
-        TruSo current = (TruSo) session.getAttribute("currentTruSo");
-        if (current == null) {
-            return ResponseEntity.status(401).body("Chưa đăng nhập");
-        }
-
-        // ✅ FIX 1: clean status triệt để
-        if (status != null) {
-            status = status.split(",")[0].trim();
-        }
-
-        Optional<TinHieuSOS> sosOpt = tinHieuSOSRepository.findById(id);
-
-        if (sosOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        TinHieuSOS sos = sosOpt.get();
-        String currentStatus = sos.getTrangThai();
-
-// ❌ CHẶN nhảy cóc trạng thái
-if (!isValidTransition(currentStatus, status)) {
-    return ResponseEntity.badRequest().body(
-        Map.of("error", "Chuyển trạng thái không hợp lệ từ " + currentStatus + " sang " + status)
-    );
-}
-if ("HOAN_THANH".equals(status) && sos.getIdTruSoTiepNhan() == null) {
-    return ResponseEntity.badRequest().body(
-        Map.of("error", "Chưa có trụ sở tiếp nhận nên không thể hoàn thành")
-    );
-}
-if ("HOAN_THANH".equals(currentStatus) || "HUY_BO".equals(currentStatus)) {
-    return ResponseEntity.badRequest().body(
-        Map.of("error", "SOS đã kết thúc, không thể cập nhật")
-    );
-}
-
-        // =========================
-        // XỬ LÝ DANG_XU_LY
-        // =========================
-        if ("DANG_XU_LY".equals(status)) {
-
-            Optional<ThongTinDieuPhoi> dpOpt = dieuPhoiService.layThongTinDieuPhoi(id);
-
-            // ❌ Không thuộc danh sách điều phối
-            if (dpOpt.isEmpty() ||
-                !dpOpt.get().getDanhSachIdTruSo().contains(current.getId())) {
-
-                return ResponseEntity.badRequest().body(
-                    Map.of("error", "SOS này không thuộc về trụ sở của bạn")
-                );
-            }
-
-            sos.setIdTruSoTiepNhan(current.getId());
-
-            // đánh dấu đã nhận
-            dieuPhoiService.danhDauDaTiepNhan(id, current.getId());
-        }
-        // CHỈ check quyền với HOAN_THANH
-if ("HOAN_THANH".equals(status)) {
-
-    if (sos.getIdTruSoTiepNhan() == null ||
-        !sos.getIdTruSoTiepNhan().equals(current.getId())) {
-
-        return ResponseEntity.status(403).body(
-            Map.of("error", "Chỉ trụ sở tiếp nhận mới được hoàn thành SOS")
-        );
-    }
-}
-
-        // =========================
-        // SET STATUS
-        // =========================
-        sos.setTrangThai(status);
-
-        // =========================
-        // HỦY ĐIỀU PHỐI nếu kết thúc
-        // =========================
-        if ("HOAN_THANH".equals(status) || "HUY_BO".equals(status)) {
-            dieuPhoiService.huyDieuPhoi(id);
-        }
-
-        tinHieuSOSRepository.save(sos);
-
-        // =========================
-        // REALTIME
-        // =========================
-        Long targetTruSo = sos.getIdTruSoTiepNhan() != null
-                ? sos.getIdTruSoTiepNhan()
-                : current.getId();
-
-        messagingTemplate.convertAndSend(
-            "/topic/truso/" + targetTruSo,
-            sos
-        );
-
-        // =========================
-        // RESPONSE
-        // =========================
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Cập nhật thành công");
-        response.put("status", status);
-
-        return ResponseEntity.ok(response);
-    }
             private String layThongDiepTrangThai(String trangThai) {
                 switch (trangThai) {
                     case "DANG_XU_LY": return "Lực lượng cứu hộ đang đến!";
