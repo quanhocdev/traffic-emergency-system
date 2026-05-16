@@ -1,8 +1,9 @@
-package com.example.suco.controller.api;
+package com.example.suco.controller.suco.loai.user;
 
 import com.example.suco.model.LoaiSuCo;
 import com.example.suco.service.suco.loai.LoaiSuCoService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,16 +12,12 @@ import java.util.List;
 @RequestMapping("/api/loai-su-co")
 public class LoaiSuCoApiController {
 
-    private final LoaiSuCoService service;
+    @Autowired
+    private LoaiSuCoService loaiSuCo;
 
-    public LoaiSuCoApiController(LoaiSuCoService service) {
-        this.service = service;
-    }
-
-    // Android lấy danh sách loại sự cố
     @GetMapping
     public List<LoaiSuCo> getAll() {
-        return service.getLoaiSuCo();
+        return loaiSuCo.getLoaiSuCo();
     }
     
 }
