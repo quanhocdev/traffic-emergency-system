@@ -433,7 +433,7 @@ function addSOSMarker(item, type = "SOS") {
 }
 function doiTrangThai(id, status) {
   const url = `/api/map/sos/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${idTruSo}`;
-  fetch(url, { method: "POST" }).then((res) => {
+  fetch(url, { method: "PATCH" }).then((res) => {
     if (res.ok) {
       const markerKey = "SOS_" + id;
       if (activeMarkers[markerKey]) {

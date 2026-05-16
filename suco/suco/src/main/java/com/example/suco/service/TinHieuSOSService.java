@@ -86,7 +86,7 @@ boolean laVip = listGoi.stream()
 log.info("VIP STATUS = {}", laVip);
 
 sosDaLuu.setIsVip(laVip);
-// 5. Khởi tạo luồng điều phối (Cần ID đã lưu)
+// 5. Khởi tạo luồng điều phối (Cần ID đã lưu)ádasdasd
         ThongTinDieuPhoi thongTinDieuPhoi = dieuPhoiService.khoiTaoDieuPhoi(sosDaLuu);
 
         TruSo truSoGanNhat = null;

@@ -74,7 +74,7 @@ String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$";
 // - hoặc có nhập password mới
 if (truSo.getId() == null || (password != null && !password.isBlank())) {
     if (password == null || !password.matches(regex)) {
-        throw new RuntimeException("Mật khẩu phải >=8 ký tự, gồm hoa, thường, số và ký tự đặc biệt");
+        throw new RuntimeException("Mật khẩu phải lớn hơn hoặc bằng 8 ký tự, gồm hoa, thường, số và ký tự đặc biệt");
     }
 }
         TruSo saved;

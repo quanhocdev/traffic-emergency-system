@@ -32,7 +32,7 @@ if (sos.getIdTruSoTiepNhan() == null) {
     throw new RuntimeException("SOS chưa được tiếp nhận");
 }
 
-// ✅ sai trụ sở
+// ✅ sai trụ slkasflasfjaslk
 if (!sos.getIdTruSoTiepNhan().equals(trusoId)) {
     throw new RuntimeException("SOS này không thuộc trụ sở của bạn");
 }
