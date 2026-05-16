@@ -5,7 +5,7 @@ import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.BaoCaoSuCoRepository;
 import com.example.suco.service.suco.baocao.system.mapper.SuCoMapper;
-import com.example.suco.service.suco.baocao.system.realtime.BaoCaoRealtimeService;
+import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.validation.QuyenHanService;
 
 import org.slf4j.Logger;

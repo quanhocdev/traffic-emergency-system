@@ -5,7 +5,7 @@ import com.example.suco.service.AiVerifyResult;
 import com.example.suco.service.suco.baocao.system.file.ImageStorageService;
 import com.example.suco.service.suco.baocao.system.location.GeocodingService;
 import com.example.suco.service.suco.baocao.system.mapper.SuCoMapper;
-import com.example.suco.service.suco.baocao.system.realtime.BaoCaoRealtimeService;
+import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.reward.UserRewardService;
 import com.example.suco.service.suco.baocao.system.validation.AiVerificationService;
 import com.example.suco.service.suco.baocao.system.validation.QuyenHanService;

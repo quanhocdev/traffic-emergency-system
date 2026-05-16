@@ -10,7 +10,8 @@ import com.example.suco.repository.BaoCaoSuCoRepository;
 import com.example.suco.service.TruSoService;
 import com.example.suco.service.suco.baocao.system.file.ImageStorageService;
 import com.example.suco.service.suco.baocao.system.mapper.SuCoMapper;
-import com.example.suco.service.suco.baocao.system.realtime.BaoCaoRealtimeService;
+import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
