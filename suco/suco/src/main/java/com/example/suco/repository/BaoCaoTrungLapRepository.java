@@ -13,6 +13,6 @@ public interface BaoCaoTrungLapRepository extends JpaRepository<BaoCaoTrungLap, 
     // Check user đã từng góp tin cậy chưa
     boolean existsByBaoCao_IdAndUserId(Long baoCaoId, String userId);
     @Query("SELECT COUNT(b) FROM BaoCaoTrungLap b WHERE b.baoCao.id = :baoCaoId")
-int countByBaoCaoId(@Param("baoCaoId") Long baoCaoId);
+    int countByBaoCaoId(@Param("baoCaoId") Long baoCaoId);
 
 }

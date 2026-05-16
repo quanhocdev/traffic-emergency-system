@@ -1,7 +1,8 @@
 package com.example.suco.controller.api;
 
 import com.example.suco.model.LoaiSuCo;
-import com.example.suco.service.LoaiSuCoService;
+import com.example.suco.service.suco.loai.LoaiSuCoService;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
