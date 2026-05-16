@@ -76,40 +76,6 @@ public List<Object> getSuCoForMap(@RequestParam(value = "idTruSo", required = fa
     return result;
 }
 
-    // API 1: Lấy danh sách việc cần làm (Chờ xử lý + Đang xử lý)
-// @GetMapping("/su-co/danh-sach-hien-tai")
-// @ResponseBody
-// public List<SuCoMapDto> getSuCoHienTai(
-//         @RequestParam(required = false) String status, 
-//         HttpSession session) {
-        
-//     TruSo current = (TruSo) session.getAttribute("currentTruSo");
-//     if (current == null) return List.of(); 
-
-//     // Lấy tất cả (Chờ + Đang)
-//     List<SuCoMapDto> allActive = repo.findActiveByTruSo(current.getId());
-
-//     // Nếu có truyền status (ví dụ: "CHO_XU_LY"), thì lọc lại danh sách
-//     if (status != null && !status.isEmpty()) {
-//         return allActive.stream()
-//                 .filter(s -> s.getTrangThaiXuLy().equalsIgnoreCase(status))
-//                 .collect(Collectors.toList());
-//     }
-
-//     return allActive;
-// }
-
-// // API 2: Lấy danh sách lịch sử (Đã hoàn thành)
-// @GetMapping("/su-co/lich-su")
-// @ResponseBody
-// public List<BaoCaoSuCo> getSuCoHistory(HttpSession session) {
-//     // Tự động lấy trụ sở từ phiên đăng nhập
-//     TruSo current = (TruSo) session.getAttribute("currentTruSo");
-//     if (current == null) return List.of();
-
-//     // Gọi hàm Query lấy lịch sử trong Repo của bạn
-//     return repo.findHistoryByTruSo(current.getId());
-// }
 
     // 2. CẬP NHẬT SOS - Đã sửa Topic đồng nhất
     @PostMapping("/sos/cap-nhat-trang-thai/{id}")
@@ -148,9 +114,6 @@ public List<Object> getSuCoForMap(@RequestParam(value = "idTruSo", required = fa
             return ResponseEntity.ok(Map.of("message", "Cập nhật thành công", "status", status));
         }).orElse(ResponseEntity.notFound().build());
     }
-
-
-    // Cập nhật trạng thái sự cố (Chờ xử lý -> Đang xử lý -> Hoàn thành)
 
 
 }
