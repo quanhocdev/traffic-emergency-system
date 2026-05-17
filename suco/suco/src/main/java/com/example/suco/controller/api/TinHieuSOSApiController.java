@@ -41,37 +41,7 @@
         private MuaGoiRepository muaGoiRepository; 
 
 
-@PostMapping("/submit")
-public ResponseEntity<?> tiepNhanTinHieu(
-    @RequestHeader("Authorization") String authHeader,
-    @RequestBody TinHieuSOSRequestDTO dto
-) {
-    try {
-        String token = authHeader.replace("Bearer ", "");
-        String uid;
-        // --- CƠ CHẾ BYPASS CHO DEV ---
-        if ("dev-token".equals(token)) {
-            uid = "test-user"; // ID này phải tồn tại trong bảng users của bạn để không lỗi Foreign Key
-        } else {
-            // Luồng thật cho App
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-            uid = decodedToken.getUid();
-        }
-        // -----------------------------
 
-        Map<String, Object> ketQua = tinHieuSOSService.xuLyTinHieuSOS(uid, dto);
-
-        TinHieuSOS sosDaLuu = (TinHieuSOS) ketQua.get("sosData");
-        if (sosDaLuu != null) {
-            messagingTemplate.convertAndSend("/topic/admin", sosDaLuu);
-        }
-
-        return ResponseEntity.ok(sosDaLuu);
-
-    } catch (Exception e) {
-        return ResponseEntity.status(401).body("Xác thực thất bại: " + e.getMessage());
-    }
-}
     @GetMapping("/active")
 public ResponseEntity<?> getSosActive(
     @RequestParam(required = false) String status, // Thêm dòng này để nhận filter từ Postman
@@ -171,33 +141,7 @@ public ResponseEntity<?> cancelSOS(
         return ResponseEntity.status(401).body("Xác thực thất bại");
     }
 }
-            /**
-             * Từ chối tiếp nhận SOS - chuyển tiếp ngay lập tức cho trụ sở tiếp theo.
-             */
-            @PostMapping("/tu-choi/{id}")
-            public ResponseEntity<?> tuChoiTiepNhan(
-                    @PathVariable Long id,
-                    @RequestParam Long idTruSo) {
-                
-                boolean conTruSoTiepTheo = dieuPhoiService.tuChoiTiepNhan(id, idTruSo);
-                
-                if (conTruSoTiepTheo) {
-                    return ResponseEntity.ok(Map.of(
-                        "message", "Đã chuyển tiếp cho trụ sở tiếp theo",
-                        "ketQua", "CHUYEN_TIEP_THANH_CONG"
-                    ));
-                } else {
-                    return ResponseEntity.ok(Map.of(
-                        "message", "Đã hết trụ sở trong danh sách hoặc không tìm thấy điều phối",
-                        "ketQua", "HET_TRU_SO"
-                    ));
-                }
-            }
 
-            /**
-             * Lấy thông tin điều phối của một SOS.
-             * Trả về danh sách trụ sở theo thứ tự khoảng cách và thời gian còn lại.
-             */
             @GetMapping("/dieu-phoi/{idSos}")
             public ResponseEntity<?> layThongTinDieuPhoi(@PathVariable Long idSos) {
                 return dieuPhoiService.layThongTinDieuPhoi(idSos)
@@ -222,18 +166,6 @@ public ResponseEntity<?> cancelSOS(
                     })
                     .orElse(ResponseEntity.notFound().build());
             }
-            private boolean isValidTransition(String current, String next) {
-    switch (current) {
-        case "CHO_XU_LY":
-            return "DANG_XU_LY".equals(next) || "HUY_BO".equals(next);
-
-        case "DANG_XU_LY":
-            return "HOAN_THANH".equals(next); // ❌ KHÔNG cho HUY
-
-        default:
-            return false;
-    }
-}
 
         }
 
