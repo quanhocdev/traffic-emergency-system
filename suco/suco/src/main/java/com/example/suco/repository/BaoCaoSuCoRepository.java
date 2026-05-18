@@ -14,6 +14,8 @@
         List<BaoCaoSuCo> findByTrangThaiXuLyNot(String status);
         List<BaoCaoSuCo> findByTrangThaiDuyetIn(List<String> statuses);
         List<BaoCaoSuCo> findByTrangThaiXuLyNotIn(List<String> statuses);
+
+List<BaoCaoSuCo> findByTruSo_Id(Long idTruSo);
         // Chỉ cần một constructor khớp với dữ liệu thực tế
     @Query("""
             SELECT new com.example.suco.dto.SuCoMapDto(
