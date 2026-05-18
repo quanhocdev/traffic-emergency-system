@@ -1,16 +1,15 @@
         package com.example.suco.controller.api;
 
         import com.example.suco.dto.TinHieuSOSRequestDTO;
-        import com.example.suco.model.TinHieuSOS;
+import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
+import com.example.suco.model.TinHieuSOS;
         import com.example.suco.model.TruSo;
         import com.example.suco.repository.MuaGoiRepository;
         import com.example.suco.repository.TinHieuSOSRepository;
         import com.example.suco.service.DieuPhoiSOSService;
-        import com.example.suco.service.DieuPhoiSOSService.ThongTinDieuPhoi;
         import com.example.suco.service.TinHieuSOSService;
-        import com.google.firebase.auth.FirebaseAuth;
-        import com.google.firebase.auth.FirebaseToken;
 
+import com.example.suco.service.sos.system.mapper.*;
         import jakarta.servlet.http.HttpSession;
 
         import org.springframework.beans.factory.annotation.Autowired;
@@ -40,35 +39,51 @@
             @Autowired
         private MuaGoiRepository muaGoiRepository; 
 
+        @Autowired
+        private TinHieuMapper tinHieuMapper;
+
 
 
     @GetMapping("/active")
 public ResponseEntity<?> getSosActive(
-    @RequestParam(required = false) String status, // Thêm dòng này để nhận filter từ Postman
+    @RequestParam(required = false) String status,
     HttpSession session
 ) {
     TruSo current = (TruSo) session.getAttribute("currentTruSo");
-    if (current == null) return ResponseEntity.status(401).body("Chưa đăng nhập");
+    if (current == null) {
+        return ResponseEntity.status(401).body("Chưa đăng nhập");
+    }
 
-    // 1. Lấy tất cả danh sách đang hoạt động (Chờ + Đang xử lý)
-    List<TinHieuSOS> list = tinHieuSOSRepository.findActiveByTruSo(current.getId());
+    // 1. Lấy entity
+    List<TinHieuSOS> rawList =
+        tinHieuSOSRepository.findActiveByTruSo(current.getId());
 
-    // 2. Nếu Postman có truyền ?status=..., thì thực hiện lọc
+    // 2. Filter status (nếu có)
     if (status != null && !status.isEmpty()) {
-        list = list.stream()
-                   .filter(sos -> sos.getTrangThai().equalsIgnoreCase(status))
-                   .collect(Collectors.toList());
+        rawList = rawList.stream()
+                .filter(sos -> status.equalsIgnoreCase(sos.getTrangThai()))
+                .collect(Collectors.toList());
     }
 
-    // 3. Set VIP (giữ nguyên logic cũ của bạn)
-    for (TinHieuSOS sos : list) {
-        boolean laVip = muaGoiRepository.findByUserId(sos.getUserId())
-            .stream()
-            .anyMatch(mg -> "ACTIVE".equalsIgnoreCase(mg.getTrangThai()));
-        sos.setIsVip(laVip);
-    }
+    // 3. Map sang DTO + set VIP luôn tại đây
+    List<TinHieuSOSResponseDTO> result = rawList.stream()
+        .map(sos -> {
+            TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
 
-    return ResponseEntity.ok(list);
+            // 🔥 set VIP đúng cách (không phá DTO)
+            boolean laVip = muaGoiRepository.findByUserId(sos.getUserId())
+                .stream()
+                .anyMatch(mg -> "ACTIVE".equalsIgnoreCase(mg.getTrangThai()));
+
+            if (dto.getUser() != null) {
+                dto.getUser().setVip(laVip); // nếu bạn muốn thêm field VIP
+            }
+
+            return dto;
+        })
+        .collect(Collectors.toList());
+
+    return ResponseEntity.ok(result);
 }
 
             private String layThongDiepTrangThai(String trangThai) {

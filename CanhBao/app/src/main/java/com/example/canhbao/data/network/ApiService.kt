@@ -43,7 +43,7 @@
             @Path("id") id: Long
         ): Response<Map<String, Any>>
 
-        @GET("/api/su-co/map-data") // Đổi từ /api/map/su-co thành /api/su-co/map-data
+        @GET("/api/su-co/map")
         suspend fun getSuCoForMap(): List<SuCoMapDto>
 
         @GET("/api/tru-so/all")
@@ -53,7 +53,7 @@
         suspend fun getAllCamera(): List<CameraMapDto>
 
         // URL: BASE_URL + /api/tin-hieu-sos + /submit
-        @POST("/api/tin-hieu-sos/submit")
+        @POST("api/tin-hieu-sos/submit")
         suspend fun submitSOS(
             @Header("Authorization") token: String,
             @Body request: TinHieuSOSRequest
