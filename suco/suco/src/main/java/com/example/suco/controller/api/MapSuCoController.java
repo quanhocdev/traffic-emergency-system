@@ -61,39 +61,5 @@ public class MapSuCoController {
     }
 
 
-    @PostMapping("/sos/cap-nhat-trang-thai/{id}")
-    public ResponseEntity<?> updateSosStatus(@PathVariable Long id, @RequestParam String status, @RequestParam(required = false) Long idTruSo) {
-        return tinHieuSOSRepository.findById(id).map(sos -> {
-            sos.setTrangThai(status);
-            if ("DANG_XU_LY".equals(status)) {
-                Long idTruSoTiepNhan = idTruSo != null ? idTruSo : sos.getIdTruSoDeXuat();
-                sos.setIdTruSoTiepNhan(idTruSoTiepNhan);
-                dieuPhoiService.danhDauDaTiepNhan(id, idTruSoTiepNhan);
-            }
-            
-            if ("HOAN_THANH".equals(status) || "HUY_BO".equals(status)) {
-                dieuPhoiService.huyDieuPhoi(id);
-            }
-            
-            TinHieuSOS savedSos = tinHieuSOSRepository.save(sos);
-
-            // Gửi cho User
-           if (sos.getUser() != null && sos.getUser().getUid() != null) {
-    String userUid = sos.getUser().getUid();
-    
-    // Đồng nhất gửi về UID chuỗi để Android nhận được
-    messagingTemplate.convertAndSend("/topic/user/" + userUid + "/history", "REFRESH");
-    
-    // Gửi đối tượng đã lưu về App
-    messagingTemplate.convertAndSend("/topic/user/" + userUid + "/sos-status", savedSos);
-}
-
-            // Gửi cho Web Trụ sở (Đồng nhất prefix /tru-so/ có gạch ngang)
-            if (savedSos.getIdTruSoTiepNhan() != null) {
-                messagingTemplate.convertAndSend("/topic/tru-so/" + savedSos.getIdTruSoTiepNhan(), savedSos);
-            }
-
-            return ResponseEntity.ok(Map.of("message", "Cập nhật thành công", "status", status));
-        }).orElse(ResponseEntity.notFound().build());
-    }
+   
 }
