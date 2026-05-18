@@ -1,6 +1,6 @@
 package com.example.suco.controller.suco.baocao.truso;
 import com.example.suco.model.TruSo;
-import com.example.suco.service.suco.baocao.truso.MucDoService;
+import com.example.suco.service.suco.baocao.truso.MucDoSuCoService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -9,10 +9,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping
-public class MucDoController {
+public class MucDoSuCoController {
 
     @Autowired
-    private MucDoService mucDoService;
+    private MucDoSuCoService mucDoService;
 
     @PatchMapping("/su-co/cap-nhat-muc-do/{id}")
     public ResponseEntity<?> capNhatMucDo(

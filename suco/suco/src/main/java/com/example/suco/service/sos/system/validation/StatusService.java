@@ -1,5 +1,7 @@
 package com.example.suco.service.sos.system.validation;
 
+import org.springframework.stereotype.Service;
+@Service
 public class StatusService {
      public boolean isValidTransition(
             String current,

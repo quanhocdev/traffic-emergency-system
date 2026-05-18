@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class MucDoService {
+public class MucDoSuCoService {
 
     private static final Logger log =
-            LoggerFactory.getLogger(MucDoService.class);
+            LoggerFactory.getLogger(MucDoSuCoService.class);
 
     @Autowired
     private BaoCaoSuCoRepository reportRepository;

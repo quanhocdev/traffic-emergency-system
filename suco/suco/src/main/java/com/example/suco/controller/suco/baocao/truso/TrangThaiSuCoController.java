@@ -5,7 +5,7 @@ import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.BaoCaoSuCoRepository;
 import com.example.suco.service.suco.baocao.system.mapper.SuCoMapper;
-import com.example.suco.service.suco.baocao.truso.TrangThaiService;
+import com.example.suco.service.suco.baocao.truso.TrangThaiSuCoService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/su-co")
-public class TrangThaiController {
+public class TrangThaiSuCoController {
 
     @Autowired
     private BaoCaoSuCoRepository repo;
@@ -27,7 +27,7 @@ public class TrangThaiController {
 private SuCoMapper suCoMapper;
 
     @Autowired
-    private TrangThaiService trangThaiServiceService;
+    private TrangThaiSuCoService trangThaiServiceService;
 @GetMapping("/danh-sach-hien-tai")
 public List<SuCoMapDto> getSuCoHienTai(
         @RequestParam(required = false) String status,
