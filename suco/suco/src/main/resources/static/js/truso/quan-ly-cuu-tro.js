@@ -92,7 +92,7 @@ function appendSOS(sos) {
 function loadPendingSOS() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
 
-  fetch("/api/tin-hieu-sos/active/" + TRUSO_ID)
+  fetch("/api/tin-hieu-sos/active")
     .then((res) => res.json())
     .then((data) => {
       const list = document.getElementById("sos-list");
@@ -490,8 +490,8 @@ function tuChoiTiepNhan(idSos, tuDong = false) {
   dungDemNguocInline(idSos);
   dungDemNguoc(idSos);
 
-  fetch(`/api/tin-hieu-sos/tu-choi/${idSos}?idTruSo=${TRUSO_ID}`, {
-    method: "POST",
+  fetch(`/sos/cap-nhat-trang-thai/${idSos}?status=TU_CHOI`, {
+    method: "PATCH",
   })
     .then((res) => res.json())
     .then((data) => {

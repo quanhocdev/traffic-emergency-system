@@ -1,9 +1,11 @@
 package com.example.suco.service.sos.system.validation;
 
 import org.springframework.stereotype.Service;
+
 @Service
 public class StatusService {
-     public boolean isValidTransition(
+
+    public boolean isValidTransition(
             String current,
             String next
     ) {
@@ -12,14 +14,13 @@ public class StatusService {
 
             case "CHO_XU_LY":
                 return "DANG_XU_LY".equals(next)
-                        || "HUY_BO".equals(next);
+                        || "TU_CHOI".equals(next);
 
             case "DANG_XU_LY":
                 return "HOAN_THANH".equals(next);
-
+            
             default:
                 return false;
         }
     }
-    
 }
