@@ -24,7 +24,7 @@ stompClient.connect({}, function (frame) {
       if (suCoDto.trangThaiXuLy === "CHO_XU_LY") {
         statusCell.innerHTML = `<span style="color: #f59e0b; font-style: italic">Đang chờ...</span>`;
       } else if (suCoDto.trangThaiXuLy === "DANG_XU_LY") {
-        statusCell.innerHTML = `<span style="color: #3b82f6;">Trụ sở #${suCoDto.idTruSoTiepNhan || id} (Đang xử lý)</span>`;
+        statusCell.innerHTML = `<span style="color: #3b82f6;">Trụ sở #${suCoDto.truSoTiepNhan?.id || id} (Đang xử lý)</span>`;
       } else if (suCoDto.trangThaiXuLy === "HOAN_THANH") {
         statusCell.innerHTML = `<span style="color: #10b981;">Đã hoàn thành</span>`;
       } else if (

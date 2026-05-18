@@ -114,7 +114,7 @@ pickerMarker.on("dragend", () => {
 // --- HÀM TẢI DỮ LIỆU TỪ API ---
 async function loadIncidentMarkers() {
   try {
-    const response = await fetch("/admin/bao-cao-su-co/all-markers");
+    const response = await fetch("/api/su-co/map");
     const incidents = await response.json();
 
     // Xóa toàn bộ các marker đang hiện có trên bản đồ
@@ -503,7 +503,7 @@ function connectWebSocket() {
 // Hàm tải danh sách sự cố cần duyệt
 async function loadPendingReports() {
   try {
-    const response = await fetch("/admin/bao-cao-su-co/all-markers");
+    const response = await fetch("/api/su-co/map");
     const reports = await response.json();
 
     // Lọc chỉ lấy những bản ghi có trạng thái PENDING hoặc chưa duyệt
