@@ -21,7 +21,7 @@ public class MapSuCoController {
     @GetMapping("/map")
 public List<SuCoMapDto> getMapData(
         @RequestParam(required = false) Long idTruSo,
-        @RequestHeader("Role") String role
+        @RequestHeader(value = "Role", defaultValue = "USER") String role
 ) {
 
     List<BaoCaoSuCo> list;

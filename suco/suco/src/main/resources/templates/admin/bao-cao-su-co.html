@@ -152,7 +152,7 @@
                 <th>Người báo / Email</th>
                 <th>Địa chỉ</th>
                 <th>Tin cậy</th>
-                <th>Trụ sở tiếp nhận</th>
+                <th>ID Trụ sở tiếp nhận</th>
                 <th>Camera gần đó</th>
               </tr>
             </thead>
@@ -186,7 +186,7 @@
                   >
                   <span
                     th:if="${item.trangThaiXuLy != 'CHO_XU_LY'}"
-                    th:text="${'Trụ sở #' + item.idTruSoTiepNhan}"
+                    th:text="${item.truSoTiepNhan.id}"
                   ></span>
                 </td>
 
@@ -239,6 +239,5 @@
 
     <script th:src="@{/js/admin/bao-cao-su-co.js}"></script>
     <script th:src="@{/js/fragments/admin/sidebar.js}"></script>
-
   </body>
 </html>
