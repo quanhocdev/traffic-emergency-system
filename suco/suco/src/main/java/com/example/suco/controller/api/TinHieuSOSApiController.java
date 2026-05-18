@@ -89,58 +89,7 @@ public ResponseEntity<?> getSosActive(
         List<TinHieuSOS> list = tinHieuSOSRepository.findHistoryByTruSo(current.getId());
         return ResponseEntity.ok(list);
     }
-     @PostMapping("/cancel/{id}")
-public ResponseEntity<?> cancelSOS(
-    @RequestHeader("Authorization") String authHeader, 
-    @PathVariable Long id
-) {
-    try {
-       String token = authHeader.replace("Bearer ", "");
-        String currentUid;
 
-        // --- THÊM CƠ CHẾ BYPASS Ở ĐÂY ---
-        if ("dev-token".equals(token)) {
-            currentUid = "test-user"; 
-        } else {
-            // Luồng thật cho App Android
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-            currentUid = decodedToken.getUid();
-        }
-        // ------------------------------
-
-        return tinHieuSOSRepository.findById(id).map(sos -> {
-            // 2. KIỂM TRA CHÍNH CHỦ: UID trong DB phải khớp với UID từ Token
-            if (!sos.getUserId().equals(currentUid)) {
-                return ResponseEntity.status(403).body(Map.of("message", "Bạn không có quyền hủy yêu cầu này."));
-            }
-
-            if ("CHO_XU_LY".equals(sos.getTrangThai())) {
-                sos.setTrangThai("HUY_BO");
-                tinHieuSOSRepository.save(sos);
-                
-                dieuPhoiService.huyDieuPhoi(id);
-                
-                // --- REALTIME (Giữ nguyên logic của bạn) ---
-                if (sos.getIdTruSoDeXuat() != null) {
-                    messagingTemplate.convertAndSend("/topic/tru-so/" + sos.getIdTruSoDeXuat(), sos);
-                }
-                if (sos.getIdTruSoTiepNhan() != null) {
-                    messagingTemplate.convertAndSend("/topic/tru-so/" + sos.getIdTruSoTiepNhan(), sos);
-                }
-                messagingTemplate.convertAndSend("/topic/admin", sos);
-                messagingTemplate.convertAndSend("/topic/user/" + sos.getUserId() + "/sos-status", 
-                    Map.of("idSOS", id, "trangThai", "HUY_BO", "message", "Bạn đã hủy yêu cầu cứu hộ"));
-                messagingTemplate.convertAndSend("/topic/user/" + sos.getUserId() + "/history", "REFRESH");
-
-                return ResponseEntity.ok(Map.of("message", "Đã hủy yêu cầu SOS thành công"));
-            }
-            return ResponseEntity.badRequest().body(Map.of("message", "Không thể hủy vì yêu cầu đang được xử lý hoặc đã kết thúc."));
-        }).orElse(ResponseEntity.notFound().build());
-
-    } catch (Exception e) {
-        return ResponseEntity.status(401).body("Xác thực thất bại");
-    }
-}
 
             @GetMapping("/dieu-phoi/{idSos}")
             public ResponseEntity<?> layThongTinDieuPhoi(@PathVariable Long idSos) {

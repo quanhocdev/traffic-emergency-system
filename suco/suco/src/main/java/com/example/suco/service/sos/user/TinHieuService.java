@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import com.example.suco.service.sos.system.notification.HuyTinHieuService;
+import com.example.suco.service.sos.system.notification.TinHieuRealtimeService;
 import java.util.Map;
 
 @Service
@@ -24,7 +24,7 @@ public class TinHieuService {
     private DieuPhoiSOSService dieuPhoiService;
 
     @Autowired
-    private HuyTinHieuService huyTinHieuService;
+    private TinHieuRealtimeService tinHieuRealtimeService;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -47,43 +47,33 @@ public class TinHieuService {
         TinHieuSOS sosDaLuu =
                 (TinHieuSOS) ketQua.get("sosData");
 
-        if (sosDaLuu != null) {
-
-            messagingTemplate.convertAndSend(
-                    "/topic/admin",
-                    sosDaLuu
-            );
-        }
+       tinHieuRealtimeService.realtimeGuiSOS(sosDaLuu);
 
         return sosDaLuu;
     }
-    public void cancelSOS(Long id, String currentUid) {
+public void cancelSOS(Long id, String currentUid) {
+
     TinHieuSOS sos = tinHieuSOSRepository.findById(id)
             .orElseThrow(() ->
-                    new ResponseStatusException(
-                            HttpStatus.NOT_FOUND,
-                            "Không tìm thấy SOS"
-                    ));
+                    new RuntimeException("Không tìm thấy SOS"));
 
     // check chính chủ
     if (!sos.getUserId().equals(currentUid)) {
 
-        throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "Bạn không có quyền hủy yêu cầu này"
+        throw new RuntimeException(
+                "Bạn không có quyền hủy yêu cầu này."
         );
     }
 
-    // chỉ cho hủy khi chờ xử lý
+    // check trạng thái
     if (!"CHO_XU_LY".equals(sos.getTrangThai())) {
 
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Không thể hủy vì SOS đang xử lý hoặc đã kết thúc"
+        throw new RuntimeException(
+                "Không thể hủy vì yêu cầu đang được xử lý hoặc đã kết thúc."
         );
     }
 
-    // update status
+    // cập nhật trạng thái
     sos.setTrangThai("HUY_BO");
 
     tinHieuSOSRepository.save(sos);
@@ -92,7 +82,6 @@ public class TinHieuService {
     dieuPhoiService.huyDieuPhoi(id);
 
     // realtime
-    huyTinHieuService.guiRealtimeHuySOS(sos);
+    tinHieuRealtimeService.realtimeHuySOS(sos);
 }
-    
 }
