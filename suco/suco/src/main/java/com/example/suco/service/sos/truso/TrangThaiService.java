@@ -111,6 +111,24 @@ public class TrangThaiService {
             );
         }
     }
+    // =========================
+// TU_CHOI
+// =========================
+if ("TU_CHOI".equals(status)) {
+
+    dieuPhoiService.chuyenTiepSangTruSoTiepTheo(
+            id,
+            current.getId()
+    );
+
+    // realtime remove card hiện tại
+    messagingTemplate.convertAndSend(
+            "/topic/truso/" + current.getId(),
+            sos
+    );
+
+    return;
+}
 
     // update status
     sos.setTrangThai(status);

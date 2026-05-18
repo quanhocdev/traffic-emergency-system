@@ -67,7 +67,6 @@ public void cancelSOS(Long id, String currentUid) {
 
     // check trạng thái
     if (!"CHO_XU_LY".equals(sos.getTrangThai())) {
-
         throw new RuntimeException(
                 "Không thể hủy vì yêu cầu đang được xử lý hoặc đã kết thúc."
         );

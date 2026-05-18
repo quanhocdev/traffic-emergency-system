@@ -249,7 +249,7 @@ public class DieuPhoiSOSService {
      * Từ chối tiếp nhận SOS - chuyển tiếp ngay lập tức cho trụ sở tiếp theo.
      * Trả về true nếu còn trụ sở để chuyển tiếp, false nếu hết.
      */
-    public boolean tuChoiTiepNhan(Long idSos, Long idTruSoTuChoi) {
+    public boolean chuyenTiepSangTruSoTiepTheo(Long idSos, Long idTruSoTuChoi) {
         ThongTinDieuPhoi thongTin = bangDieuPhoi.get(idSos);
         if (thongTin == null) {
             nhatKy.warn("[TỪ CHỐI] Không tìm thấy thông tin điều phối cho SOS #{}", idSos);
