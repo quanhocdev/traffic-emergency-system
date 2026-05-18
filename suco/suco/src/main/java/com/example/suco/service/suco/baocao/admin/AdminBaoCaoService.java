@@ -75,7 +75,7 @@ public class AdminBaoCaoService {
                 report.getKinhDo());
 
         if (ganNhat != null) {
-            report.setIdTruSoDeXuat(ganNhat.getId());
+            report.setTruSoDeXuat(ganNhat);
             report.setTrangThaiXuLy("CHO_XU_LY");
         }
 

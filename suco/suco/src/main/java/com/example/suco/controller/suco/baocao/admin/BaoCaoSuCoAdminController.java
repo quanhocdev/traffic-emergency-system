@@ -53,29 +53,36 @@ public class BaoCaoSuCoAdminController {
 
 
     @GetMapping
-    public String page(Model model) {
-    // 1. Lấy danh sách chờ duyệt từ bảng BaoCaoSuCo
+public String page(Model model) {
+
     List<BaoCaoSuCo> listPending = reportRepository.findPendingReportsForAdmin();
 
-    // 2. Lấy TẤT CẢ từ bảng BaoCaoSuCo
-    List<BaoCaoSuCo> allSuCo = reportRepository.findByTrangThaiDuyetIn(List.of("VERIFIED"));    // 3. LẤY DỮ LIỆU TỪ BẢNG SPAM (Thay vì lấy từ reportRepository)
-    List<Spam> listSpam = spamRepository.findAll(); 
+    List<BaoCaoSuCo> allSuCo = reportRepository.findAllForMapEntity();
 
-    // 4. Các biến đếm
-    long countCho = allSuCo.stream().filter(s -> "CHO_XU_LY".equals(s.getTrangThaiXuLy())).count();
-    long countDang = allSuCo.stream().filter(s -> "DANG_XU_LY".equals(s.getTrangThaiXuLy())).count();
-    long countXong = allSuCo.stream().filter(s -> "HOAN_THANH".equals(s.getTrangThaiXuLy())).count();
-    
-    // Đưa vào model
+    List<Spam> listSpam = spamRepository.findAll();
+
+    long countCho = allSuCo.stream()
+            .filter(s -> "CHO_XU_LY".equals(s.getTrangThaiXuLy()))
+            .count();
+
+    long countDang = allSuCo.stream()
+            .filter(s -> "DANG_XU_LY".equals(s.getTrangThaiXuLy()))
+            .count();
+
+    long countXong = allSuCo.stream()
+            .filter(s -> "HOAN_THANH".equals(s.getTrangThaiXuLy()))
+            .count();
+
     model.addAttribute("listPending", listPending);
-    model.addAttribute("allSuCo", allSuCo); 
-    model.addAttribute("listSpam", listSpam); // Bây giờ listSpam chứa đối tượng Spam.java
+    model.addAttribute("allSuCo", allSuCo);
+    model.addAttribute("listSpam", listSpam);
     model.addAttribute("countCho", countCho);
     model.addAttribute("countDang", countDang);
     model.addAttribute("countXong", countXong);
     model.addAttribute("activePage", "bao-cao-su-co");
+
     return "admin/bao-cao-su-co";
-    }
+}
 
     @PostMapping(value = "/admin-submit", consumes = "multipart/form-data")
     @ResponseBody
@@ -104,15 +111,15 @@ public class BaoCaoSuCoAdminController {
 
     
 
-    @GetMapping("/all-markers")
-    @ResponseBody
-    public ResponseEntity<List<BaoCaoSuCo>> getAllMarkers() {
-        // Sử dụng hàm thứ hai (In) để lấy đồng thời nhiều trạng thái
-        List<BaoCaoSuCo> list = reportRepository.findByTrangThaiDuyetIn(
-        List.of("VERIFIED", "AI_APPROVED", "PENDING")
-    );
-    return ResponseEntity.ok(list);
-    }
+    // @GetMapping("/all-markers")
+    // @ResponseBody
+    // public ResponseEntity<List<BaoCaoSuCo>> getAllMarkers() {
+    //     // Sử dụng hàm thứ hai (In) để lấy đồng thời nhiều trạng thái
+    //     List<BaoCaoSuCo> list = reportRepository.findByTrangThaiDuyetIn(
+    //     List.of("VERIFIED", "AI_APPROVED", "PENDING")
+    // );
+    // return ResponseEntity.ok(list);
+    // }
 
     @GetMapping("/pending")
     @ResponseBody

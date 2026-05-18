@@ -21,30 +21,40 @@ public class TrungLapBaoCaoService {
 
     public BaoCaoSuCo findDuplicateReport(BaoCaoSuCo report) {
 
-        List<BaoCaoSuCo> activeReports =
-                reportRepository.findByTrangThaiXuLyNotIn(
-                        List.of("HOAN_THANH", "HUY_BO")
-                );
-
-        for (BaoCaoSuCo ex : activeReports) {
-
-            double distanceMeters = calculateDistance(
-                    report.getViDo(),
-                    report.getKinhDo(),
-                    ex.getViDo(),
-                    ex.getKinhDo()
-            );
-
-            if (distanceMeters <= 20
-                    && ex.getLoaiSuCo().getId()
-                    .equals(report.getLoaiSuCo().getId())) {
-
-                return ex;
-            }
-        }
-
+    if (report.getViDo() == null || report.getKinhDo() == null) {
         return null;
     }
+
+    List<BaoCaoSuCo> activeReports =
+            reportRepository.findByTrangThaiXuLyNotIn(
+                    List.of("HOAN_THANH", "HUY_BO")
+            );
+
+    for (BaoCaoSuCo ex : activeReports) {
+
+        if (ex.getLoaiSuCo() == null || report.getLoaiSuCo() == null) {
+            continue;
+        }
+
+        if (!ex.getLoaiSuCo().getId()
+                .equals(report.getLoaiSuCo().getId())) {
+            continue;
+        }
+
+        double distanceMeters = calculateDistance(
+                report.getViDo(),
+                report.getKinhDo(),
+                ex.getViDo(),
+                ex.getKinhDo()
+        );
+
+        if (distanceMeters <= 20) {
+            return ex;
+        }
+    }
+
+    return null;
+}
 
     public Double calculateMatchedDistance(
             BaoCaoSuCo report,

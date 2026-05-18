@@ -27,7 +27,7 @@ public class QuyenHanService {
             TruSo current
     ) {
 
-        if (suCo.getIdTruSoTiepNhan() == null) {
+        if (suCo.getTruSoTiepNhan() == null) {
 
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -35,7 +35,7 @@ public class QuyenHanService {
             );
         }
 
-        if (!current.getId().equals(suCo.getIdTruSoTiepNhan())) {
+        if (!current.getId().equals(suCo.getTruSoTiepNhan().getId())) {
 
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,

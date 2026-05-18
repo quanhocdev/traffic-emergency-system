@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -60,17 +61,22 @@ public class BaoCaoSuCo {
     @Column(name = "trang_thai_xu_ly")
 private String trangThaiXuLy = "CHO_XU_LY";
 
-@Column(name = "id_tru_so_de_xuat")
-private Long idTruSoDeXuat;
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "id_tru_so_de_xuat")
+private TruSo truSoDeXuat;
 
- public BaoCaoSuCo() {}
-private Long idTruSoTiepNhan;
+
+@ManyToOne(fetch = FetchType.LAZY)
+@JoinColumn(name = "id_tru_so_tiep_nhan")
+private TruSo truSoTiepNhan;
 
 private Integer doTinCay = 1;
 // Thêm trường này vào sau doTinCay
 @Column(name = "dia_chi", columnDefinition = "TEXT")
 private String diaChi;
 
+
+ public BaoCaoSuCo() {}
 // Thêm Getter & Setter
 public String getDiaChi() { return diaChi; }
 public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
@@ -111,12 +117,21 @@ public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
     public LocalDateTime getThoiGianTao() { return thoiGianTao; }
     public void setThoiGianTao(LocalDateTime thoiGianTao) { this.thoiGianTao = thoiGianTao; }
 
-    public Long getIdTruSoDeXuat() { return idTruSoDeXuat; }
-    public void setIdTruSoDeXuat(Long idTruSoDeXuat) { this.idTruSoDeXuat = idTruSoDeXuat; }
+    public TruSo getTruSoDeXuat() {
+    return truSoDeXuat;
+}
 
-    
-    public Long getIdTruSoTiepNhan() { return idTruSoTiepNhan; }
-    public void setIdTruSoTiepNhan(Long idTruSoTiepNhan) { this.idTruSoTiepNhan = idTruSoTiepNhan; }
+public void setTruSoDeXuat(TruSo truSoDeXuat) {
+    this.truSoDeXuat = truSoDeXuat;
+}
+
+public TruSo getTruSoTiepNhan() {
+    return truSoTiepNhan;
+}
+
+public void setTruSoTiepNhan(TruSo truSoTiepNhan) {
+    this.truSoTiepNhan = truSoTiepNhan;
+}
     
     public String getTrangThaiXuLy() { return trangThaiXuLy; }
     public void setTrangThaiXuLy(String trangThaiXuLy) { this.trangThaiXuLy = trangThaiXuLy; }

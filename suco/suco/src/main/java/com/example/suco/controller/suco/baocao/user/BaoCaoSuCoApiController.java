@@ -76,10 +76,10 @@ public class BaoCaoSuCoApiController {
     }
     }
 
-   @GetMapping("/map-data")
-    public List<SuCoMapDto> getAllForMap() {
-    return reportRepository.findAllForMap(); 
-}
+//    @GetMapping("/map-data")
+//     public List<SuCoMapDto> getAllForMap() {
+//     return reportRepository.findAllForMap(); 
+// }
 
 
 @PatchMapping("/{id}")
