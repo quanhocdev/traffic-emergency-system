@@ -7,15 +7,26 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.example.suco.model.TinHieuSOS;
 
 @Service
-public class HuyTinHieuService {
+public class TinHieuRealtimeService {
     
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    public void guiRealtimeHuySOS(TinHieuSOS sos) {
+
+    public void realtimeGuiSOS(TinHieuSOS sos) {
+    messagingTemplate.convertAndSend(
+            "/topic/admin",
+            sos
+    );
+    messagingTemplate.convertAndSend(
+            "/topic/user/" + sos.getUserId() + "/history",
+            "REFRESH"
+    );
+}
+
+    public void realtimeHuySOS(TinHieuSOS sos) {
 
     if (sos.getIdTruSoDeXuat() != null) {
-
         messagingTemplate.convertAndSend(
                 "/topic/tru-so/" + sos.getIdTruSoDeXuat(),
                 sos
@@ -23,7 +34,6 @@ public class HuyTinHieuService {
     }
 
     if (sos.getIdTruSoTiepNhan() != null) {
-
         messagingTemplate.convertAndSend(
                 "/topic/tru-so/" + sos.getIdTruSoTiepNhan(),
                 sos
