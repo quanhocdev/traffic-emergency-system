@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Service
-public class TrangThaiService {
+public class TrangThaiSuCoService {
 
     @Autowired
     private BaoCaoSuCoRepository reportRepository;
@@ -35,7 +35,7 @@ public class TrangThaiService {
 private TruSoRepository truSoRepository;
 
     private static final Logger log =
-        LoggerFactory.getLogger(TrangThaiService.class);
+        LoggerFactory.getLogger(TrangThaiSuCoService.class);
 
     @Transactional
     public Map<String, Object> updateSuCoStatus(

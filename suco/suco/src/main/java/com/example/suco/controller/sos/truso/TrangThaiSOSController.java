@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/sos")
-public class TrangThaiController {
+public class TrangThaiSOSController {
 
     @Autowired
     private TrangThaiService trangThaiSOSService;
