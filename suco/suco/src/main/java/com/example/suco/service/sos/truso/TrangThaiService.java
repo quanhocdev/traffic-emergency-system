@@ -8,14 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.util.Optional;
 import com.example.suco.repository.TinHieuSOSRepository;
-
-
+import com.example.suco.repository.UserRepository;
+import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
+import com.example.suco.dto.sos.UserMiniDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
 import com.example.suco.service.DieuPhoiSOSService;
 import com.example.suco.service.DieuPhoiSOSService.ThongTinDieuPhoi;
+import com.example.suco.service.sos.system.mapper.TinHieuMapper;
 import com.example.suco.service.sos.system.validation.StatusService;
-
 @Service
 public class TrangThaiService {
 
@@ -31,128 +32,119 @@ public class TrangThaiService {
     @Autowired
     private StatusService statusService;
 
+    @Autowired
+    private TinHieuMapper tinHieuMapper;
 
-    public void capNhatTrangThaiSOS(
-        Long id,
-        String status,
-        TruSo current
-) {
+    public void capNhatTrangThaiSOS(Long id, String status, TruSo current) {
 
-    // clean status
-    if (status != null) {
-        status = status.split(",")[0].trim();
-    }
+        if (status != null) {
+            status = status.split(",")[0].trim();
+        }
 
-    TinHieuSOS sos = tinHieuSOSRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Không tìm thấy SOS"
-            ));
+        TinHieuSOS sos = tinHieuSOSRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy SOS"
+                ));
 
-    String currentStatus = sos.getTrangThai();
+        String currentStatus = sos.getTrangThai();
 
-    // validate transition
-    if (!statusService.isValidTransition(currentStatus, status)) {
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Chuyển trạng thái không hợp lệ"
-        );
-    }
-
-    // đã kết thúc
-    if ("HOAN_THANH".equals(currentStatus)
-            || "HUY_BO".equals(currentStatus)) {
-
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "SOS đã kết thúc"
-        );
-    }
-
-    // =========================
-    // DANG_XU_LY
-    // =========================
-    if ("DANG_XU_LY".equals(status)) {
-
-        Optional<ThongTinDieuPhoi> dpOpt =
-                dieuPhoiService.layThongTinDieuPhoi(id);
-
-        if (dpOpt.isEmpty()
-                || !dpOpt.get()
-                        .getDanhSachIdTruSo()
-                        .contains(current.getId())) {
-
+        if (!statusService.isValidTransition(currentStatus, status)) {
             throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "SOS không thuộc về trụ sở của bạn"
+                    HttpStatus.BAD_REQUEST,
+                    "Chuyển trạng thái không hợp lệ"
             );
         }
 
-        sos.setIdTruSoTiepNhan(current.getId());
-
-        dieuPhoiService.danhDauDaTiepNhan(
-                id,
-                current.getId()
-        );
-    }
-
-    // =========================
-    // HOAN_THANH
-    // =========================
-    if ("HOAN_THANH".equals(status)) {
-
-        if (sos.getIdTruSoTiepNhan() == null
-                || !sos.getIdTruSoTiepNhan()
-                        .equals(current.getId())) {
-
+        if ("HOAN_THANH".equals(currentStatus) || "HUY_BO".equals(currentStatus)) {
             throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Chỉ trụ sở tiếp nhận mới được hoàn thành"
+                    HttpStatus.BAD_REQUEST,
+                    "SOS đã kết thúc"
             );
         }
+
+        // =========================
+        // DANG_XU_LY
+        // =========================
+        if ("DANG_XU_LY".equals(status)) {
+
+            Optional<ThongTinDieuPhoi> dpOpt = dieuPhoiService.layThongTinDieuPhoi(id);
+
+            if (dpOpt.isEmpty()
+                    || !dpOpt.get().getDanhSachIdTruSo().contains(current.getId())) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "SOS không thuộc về trụ sở của bạn"
+                );
+            }
+
+            sos.setIdTruSoTiepNhan(current.getId());
+
+            dieuPhoiService.danhDauDaTiepNhan(id, current.getId());
+        }
+
+        // =========================
+        // HOAN_THANH
+        // =========================
+        if ("HOAN_THANH".equals(status)) {
+
+            if (sos.getIdTruSoTiepNhan() == null
+                    || !sos.getIdTruSoTiepNhan().equals(current.getId())) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.FORBIDDEN,
+                        "Chỉ trụ sở tiếp nhận mới được hoàn thành"
+                );
+            }
+        }
+
+        // =========================
+        // TU_CHOI
+        // =========================
+        if ("TU_CHOI".equals(status)) {
+
+            dieuPhoiService.chuyenTiepSangTruSoTiepTheo(id, current.getId());
+
+            TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
+
+            messagingTemplate.convertAndSend(
+                    "/topic/truso/" + current.getId(),
+                    dto
+            );
+
+            return;
+        }
+
+        // update status
+        sos.setTrangThai(status);
+
+        // hủy điều phối
+        if ("HOAN_THANH".equals(status) || "HUY_BO".equals(status)) {
+            dieuPhoiService.huyDieuPhoi(id);
+        }
+
+        tinHieuSOSRepository.save(sos);
+
+        // =========================
+        // FIX QUAN TRỌNG NHẤT Ở ĐÂY
+        // =========================
+
+        TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
+
+        Long targetTruSo =
+                sos.getIdTruSoTiepNhan() != null
+                        ? sos.getIdTruSoTiepNhan()
+                        : current.getId();
+
+        messagingTemplate.convertAndSend(
+                "/topic/truso/" + targetTruSo,
+                dto
+        );
+
+        messagingTemplate.convertAndSend(
+                "/topic/admin",
+                dto
+        );
     }
-    // =========================
-// TU_CHOI
-// =========================
-if ("TU_CHOI".equals(status)) {
-
-    dieuPhoiService.chuyenTiepSangTruSoTiepTheo(
-            id,
-            current.getId()
-    );
-
-    // realtime remove card hiện tại
-    messagingTemplate.convertAndSend(
-            "/topic/truso/" + current.getId(),
-            sos
-    );
-
-    return;
-}
-
-    // update status
-    sos.setTrangThai(status);
-
-    // hủy điều phối
-    if ("HOAN_THANH".equals(status)
-            || "HUY_BO".equals(status)) {
-
-        dieuPhoiService.huyDieuPhoi(id);
-    }
-
-    // save
-    tinHieuSOSRepository.save(sos);
-
-    // realtime
-    Long targetTruSo =
-            sos.getIdTruSoTiepNhan() != null
-                    ? sos.getIdTruSoTiepNhan()
-                    : current.getId();
-
-    messagingTemplate.convertAndSend(
-            "/topic/truso/" + targetTruSo,
-            sos
-    );
-}
-    
 }

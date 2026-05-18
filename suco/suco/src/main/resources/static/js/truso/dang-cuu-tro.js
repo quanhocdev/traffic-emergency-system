@@ -444,8 +444,6 @@ function connectWebSocket() {
     function (frame) {
       console.log("Connected to WebSocket: " + frame);
 
-      // Lắng nghe topic của Trụ sở này
-      // Backend bắn: messagingTemplate.convertAndSend("/topic/truso/" + hd.getTrusoId(), response);
       stompClient.subscribe(
         "/topic/truso/" + TRUSO_ID,
         function (messageOutput) {

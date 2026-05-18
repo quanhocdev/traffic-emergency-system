@@ -5,58 +5,74 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.example.suco.model.TinHieuSOS;
+import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
+import com.example.suco.service.sos.system.mapper.TinHieuMapper;
 
 @Service
 public class TinHieuRealtimeService {
-    
+
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private TinHieuMapper tinHieuMapper;
 
+    // =========================
+    // GUI SOS
+    // =========================
     public void realtimeGuiSOS(TinHieuSOS sos) {
-    messagingTemplate.convertAndSend(
-            "/topic/admin",
-            sos
-    );
-    messagingTemplate.convertAndSend(
-            "/topic/user/" + sos.getUserId() + "/history",
-            "REFRESH"
-    );
-}
 
+        TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
+
+        messagingTemplate.convertAndSend(
+                "/topic/admin",
+                dto
+        );
+
+        messagingTemplate.convertAndSend(
+                "/topic/user/" + sos.getUserId() + "/history",
+                "REFRESH"
+        );
+    }
+
+    // =========================
+    // HUY SOS
+    // =========================
     public void realtimeHuySOS(TinHieuSOS sos) {
 
-    if (sos.getIdTruSoDeXuat() != null) {
+        TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
+
+        if (sos.getIdTruSoDeXuat() != null) {
+            messagingTemplate.convertAndSend(
+                    "/topic/tru-so/" + sos.getIdTruSoDeXuat(),
+                    dto
+            );
+        }
+
+        if (sos.getIdTruSoTiepNhan() != null) {
+            messagingTemplate.convertAndSend(
+                    "/topic/tru-so/" + sos.getIdTruSoTiepNhan(),
+                    dto
+            );
+        }
+
         messagingTemplate.convertAndSend(
-                "/topic/tru-so/" + sos.getIdTruSoDeXuat(),
-                sos
+                "/topic/admin",
+                dto
+        );
+
+        messagingTemplate.convertAndSend(
+                "/topic/user/" + sos.getUserId() + "/sos-status",
+                Map.of(
+                        "idSOS", sos.getId(),
+                        "trangThai", "HUY_BO",
+                        "message", "Bạn đã hủy yêu cầu cứu hộ"
+                )
+        );
+
+        messagingTemplate.convertAndSend(
+                "/topic/user/" + sos.getUserId() + "/history",
+                "REFRESH"
         );
     }
-
-    if (sos.getIdTruSoTiepNhan() != null) {
-        messagingTemplate.convertAndSend(
-                "/topic/tru-so/" + sos.getIdTruSoTiepNhan(),
-                sos
-        );
-    }
-
-    messagingTemplate.convertAndSend(
-            "/topic/admin",
-            sos
-    );
-
-    messagingTemplate.convertAndSend(
-            "/topic/user/" + sos.getUserId() + "/sos-status",
-            Map.of(
-                    "idSOS", sos.getId(),
-                    "trangThai", "HUY_BO",
-                    "message", "Bạn đã hủy yêu cầu cứu hộ"
-            )
-    );
-
-    messagingTemplate.convertAndSend(
-            "/topic/user/" + sos.getUserId() + "/history",
-            "REFRESH"
-    );
-}
 }

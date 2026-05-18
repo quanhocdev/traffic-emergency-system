@@ -19,10 +19,23 @@ function formatTime(iso) {
 const handledSOS = new Set();
 
 function renderSOSItem(sos) {
-  const time = sos.createdAt ? formatTime(sos.createdAt) : sos.thoiGian || "";
-  const userPoints =
-    sos.user && sos.user.totalPoints ? sos.user.totalPoints : 0;
-  const userName = sos.user && sos.user.name ? sos.user.name : "Khách vãng lai";
+  console.log("========== SOS DEBUG ==========");
+  console.log("RAW SOS =", sos);
+  console.log("USER OBJECT =", sos.user);
+  console.log("USER JSON =", JSON.stringify(sos.user));
+  console.log("USER NAME =", sos.user?.name);
+  console.log("TOTAL POINTS =", sos.user?.totalPoints);
+  console.log("KEYS =", Object.keys(sos));
+
+  if (!sos.user) {
+    console.warn("⚠️ SOS KHÔNG CÓ USER:", sos.id, sos);
+  }
+
+  const time = sos.createdAt
+    ? new Date(sos.createdAt).toLocaleString("vi-VN")
+    : "";
+  const userPoints = sos.user?.totalPoints ?? 0;
+  const userName = sos.user?.name ?? "NULL USER !!!";
 
   // Logic địa chỉ: Nếu có diaChi thì dùng, không thì dùng tọa độ
   const displayAddress = sos.diaChi || `${sos.viDo}, ${sos.kinhDo}`;
@@ -95,6 +108,10 @@ function loadPendingSOS() {
   fetch("/api/tin-hieu-sos/active")
     .then((res) => res.json())
     .then((data) => {
+      console.log("📦 API /active RAW DATA =", data);
+      data.forEach((x) => {
+        console.log("➡️ SOS ITEM:", x.id, x.user);
+      });
       const list = document.getElementById("sos-list");
       if (!Array.isArray(data) || data.length === 0) {
         // ... xử lý no-data như cũ ...
@@ -363,6 +380,17 @@ function connectRealtime() {
         },
       );
 
+      stompClient.subscribe("/topic/truso/" + TRUSO_ID, function (message) {
+        console.log("🔥 RAW MESSAGE =", message.body);
+
+        try {
+          const sos = JSON.parse(message.body);
+          console.log("🔥 PARSED SOS =", sos);
+          handleRealtimeSOS(sos);
+        } catch (e) {
+          console.error("Invalid SOS message", e, message.body);
+        }
+      });
       // Sự cố channel (matches trang-chu subscription)
       stompClient.subscribe(
         "/topic/tru-so/" + TRUSO_ID + "/su-co",
@@ -827,12 +855,13 @@ function confirmRescue(id) {
   }
 
   // Gửi yêu cầu lên server
-  fetch(`/sos/tiep-nhan/${id}?idTruSo=${TRUSO_ID}`, {
-    method: "POST",
+
+  fetch(`/sos/cap-nhat-trang-thai/${id}?status=DANG_XU_LY`, {
+    method: "PATCH",
   })
     .then((res) => res.json())
     .then((data) => {
-      if (data.status === "success" || data.id) {
+      if (data.message === "Cập nhật thành công") {
         // Chuyển hướng sang trang bản đồ để bắt đầu đi cứu trợ
         // Giả sử trang chủ của bạn có bản đồ và truyền tham số ID
         window.location.href = "/truso/trang-chu?focusSos=" + id;
