@@ -455,7 +455,7 @@ function doiTrangThai(id, status) {
   });
 }
 function loadExistingSuCo() {
-  return fetch(`/api/map/su-co?idTruSo=${idTruSo}`)
+  return fetch(`/api/su-co/map?idTruSo=${idTruSo}`)
     .then((res) => res.json())
     .then((data) => {
       data.forEach((item) => {
@@ -465,7 +465,7 @@ function loadExistingSuCo() {
     });
 }
 function loadExistingSOS() {
-  return fetch("/api/tin-hieu-sos/active/" + idTruSo)
+  return fetch("/api/tin-hieu-sos/active")
     .then((res) => res.json())
     .then((data) => {
       data.forEach((item) => {
