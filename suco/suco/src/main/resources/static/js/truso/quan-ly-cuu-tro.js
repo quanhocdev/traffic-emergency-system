@@ -203,9 +203,6 @@ function loadPendingSuCo() {
 
       if (noDataElem) noDataElem.style.display = "none";
 
-      // Sắp xếp mới nhất lên đầu
-      pendingData.sort((a, b) => b.id - a.id);
-
       pendingData.forEach((suCo) => {
         list.innerHTML += renderSuCoItem(suCo);
       });
@@ -788,7 +785,7 @@ function doiTrangThaiSuCo(id, status) {
     btn.innerText = "Đang xử lý...";
   }
 
-  fetch(`/api/map/su-co/cap-nhat-trang-thai/${id}`, {
+  fetch(`/su-co/cap-nhat-trang-thai/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
@@ -830,7 +827,7 @@ function confirmRescue(id) {
   }
 
   // Gửi yêu cầu lên server
-  fetch(`/api/tin-hieu-sos/tiep-nhan/${id}?idTruSo=${TRUSO_ID}`, {
+  fetch(`/sos/tiep-nhan/${id}?idTruSo=${TRUSO_ID}`, {
     method: "POST",
   })
     .then((res) => res.json())

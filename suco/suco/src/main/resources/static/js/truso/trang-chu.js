@@ -432,7 +432,7 @@ function addSOSMarker(item, type = "SOS") {
   });
 }
 function doiTrangThai(id, status) {
-  const url = `/api/map/sos/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${idTruSo}`;
+  const url = `/sos/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${idTruSo}`;
   fetch(url, { method: "PATCH" }).then((res) => {
     if (res.ok) {
       const markerKey = "SOS_" + id;
@@ -454,17 +454,22 @@ function doiTrangThai(id, status) {
     }
   });
 }
+function loadExistingSuCo() {
+  return fetch(`/api/map/su-co?idTruSo=${idTruSo}`)
+    .then((res) => res.json())
+    .then((data) => {
+      data.forEach((item) => {
+        addSOSMarker(item, "SU_CO");
+        addNotiItem(item, "SU_CO", true);
+      });
+    });
+}
 function loadExistingSOS() {
   return fetch("/api/tin-hieu-sos/active/" + idTruSo)
     .then((res) => res.json())
     .then((data) => {
-      // Sắp xếp dữ liệu theo thời gian mới nhất trước khi đổ vào chuông
-      data.sort((a, b) => new Date(b.thoiGian) - new Date(a.thoiGian));
-
       data.forEach((item) => {
-        addSOSMarker(item); // Hiện trên bản đồ
-        // Thêm dòng dưới đây để hiện vào danh sách thông báo
-        // Chú ý: truyền 'true' để không phát âm thanh dồn dập khi load trang
+        addSOSMarker(item);
         addNotiItem(item, "SOS", true);
       });
       return data;
@@ -506,22 +511,12 @@ function doiTrangThaiSuCo(id, status) {
     }
   });
 }
-function loadExistingSuCo() {
-  return fetch(`/api/map/su-co?idTruSo=${idTruSo}`)
-    .then((res) => res.json())
-    .then((data) => {
-      data.forEach((item) => {
-        addSOSMarker(item, "SU_CO");
-        // Đưa sự cố vào chuông thông báo
-        addNotiItem(item, "SU_CO", true);
-      });
-    });
-}
+
 function doiTrangThai(id, status) {
   // Truyền thêm &idTruSo=${idTruSo} vào URL (biến idTruSo lấy từ session đầu script)
-  const url = `/api/tin-hieu-sos/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${idTruSo}`;
+  const url = `/sos/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${idTruSo}`;
 
-  fetch(url, { method: "POST" }).then((res) => {
+  fetch(url, { method: "PATCH" }).then((res) => {
     if (res.ok) {
       closeDetail();
       // WebSocket sẽ tự cập nhật lại Marker với dữ liệu mới có idTruSoTiepNhan
