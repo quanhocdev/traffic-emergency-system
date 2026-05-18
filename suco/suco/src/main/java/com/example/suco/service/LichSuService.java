@@ -46,7 +46,7 @@ public class LichSuService {
                         sc.getViDo(),
                         sc.getKinhDo(),
                         null,
-                        sc.getIdTruSoTiepNhan() != null ? "Đã tiếp nhận" : "Chờ xử lý",
+                        sc.getTruSoTiepNhan() != null ? "Đã tiếp nhận" : "Chờ xử lý",
                         sc.getThoiGianTao() != null ? sc.getThoiGianTao().toString() : "",
                         sc.getDiaChi(),
                         null

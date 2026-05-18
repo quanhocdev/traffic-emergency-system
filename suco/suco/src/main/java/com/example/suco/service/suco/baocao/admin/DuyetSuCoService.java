@@ -99,7 +99,7 @@ public class DuyetSuCoService {
                     report.getKinhDo());
 
             if (ganNhat != null) {
-                report.setIdTruSoDeXuat(ganNhat.getId());
+                report.setTruSoDeXuat(ganNhat);
             }
 
             BaoCaoSuCo updatedReport = reportRepository.save(report);
@@ -107,18 +107,18 @@ public class DuyetSuCoService {
             realtimeService.broadcastReport(
                     suCoMapper.convertToDto(updatedReport));
 
-            if (updatedReport.getIdTruSoDeXuat() != null) {
+            if (updatedReport.getTruSoDeXuat() != null) {
 
                 realtimeService.broadcastTruSo(
-                        updatedReport.getIdTruSoDeXuat(),
+                        updatedReport.getTruSoDeXuat().getId(),
                         suCoMapper.convertToDto(updatedReport)
                 );
             }
 
-            if (updatedReport.getIdTruSoTiepNhan() != null) {
+            if (updatedReport.getTruSoTiepNhan() != null) {
 
                 realtimeService.broadcastTruSo(
-                        updatedReport.getIdTruSoTiepNhan(),
+                        updatedReport.getTruSoTiepNhan().getId(),
                         suCoMapper.convertToDto(updatedReport)
                 );
             }

@@ -27,9 +27,9 @@ public List<SuCoMapDto> getMapData(
     List<BaoCaoSuCo> list;
 
     if ("TRU_SO".equals(role)) {
-        list = repo.findByTruSo_Id(idTruSo);
+        list = repo.findActiveByTruSo(idTruSo); // hoặc cả 2 nếu cần
     } else {
-        list = repo.findAllForMapEntity();
+        list = repo.findAll(); // vì bạn đã map entity rồi
     }
 
     return list.stream()

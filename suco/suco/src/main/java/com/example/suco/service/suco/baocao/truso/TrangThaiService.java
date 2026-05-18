@@ -4,6 +4,7 @@ import com.example.suco.dto.SuCoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.BaoCaoSuCoRepository;
+import com.example.suco.repository.TruSoRepository;
 import com.example.suco.service.suco.baocao.system.mapper.SuCoMapper;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 
@@ -30,6 +31,9 @@ public class TrangThaiService {
     @Autowired
     private BaoCaoRealtimeService realtimeService;
 
+    @Autowired
+private TruSoRepository truSoRepository;
+
     private static final Logger log =
         LoggerFactory.getLogger(TrangThaiService.class);
 
@@ -51,11 +55,11 @@ log.info("TruSo ID: {}", current != null ? current.getId() : null);
                 ));
                 log.info("=== DB STATE ===");
 log.info("CurrentStatus: {}", suCo.getTrangThaiXuLy());
-log.info("CurrentTiepNhanId: {}", suCo.getIdTruSoTiepNhan());
+log.info("CurrentTiepNhanId: {}", suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null);
 log.info("Reporter: {}", 
         suCo.getReporter() != null ? suCo.getReporter().getUid() : null);
         String currentStatus = suCo.getTrangThaiXuLy();
-        Long currentTiepNhanId = suCo.getIdTruSoTiepNhan();
+        Long currentTiepNhanId = suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null;
 
         if (status == null || status.trim().isEmpty()) {
             throw new ResponseStatusException(
@@ -113,8 +117,7 @@ log.info("Reporter: {}",
                 );
             }
 
-            suCo.setIdTruSoTiepNhan(current.getId());
-            
+            suCo.setTruSoTiepNhan(current);
         }
 
         else if ("HOAN_THANH".equals(status)) {
@@ -155,10 +158,10 @@ log.info("Reporter: {}",
         SuCoMapDto dto =
                 suCoMapper.convertToDto(saved);
 
-        if (saved.getIdTruSoTiepNhan() != null) {
+        if (saved.getTruSoTiepNhan() != null) {
 
             realtimeService.broadcastTruSo(
-                    saved.getIdTruSoTiepNhan(),
+                    saved.getTruSoTiepNhan().getId(),
                     dto
             );
         }
@@ -197,11 +200,14 @@ log.info("Reporter: {}",
 
         if ("DANG_XU_LY".equals(status)) {
 
-            report.setIdTruSoTiepNhan(
-                    idTruSoThucTe
-            );
-        }
+    TruSo truSo = truSoRepository.findById(idTruSoThucTe)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Không tìm thấy trụ sở"
+            ));
 
+    report.setTruSoTiepNhan(truSo);
+}
         BaoCaoSuCo saved =
                 reportRepository.save(report);
 
@@ -209,10 +215,10 @@ log.info("Reporter: {}",
                 suCoMapper.convertToDto(saved)
         );
 
-        if (saved.getIdTruSoTiepNhan() != null) {
+        if (saved.getTruSoTiepNhan() != null) {
 
             realtimeService.broadcastTruSo(
-                    saved.getIdTruSoTiepNhan(),
+                    saved.getTruSoTiepNhan().getId(),
                     suCoMapper.convertToDto(saved)
             );
         }

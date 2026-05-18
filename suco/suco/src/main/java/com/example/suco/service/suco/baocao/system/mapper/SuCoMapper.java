@@ -56,10 +56,10 @@ public class SuCoMapper {
             dto.setReporterUid(b.getReporter().getUid());
         }
 
-        if (b.getIdTruSoDeXuat() != null) {
+        if (b.getTruSoDeXuat() != null) {
 
             TruSo ts = truSoRepository
-                    .findById(b.getIdTruSoDeXuat())
+                    .findById(b.getTruSoDeXuat().getId())
                     .orElse(null);
 
             if (ts != null) {
@@ -75,10 +75,10 @@ public class SuCoMapper {
             }
         }
 
-        if (b.getIdTruSoTiepNhan() != null) {
+        if (b.getTruSoTiepNhan() != null) {
 
             TruSo ts = truSoRepository
-                    .findById(b.getIdTruSoTiepNhan())
+                    .findById(b.getTruSoTiepNhan().getId())
                     .orElse(null);
 
             if (ts != null) {

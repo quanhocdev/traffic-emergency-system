@@ -280,8 +280,8 @@ public class UserBaoCaoService {
         report.setDoTinCay(0);
         report.setTrangThaiXuLy("CHO_XU_LY");
 
-        report.setIdTruSoDeXuat(null);
-        report.setIdTruSoTiepNhan(null);
+        report.setTruSoDeXuat(null);
+        report.setTruSoTiepNhan(null);
 
         BaoCaoSuCo savedReport =
                 reportRepository.save(report);

@@ -61,7 +61,7 @@ public class MucDoService {
                 id,
                 suCo.getTrangThaiXuLy(),
                 suCo.getMucDoNghiemTrong(),
-                suCo.getIdTruSoTiepNhan()
+                suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null
         );
 
         String status = suCo.getTrangThaiXuLy();
@@ -89,7 +89,7 @@ public class MucDoService {
             );
         }
 
-        Long idTruSo = suCo.getIdTruSoTiepNhan();
+        Long idTruSo = suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null;
 
         if (idTruSo == null) {
 
@@ -104,7 +104,7 @@ public class MucDoService {
             );
         }
 
-        if (!current.getId().equals(suCo.getIdTruSoTiepNhan())) {
+        if (!current.getId().equals(suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null)) {
 
             log.error(
                     "\nSự cố ID {} không thuộc trụ sở {}!",
@@ -154,14 +154,14 @@ public class MucDoService {
                         + "\nTrạng thái xử lý: {}",
                 suCo.getMucDoNghiemTrong(),
                 id,
-                suCo.getIdTruSoTiepNhan(),
+                suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null,
                 suCo.getTrangThaiXuLy()
         );
 
-        if (saved.getIdTruSoTiepNhan() != null) {
+        if (saved.getTruSoTiepNhan() != null) {
 
             realtimeService.broadcastTruSo(
-                    saved.getIdTruSoTiepNhan(),
+                    saved.getTruSoTiepNhan().getId(),
                     dto
             );
         }
