@@ -40,7 +40,6 @@ public class TinHieuMapper {
                     sos.getUser().getUid(),
                     sos.getUser().getName()
             );
-
             UserMiniDTO u = new UserMiniDTO();
             u.setId(sos.getUser().getUid());
             u.setName(sos.getUser().getName());
