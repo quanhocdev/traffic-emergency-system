@@ -56,17 +56,43 @@ public class TinHieuRealtimeService {
         );
 
         messagingTemplate.convertAndSend(
-                "/topic/user/" + sos.getUserId() + "/sos-status",
-                Map.of(
-                        "idSOS", sos.getId(),
-                        "trangThai", "HUY_BO",
-                        "message", "Bạn đã hủy yêu cầu cứu hộ"
-                )
-        );
+        "/topic/user/" + sos.getUserId() + "/sos-status",
+        Map.of(
+                "idSOS", sos.getId(),
+                "trangThai", "HUY_BO",
+                "message", layThongDiepTrangThai("HUY_BO")
+        )
+);
 
         messagingTemplate.convertAndSend(
                 "/topic/user/" + sos.getUserId() + "/history",
                 "REFRESH"
         );
     }
+    private String layThongDiepTrangThai(String trangThai) {
+    switch (trangThai) {
+        case "DANG_XU_LY":
+            return "Lực lượng cứu hộ đang đến!";
+
+        case "HOAN_THANH":
+            return "Hỗ trợ đã hoàn tất.";
+
+        case "HUY_BO":
+            return "Yêu cầu đã bị hủy.";
+
+        default:
+            return "Yêu cầu đang được xử lý.";
+    }
+}
+public void guiThongDiep(TinHieuSOS sos) {
+
+    messagingTemplate.convertAndSend(
+            "/topic/user/" + sos.getUserId() + "/sos-status",
+            Map.of(
+                    "idSOS", sos.getId(),
+                    "trangThai", sos.getTrangThai(),
+                    "message", layThongDiepTrangThai(sos.getTrangThai())
+            )
+    );
+}
 }

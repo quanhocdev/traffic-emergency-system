@@ -13,6 +13,7 @@ import com.example.suco.model.TruSo;
 import com.example.suco.service.DieuPhoiSOSService;
 import com.example.suco.service.DieuPhoiSOSService.ThongTinDieuPhoi;
 import com.example.suco.service.sos.system.mapper.TinHieuMapper;
+import com.example.suco.service.sos.system.notification.TinHieuRealtimeService;
 import com.example.suco.service.sos.system.validation.StatusService;
 @Service
 public class TrangThaiService {
@@ -31,6 +32,9 @@ public class TrangThaiService {
 
     @Autowired
     private TinHieuMapper tinHieuMapper;
+
+    @Autowired
+private TinHieuRealtimeService tinHieuRealtimeService;
 
     public void capNhatTrangThaiSOS(Long id, String status, TruSo current) {
 
@@ -113,7 +117,7 @@ public class TrangThaiService {
         }
 
         tinHieuSOSRepository.save(sos);
-
+        tinHieuRealtimeService.guiThongDiep(sos);
         TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
 
         Long targetTruSo =
