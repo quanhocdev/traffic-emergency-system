@@ -30,20 +30,13 @@ public class TinHieuController {
         @RequestBody TinHieuSOSRequestDTO dto
     ) {
     try {
-
         String token = authHeader.replace("Bearer ", "");
         String uid;
-
         FirebaseToken decodedToken =  FirebaseAuth.getInstance().verifyIdToken(token);
-
         uid = decodedToken.getUid();
-        
         TinHieuSOS sos = tinHieuService.submitSOS(uid, dto);
-
         return ResponseEntity.ok(sos);
-
     } catch (Exception e) {
-
         return ResponseEntity
                 .status(401)
                 .body("Xác thực thất bại: " + e.getMessage());
@@ -54,34 +47,16 @@ public ResponseEntity<?> cancelSOS(
         @RequestHeader("Authorization") String authHeader,
         @PathVariable Long id
 ) {
-
     try {
-
         String token = authHeader.replace("Bearer ", "");
-
         String currentUid;
-
-        // bypass dev
-        if ("dev-token".equals(token)) {
-
-            currentUid = "test-user";
-
-        } else {
-
-            FirebaseToken decodedToken =
-                    FirebaseAuth.getInstance().verifyIdToken(token);
-
-            currentUid = decodedToken.getUid();
-        }
-
+        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
+        currentUid = decodedToken.getUid();
         tinHieuService.cancelSOS(id, currentUid);
-
         return ResponseEntity.ok(
                 Map.of("message", "Đã hủy yêu cầu SOS thành công")
         );
-
     } catch (Exception e) {
-
         return ResponseEntity
                 .status(401)
                 .body("Xác thực thất bại");

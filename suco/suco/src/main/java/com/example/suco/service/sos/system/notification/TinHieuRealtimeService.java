@@ -17,9 +17,6 @@ public class TinHieuRealtimeService {
     @Autowired
     private TinHieuMapper tinHieuMapper;
 
-    // =========================
-    // GUI SOS
-    // =========================
     public void realtimeGuiSOS(TinHieuSOS sos) {
 
         TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
@@ -35,9 +32,6 @@ public class TinHieuRealtimeService {
         );
     }
 
-    // =========================
-    // HUY SOS
-    // =========================
     public void realtimeHuySOS(TinHieuSOS sos) {
 
         TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);

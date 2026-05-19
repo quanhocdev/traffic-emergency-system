@@ -16,10 +16,8 @@ import com.example.suco.model.User;
 import com.example.suco.repository.LoaiSuCoRepository;
 import com.example.suco.repository.UserRepository;
 import com.example.suco.repository.BaoCaoSuCoRepository;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

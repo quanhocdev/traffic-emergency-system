@@ -5,7 +5,6 @@ import com.example.suco.dto.TruSoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.TruSoRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -93,7 +92,6 @@ public class SuCoMapper {
                 );
             }
         }
-
         return dto;
     }
 }
