@@ -3,9 +3,6 @@ package com.example.suco.service.sos.system.mapper;
 import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
 import com.example.suco.dto.sos.UserMiniDTO;
 import com.example.suco.model.TinHieuSOS;
-import com.example.suco.model.User;
-import com.example.suco.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.slf4j.Logger;
@@ -15,9 +12,6 @@ import org.slf4j.LoggerFactory;
 public class TinHieuMapper {
 
     private static final Logger log = LoggerFactory.getLogger(TinHieuMapper.class);
-
-    @Autowired
-    private UserRepository userRepository;
 
     public TinHieuSOSResponseDTO mapToDTO(TinHieuSOS sos) {
 

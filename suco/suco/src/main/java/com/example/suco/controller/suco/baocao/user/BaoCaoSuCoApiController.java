@@ -2,12 +2,10 @@
 package com.example.suco.controller.suco.baocao.user;
 
 import com.example.suco.dto.AiRejectResponse;
-import com.example.suco.dto.SuCoMapDto;
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.User;
 import com.example.suco.repository.UserRepository;
-import com.example.suco.repository.BaoCaoSuCoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,14 +15,10 @@ import com.example.suco.service.AiVerifyResult;
 import com.example.suco.service.suco.baocao.user.UserBaoCaoService;
 import com.google.firebase.auth.FirebaseAuthException;
 import jakarta.validation.Valid;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/su-co")
 public class BaoCaoSuCoApiController {
-
-    @Autowired
-    private BaoCaoSuCoRepository reportRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -75,12 +69,6 @@ public class BaoCaoSuCoApiController {
         );
     }
     }
-
-//    @GetMapping("/map-data")
-//     public List<SuCoMapDto> getAllForMap() {
-//     return reportRepository.findAllForMap(); 
-// }
-
 
 @PatchMapping("/{id}")
 public ResponseEntity<?> cancelReport(

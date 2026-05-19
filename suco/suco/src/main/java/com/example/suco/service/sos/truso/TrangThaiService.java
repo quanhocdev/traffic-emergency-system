@@ -1,6 +1,5 @@
 package com.example.suco.service.sos.truso;
 
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -8,9 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.util.Optional;
 import com.example.suco.repository.TinHieuSOSRepository;
-import com.example.suco.repository.UserRepository;
 import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
-import com.example.suco.dto.sos.UserMiniDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
 import com.example.suco.service.DieuPhoiSOSService;
@@ -63,9 +60,6 @@ public class TrangThaiService {
             );
         }
 
-        // =========================
-        // DANG_XU_LY
-        // =========================
         if ("DANG_XU_LY".equals(status)) {
 
             Optional<ThongTinDieuPhoi> dpOpt = dieuPhoiService.layThongTinDieuPhoi(id);
@@ -84,9 +78,6 @@ public class TrangThaiService {
             dieuPhoiService.danhDauDaTiepNhan(id, current.getId());
         }
 
-        // =========================
-        // HOAN_THANH
-        // =========================
         if ("HOAN_THANH".equals(status)) {
 
             if (sos.getIdTruSoTiepNhan() == null
@@ -99,9 +90,6 @@ public class TrangThaiService {
             }
         }
 
-        // =========================
-        // TU_CHOI
-        // =========================
         if ("TU_CHOI".equals(status)) {
 
             dieuPhoiService.chuyenTiepSangTruSoTiepTheo(id, current.getId());
@@ -125,10 +113,6 @@ public class TrangThaiService {
         }
 
         tinHieuSOSRepository.save(sos);
-
-        // =========================
-        // FIX QUAN TRỌNG NHẤT Ở ĐÂY
-        // =========================
 
         TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
 

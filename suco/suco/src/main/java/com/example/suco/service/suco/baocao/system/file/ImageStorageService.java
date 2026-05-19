@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Base64;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,11 +11,9 @@ import java.nio.file.StandardCopyOption;
 
 @Service
 public class ImageStorageService {
-
     public String saveBase64Image(String base64Data) {
 
         try {
-
             String fileName =
                     System.currentTimeMillis() + "_report.jpg";
 

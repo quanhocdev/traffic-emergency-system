@@ -5,12 +5,9 @@ import com.example.suco.model.TinHieuSOS;
 import com.example.suco.repository.TinHieuSOSRepository;
 import com.example.suco.service.DieuPhoiSOSService;
 import com.example.suco.service.TinHieuSOSService;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import com.example.suco.service.sos.system.notification.TinHieuRealtimeService;
 import java.util.Map;
 
@@ -27,10 +24,7 @@ public class TinHieuService {
     private TinHieuRealtimeService tinHieuRealtimeService;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
-    @Autowired
-        private TinHieuSOSService tinHieuSOSService;
+    private TinHieuSOSService tinHieuSOSService;
 
     
 
@@ -51,6 +45,7 @@ public class TinHieuService {
 
         return sosDaLuu;
     }
+    
 public void cancelSOS(Long id, String currentUid) {
 
     TinHieuSOS sos = tinHieuSOSRepository.findById(id)
