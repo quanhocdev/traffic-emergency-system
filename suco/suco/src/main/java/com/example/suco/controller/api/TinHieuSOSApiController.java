@@ -1,19 +1,16 @@
         package com.example.suco.controller.api;
 
-        import com.example.suco.dto.TinHieuSOSRequestDTO;
 import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
 import com.example.suco.model.TinHieuSOS;
         import com.example.suco.model.TruSo;
         import com.example.suco.repository.MuaGoiRepository;
         import com.example.suco.repository.TinHieuSOSRepository;
         import com.example.suco.service.DieuPhoiSOSService;
-        import com.example.suco.service.TinHieuSOSService;
 
 import com.example.suco.service.sos.system.mapper.*;
         import jakarta.servlet.http.HttpSession;
 
         import org.springframework.beans.factory.annotation.Autowired;
-        import org.springframework.messaging.simp.SimpMessagingTemplate;
         import org.springframework.http.ResponseEntity;
         import org.springframework.web.bind.annotation.*;
         import java.util.*;
@@ -24,12 +21,6 @@ import com.example.suco.service.sos.system.mapper.*;
         @CrossOrigin(origins = "*")
         public class TinHieuSOSApiController {
 
-            @Autowired
-            private TinHieuSOSService tinHieuSOSService;
-
-            @Autowired
-            private SimpMessagingTemplate messagingTemplate;
-            
             @Autowired 
             private TinHieuSOSRepository tinHieuSOSRepository;
 
@@ -70,7 +61,6 @@ public ResponseEntity<?> getSosActive(
         .map(sos -> {
             TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
 
-            // 🔥 set VIP đúng cách (không phá DTO)
             boolean laVip = muaGoiRepository.findByUserId(sos.getUserId())
                 .stream()
                 .anyMatch(mg -> "ACTIVE".equalsIgnoreCase(mg.getTrangThai()));

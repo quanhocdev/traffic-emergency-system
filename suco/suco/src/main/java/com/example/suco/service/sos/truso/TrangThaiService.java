@@ -15,6 +15,7 @@ import com.example.suco.service.DieuPhoiSOSService.ThongTinDieuPhoi;
 import com.example.suco.service.sos.system.mapper.TinHieuMapper;
 import com.example.suco.service.sos.system.notification.TinHieuRealtimeService;
 import com.example.suco.service.sos.system.validation.StatusService;
+import java.util.List;
 @Service
 public class TrangThaiService {
 
@@ -135,4 +136,34 @@ private TinHieuRealtimeService tinHieuRealtimeService;
                 dto
         );
     }
+    public List<TinHieuSOSResponseDTO> layDanhSachSOSActive(
+        TruSo current,
+        String status
+) {
+
+    if (current == null) {
+        throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Chưa đăng nhập"
+        );
+    }
+
+    List<TinHieuSOS> rawList =
+            tinHieuSOSRepository.findActiveByTruSo(current.getId());
+
+    // filter status
+    if (status != null && !status.isEmpty()) {
+
+        rawList = rawList.stream()
+                .filter(sos ->
+                        status.equalsIgnoreCase(sos.getTrangThai())
+                )
+                .toList();
+    }
+
+    // map DTO
+    return rawList.stream()
+            .map(tinHieuMapper::mapToDTO)
+            .toList();
+}
 }

@@ -465,7 +465,7 @@ function loadExistingSuCo() {
     });
 }
 function loadExistingSOS() {
-  return fetch("/api/tin-hieu-sos/active")
+  return fetch("/sos/hoat-dong")
     .then((res) => res.json())
     .then((data) => {
       data.forEach((item) => {
