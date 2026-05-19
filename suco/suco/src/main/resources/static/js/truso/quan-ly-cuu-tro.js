@@ -196,7 +196,7 @@ function renderSuCoItem(suCo) {
 function loadPendingSuCo() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
 
-  fetch(`/api/map/su-co?idTruSo=${TRUSO_ID}`)
+  fetch(`/api/su-co/map?idTruSo=${TRUSO_ID}`)
     .then((res) => res.json())
     .then((data) => {
       console.log("Dữ liệu nhận được:", data);
