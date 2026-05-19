@@ -278,6 +278,19 @@ function formatItem(s, type) {
 }
 function filterType(type) {
   currentFilter = type;
+
+  const bSuCo = document.getElementById("btn-filter-su-co");
+  const bSOS = document.getElementById("btn-filter-sos");
+
+  if (bSuCo) bSuCo.classList.remove("active");
+  if (bSOS) bSOS.classList.remove("active");
+
+  if (type === "su-co") {
+    bSuCo?.classList.add("active");
+  } else {
+    bSOS?.classList.add("active");
+  }
+
   renderData();
 }
 
