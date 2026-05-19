@@ -8,13 +8,24 @@ import com.example.suco.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 public class TinHieuMapper {
+
+    private static final Logger log = LoggerFactory.getLogger(TinHieuMapper.class);
 
     @Autowired
     private UserRepository userRepository;
 
     public TinHieuSOSResponseDTO mapToDTO(TinHieuSOS sos) {
+
+        log.info("=== MAP SOS ID={} userId={} userRelation={} ===",
+                sos.getId(),
+                sos.getUserId(),
+                sos.getUser() != null ? sos.getUser().getUid() : null
+        );
 
         TinHieuSOSResponseDTO dto = new TinHieuSOSResponseDTO();
 
@@ -26,14 +37,21 @@ public class TinHieuMapper {
         dto.setTrangThai(sos.getTrangThai());
         dto.setCreatedAt(sos.getCreatedAt());
 
-        User user = userRepository.findById(sos.getUserId()).orElse(null);
+        log.info("DEBUG USER ENTITY = {}", sos.getUser());
 
-        if (user != null) {
+        if (sos.getUser() != null) {
+            log.info("USER FOUND: uid={}, name={}",
+                    sos.getUser().getUid(),
+                    sos.getUser().getName()
+            );
+
             UserMiniDTO u = new UserMiniDTO();
-            u.setId(user.getUid());
-            u.setName(user.getName());
-            u.setTotalPoints(user.getTotalPoints());
+            u.setId(sos.getUser().getUid());
+            u.setName(sos.getUser().getName());
+            u.setTotalPoints(sos.getUser().getTotalPoints());
             dto.setUser(u);
+        } else {
+            log.warn("USER NULL → fallback Khách vãng lai (SOS ID={})", sos.getId());
         }
 
         return dto;

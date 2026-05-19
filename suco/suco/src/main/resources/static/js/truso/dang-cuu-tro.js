@@ -272,23 +272,10 @@ function formatItem(s, type) {
     userPoints: s.user ? s.user.totalPoints : 0,
     // Quan trọng: Phải lấy được hoaDon từ object gốc s
     hoaDon: s.hoaDon || null,
-    reporterUid: s.reporterUid,
+    reporterUid: s.userId || s._raw?.userId,
     _raw: s,
   };
 }
-// function filterType(type) {
-//   currentFilter = type;
-//   const btnSuCo = document.getElementById("btn-filter-su-co");
-//   const btnSOS = document.getElementById("btn-filter-sos");
-//   if (type === "su-co") {
-//     btnSuCo.classList.add("active");
-//     btnSOS.classList.remove("active");
-//   } else {
-//     btnSOS.classList.add("active");
-//     btnSuCo.classList.remove("active");
-//   }
-//   renderData();
-// }
 function filterType(type) {
   currentFilter = type;
   renderData();
