@@ -18,7 +18,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
-import java.util.Base64;
+import com.example.suco.service.sos.system.mapper.*;
+
 import org.springframework.http.HttpStatus;
 @Service
 public class TinHieuSOSService {
@@ -43,20 +44,23 @@ public class TinHieuSOSService {
     @Autowired
     private DieuPhoiSOSService dieuPhoiService;
 
-    @Transactional
-    public Map<String, Object> xuLyTinHieuSOS(String uid, TinHieuSOSRequestDTO dto) {
-        TinHieuSOS sos = new TinHieuSOS();
-        sos.setUserId(uid);
-        sos.setViDo(dto.getViDo());
-        sos.setKinhDo(dto.getKinhDo());
-        sos.setGhiChu(dto.getGhiChu());
+    @Autowired
+    private TinHieuMapper tinHieuMapper;
 
-        // 1. Xử lý Geocoding an toàn (Tránh ConnectException)
-       if (dto.getDiaChi() != null && !dto.getDiaChi().isEmpty()) {
-        // Nếu App đã tự lấy địa chỉ rồi, dùng luôn, KHÔNG gọi API Geocoding nữa
+    @Transactional
+public Map<String, Object> xuLyTinHieuSOS(String uid, TinHieuSOSRequestDTO dto) {
+
+    // 1. Tạo SOS
+    TinHieuSOS sos = new TinHieuSOS();
+    sos.setUserId(uid);
+    sos.setViDo(dto.getViDo());
+    sos.setKinhDo(dto.getKinhDo());
+    sos.setGhiChu(dto.getGhiChu());
+
+    // 2. Xử lý địa chỉ
+    if (dto.getDiaChi() != null && !dto.getDiaChi().isEmpty()) {
         sos.setDiaChi(dto.getDiaChi());
     } else {
-        // Chỉ gọi khi App không gửi (fallback)
         try {
             var addrMap = geocodingUtil.getAddressFromCoordinates(sos.getViDo(), sos.getKinhDo());
             sos.setDiaChi(geocodingUtil.formatAddress(addrMap));
@@ -65,90 +69,109 @@ public class TinHieuSOSService {
         }
     }
 
-        // 2. Lưu File đính kèm
-        if (dto.getHinhAnhBase64() != null && !dto.getHinhAnhBase64().isEmpty()) {
-            sos.setHinhAnh(saveBase64ToFile(dto.getHinhAnhBase64(), "sos_img"));
-        }
-        if (dto.getGhiAmBase64() != null && !dto.getGhiAmBase64().isEmpty()) {
-            sos.setGhiAm(saveBase64ToFile(dto.getGhiAmBase64(), "sos_audio"));
-        }
-
-        // 3. Khởi tạo trạng thái ban đầu và LƯU ĐỂ LẤY ID (Tránh NullPointerException ở DieuPhoiService)
-        sos.setTrangThai("CHO_XU_LY");
-        TinHieuSOS sosDaLuu = tinHieuSOSRepository.save(sos);
-
-log.info("=== DEBUG VIP USER {} ===", uid);
-
-List<MuaGoi> listGoi = muaGoiRepository.findByUserId(uid);
-
-boolean laVip = listGoi.stream()
-        .anyMatch(mg -> "ACTIVE".equalsIgnoreCase(mg.getTrangThai()));
-log.info("VIP STATUS = {}", laVip);
-
-sosDaLuu.setIsVip(laVip);
-// 5. Khởi tạo luồng điều phối (Cần ID đã lưu)ádasdasd
-        ThongTinDieuPhoi thongTinDieuPhoi = dieuPhoiService.khoiTaoDieuPhoi(sosDaLuu);
-
-        TruSo truSoGanNhat = null;
-        if (thongTinDieuPhoi != null) {
-            Long idTruSoDauTien = thongTinDieuPhoi.layIdTruSoHienTai();
-            if (idTruSoDauTien != null) {
-                truSoGanNhat = truSoService.timTruSoTheoId(idTruSoDauTien);
-                sosDaLuu.setIdTruSoDeXuat(idTruSoDauTien);
-            }
-        }
-
-
-        // 6. Xử lý logic Ưu tiên/Gói cứu hộ
-        if (laVip && truSoGanNhat != null) {
-            log.info("Phát hiện User {} có gói đặc quyền. Tự động gán trụ sở {}", sosDaLuu.getUserId(), truSoGanNhat.getTenTruSo());
-            
-            sosDaLuu.setIdTruSoTiepNhan(truSoGanNhat.getId());
-            sosDaLuu.setTrangThai("DANG_XU_LY");
-            
-            // Đồng bộ trạng thái vào bộ nhớ điều phối
-            dieuPhoiService.danhDauDaTiepNhan(sosDaLuu.getId(), sosDaLuu.getIdTruSoTiepNhan());
-
-            // Thông báo tức thì cho App User
-            Map<String, Object> thongBaoApp = new HashMap<>();
-            thongBaoApp.put("idSOS", sosDaLuu.getId());
-            thongBaoApp.put("trangThai", "DANG_XU_LY");
-            thongBaoApp.put("message", "Bạn có gói đặc quyền! Trụ sở " + truSoGanNhat.getTenTruSo() + " đang đến ngay.");
-            messagingTemplate.convertAndSend("/topic/user/" + sosDaLuu.getUserId() + "/sos-status", thongBaoApp);
-            
-            // Gửi SOS thẳng vào màn hình xử lý của Trụ sở
-            messagingTemplate.convertAndSend("/topic/truso/" + sosDaLuu.getIdTruSoTiepNhan(), sosDaLuu);
-
-            // Nếu tín hiệu đã được gửi đến danh sách chờ chung, gửi lệnh xóa cho các trụ sở khác
-            if (thongTinDieuPhoi != null && thongTinDieuPhoi.getDanhSachIdTruSo().size() > 1) {
-                for (Long idTruSo : thongTinDieuPhoi.getDanhSachIdTruSo()) {
-                    if (!idTruSo.equals(sosDaLuu.getIdTruSoTiepNhan())) {
-                        Map<String, Object> thongBaoXoa = new HashMap<>();
-                        thongBaoXoa.put("loaiThongBao", "XOA_SOS");
-                        thongBaoXoa.put("idSos", sosDaLuu.getId());
-                        thongBaoXoa.put("reason", "VIP_GHI_DE");
-                        messagingTemplate.convertAndSend("/topic/truso/" + idTruSo + "/dieu-phoi", thongBaoXoa);
-                    }
-                }
-                // Dừng điều phối vì đã được VIP tiếp nhận
-                dieuPhoiService.danhDauDaTiepNhan(sosDaLuu.getId(), sosDaLuu.getIdTruSoTiepNhan());
-            }
-        }
-
-        // 7. Lưu lại các thay đổi cuối cùng (ID Trụ sở tiếp nhận/đề xuất)
-        sosDaLuu = tinHieuSOSRepository.save(sosDaLuu);
-
-        // 8. Gửi thông báo WebSocket cho các bên liên quan
-        messagingTemplate.convertAndSend("/topic/admin/sos", sosDaLuu);
-        messagingTemplate.convertAndSend("/topic/user/" + sosDaLuu.getUserId() + "/history", "REFRESH");
-
-        Map<String, Object> ketQua = new HashMap<>();
-        ketQua.put("sosData", sosDaLuu);
-        ketQua.put("truSoGanNhat", truSoGanNhat);
-        ketQua.put("thongTinDieuPhoi", thongTinDieuPhoi);
-        return ketQua;
+    // 3. File
+    if (dto.getHinhAnhBase64() != null && !dto.getHinhAnhBase64().isEmpty()) {
+        sos.setHinhAnh(saveBase64ToFile(dto.getHinhAnhBase64(), "sos_img"));
     }
 
+    if (dto.getGhiAmBase64() != null && !dto.getGhiAmBase64().isEmpty()) {
+        sos.setGhiAm(saveBase64ToFile(dto.getGhiAmBase64(), "sos_audio"));
+    }
+
+    // 4. Save lần 1
+    sos.setTrangThai("CHO_XU_LY");
+    TinHieuSOS sosDaLuu = tinHieuSOSRepository.save(sos);
+
+    // 5. VIP check
+    List<MuaGoi> listGoi = muaGoiRepository.findByUserId(uid);
+
+    boolean laVip = listGoi.stream()
+            .anyMatch(mg -> "ACTIVE".equalsIgnoreCase(mg.getTrangThai()));
+
+    sosDaLuu.setIsVip(laVip);
+
+    // 6. Điều phối
+    ThongTinDieuPhoi thongTinDieuPhoi = dieuPhoiService.khoiTaoDieuPhoi(sosDaLuu);
+
+    TruSo truSoGanNhat = null;
+
+    if (thongTinDieuPhoi != null) {
+        Long idTruSoDauTien = thongTinDieuPhoi.layIdTruSoHienTai();
+
+        if (idTruSoDauTien != null) {
+            truSoGanNhat = truSoService.timTruSoTheoId(idTruSoDauTien);
+            sosDaLuu.setIdTruSoDeXuat(idTruSoDauTien);
+        }
+    }
+
+    // 7. VIP auto assign
+    if (laVip && truSoGanNhat != null) {
+
+        sosDaLuu.setIdTruSoTiepNhan(truSoGanNhat.getId());
+        sosDaLuu.setTrangThai("DANG_XU_LY");
+
+        dieuPhoiService.danhDauDaTiepNhan(
+                sosDaLuu.getId(),
+                sosDaLuu.getIdTruSoTiepNhan()
+        );
+
+        // notify user
+        messagingTemplate.convertAndSend(
+                "/topic/user/" + uid + "/sos-status",
+                Map.of(
+                        "idSOS", sosDaLuu.getId(),
+                        "trangThai", "DANG_XU_LY",
+                        "message", "Trụ sở " + truSoGanNhat.getTenTruSo() + " đang đến"
+                )
+        );
+
+        // send to trụ sở
+        messagingTemplate.convertAndSend(
+                "/topic/truso/" + sosDaLuu.getIdTruSoTiepNhan(),
+                tinHieuMapper.mapToDTO(sosDaLuu)
+        );
+
+        // clear others
+        if (thongTinDieuPhoi != null) {
+            for (Long idTruSo : thongTinDieuPhoi.getDanhSachIdTruSo()) {
+                if (!idTruSo.equals(sosDaLuu.getIdTruSoTiepNhan())) {
+
+                    messagingTemplate.convertAndSend(
+                            "/topic/truso/" + idTruSo + "/dieu-phoi",
+                            Map.of(
+                                    "loaiThongBao", "XOA_SOS",
+                                    "idSos", sosDaLuu.getId(),
+                                    "reason", "VIP_GHI_DE"
+                            )
+                    );
+                }
+            }
+        }
+    }
+
+    // 8. Save cuối cùng
+    sosDaLuu = tinHieuSOSRepository.save(sosDaLuu);
+
+    // 9. WebSocket admin
+    messagingTemplate.convertAndSend(
+            "/topic/admin/sos",
+            tinHieuMapper.mapToDTO(sosDaLuu)
+    );
+
+    // 10. refresh history
+    messagingTemplate.convertAndSend(
+            "/topic/user/" + uid + "/history",
+            "REFRESH"
+    );
+
+    // 11. response
+    Map<String, Object> result = new HashMap<>();
+    result.put("sosData", tinHieuMapper.mapToDTO(sosDaLuu));
+    result.put("truSoGanNhat", truSoGanNhat);
+    result.put("thongTinDieuPhoi", thongTinDieuPhoi);
+
+    return result;
+}
     private String saveBase64ToFile(String base64Data, String prefix) {
         try {
             String extension = prefix.contains("audio") ? ".m4a" : ".jpg";

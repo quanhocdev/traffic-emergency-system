@@ -7,15 +7,8 @@ public class UserMiniDTO {
     private String name;
     private int totalPoints;
     private boolean vip;
-
+    private String email;
     public UserMiniDTO() {}
-
-    public UserMiniDTO(String id, String name, int totalPoints, boolean vip) {
-        this.id = id;
-        this.name = name;
-        this.totalPoints = totalPoints;
-        this.vip = vip;
-    }
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -28,4 +21,7 @@ public class UserMiniDTO {
 
     public boolean isVip() { return vip; }
     public void setVip(boolean vip) { this.vip = vip; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 }

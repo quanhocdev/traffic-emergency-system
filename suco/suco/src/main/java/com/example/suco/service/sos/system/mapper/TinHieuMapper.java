@@ -34,6 +34,7 @@ public class TinHieuMapper {
         dto.setKinhDo(sos.getKinhDo());
         dto.setDiaChi(sos.getDiaChi());
         dto.setGhiChu(sos.getGhiChu());
+        
         dto.setTrangThai(sos.getTrangThai());
         dto.setCreatedAt(sos.getCreatedAt());
 
@@ -49,6 +50,8 @@ public class TinHieuMapper {
             u.setId(sos.getUser().getUid());
             u.setName(sos.getUser().getName());
             u.setTotalPoints(sos.getUser().getTotalPoints());
+            u.setEmail(sos.getUser().getEmail());
+            
             dto.setUser(u);
         } else {
             log.warn("USER NULL → fallback Khách vãng lai (SOS ID={})", sos.getId());
