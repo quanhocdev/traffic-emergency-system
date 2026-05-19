@@ -8,7 +8,8 @@ public class TinHieuSOSResponseDTO {
     private double kinhDo;
     private String diaChi;
     private String ghiChu;
-    
+    private String hinhAnh;
+    private String ghiAm;
     private LocalDateTime createdAt;
     private String trangThai;
 
@@ -27,6 +28,10 @@ public class TinHieuSOSResponseDTO {
     public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
     public String getGhiChu() { return ghiChu; }
     public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
+    public String getHinhAnh() { return hinhAnh; }
+    public void setHinhAnh(String hinhAnh) { this.hinhAnh = hinhAnh; }
+    public String getGhiAm() { return ghiAm; }
+    public void setGhiAm(String ghiAm) { this.ghiAm = ghiAm; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public String getTrangThai() { return trangThai; }
