@@ -56,4 +56,21 @@ public class TrangThaiSOSController {
         List<TinHieuSOS> list = tinHieuSOSRepository.findHistoryByTruSo(current.getId());
         return ResponseEntity.ok(list);
     }
+@GetMapping("/hoat-dong")
+public ResponseEntity<?> getSosActive(
+        @RequestParam(required = false) String status,
+        HttpSession session
+) {
+
+    TruSo current = (TruSo) session.getAttribute("currentTruSo");
+
+    return ResponseEntity.ok(
+            trangThaiSOSService.layDanhSachSOSActive(
+                    current,
+                    status
+            )
+    );
 }
+
+}
+
