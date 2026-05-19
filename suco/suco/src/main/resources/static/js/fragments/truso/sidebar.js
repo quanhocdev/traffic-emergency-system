@@ -17,3 +17,25 @@ function toggleSidebar() {
     }
   }, 310);
 }
+async function logoutTruSo() {
+  const ok = confirm("Bạn có chắc muốn đăng xuất?");
+  if (!ok) return;
+
+  try {
+    const res = await fetch("/truso/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (res.ok) {
+      window.location.href = "/truso/login";
+    } else {
+      alert("Không thể đăng xuất!");
+    }
+  } catch (e) {
+    console.error("Logout error:", e);
+    alert("Đã xảy ra lỗi khi đăng xuất!");
+  }
+}
