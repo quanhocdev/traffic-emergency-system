@@ -779,11 +779,3 @@ function tiepNhanSOS(idTinHieu, maThietBi) {
     }
   });
 }
-function logout() {
-  fetch("/truso/logout", {
-    method: "POST",
-    credentials: "include",
-  }).then(() => {
-    window.location.href = "/truso/login";
-  });
-}

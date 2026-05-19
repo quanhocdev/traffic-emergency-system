@@ -159,3 +159,42 @@ body {
   justify-content: center;
   padding: 20px 10px;
 }
+
+/* ===== NÚT ĐĂNG XUẤT ===== */
+
+.logout-item {
+  margin-top: auto;
+  width: 100%;
+  border: none;
+  outline: none;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 14px 16px;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.12);
+
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.logout-item i {
+  font-size: 16px;
+  min-width: 22px;
+  text-align: center;
+}
+
+.logout-item:hover {
+  background: #dc3545;
+  color: #fff;
+
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.35);
+}
