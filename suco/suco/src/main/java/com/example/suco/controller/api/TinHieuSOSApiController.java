@@ -93,17 +93,7 @@ public ResponseEntity<?> getSosActive(
                     default: return "Yêu cầu đang được xử lý.";
                 }
             }
-        @GetMapping("/history")
-    public ResponseEntity<?> getSosHistory(HttpSession session) {
-        TruSo current = (TruSo) session.getAttribute("currentTruSo");
-
-        if (current == null) {
-            return ResponseEntity.status(401).body("Chưa đăng nhập");
-        }
-
-        List<TinHieuSOS> list = tinHieuSOSRepository.findHistoryByTruSo(current.getId());
-        return ResponseEntity.ok(list);
-    }
+       
 
 
             @GetMapping("/dieu-phoi/{idSos}")

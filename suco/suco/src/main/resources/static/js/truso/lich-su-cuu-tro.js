@@ -19,7 +19,7 @@ function formatTime(iso) {
 async function loadHistory() {
   try {
     const [sosRes, sucoRes] = await Promise.all([
-      fetch("/api/tin-hieu-sos/history").then((r) => r.json()),
+      fetch("/sos/lich-su").then((r) => r.json()),
       fetch("/su-co/lich-su").then((r) => r.json()),
     ]);
 
