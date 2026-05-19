@@ -84,15 +84,7 @@ public ResponseEntity<?> getSosActive(
         .collect(Collectors.toList());
 
     return ResponseEntity.ok(result);
-}
-
-            private String layThongDiepTrangThai(String trangThai) {
-                switch (trangThai) {
-                    case "DANG_XU_LY": return "Lực lượng cứu hộ đang đến!";
-                    case "HOAN_THANH": return "Hỗ trợ đã hoàn tất.";
-                    default: return "Yêu cầu đang được xử lý.";
-                }
-            }
+    }
        
 
 
