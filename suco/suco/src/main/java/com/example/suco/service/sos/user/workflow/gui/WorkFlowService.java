@@ -61,6 +61,9 @@ public class WorkFlowService {
 
     dispatchEngineService.startDispatch(sos);
 
+    sos = tinHieuSOSRepository.save(sos);
+
+
     TruSo truSo = truSoResolver.resolve(sos);
 
     vipService.handleVipFlow(laVip, sos, truSo, uid);
