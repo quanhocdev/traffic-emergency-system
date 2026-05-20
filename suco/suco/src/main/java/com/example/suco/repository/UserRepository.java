@@ -20,4 +20,6 @@ public interface UserRepository extends JpaRepository<User, String> {
             String email,
             String provider
     );
+        Optional<User> findByUid(String uid);
+
 }
