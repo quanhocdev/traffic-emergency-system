@@ -1,8 +1,12 @@
-package com.example.suco.service.sos.system.file;
+package com.example.suco.service.sos.user.workflow.gui.file;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.example.suco.dto.TinHieuSOSRequestDTO;
+import com.example.suco.model.TinHieuSOS;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -10,6 +14,9 @@ import java.util.Base64;
 
 @Service
 public class FileStorageService {
+     @Autowired
+private FileStorageService fileStorageService;
+
 
     private static final Logger log = LoggerFactory.getLogger(FileStorageService.class);
 
@@ -43,4 +50,13 @@ public class FileStorageService {
             return null;
         }
     }
+    public void handleFiles(TinHieuSOS sos, TinHieuSOSRequestDTO dto) {
+    if (dto.getHinhAnhBase64() != null) {
+        sos.setHinhAnh(fileStorageService.saveBase64ToFile(dto.getHinhAnhBase64(), "sos_img"));
+    }
+
+    if (dto.getGhiAmBase64() != null) {
+        sos.setGhiAm(fileStorageService.saveBase64ToFile(dto.getGhiAmBase64(), "sos_audio"));
+    }
+}
 }
