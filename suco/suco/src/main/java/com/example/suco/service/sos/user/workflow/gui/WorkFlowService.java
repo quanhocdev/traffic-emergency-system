@@ -4,7 +4,6 @@ import com.example.suco.dto.TinHieuSOSRequestDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.TinHieuSOSRepository;
-import com.example.suco.service.DieuPhoiSOSService;
 import com.example.suco.service.TruSoService;
 import com.example.suco.service.sos.system.mapper.TinHieuMapper;
 import com.example.suco.service.sos.user.workflow.gui.file.FileStorageService;
