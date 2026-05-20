@@ -8,7 +8,7 @@ import com.example.suco.model.User;
 import com.example.suco.repository.SpamRepository;
 import com.example.suco.repository.UserRepository;
 import com.example.suco.repository.BaoCaoSuCoRepository;
-import com.example.suco.service.TruSoService;
+import com.example.suco.service.dieuphoi.decision.TruSoSelectorService;
 import com.example.suco.service.suco.baocao.system.mapper.SuCoMapper;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.reward.UserRewardService;
@@ -35,7 +35,7 @@ public class DuyetSuCoService {
     private SpamRepository spamRepository;
 
     @Autowired
-    private TruSoService truSoService;
+    private TruSoSelectorService truSoSelectorService;
 
     @Autowired
     private UserRewardService userRewardService;
@@ -94,7 +94,7 @@ public class DuyetSuCoService {
                 );
             }
 
-            TruSo ganNhat = truSoService.timTruSoGanNhat(
+            TruSo ganNhat = truSoSelectorService.selectNearest(
                     report.getViDo(),
                     report.getKinhDo());
 
