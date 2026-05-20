@@ -16,10 +16,14 @@ public class SosResponseBuilder {
 
     public Map<String, Object> build(TinHieuSOS sos, TruSo truSo) {
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("sosData", tinHieuMapper.mapToDTO(sos));
-        result.put("truSoGanNhat", truSo);
+    Map<String, Object> result = new HashMap<>();
 
-        return result;
-    }
+    result.put("entity", sos);
+
+    result.put("sosData", tinHieuMapper.mapToDTO(sos));
+
+    result.put("truSoGanNhat", truSo);
+
+    return result;
+}
 }

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import com.example.suco.service.sos.user.TinHieuGuiService;
 import com.example.suco.service.sos.user.TinHieuHuyService;
 import com.example.suco.dto.TinHieuSOSRequestDTO;
+import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
@@ -27,23 +28,38 @@ public class TinHieuController {
     private TinHieuHuyService tinHieuHuyService;
 
     @PostMapping("/submit")
-    public ResponseEntity<?> submitSOS(
-        @RequestHeader("Authorization") String authHeader,
-        @RequestBody TinHieuSOSRequestDTO dto
-    ) {
+public ResponseEntity<?> submitSOS(
+    @RequestHeader("Authorization") String authHeader,
+    @RequestBody TinHieuSOSRequestDTO dto
+) {
     try {
+
         String token = authHeader.replace("Bearer ", "");
-        String uid;
-        FirebaseToken decodedToken =  FirebaseAuth.getInstance().verifyIdToken(token);
-        uid = decodedToken.getUid();
+
+        FirebaseToken decodedToken =
+                FirebaseAuth.getInstance().verifyIdToken(token);
+
+        String uid = decodedToken.getUid();
+
         TinHieuSOS sos = tinHieuService.submitSOS(uid, dto);
-        return ResponseEntity.ok(sos);
+
+        return ResponseEntity.ok(
+            Map.of(
+                "success", true,
+                "id", sos.getId(),
+                "message", "Gửi SOS thành công"
+            )
+        );
+
     } catch (Exception e) {
+
+        e.printStackTrace();
+
         return ResponseEntity
-                .status(401)
-                .body("Xác thực thất bại: " + e.getMessage());
+                .status(500) // QUAN TRỌNG
+                .body("Lỗi hệ thống: " + e.getMessage());
     }
-}    
+}
 @PostMapping("/cancel/{id}")
 public ResponseEntity<?> cancelSOS(
         @RequestHeader("Authorization") String authHeader,
