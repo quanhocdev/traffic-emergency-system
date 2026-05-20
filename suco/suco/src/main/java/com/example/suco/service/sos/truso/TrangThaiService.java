@@ -76,8 +76,6 @@ private TinHieuRealtimeService tinHieuRealtimeService;
     }
 
     sos.setIdTruSoTiepNhan(current.getId());
-
-    dispatchEngineService.moveNext(sos);
 }
         if ("HOAN_THANH".equals(status)) {
 

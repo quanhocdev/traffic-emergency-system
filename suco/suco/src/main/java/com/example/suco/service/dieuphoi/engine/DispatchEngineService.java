@@ -50,6 +50,9 @@ public class DispatchEngineService {
     // 👉 lấy từ retryService luôn (KHÔNG dùng queue nữa)
     Long first = retryService.getCurrent(event.getId());
 
+        event.setIdTruSoDeXuat(first);
+
+
     sendToTruSo(event, first);
 }
     // ================================
@@ -65,6 +68,9 @@ public class DispatchEngineService {
         retryService.done(event.getId());
         return;
     }
+
+        event.setIdTruSoDeXuat(next);
+
 
     sendToTruSo(event, next);
 }
