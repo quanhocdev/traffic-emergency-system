@@ -5,6 +5,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.suco.dto.TinHieuSOSRequestDTO;
+import com.example.suco.model.TinHieuSOS;
 import com.example.suco.util.GeocodingUtil;
 
 @Service
@@ -33,4 +35,18 @@ public class AddressService {
         Map<String, String> addressMap = geocodingUtil.getAddressFromCoordinates(latitude, longitude);
         return geocodingUtil.formatAddress(addressMap);
     }
+    public String resolveAddress(TinHieuSOS sos, TinHieuSOSRequestDTO dto) {
+    if (dto.getDiaChi() != null && !dto.getDiaChi().isEmpty()) {
+        return dto.getDiaChi();
+    }
+
+    try {
+        var addr = geocodingUtil.getAddressFromCoordinates(
+                sos.getViDo(), sos.getKinhDo()
+        );
+        return geocodingUtil.formatAddress(addr);
+    } catch (Exception e) {
+        return "SOS: " + sos.getViDo() + ", " + sos.getKinhDo();
+    }
+}
 }
