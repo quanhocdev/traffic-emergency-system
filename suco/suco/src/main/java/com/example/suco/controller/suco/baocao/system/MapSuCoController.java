@@ -39,7 +39,7 @@ public List<SuCoMapDto> getMapData(
 
     } else {
 
-        list = repo.findAll();
+        list = repo.findAllForMapEntity();
     }
 
     return list.stream()
