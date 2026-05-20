@@ -357,16 +357,6 @@ function connectRealtime() {
   stompClient.connect(
     {},
     function (frame) {
-      // SOS channel
-      stompClient.subscribe("/topic/truso/" + TRUSO_ID, function (message) {
-        try {
-          const sos = JSON.parse(message.body);
-          handleRealtimeSOS(sos);
-        } catch (e) {
-          console.error("Invalid SOS message", e);
-        }
-      });
-
       // Kênh điều phối - nhận thông tin chuyển tiếp SOS
       stompClient.subscribe(
         "/topic/truso/" + TRUSO_ID + "/dieu-phoi",

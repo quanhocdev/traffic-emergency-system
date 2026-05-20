@@ -71,16 +71,15 @@ private TruSo truSoDeXuat;
 private TruSo truSoTiepNhan;
 
 private Integer doTinCay = 1;
-// Thêm trường này vào sau doTinCay
+
 @Column(name = "dia_chi", columnDefinition = "TEXT")
 private String diaChi;
 
-
- public BaoCaoSuCo() {}
-// Thêm Getter & Setter
-public String getDiaChi() { return diaChi; }
-public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
-    // ===== Getter & Setter =====
+    public BaoCaoSuCo() {}
+    
+    public String getDiaChi() { return diaChi; }
+    public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

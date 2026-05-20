@@ -699,6 +699,9 @@ function connectWebSocket() {
     // --- 4. KÊNH SỰ CỐ (Chỉnh lại để rung chuông) ---
     stompClient.subscribe("/topic/su-co", (msg) => {
       const updatedSuCo = JSON.parse(msg.body);
+      if (updatedSuCo.trangThaiDuyet !== "VERIFIED") {
+        return;
+      }
       const markerKey = "SU_CO_" + updatedSuCo.id;
 
       // Nếu là sự cố mới gửi tới bản đồ
