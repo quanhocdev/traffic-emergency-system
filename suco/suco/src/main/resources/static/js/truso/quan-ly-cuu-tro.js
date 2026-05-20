@@ -105,7 +105,7 @@ function appendSOS(sos) {
 function loadPendingSOS() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
 
-  fetch("/api/tin-hieu-sos/active")
+  fetch("/sos/hoat-dong")
     .then((res) => res.json())
     .then((data) => {
       console.log("📦 API /active RAW DATA =", data);
