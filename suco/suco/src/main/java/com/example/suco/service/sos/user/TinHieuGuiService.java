@@ -3,8 +3,6 @@ package com.example.suco.service.sos.user;
 import com.example.suco.dto.TinHieuSOSRequestDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.repository.TinHieuSOSRepository;
-import com.example.suco.service.DieuPhoiSOSService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

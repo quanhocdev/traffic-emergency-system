@@ -79,4 +79,8 @@ public class DispatchEngineService {
                 event
         );
     }
+
+    public void cancel(Long sosId) {
+    retryService.done(sosId);
+}
 }

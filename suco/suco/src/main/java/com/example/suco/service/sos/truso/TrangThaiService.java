@@ -10,8 +10,7 @@ import com.example.suco.repository.TinHieuSOSRepository;
 import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
-import com.example.suco.service.DieuPhoiSOSService;
-import com.example.suco.service.DieuPhoiSOSService.ThongTinDieuPhoi;
+import com.example.suco.service.dieuphoi.engine.DispatchEngineService;
 import com.example.suco.service.sos.system.mapper.TinHieuMapper;
 import com.example.suco.service.sos.system.notification.TinHieuRealtimeService;
 import com.example.suco.service.sos.system.validation.StatusService;
@@ -23,7 +22,7 @@ public class TrangThaiService {
     private TinHieuSOSRepository tinHieuSOSRepository;
 
     @Autowired
-    private DieuPhoiSOSService dieuPhoiService;
+private DispatchEngineService dispatchEngineService;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -65,24 +64,21 @@ private TinHieuRealtimeService tinHieuRealtimeService;
             );
         }
 
-        if ("DANG_XU_LY".equals(status)) {
+       if ("DANG_XU_LY".equals(status)) {
 
-            Optional<ThongTinDieuPhoi> dpOpt = dieuPhoiService.layThongTinDieuPhoi(id);
+    if (sos.getIdTruSoDeXuat() == null ||
+        !sos.getIdTruSoDeXuat().equals(current.getId())) {
 
-            if (dpOpt.isEmpty()
-                    || !dpOpt.get().getDanhSachIdTruSo().contains(current.getId())) {
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "SOS không thuộc về trụ sở của bạn"
+        );
+    }
 
-                throw new ResponseStatusException(
-                        HttpStatus.FORBIDDEN,
-                        "SOS không thuộc về trụ sở của bạn"
-                );
-            }
+    sos.setIdTruSoTiepNhan(current.getId());
 
-            sos.setIdTruSoTiepNhan(current.getId());
-
-            dieuPhoiService.danhDauDaTiepNhan(id, current.getId());
-        }
-
+    dispatchEngineService.moveNext(sos);
+}
         if ("HOAN_THANH".equals(status)) {
 
             if (sos.getIdTruSoTiepNhan() == null
@@ -97,7 +93,7 @@ private TinHieuRealtimeService tinHieuRealtimeService;
 
         if ("TU_CHOI".equals(status)) {
 
-            dieuPhoiService.chuyenTiepSangTruSoTiepTheo(id, current.getId());
+            dispatchEngineService.moveNext(sos);
 
             TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
 
@@ -114,7 +110,7 @@ private TinHieuRealtimeService tinHieuRealtimeService;
 
         // hủy điều phối
         if ("HOAN_THANH".equals(status) || "HUY_BO".equals(status)) {
-            dieuPhoiService.huyDieuPhoi(id);
+            dispatchEngineService.cancel(sos.getId());
         }
 
         tinHieuSOSRepository.save(sos);
