@@ -1,14 +1,13 @@
 package com.example.suco.controller.sos.user;
 
 import java.util.Map;
-
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import com.example.suco.service.sos.user.TinHieuService;
+import com.example.suco.service.sos.user.TinHieuGuiService;
+import com.example.suco.service.sos.user.TinHieuHuyService;
 import com.example.suco.dto.TinHieuSOSRequestDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,7 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class TinHieuController {
 
     @Autowired
-    private TinHieuService tinHieuService;
+    private TinHieuGuiService tinHieuService;
+
+    @Autowired
+    private TinHieuHuyService tinHieuHuyService;
 
     @PostMapping("/submit")
     public ResponseEntity<?> submitSOS(
@@ -52,7 +54,7 @@ public ResponseEntity<?> cancelSOS(
         String currentUid;
         FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
         currentUid = decodedToken.getUid();
-        tinHieuService.cancelSOS(id, currentUid);
+        tinHieuHuyService.cancelSOS(id, currentUid);
         return ResponseEntity.ok(
                 Map.of("message", "Đã hủy yêu cầu SOS thành công")
         );

@@ -1,17 +1,16 @@
 package com.example.suco.service.sos.user;
-
-import com.example.suco.dto.TinHieuSOSRequestDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.repository.TinHieuSOSRepository;
 import com.example.suco.service.DieuPhoiSOSService;
-import com.example.suco.service.sos.system.process.ProcessingService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.example.suco.service.sos.system.notification.TinHieuRealtimeService;
-import java.util.Map;
+import com.example.suco.service.sos.user.workflow.gui.WorkFlowService;
 
 @Service
-public class TinHieuService {
+public class TinHieuHuyService {
 
     @Autowired
     private TinHieuSOSRepository tinHieuSOSRepository;
@@ -22,24 +21,6 @@ public class TinHieuService {
     @Autowired
     private TinHieuRealtimeService tinHieuRealtimeService;
 
-    @Autowired
-    private ProcessingService processingService;
-
-    public TinHieuSOS submitSOS(
-            String uid,
-            TinHieuSOSRequestDTO dto
-    ) {
-
-        Map<String, Object> ketQua =
-                processingService.xuLyTinHieuSOS(uid, dto);
-
-        TinHieuSOS sosDaLuu =
-                (TinHieuSOS) ketQua.get("sosData");
-
-       tinHieuRealtimeService.realtimeGuiSOS(sosDaLuu);
-
-        return sosDaLuu;
-    }
     
 public void cancelSOS(Long id, String currentUid) {
 
