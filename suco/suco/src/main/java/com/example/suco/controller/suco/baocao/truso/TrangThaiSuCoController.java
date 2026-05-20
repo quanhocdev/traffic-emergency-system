@@ -53,13 +53,16 @@ public List<SuCoMapDto> getSuCoHienTai(
 }
   
     @GetMapping("/lich-su")
-    public List<BaoCaoSuCo> getSuCoHistory(HttpSession session) {
+public List<SuCoMapDto> getSuCoHistory(HttpSession session) {
 
-        TruSo current = (TruSo) session.getAttribute("currentTruSo");
-        if (current == null) return List.of();
+    TruSo current = (TruSo) session.getAttribute("currentTruSo");
+    if (current == null) return List.of();
 
-        return repo.findHistoryByTruSo(current.getId());
-    }
+    return repo.findHistoryByTruSo(current.getId())
+            .stream()
+            .map(suCoMapper::convertToDto)
+            .toList();
+}
 
     @PatchMapping("/cap-nhat-trang-thai/{id}")
     public ResponseEntity<?> updateSuCoStatus(
