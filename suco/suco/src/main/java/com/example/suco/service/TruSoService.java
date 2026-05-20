@@ -119,72 +119,7 @@ public void deleteTruSo(Long id) {
     messagingTemplate.convertAndSend("/topic/tru-so-delete", id);
 }
 
-    // LOGIC TÌM KIẾM CHI TIẾT VỚI ĐẦY ĐỦ LOG
-    public TruSo timTruSoGanNhat(double userLat, double userLng) {
-        log.debug("DEBUG: Đang tìm trụ sở cho vị trí {}, {}", userLat, userLng);
-        String khuVuc = (userLat > 10.0 && userLat < 11.0 && userLng > 106.0 && userLng < 107.0) 
-                        ? "TP. Hồ Chí Minh (Khu vực trọng điểm)" : "Ngoài vùng phủ sóng ưu tiên";
 
-        log.info("==================== HỆ THỐNG ĐỊNH VỊ SOS/SỰ CỐ ====================");
-        log.info("[VỊ TRÍ] Tọa độ: {}, {}", userLat, userLng);
-        log.info("[ĐỊA ĐIỂM]  Ước tính: {}", khuVuc);
-        log.info("--------------------------------------------------------------");
-
-        List<TruSo> candidates = new ArrayList<>();
-        int precision = 6; 
-
-        while (precision >= 4 && candidates.isEmpty()) {
-            GeoHash center = GeoHash.withCharacterPrecision(userLat, userLng, precision);
-            String currentHash = center.toBase32();
-
-            List<String> searchPrefixes = new ArrayList<>();
-            searchPrefixes.add(currentHash);
-            for (GeoHash adjacent : center.getAdjacent()) {
-                searchPrefixes.add(adjacent.toBase32());
-            }
-
-            log.info("[BƯỚC 1: QUÉT VÙNG] Cấp độ {} | Mã Geohash: {}...", precision, currentHash);
-            
-            if (precision == 6) {
-                candidates = truSoRepository.findByGeohashIn(searchPrefixes);
-            } else {
-                for (String prefix : searchPrefixes) {
-                    candidates.addAll(truSoRepository.findByGeohashStartingWith(prefix));
-                }
-                candidates = new ArrayList<>(new HashSet<>(candidates));
-            }
-
-            if (candidates.isEmpty()) {
-                log.warn("   => Không có trụ sở ở cấp {}. Đang tự động lùi cấp...", precision);
-                precision--; 
-            }
-        }
-
-        if (candidates.isEmpty()) {
-            log.error("[CẢNH BÁO] Quét toàn bộ DB.");
-            candidates = truSoRepository.findAll();
-        }
-
-        TruSo ganNhat = null;
-        double minD = Double.MAX_VALUE;
-
-        for (TruSo ts : candidates) {
-            double d = tinhKhoangCach(userLat, userLng, ts.getViDo(), ts.getKinhDo());
-            log.info("   -> Xét: {} | Khoảng cách: {} mét", ts.getTenTruSo(), Math.round(d * 1000));
-
-            if (d < minD) {
-                minD = d;
-                ganNhat = ts;
-            }
-        }
-
-        if (ganNhat != null) {
-            log.info("[KẾT QUẢ] TRỤ SỞ TIẾP NHẬN: {} (Cách {} mét)", ganNhat.getTenTruSo(), Math.round(minD * 1000));
-            log.info("==============================================================");
-        }
-
-        return ganNhat;
-    }
 
     private double tinhKhoangCach(double lat1, double lon1, double lat2, double lon2) {
         double R = 6371;
