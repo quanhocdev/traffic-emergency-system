@@ -131,16 +131,10 @@ public void deleteTruSo(Long id) {
         return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
-    /**
-     * Tìm trụ sở theo ID.
-     */
     public TruSo timTruSoTheoId(Long idTruSo) {
         return truSoRepository.findById(idTruSo).orElse(null);
     }
 
-    /**
-     * Lấy tất cả trụ sở.
-     */
     public List<TruSo> layTatCaTruSo() {
         return truSoRepository.findAll();
     }
