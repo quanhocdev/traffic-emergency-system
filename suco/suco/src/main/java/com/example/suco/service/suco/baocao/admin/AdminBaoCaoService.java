@@ -11,7 +11,7 @@ import com.example.suco.service.TruSoService;
 import com.example.suco.service.suco.baocao.system.file.ImageStorageService;
 import com.example.suco.service.suco.baocao.system.mapper.SuCoMapper;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
-
+import com.example.suco.service.dieuphoi.decision.TruSoSelectorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -32,7 +32,7 @@ public class AdminBaoCaoService {
     private LoaiSuCoRepository loaiSuCoRepository;
 
     @Autowired
-    private TruSoService truSoService;
+    private TruSoSelectorService truSoSelectorService;
 
     @Autowired
     private ImageStorageService imageStorageService;
@@ -70,7 +70,7 @@ public class AdminBaoCaoService {
                     imageStorageService.saveMultipartImage(image));
         }
 
-        TruSo ganNhat = truSoService.timTruSoGanNhat(
+        TruSo ganNhat = truSoSelectorService.selectNearest(
                 report.getViDo(),
                 report.getKinhDo());
 
