@@ -1,16 +1,14 @@
 package com.example.suco.service.sos.user;
 
 import com.example.suco.dto.TinHieuSOSRequestDTO;
-import com.example.suco.model.TinHieuSOS;
-import com.example.suco.repository.TinHieuSOSRepository;
+import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import com.example.suco.model.TinHieuSOS;
 import com.example.suco.service.sos.system.notification.TinHieuRealtimeService;
 import com.example.suco.service.sos.user.workflow.gui.WorkFlowService;
 
 import java.util.Map;
-
 @Service
 public class TinHieuGuiService {
 
@@ -24,15 +22,15 @@ public class TinHieuGuiService {
             String uid,
             TinHieuSOSRequestDTO dto
     ) {
+
         Map<String, Object> ketQua =
                 processingService.xuLyTinHieuSOS(uid, dto);
 
         TinHieuSOS sosDaLuu =
-                (TinHieuSOS) ketQua.get("sosData");
+                (TinHieuSOS) ketQua.get("entity");
 
-       tinHieuRealtimeService.realtimeGuiSOS(sosDaLuu);
+        tinHieuRealtimeService.realtimeGuiSOS(sosDaLuu);
 
         return sosDaLuu;
     }
-    
 }
