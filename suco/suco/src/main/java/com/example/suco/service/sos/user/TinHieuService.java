@@ -4,9 +4,8 @@ import com.example.suco.dto.TinHieuSOSRequestDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.repository.TinHieuSOSRepository;
 import com.example.suco.service.DieuPhoiSOSService;
-import com.example.suco.service.TinHieuSOSService;
+import com.example.suco.service.sos.system.process.ProcessingService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import com.example.suco.service.sos.system.notification.TinHieuRealtimeService;
 import java.util.Map;
@@ -24,11 +23,7 @@ public class TinHieuService {
     private TinHieuRealtimeService tinHieuRealtimeService;
 
     @Autowired
-    private TinHieuSOSService tinHieuSOSService;
-
-    
-
-
+    private ProcessingService processingService;
 
     public TinHieuSOS submitSOS(
             String uid,
@@ -36,7 +31,7 @@ public class TinHieuService {
     ) {
 
         Map<String, Object> ketQua =
-                tinHieuSOSService.xuLyTinHieuSOS(uid, dto);
+                processingService.xuLyTinHieuSOS(uid, dto);
 
         TinHieuSOS sosDaLuu =
                 (TinHieuSOS) ketQua.get("sosData");
