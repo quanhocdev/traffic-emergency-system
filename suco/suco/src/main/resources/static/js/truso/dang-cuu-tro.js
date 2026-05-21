@@ -254,10 +254,7 @@ async function loadActiveRescues() {
 // Hàm phụ để chuẩn hóa dữ liệu cho sạch code
 function formatItem(s, type) {
   // Ưu tiên lấy trangThai (của SOS) hoặc trangThaiXuLy (của Sự cố)
-  let statusRaw =
-    type === "SOS"
-      ? s.trangThai || "DANG_XU_LY"
-      : s.trangThaiXuLy || "DANG_XU_LY";
+  let statusRaw = type === "SOS" ? s.trangThai : s.trangThaiXuLy;
 
   return {
     id: s.id,
@@ -298,7 +295,6 @@ function renderData() {
   const list = document.getElementById("rescue-list");
   if (!list) return;
 
-  // Xóa sạch trước khi render
   list.innerHTML = "";
 
   let filtered = allData.filter((item) => {
@@ -317,7 +313,8 @@ function renderData() {
       .toUpperCase()
       .trim();
 
-    return ["CHO_XU_LY", "DANG_XU_LY"].includes(st);
+    // CHỈ hiện ca đã tiếp nhận
+    return st === "DANG_XU_LY";
   });
 
   filtered.sort((a, b) => {
