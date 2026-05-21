@@ -27,12 +27,10 @@ public class CreateService {
         if (user != null) {
             sos.setUser(user);
         }
-
         sos.setViDo(dto.getViDo());
         sos.setKinhDo(dto.getKinhDo());
         sos.setGhiChu(dto.getGhiChu());
         sos.setTrangThai("CHO_XU_LY");
-
         return sos;
     }
 }
