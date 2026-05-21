@@ -1,8 +1,7 @@
-
-
 package com.example.suco.controller.sos.system;
 
-import com.example.suco.service.dieuphoi.retry.RetryService;
+import com.example.suco.model.TinHieuSOS;
+import com.example.suco.repository.TinHieuSOSRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,30 +15,24 @@ import java.util.Map;
 public class DieuPhoiController {
 
     @Autowired
-    private RetryService retryService;
+    private TinHieuSOSRepository tinHieuSOSRepository;
 
     @GetMapping("/dieu-phoi/{idSos}")
     public ResponseEntity<?> layThongTinDieuPhoi(@PathVariable Long idSos) {
 
-        RetryService.SessionState s = retryService.get(idSos);
+        TinHieuSOS sos = tinHieuSOSRepository.findById(idSos)
+                .orElse(null);
 
-        if (s == null) {
+        if (sos == null) {
             return ResponseEntity.notFound().build();
         }
 
         Map<String, Object> res = new HashMap<>();
 
-        res.put("idSos", s.eventId);
-        res.put("index", s.index);
-        res.put("queue", s.queue);
-        res.put("status", s.status);
-
-        Long currentTruSo =
-                (s.queue != null && s.index < s.queue.size())
-                        ? s.queue.get(s.index)
-                        : null;
-
-        res.put("truSoHienTai", currentTruSo);
+        res.put("idSos", sos.getId());
+        res.put("status", sos.getTrangThai());
+        res.put("truSoDeXuat", sos.getIdTruSoDeXuat());
+        res.put("truSoTiepNhan", sos.getIdTruSoTiepNhan());
 
         return ResponseEntity.ok(res);
     }

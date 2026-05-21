@@ -37,6 +37,9 @@ public class TrangThaiService {
     @Autowired
     private CheckTrangThaiService checkTrangThaiService;
 
+    // =========================================
+    // UPDATE TRẠNG THÁI
+    // =========================================
     public void capNhatTrangThaiSOS(Long id, String status, TruSo current) {
 
         if (status != null) {
@@ -53,37 +56,81 @@ public class TrangThaiService {
 
         checkTrangThaiService.validateAll(sos, currentStatus, status, current);
 
-        // 2. HANDLE TU_CHOI
+        // =================================================
+        // 1. TỪ CHỐI
+        // =================================================
         if ("TU_CHOI".equals(status)) {
 
-            dispatchEngineService.moveNext(sos);
+            // ENGINE mới: tự quyết định next (DB sau này)
+            // TODO: lấy queue + index từ DB (sẽ làm bảng sau)
+List<Long> queue = List.of(); // placeholder
+int index = 0;
 
-            TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
+dispatchEngineService.reject(sos, queue, index);
 
-            messagingTemplate.convertAndSend(
-                    "/topic/truso/" + current.getId(),
-                    dto
-            );
-
+            notify(sos, current);
             return;
         }
 
-        // 3. UPDATE STATUS
-        sos.setTrangThai(status);
+        // =================================================
+        // 2. TIMEOUT (nếu FE hoặc scheduler gọi)
+        // =================================================
+        if ("TIMEOUT".equals(status)) {
 
-        if ("DANG_XU_LY".equals(status)) {
+            // TODO: lấy queue + index từ DB (sẽ làm bảng sau)
+List<Long> queue = List.of(); // placeholder
+int index = 0;
+
+dispatchEngineService.reject(sos, queue, index);
+
+            notify(sos, current);
+            return;
+        }
+
+        // =================================================
+        // 3. TIẾP NHẬN
+        // =================================================
+        if ("TIEP_NHAN".equals(status)) {
+
+            sos.setTrangThai("DANG_XU_LY");
             sos.setIdTruSoTiepNhan(current.getId());
+
+            dispatchEngineService.accept(sos, current.getId());
+
+            tinHieuSOSRepository.save(sos);
+            notify(sos, current);
+            return;
         }
 
-        // 4. BUSINESS RULE END
-        if ("HOAN_THANH".equals(status) || "HUY_BO".equals(status)) {
-            dispatchEngineService.cancel(sos.getId());
+        // =================================================
+        // 4. HỦY
+        // =================================================
+        if ("HUY_BO".equals(status)) {
+
+            sos.setTrangThai("HUY_BO");
+
+            dispatchEngineService.cancel(sos);
+
+            tinHieuSOSRepository.save(sos);
+
+            notify(sos, current);
+            return;
         }
 
-        // 5. SAVE
+        // =================================================
+        // 5. DEFAULT UPDATE
+        // =================================================
+        sos.setTrangThai(status);
         tinHieuSOSRepository.save(sos);
 
-        // 6. REALTIME
+        notify(sos, current);
+    }
+
+    // =========================================
+    // COMMON NOTIFY
+    // =========================================
+    private void notify(TinHieuSOS sos, TruSo current) {
+
         tinHieuRealtimeService.guiThongDiep(sos);
 
         TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
@@ -104,6 +151,9 @@ public class TrangThaiService {
         );
     }
 
+    // =========================================
+    // LIST ACTIVE
+    // =========================================
     public List<TinHieuSOSResponseDTO> layDanhSachSOSActive(
             TruSo current,
             String status
