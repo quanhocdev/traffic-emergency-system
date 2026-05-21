@@ -1,15 +1,16 @@
 package com.example.suco.service.dieuphoi.engine;
 
-import com.example.suco.model.TruSo;
+import com.example.suco.model.SosDieuPhoi;
 import com.example.suco.model.TinHieuSOS;
-import com.example.suco.service.dieuphoi.distance.DistanceService;
+import com.example.suco.model.TruSo;
+import com.example.suco.repository.SosDieuPhoiRepository;
 import com.example.suco.service.dieuphoi.geohash.GeoHashService;
 import com.example.suco.service.dieuphoi.queue.DispatchQueueService;
-import com.example.suco.service.dieuphoi.retry.RetryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -19,74 +20,145 @@ public class DispatchEngineService {
     private GeoHashService geoHashService;
 
     @Autowired
-    private DistanceService distanceService;
-
-    @Autowired
     private DispatchQueueService queueService;
 
     @Autowired
-    private RetryService retryService;
+    private SosDieuPhoiRepository dieuPhoiRepo;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    // ================================
-    // 1. START DISPATCH (SOS / INCIDENT)
-    // ================================
+    // =====================================================
+    // 1. START DISPATCH
+    // =====================================================
     public void startDispatch(TinHieuSOS event) {
 
-    double lat = event.getViDo();
-    double lng = event.getKinhDo();
+        List<TruSo> candidates = geoHashService.findTruSoInArea(
+                event.getViDo(),
+                event.getKinhDo()
+        );
 
-    List<TruSo> candidates = geoHashService.findTruSoInArea(lat, lng);
+        if (candidates == null || candidates.isEmpty()) return;
 
-    if (candidates.isEmpty()) return;
+        List<Long> queue = queueService.buildQueue(
+                candidates,
+                event.getViDo(),
+                event.getKinhDo()
+        );
 
-    List<Long> queue = queueService.buildQueue(candidates, lat, lng);
+        if (queue.isEmpty()) return;
 
-    // 👉 RetryService giữ toàn bộ queue
-    retryService.create(event.getId(), queue);
+        Long first = queue.get(0);
 
-    // 👉 lấy từ retryService luôn (KHÔNG dùng queue nữa)
-    Long first = retryService.getCurrent(event.getId());
+        // INSERT DB
+        SosDieuPhoi dp = new SosDieuPhoi();
+        dp.setSosId(event.getId());
+        dp.setTruSoId(first);
+        dp.setThuTu(0);
+        dp.setTrangThai("CHO_TIEP_NHAN");
+        dp.setThoiGianGui(LocalDateTime.now());
+
+        dieuPhoiRepo.save(dp);
 
         event.setIdTruSoDeXuat(first);
 
-
-    sendToTruSo(event, first);
-}
-    // ================================
-    // 2. NEXT STEP (TIMEOUT / REJECT)
-    // ================================
-    public void moveNext(TinHieuSOS event) {
-
-    retryService.moveNext(event.getId());
-
-    Long next = retryService.getCurrent(event.getId());
-
-    if (next == null) {
-        retryService.done(event.getId());
-        return;
+        send(event, first);
     }
 
-        event.setIdTruSoDeXuat(next);
+    // =====================================================
+    // 2. REJECT
+    // =====================================================
+    public void reject(TinHieuSOS event) {
 
+        SosDieuPhoi current = dieuPhoiRepo
+                .findBySosIdAndTrangThai(event.getId(), "CHO_TIEP_NHAN")
+                .orElse(null);
 
-    sendToTruSo(event, next);
-}
+        if (current == null) return;
 
-    // ================================
-    // 3. SEND WEB SOCKET
-    // ================================
-    private void sendToTruSo(TinHieuSOS event, Long truSoId) {
+        current.setTrangThai("TU_CHOI");
+        current.setThoiGianXuLy(LocalDateTime.now());
 
+        dieuPhoiRepo.save(current);
+
+        int nextIndex = current.getThuTu() + 1;
+
+        List<SosDieuPhoi> all = dieuPhoiRepo.findBySosIdOrderByThuTuAsc(event.getId());
+
+        if (nextIndex >= all.size()) return;
+
+        SosDieuPhoi next = all.get(nextIndex);
+
+        SosDieuPhoi newRow = new SosDieuPhoi();
+        newRow.setSosId(event.getId());
+        newRow.setTruSoId(next.getTruSoId());
+        newRow.setThuTu(nextIndex);
+        newRow.setTrangThai("CHO_TIEP_NHAN");
+        newRow.setThoiGianGui(LocalDateTime.now());
+
+        dieuPhoiRepo.save(newRow);
+
+        event.setIdTruSoDeXuat(next.getTruSoId());
+
+        send(event, next.getTruSoId());
+    }
+
+    // =====================================================
+    // 3. TIMEOUT
+    // =====================================================
+    public void timeout(TinHieuSOS event) {
+        reject(event);
+    }
+
+    // =====================================================
+    // 4. ACCEPT
+    // =====================================================
+    public void accept(TinHieuSOS event, Long truSoId) {
+
+        SosDieuPhoi dp = dieuPhoiRepo
+                .findBySosIdAndTruSoId(event.getId(), truSoId)
+                .orElse(null);
+
+        if (dp != null) {
+            dp.setTrangThai("TIEP_NHAN");
+            dp.setThoiGianXuLy(LocalDateTime.now());
+            dieuPhoiRepo.save(dp);
+        }
+
+        event.setIdTruSoTiepNhan(truSoId);
+        event.setIdTruSoDeXuat(truSoId);
+        event.setTrangThai("DANG_XU_LY");
+
+        send(event, truSoId);
+    }
+
+    // =====================================================
+    // 5. CANCEL
+    // =====================================================
+    public void cancel(TinHieuSOS event) {
+
+        List<SosDieuPhoi> list =
+                dieuPhoiRepo.findBySosIdOrderByThuTuAsc(event.getId());
+
+        for (SosDieuPhoi dp : list) {
+            if (!"TIEP_NHAN".equals(dp.getTrangThai())) {
+                dp.setTrangThai("HUY_BO");
+                dp.setThoiGianXuLy(LocalDateTime.now());
+            }
+        }
+
+        dieuPhoiRepo.saveAll(list);
+
+        event.setTrangThai("HUY_BO");
+    }
+
+    // =====================================================
+    // SOCKET
+    // =====================================================
+    private void send(TinHieuSOS event, Long truSoId) {
         messagingTemplate.convertAndSend(
                 "/topic/truso/" + truSoId,
                 event
         );
     }
-
-    public void cancel(Long sosId) {
-    retryService.done(sosId);
-}
 }

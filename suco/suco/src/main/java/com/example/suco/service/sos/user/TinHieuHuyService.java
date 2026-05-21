@@ -2,7 +2,6 @@ package com.example.suco.service.sos.user;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.repository.TinHieuSOSRepository;
-import com.example.suco.service.dieuphoi.retry.RetryService;
 import com.example.suco.service.sos.system.notification.TinHieuRealtimeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,9 +11,6 @@ public class TinHieuHuyService {
 
     @Autowired
     private TinHieuSOSRepository tinHieuSOSRepository;
-
-    @Autowired
-    private RetryService retryService;
 
     @Autowired
     private TinHieuRealtimeService tinHieuRealtimeService;
@@ -36,10 +32,7 @@ public class TinHieuHuyService {
         sos.setTrangThai("HUY_BO");
         tinHieuSOSRepository.save(sos);
 
-        // 2. remove engine state
-        retryService.done(id);
-
-        // 3. realtime notify
+        // 2. realtime notify
         tinHieuRealtimeService.realtimeHuySOS(sos);
     }
 }

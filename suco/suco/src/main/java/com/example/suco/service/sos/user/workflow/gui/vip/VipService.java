@@ -3,7 +3,6 @@ package com.example.suco.service.sos.user.workflow.gui.vip;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.MuaGoiRepository;
-import com.example.suco.service.dieuphoi.retry.RetryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +11,6 @@ public class VipService {
 
     @Autowired
     private MuaGoiRepository muaGoiRepository;
-
-    @Autowired
-    private RetryService retryService;
 
     public boolean checkVip(String uid) {
         return muaGoiRepository.findByUserId(uid)
@@ -27,9 +23,9 @@ public class VipService {
         if (!laVip || truSo == null) return;
 
         sos.setIdTruSoTiepNhan(truSo.getId());
+        sos.setIdTruSoDeXuat(truSo.getId());
         sos.setTrangThai("DANG_XU_LY");
 
-        retryService.done(sos.getId());
-
+        // VIP bypass: không cần queue / retry nữa
     }
 }
