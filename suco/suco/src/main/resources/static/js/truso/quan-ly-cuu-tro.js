@@ -96,10 +96,10 @@ function appendSOS(sos) {
   // prepend so newest is first
   // If this SOS was just handled by this client, don't duplicate
   if (handledSOS.has(sos.id)) return;
-  list.innerHTML = renderSOSItem(sos) + list.innerHTML;
+  list.insertAdjacentHTML("afterbegin", renderSOSItem(sos));
 
-  // Bắt đầu đếm ngược cho SOS mới
-  batDauDemNguocInline(sos.id, 60);
+  const remain = sos.thoiGianConLai ?? 60;
+  batDauDemNguocInline(sos.id, remain);
 }
 
 function loadPendingSOS() {
@@ -147,19 +147,25 @@ function loadPendingSOS() {
       if (noDataElem) noDataElem.style.display = "none";
       list.innerHTML = ""; // Xóa danh sách cũ
       pendingSOS.forEach((sos) => {
-        list.innerHTML += renderSOSItem(sos);
+        const existed = document.getElementById("sos-card-" + sos.id);
+
+        if (!existed) {
+          list.insertAdjacentHTML("beforeend", renderSOSItem(sos));
+        }
       });
 
       // Khởi động đếm ngược cho tất cả SOS đã load
       // Tính thời gian còn lại dựa trên createdAt
       pendingSOS.forEach((sos) => {
-        let thoiGianConLai = 60;
-        if (sos.createdAt) {
-          const createdTime = new Date(sos.createdAt).getTime();
-          const now = Date.now();
-          const giayDaQua = Math.floor((now - createdTime) / 1000);
-          thoiGianConLai = Math.max(5, 60 - giayDaQua); // Ít nhất 5s để xem
-        }
+        const thoiGianConLai = sos.thoiGianConLai ?? 60;
+        console.log(
+          "SOS:",
+          sos.id,
+          "createdAt=",
+          sos.createdAt,
+          "remain=",
+          sos.thoiGianConLai,
+        );
         batDauDemNguocInline(sos.id, thoiGianConLai);
       });
     });
@@ -274,6 +280,7 @@ function handleRealtimeSuCo(suCo) {
     status === "HOAN_THANH"
   ) {
     if (card) {
+      dungDemNguocInline(id);
       card.remove();
       checkEmptyList();
     }
@@ -309,7 +316,9 @@ function handleRealtimeSOS(sos) {
       list.insertAdjacentHTML("afterbegin", renderSOSItem(sos));
 
       // Kích hoạt đếm ngược cho card mới
-      batDauDemNguocInline(sos.id, 60);
+      if (!demNguocIntervals[sos.id]) {
+        batDauDemNguocInline(sos.id, 60);
+      }
 
       // Phát âm thanh
       const audio = new Audio("/assets/sounds/alert.mp3");
@@ -324,7 +333,10 @@ function handleRealtimeSOS(sos) {
   } else if (status !== "CHO_XU_LY") {
     // Nếu trạng thái thay đổi sang cái khác, xóa card đó đi
     const card = document.getElementById("sos-card-" + sos.id);
-    if (card) card.remove();
+    if (card) {
+      dungDemNguocInline(sos.id);
+      card.remove();
+    }
     checkEmptyList();
   }
 }
@@ -414,7 +426,9 @@ function xuLyThongBaoDieuPhoi(thongBao) {
     console.log(`[ĐIỀU PHỐI] Nhận SOS #${idSos} - Vị trí ${viTri}/${tongSo}`);
 
     // Bắt đầu đếm ngược với thời gian từ server
-    batDauDemNguocInline(idSos, thoiGianCho);
+    if (!demNguocIntervals[idSos]) {
+      batDauDemNguocInline(idSos, thoiGianCho);
+    }
 
     // Bắt đầu đếm ngược badge
     batDauDemNguoc(idSos, thoiGianCho, viTri, tongSo);
@@ -437,28 +451,44 @@ function xuLyThongBaoDieuPhoi(thongBao) {
 
 // ========== ĐẾM NGƯỢC INLINE (hiển thị trên mỗi card) ==========
 function batDauDemNguocInline(idSos, thoiGianGiay) {
-  // Dừng đếm ngược cũ nếu có
-  dungDemNguocInline(idSos);
+  // Nếu đã có timer rồi thì không tạo nữa
+  if (demNguocIntervals[idSos]) {
+    return;
+  }
 
-  let thoiGianConLai = thoiGianGiay;
+  let thoiGianConLai = Math.max(0, parseInt(thoiGianGiay) || 0);
+
   const timerElem = document.getElementById("timer-sos-" + idSos);
   if (!timerElem) return;
 
-  // Cập nhật hiển thị ban đầu
   capNhatHienThiTimer(timerElem, thoiGianConLai);
 
-  demNguocIntervals[idSos] = setInterval(() => {
-    thoiGianConLai--;
-    capNhatHienThiTimer(timerElem, thoiGianConLai);
+  if (thoiGianConLai <= 0) return;
 
-    if (thoiGianConLai <= 0) {
-      dungDemNguocInline(idSos);
-      // Tự động gọi từ chối khi hết giờ
-      tuChoiTiepNhan(idSos, true);
+  demNguocIntervals[idSos] = setInterval(() => {
+    if (!document.getElementById("sos-card-" + idSos)) {
+      clearInterval(demNguocIntervals[idSos]);
+      delete demNguocIntervals[idSos];
+      return;
     }
+
+    thoiGianConLai--;
+
+    // CHẶN ÂM
+    if (thoiGianConLai <= 0) {
+      thoiGianConLai = 0;
+
+      capNhatHienThiTimer(timerElem, 0);
+
+      clearInterval(demNguocIntervals[idSos]);
+      delete demNguocIntervals[idSos];
+
+      return;
+    }
+
+    capNhatHienThiTimer(timerElem, thoiGianConLai);
   }, 1000);
 }
-
 function dungDemNguocInline(idSos) {
   if (demNguocIntervals[idSos]) {
     clearInterval(demNguocIntervals[idSos]);
@@ -523,6 +553,7 @@ function tuChoiTiepNhan(idSos, tuDong = false) {
         card.style.transform = "translateX(100%)";
 
         setTimeout(() => {
+          dungDemNguocInline(idSos);
           card.remove();
           checkEmptyList();
         }, 300);
@@ -646,6 +677,7 @@ function xoaCardSOS(idSos, lyDo) {
     card.style.transform = "translateX(50px)";
 
     setTimeout(() => {
+      dungDemNguocInline(idSos);
       card.remove();
       checkEmptyList(); // Cập nhật lại giao diện "Hiện không có yêu cầu nào"
 
@@ -879,9 +911,9 @@ window.addEventListener("load", function () {
   if (btnSuCo) btnSuCo.addEventListener("click", () => setActiveView("suco"));
   if (btnSos) btnSos.addEventListener("click", () => setActiveView("sos"));
 
-  // 3. Kết nối Realtime trước để không bỏ lỡ tin nhắn nào
-  connectRealtime();
-
-  // 4. Hiển thị view mặc định (Hàm này sẽ tự gọi loadPendingSOS)
   setActiveView("sos");
+
+  setTimeout(() => {
+    connectRealtime();
+  }, 300);
 });

@@ -107,8 +107,19 @@ public class DispatchEngineService {
     // 3. TIMEOUT
     // =====================================================
     public void timeout(TinHieuSOS event) {
-        reject(event);
-    }
+    SosDieuPhoi current = dieuPhoiRepo
+            .findBySosIdAndTrangThai(event.getId(), "CHO_TIEP_NHAN")
+            .orElse(null);
+
+    if (current == null) return;
+
+    current.setTrangThai("TIMEOUT");
+    current.setThoiGianXuLy(LocalDateTime.now());
+    dieuPhoiRepo.save(current);
+
+    // vẫn phải move queue
+    reject(event);
+}
 
     // =====================================================
     // 4. ACCEPT
