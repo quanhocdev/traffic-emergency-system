@@ -25,6 +25,10 @@ public class CheckTrangThaiService {
 
         switch (newStatus) {
 
+            case "TIEP_NHAN":
+                rules.checkQuyenXuLy(sos, current);
+                break;
+
             case "DANG_XU_LY":
                 rules.checkQuyenXuLy(sos, current);
                 break;

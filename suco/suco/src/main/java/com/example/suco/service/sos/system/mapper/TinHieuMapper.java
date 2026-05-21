@@ -46,7 +46,6 @@ public class TinHieuMapper {
         dto.setTrangThai(sos.getTrangThai());
         dto.setCreatedAt(sos.getCreatedAt());
 
-        // ================== TÍNH THỜI GIAN CÒN LẠI ==================
         Optional<SosDieuPhoi> dpOpt =
                 sosDieuPhoiRepository.findTopBySosIdOrderByThoiGianGuiDesc(sos.getId());
 
@@ -96,7 +95,6 @@ public class TinHieuMapper {
 
             log.warn("USER NULL → fallback Khách vãng lai (SOS ID={})", sos.getId());
         }
-
         return dto;
     }
 }

@@ -869,32 +869,31 @@ setInterval(() => {
 function confirmRescue(id) {
   if (!confirm("Xác nhận tiếp nhận cứu trợ cho ca này?")) return;
 
-  // Hiệu ứng chờ trên nút
   const btn = document.getElementById("btn-accept-" + id);
+
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
   }
 
-  // Gửi yêu cầu lên server
-
-  fetch(`/sos/cap-nhat-trang-thai/${id}?status=DANG_XU_LY`, {
+  fetch(`/sos/cap-nhat-trang-thai/${id}?status=TIEP_NHAN`, {
     method: "PATCH",
   })
     .then((res) => res.json())
     .then((data) => {
-      if (data.message === "Cập nhật thành công") {
-        // Chuyển hướng sang trang bản đồ để bắt đầu đi cứu trợ
-        // Giả sử trang chủ của bạn có bản đồ và truyền tham số ID
-        window.location.href = "/truso/trang-chu?focusSos=" + id;
-      } else {
-        alert("Lỗi: " + (data.message || "Không thể tiếp nhận ca này."));
-        location.reload(); // Reload để cập nhật trạng thái mới nhất
-      }
+      console.log("ACCEPT RESULT =", data);
+
+      window.location.href = "/truso/trang-chu?focusSos=" + id;
     })
     .catch((err) => {
       console.error(err);
+
       alert("Có lỗi kết nối hệ thống.");
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Tiếp nhận';
+      }
     });
 }
 

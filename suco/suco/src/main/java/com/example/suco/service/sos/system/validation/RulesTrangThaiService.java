@@ -62,10 +62,20 @@ public class RulesTrangThaiService {
         switch (current) {
 
             case "CHO_XU_LY":
-                if (!("DANG_XU_LY".equals(next) || "TU_CHOI".equals(next))) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transition không hợp lệ");
-                }
-                break;
+
+    if (!(
+            "TIEP_NHAN".equals(next)
+            || "DANG_XU_LY".equals(next)
+            || "TU_CHOI".equals(next)
+    )) {
+
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Transition không hợp lệ"
+        );
+    }
+
+    break;
 
             case "DANG_XU_LY":
                 if (!"HOAN_THANH".equals(next)) {
