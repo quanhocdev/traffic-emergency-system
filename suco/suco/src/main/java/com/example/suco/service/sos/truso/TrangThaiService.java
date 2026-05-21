@@ -61,12 +61,7 @@ public class TrangThaiService {
         // =================================================
         if ("TU_CHOI".equals(status)) {
 
-            // ENGINE mới: tự quyết định next (DB sau này)
-            // TODO: lấy queue + index từ DB (sẽ làm bảng sau)
-List<Long> queue = List.of(); // placeholder
-int index = 0;
-
-dispatchEngineService.reject(sos, queue, index);
+dispatchEngineService.reject(sos);
 
             notify(sos, current);
             return;
@@ -76,12 +71,7 @@ dispatchEngineService.reject(sos, queue, index);
         // 2. TIMEOUT (nếu FE hoặc scheduler gọi)
         // =================================================
         if ("TIMEOUT".equals(status)) {
-
-            // TODO: lấy queue + index từ DB (sẽ làm bảng sau)
-List<Long> queue = List.of(); // placeholder
-int index = 0;
-
-dispatchEngineService.reject(sos, queue, index);
+dispatchEngineService.reject(sos);
 
             notify(sos, current);
             return;

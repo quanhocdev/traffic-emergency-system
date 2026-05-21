@@ -15,4 +15,7 @@ public interface SosDieuPhoiRepository extends JpaRepository<SosDieuPhoi, Long> 
     Optional<SosDieuPhoi> findBySosIdAndTrangThai(Long sosId, String trangThai);
 
     Optional<SosDieuPhoi> findBySosIdAndThuTu(Long sosId, Integer thuTu);
+
+        Optional<SosDieuPhoi> findTopBySosIdOrderByThoiGianGuiDesc(Long sosId);
+
 }

@@ -13,6 +13,8 @@ public class TinHieuSOSResponseDTO {
     private LocalDateTime createdAt;
     private String trangThai;
 
+    private Long thoiGianConLai;
+
     private String userId; // giữ lại nếu cần
 
     private UserMiniDTO user; // ⭐ QUAN TRỌNG
@@ -34,6 +36,13 @@ public class TinHieuSOSResponseDTO {
     public void setGhiAm(String ghiAm) { this.ghiAm = ghiAm; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public Long getThoiGianConLai() {
+    return thoiGianConLai;
+}
+
+public void setThoiGianConLai(Long thoiGianConLai) {
+    this.thoiGianConLai = thoiGianConLai;
+}
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
     public String getUserId() { return userId; }
