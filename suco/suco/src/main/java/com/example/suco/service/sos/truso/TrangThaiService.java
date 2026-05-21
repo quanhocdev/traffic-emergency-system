@@ -71,7 +71,7 @@ dispatchEngineService.reject(sos);
         // 2. TIMEOUT (nếu FE hoặc scheduler gọi)
         // =================================================
         if ("TIMEOUT".equals(status)) {
-dispatchEngineService.reject(sos);
+dispatchEngineService.timeout(sos);
 
             notify(sos, current);
             return;
