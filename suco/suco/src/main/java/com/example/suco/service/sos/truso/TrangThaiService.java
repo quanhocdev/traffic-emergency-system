@@ -1,20 +1,21 @@
 package com.example.suco.service.sos.truso;
 
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import java.util.Optional;
-import com.example.suco.repository.TinHieuSOSRepository;
 import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
+import com.example.suco.repository.TinHieuSOSRepository;
 import com.example.suco.service.dieuphoi.engine.DispatchEngineService;
 import com.example.suco.service.sos.system.mapper.TinHieuMapper;
 import com.example.suco.service.sos.system.notification.TinHieuRealtimeService;
-import com.example.suco.service.sos.system.validation.StatusService;
+import com.example.suco.service.sos.system.validation.CheckTrangThaiService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
+
 @Service
 public class TrangThaiService {
 
@@ -22,19 +23,19 @@ public class TrangThaiService {
     private TinHieuSOSRepository tinHieuSOSRepository;
 
     @Autowired
-private DispatchEngineService dispatchEngineService;
+    private DispatchEngineService dispatchEngineService;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    private StatusService statusService;
-
-    @Autowired
     private TinHieuMapper tinHieuMapper;
 
     @Autowired
-private TinHieuRealtimeService tinHieuRealtimeService;
+    private TinHieuRealtimeService tinHieuRealtimeService;
+
+    @Autowired
+    private CheckTrangThaiService checkTrangThaiService;
 
     public void capNhatTrangThaiSOS(Long id, String status, TruSo current) {
 
@@ -50,45 +51,9 @@ private TinHieuRealtimeService tinHieuRealtimeService;
 
         String currentStatus = sos.getTrangThai();
 
-        if (!statusService.isValidTransition(currentStatus, status)) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Chuyển trạng thái không hợp lệ"
-            );
-        }
+        checkTrangThaiService.validateAll(sos, currentStatus, status, current);
 
-        if ("HOAN_THANH".equals(currentStatus) || "HUY_BO".equals(currentStatus)) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "SOS đã kết thúc"
-            );
-        }
-
-       if ("DANG_XU_LY".equals(status)) {
-
-    if (sos.getIdTruSoDeXuat() == null ||
-        !sos.getIdTruSoDeXuat().equals(current.getId())) {
-
-        throw new ResponseStatusException(
-                HttpStatus.FORBIDDEN,
-                "SOS không thuộc về trụ sở của bạn"
-        );
-    }
-
-    sos.setIdTruSoTiepNhan(current.getId());
-}
-        if ("HOAN_THANH".equals(status)) {
-
-            if (sos.getIdTruSoTiepNhan() == null
-                    || !sos.getIdTruSoTiepNhan().equals(current.getId())) {
-
-                throw new ResponseStatusException(
-                        HttpStatus.FORBIDDEN,
-                        "Chỉ trụ sở tiếp nhận mới được hoàn thành"
-                );
-            }
-        }
-
+        // 2. HANDLE TU_CHOI
         if ("TU_CHOI".equals(status)) {
 
             dispatchEngineService.moveNext(sos);
@@ -103,16 +68,24 @@ private TinHieuRealtimeService tinHieuRealtimeService;
             return;
         }
 
-        // update status
+        // 3. UPDATE STATUS
         sos.setTrangThai(status);
 
-        // hủy điều phối
+        if ("DANG_XU_LY".equals(status)) {
+            sos.setIdTruSoTiepNhan(current.getId());
+        }
+
+        // 4. BUSINESS RULE END
         if ("HOAN_THANH".equals(status) || "HUY_BO".equals(status)) {
             dispatchEngineService.cancel(sos.getId());
         }
 
+        // 5. SAVE
         tinHieuSOSRepository.save(sos);
+
+        // 6. REALTIME
         tinHieuRealtimeService.guiThongDiep(sos);
+
         TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
 
         Long targetTruSo =
@@ -130,34 +103,27 @@ private TinHieuRealtimeService tinHieuRealtimeService;
                 dto
         );
     }
+
     public List<TinHieuSOSResponseDTO> layDanhSachSOSActive(
-        TruSo current,
-        String status
-) {
+            TruSo current,
+            String status
+    ) {
 
-    if (current == null) {
-        throw new ResponseStatusException(
-                HttpStatus.UNAUTHORIZED,
-                "Chưa đăng nhập"
-        );
-    }
+        if (current == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Chưa đăng nhập"
+            );
+        }
 
-    List<TinHieuSOS> rawList =
-            tinHieuSOSRepository.findActiveByTruSo(current.getId());
-
-    // filter status
-    if (status != null && !status.isEmpty()) {
-
-        rawList = rawList.stream()
+        return tinHieuSOSRepository.findActiveByTruSo(current.getId())
+                .stream()
                 .filter(sos ->
+                        status == null ||
+                        status.isEmpty() ||
                         status.equalsIgnoreCase(sos.getTrangThai())
                 )
+                .map(tinHieuMapper::mapToDTO)
                 .toList();
     }
-
-    // map DTO
-    return rawList.stream()
-            .map(tinHieuMapper::mapToDTO)
-            .toList();
-}
 }
