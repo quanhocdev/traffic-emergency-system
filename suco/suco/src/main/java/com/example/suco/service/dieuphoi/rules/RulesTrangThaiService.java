@@ -1,4 +1,4 @@
-package com.example.suco.service.sos.system.validation;
+package com.example.suco.service.dieuphoi.rules;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
@@ -67,6 +67,7 @@ public class RulesTrangThaiService {
             "TIEP_NHAN".equals(next)
             || "DANG_XU_LY".equals(next)
             || "TU_CHOI".equals(next)
+            || "TIMEOUT".equals(next)
     )) {
 
         throw new ResponseStatusException(

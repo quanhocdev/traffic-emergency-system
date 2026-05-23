@@ -483,6 +483,26 @@ function batDauDemNguocInline(idSos, thoiGianGiay) {
       clearInterval(demNguocIntervals[idSos]);
       delete demNguocIntervals[idSos];
 
+      console.log("⏰ TIMEOUT SOS =", idSos);
+
+      fetch(`/sos/cap-nhat-trang-thai/${idSos}?status=TIMEOUT`, {
+        method: "PATCH",
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("TIMEOUT RESULT =", data);
+
+          const card = document.getElementById("sos-card-" + idSos);
+
+          if (card) {
+            card.remove();
+            checkEmptyList();
+          }
+        })
+        .catch((err) => {
+          console.error("TIMEOUT ERROR =", err);
+        });
+
       return;
     }
 
