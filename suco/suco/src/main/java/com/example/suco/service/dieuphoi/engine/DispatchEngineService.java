@@ -156,17 +156,20 @@ public void accept(TinHieuSOS event, Long truSoId) {
 
     dieuPhoiRepo.save(current);
 
-    // DELETE HANG_CHO
-    List<SosDieuPhoi> all =
+    // Bỏ qua các trụ sở phía sau
+        List<SosDieuPhoi> all =
             dieuPhoiRepo.findBySosIdOrderByThuTuAsc(event.getId());
 
     for (SosDieuPhoi item : all) {
 
         if ("HANG_CHO".equals(item.getTrangThai())) {
-
-            dieuPhoiRepo.delete(item);
+            item.setTrangThai("BO_QUA");
+            item.setThoiGianXuLy(LocalDateTime.now());
         }
     }
+
+    dieuPhoiRepo.saveAll(all);
+
 
     // UPDATE SOS
     event.setTrangThai("DANG_XU_LY");
