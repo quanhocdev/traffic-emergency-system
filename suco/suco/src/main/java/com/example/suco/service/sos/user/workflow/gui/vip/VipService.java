@@ -26,6 +26,5 @@ public class VipService {
         sos.setIdTruSoDeXuat(truSo.getId());
         sos.setTrangThai("DANG_XU_LY");
 
-        // VIP bypass: không cần queue / retry nữa
     }
 }

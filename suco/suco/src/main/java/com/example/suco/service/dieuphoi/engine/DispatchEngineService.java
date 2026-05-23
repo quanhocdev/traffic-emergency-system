@@ -213,6 +213,8 @@ public void accept(TinHieuSOS event, Long truSoId) {
         if (nextIndex >= all.size()) {
 
             event.setTrangThai("KHONG_CO_TRU_SO");
+                tinHieuSOSRepository.save(event);
+
 
             return;
         }
@@ -226,6 +228,8 @@ public void accept(TinHieuSOS event, Long truSoId) {
         dieuPhoiRepo.save(next);
 
         event.setIdTruSoDeXuat(next.getTruSoId());
+        tinHieuSOSRepository.save(event);
+
 
         send(event, next.getTruSoId());
     }

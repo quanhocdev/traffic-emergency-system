@@ -2,6 +2,8 @@ package com.example.suco.service.sos.system.validation;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
+import com.example.suco.service.dieuphoi.rules.RulesTrangThaiService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +41,9 @@ public class CheckTrangThaiService {
 
             case "TU_CHOI":
                 rules.checkQuyenTuChoi(sos, current);
+                break;
+
+            case "TIMEOUT":
                 break;
         }
     }
