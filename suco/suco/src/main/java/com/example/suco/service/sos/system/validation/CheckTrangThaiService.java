@@ -45,6 +45,9 @@ public class CheckTrangThaiService {
 
             case "TIMEOUT":
                 break;
+
+            case "BO_QUA":
+                break;
         }
     }
 }
