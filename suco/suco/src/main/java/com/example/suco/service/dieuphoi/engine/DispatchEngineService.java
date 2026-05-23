@@ -6,13 +6,14 @@ import com.example.suco.model.TruSo;
 import com.example.suco.repository.SosDieuPhoiRepository;
 import com.example.suco.repository.TinHieuSOSRepository;
 import com.example.suco.service.dieuphoi.geohash.GeoHashService;
-import com.example.suco.service.dieuphoi.queue.DispatchQueueService;
+import com.example.suco.service.dieuphoi.distance.DistanceService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -22,7 +23,7 @@ public class DispatchEngineService {
     private GeoHashService geoHashService;
 
     @Autowired
-    private DispatchQueueService queueService;
+    private DistanceService distanceService;
 
     @Autowired
     private SosDieuPhoiRepository dieuPhoiRepo;
@@ -36,57 +37,85 @@ private TinHieuSOSRepository tinHieuSOSRepository;
     // =====================================================
     // 1. START DISPATCH
     // =====================================================
-    public void startDispatch(TinHieuSOS event) {
+   public void startDispatch(TinHieuSOS event) {
 
-        List<TruSo> candidates = geoHashService.findTruSoInArea(
-                event.getViDo(),
-                event.getKinhDo()
-        );
+    double lat = event.getViDo();
+    double lng = event.getKinhDo();
 
-        if (candidates == null || candidates.isEmpty()) {
-            return;
-        }
+    // 1. lấy candidates bằng geohash (không queue nữa)
+    List<TruSo> candidates = geoHashService.findTruSoInArea(lat, lng);
 
-        List<Long> queue = queueService.buildQueue(
-                candidates,
-                event.getViDo(),
-                event.getKinhDo()
-        );
-
-        if (queue == null || queue.isEmpty()) {
-            return;
-        }
-
-        // SAVE FULL QUEUE
-        for (int i = 0; i < queue.size(); i++) {
-
-            SosDieuPhoi dp = new SosDieuPhoi();
-
-            dp.setSosId(event.getId());
-            dp.setTruSoId(queue.get(i));
-            dp.setThuTu(i);
-
-            // Trụ sở đầu tiên
-            if (i == 0) {
-
-                dp.setTrangThai("CHO_TIEP_NHAN");
-                dp.setThoiGianGui(LocalDateTime.now());
-
-            } else {
-
-                // Các trụ sở phía sau
-                dp.setTrangThai("HANG_CHO");
-            }
-
-            dieuPhoiRepo.save(dp);
-        }
-
-        Long first = queue.get(0);
-
-        event.setIdTruSoDeXuat(first);
-
-        send(event, first);
+    if (candidates == null || candidates.isEmpty()) {
+        return;
     }
+
+    // 2. chia nhóm theo khoảng cách
+    List<TruSo> fast = new ArrayList<>();   // <= 5km
+    List<TruSo> mid = new ArrayList<>();    // 5–15km
+
+    for (TruSo ts : candidates) {
+
+        double d = distanceService.distance(
+                lat, lng,
+                ts.getViDo(), ts.getKinhDo()
+        );
+
+        if (d <= 5000) {
+            fast.add(ts);
+        } 
+        else if (d <= 15000) {
+            mid.add(ts);
+        }
+    }
+
+    // =========================
+    // CASE 1: FAST PATH (<=5km)    
+    // =========================
+    if (!fast.isEmpty()) {
+
+        TruSo best = fast.get(0); // hoặc min distance nếu muốn
+
+        event.setTrangThai("DANG_XU_LY");
+        event.setIdTruSoTiepNhan(best.getId());
+        event.setIdTruSoDeXuat(best.getId());
+
+        tinHieuSOSRepository.save(event);
+
+        send(event, best.getId());
+        return;
+    }
+
+    // =========================
+    // CASE 2: MID (5–15km)
+    // =========================
+    if (!mid.isEmpty()) {
+
+        event.setTrangThai("CHO_XU_LY");
+        tinHieuSOSRepository.save(event);
+
+        for (TruSo ts : mid) {
+
+    SosDieuPhoi dp = new SosDieuPhoi();
+    dp.setSosId(event.getId());
+    dp.setTruSoId(ts.getId());
+    dp.setTrangThai("CHO_TIEP_NHAN");
+
+    dieuPhoiRepo.save(dp);
+
+    send(event, ts.getId());
+}
+
+        return;
+    }
+
+    // =========================
+    // CASE 3: fallback (nếu cần)
+    // =========================
+    event.setTrangThai("CHO_ADMIN");
+    tinHieuSOSRepository.save(event);
+
+    messagingTemplate.convertAndSend("/topic/admin", event);
+}
 
     // =====================================================
     // 2. REJECT
@@ -106,8 +135,6 @@ private TinHieuSOSRepository tinHieuSOSRepository;
         current.setThoiGianXuLy(LocalDateTime.now());
 
         dieuPhoiRepo.save(current);
-
-        moveToNext(event, current.getThuTu());
     }
 
     // =====================================================
@@ -128,58 +155,27 @@ private TinHieuSOSRepository tinHieuSOSRepository;
         current.setThoiGianXuLy(LocalDateTime.now());
 
         dieuPhoiRepo.save(current);
-
-        moveToNext(event, current.getThuTu());
     }
 
     // =====================================================
     // 4. ACCEPT
     // =====================================================
 
-public void accept(TinHieuSOS event, Long truSoId) {
+ public void accept(TinHieuSOS event, Long truSoId) {
 
-    SosDieuPhoi current = dieuPhoiRepo
-            .findBySosIdAndTruSoIdAndTrangThai(
-                    event.getId(),
-                    truSoId,
-                    "CHO_TIEP_NHAN"
-            )
-            .orElse(null);
-
-    if (current == null) {
-        return;
-    }
-
-    // CURRENT -> TIEP_NHAN
-    current.setTrangThai("TIEP_NHAN");
-    current.setThoiGianXuLy(LocalDateTime.now());
-
-    dieuPhoiRepo.save(current);
-
-    // Bỏ qua các trụ sở phía sau
-        List<SosDieuPhoi> all =
-            dieuPhoiRepo.findBySosIdOrderByThuTuAsc(event.getId());
-
-    for (SosDieuPhoi item : all) {
-
-        if ("HANG_CHO".equals(item.getTrangThai())) {
-            item.setTrangThai("BO_QUA");
-            item.setThoiGianXuLy(LocalDateTime.now());
+        // check đã có ai nhận chưa (RACE CONDITION PROTECTION)
+        if (event.getIdTruSoTiepNhan() != null) {
+            return;
         }
+
+        event.setTrangThai("DANG_XU_LY");
+        event.setIdTruSoTiepNhan(truSoId);
+        event.setIdTruSoDeXuat(truSoId);
+
+        tinHieuSOSRepository.save(event);
+
+        send(event, truSoId);
     }
-
-    dieuPhoiRepo.saveAll(all);
-
-
-    // UPDATE SOS
-    event.setTrangThai("DANG_XU_LY");
-    event.setIdTruSoTiepNhan(truSoId);
-    event.setIdTruSoDeXuat(truSoId);
-
-    tinHieuSOSRepository.save(event);
-
-    send(event, truSoId);
-}
 
     // =====================================================
     // 5. CANCEL
@@ -203,40 +199,7 @@ public void accept(TinHieuSOS event, Long truSoId) {
         event.setTrangThai("HUY_BO");
     }
 
-    // =====================================================
-    // MOVE NEXT QUEUE
-    // =====================================================
-    private void moveToNext(TinHieuSOS event, int currentIndex) {
-
-        int nextIndex = currentIndex + 1;
-
-        List<SosDieuPhoi> all =
-                dieuPhoiRepo.findBySosIdOrderByThuTuAsc(event.getId());
-
-        if (nextIndex >= all.size()) {
-
-            event.setTrangThai("KHONG_CO_TRU_SO");
-                tinHieuSOSRepository.save(event);
-
-
-            return;
-        }
-
-        SosDieuPhoi next = all.get(nextIndex);
-
-        // NEXT -> ACTIVE
-        next.setTrangThai("CHO_TIEP_NHAN");
-        next.setThoiGianGui(LocalDateTime.now());
-
-        dieuPhoiRepo.save(next);
-
-        event.setIdTruSoDeXuat(next.getTruSoId());
-        tinHieuSOSRepository.save(event);
-
-
-        send(event, next.getTruSoId());
-    }
-
+    
     // =====================================================
     // SOCKET
     // =====================================================

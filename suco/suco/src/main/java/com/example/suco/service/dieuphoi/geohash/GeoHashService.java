@@ -5,7 +5,7 @@ import com.example.suco.repository.TruSoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ch.hsr.geohash.GeoHash;
-
+import com.example.suco.service.dieuphoi.distance.DistanceService;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +15,9 @@ public class GeoHashService {
 
     @Autowired
     private TruSoRepository truSoRepository;
+
+    @Autowired
+    private DistanceService distanceService;
 
     public List<TruSo> findTruSoInArea(double lat, double lng) {
 
@@ -46,4 +49,52 @@ public class GeoHashService {
 
         return new ArrayList<>(new HashSet<>(result));
     }
+     // =====================================================
+    // 🔥 NEW: FAST PATH ≤ 5km ONLY
+    // =====================================================
+    public List<TruSo> findTruSoFastPath(double lat, double lng) {
+
+        List<TruSo> candidates = findTruSoInArea(lat, lng);
+
+        List<TruSo> fast = new ArrayList<>();
+
+        for (TruSo ts : candidates) {
+
+            double d = distanceService.distance(
+                    lat, lng,
+                    ts.getViDo(), ts.getKinhDo()
+            );
+
+            if (d <= 5000) {
+                fast.add(ts);
+            }
+        }
+
+        return fast;
+    }
+
+    // =====================================================
+    // OPTIONAL: 5–15km pool (for your queue system)
+    // =====================================================
+    public List<TruSo> findTruSoMidRange(double lat, double lng) {
+
+        List<TruSo> candidates = findTruSoInArea(lat, lng);
+
+        List<TruSo> mid = new ArrayList<>();
+
+        for (TruSo ts : candidates) {
+
+            double d = distanceService.distance(
+                    lat, lng,
+                    ts.getViDo(), ts.getKinhDo()
+            );
+
+            if (d > 5000 && d <= 15000) {
+                mid.add(ts);
+            }
+        }
+
+        return mid;
+    }
+
 }

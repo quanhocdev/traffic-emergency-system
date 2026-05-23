@@ -68,8 +68,6 @@ public class RulesTrangThaiService {
             || "DANG_XU_LY".equals(next)
             || "TU_CHOI".equals(next)
             || "TIMEOUT".equals(next)
-            || "BO_QUA".equals(next)
-
     )) {
 
         throw new ResponseStatusException(
