@@ -9,6 +9,8 @@ import com.example.suco.service.dieuphoi.distance.DistanceService;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class GeoHashService {
@@ -18,6 +20,10 @@ public class GeoHashService {
 
     @Autowired
     private DistanceService distanceService;
+
+    private static final Logger log = LoggerFactory.getLogger(GeoHashService.class);
+
+
 
     public List<TruSo> findTruSoInArea(double lat, double lng) {
 
@@ -37,6 +43,60 @@ public class GeoHashService {
             }
 
             result = truSoRepository.findByGeohashIn(prefixes);
+            // ================= LOG GEO LEVEL =================
+log.info("========== GEO LEVEL {} ==========", precision);
+log.info("Center base32: {}", base);
+log.info("Prefixes: {}", prefixes);
+
+if (result.isEmpty()) {
+    log.info("[Geo {}] NO TRU SO FOUND", precision);
+} else {
+
+    // ===== build list kèm distance =====
+    List<String> debugList = new ArrayList<>();
+
+    List<TruSo> sorted = new ArrayList<>(result);
+
+    sorted.sort((a, b) -> {
+        double da = distanceService.distance(lat, lng, a.getViDo(), a.getKinhDo());
+        double db = distanceService.distance(lat, lng, b.getViDo(), b.getKinhDo());
+        return Double.compare(da, db);
+    });
+
+    double bestDistance = Double.MAX_VALUE;
+    Long bestId = null;
+
+    for (TruSo ts : sorted) {
+
+        double d = distanceService.distance(
+                lat, lng,
+                ts.getViDo(),
+                ts.getKinhDo()
+        );
+
+        double km = d / 1000.0;
+
+        if (d < bestDistance) {
+            bestDistance = d;
+            bestId = ts.getId();
+        }
+
+        debugList.add("ID=" + ts.getId() + " | " + Math.round(km * 100.0) / 100.0 + " km");
+
+        log.info("[Geo {}] TRU_SO_ID={} | distance={} km",
+                precision,
+                ts.getId(),
+                Math.round(km * 100.0) / 100.0
+        );
+    }
+
+    // ===== BEST candidate log =====
+    log.info("[Geo {}] BEST candidate -> TRU_SO_ID={} | distance={} km",
+            precision,
+            bestId,
+            Math.round(bestDistance / 1000.0 * 100.0) / 100.0
+    );
+}
 
             if (result.isEmpty()) {
                 precision--;
@@ -49,52 +109,6 @@ public class GeoHashService {
 
         return new ArrayList<>(new HashSet<>(result));
     }
-     // =====================================================
-    // 🔥 NEW: FAST PATH ≤ 5km ONLY
-    // =====================================================
-    public List<TruSo> findTruSoFastPath(double lat, double lng) {
 
-        List<TruSo> candidates = findTruSoInArea(lat, lng);
-
-        List<TruSo> fast = new ArrayList<>();
-
-        for (TruSo ts : candidates) {
-
-            double d = distanceService.distance(
-                    lat, lng,
-                    ts.getViDo(), ts.getKinhDo()
-            );
-
-            if (d <= 5000) {
-                fast.add(ts);
-            }
-        }
-
-        return fast;
-    }
-
-    // =====================================================
-    // OPTIONAL: 5–15km pool (for your queue system)
-    // =====================================================
-    public List<TruSo> findTruSoMidRange(double lat, double lng) {
-
-        List<TruSo> candidates = findTruSoInArea(lat, lng);
-
-        List<TruSo> mid = new ArrayList<>();
-
-        for (TruSo ts : candidates) {
-
-            double d = distanceService.distance(
-                    lat, lng,
-                    ts.getViDo(), ts.getKinhDo()
-            );
-
-            if (d > 5000 && d <= 15000) {
-                mid.add(ts);
-            }
-        }
-
-        return mid;
-    }
 
 }

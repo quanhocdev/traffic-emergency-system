@@ -21,29 +21,31 @@ public class CheckTrangThaiService {
     ) {
 
         rules.checkNotNull(sos);
+
         rules.checkStatusHopLe(newStatus);
+
         rules.checkDaKetThuc(currentStatus);
+
         rules.checkTransition(currentStatus, newStatus);
 
         switch (newStatus) {
 
-            case "TIEP_NHAN":
-                rules.checkQuyenXuLy(sos, current);
-                break;
-
             case "DANG_XU_LY":
+
                 rules.checkQuyenXuLy(sos, current);
+
                 break;
 
             case "HOAN_THANH":
+
                 rules.checkQuyenHoanThanh(sos, current);
+
                 break;
 
-            case "TU_CHOI":
-                rules.checkQuyenTuChoi(sos, current);
-                break;
+            case "DA_HUY":
 
-            case "TIMEOUT":
+                rules.checkQuyenXuLy(sos, current);
+
                 break;
         }
     }

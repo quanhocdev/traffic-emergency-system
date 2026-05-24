@@ -3,6 +3,7 @@ package com.example.suco.service.dieuphoi.engine;
 import com.example.suco.model.SosDieuPhoi;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
+import com.example.suco.model.enums.TrangThaiHoatDongTruSo;
 import com.example.suco.repository.SosDieuPhoiRepository;
 import com.example.suco.repository.TinHieuSOSRepository;
 import com.example.suco.service.dieuphoi.geohash.GeoHashService;
@@ -37,169 +38,73 @@ private TinHieuSOSRepository tinHieuSOSRepository;
     // =====================================================
     // 1. START DISPATCH
     // =====================================================
-   public void startDispatch(TinHieuSOS event) {
+  public void startDispatch(TinHieuSOS event) {
 
     double lat = event.getViDo();
     double lng = event.getKinhDo();
 
-    // 1. lấy candidates bằng geohash (không queue nữa)
-    List<TruSo> candidates = geoHashService.findTruSoInArea(lat, lng);
+    List<TruSo> candidates =
+            geoHashService.findTruSoInArea(lat, lng);
 
-    if (candidates == null || candidates.isEmpty()) {
-        return;
-    }
+    TruSo best = candidates.stream()
 
-    // 2. chia nhóm theo khoảng cách
-    List<TruSo> fast = new ArrayList<>();   // <= 5km
-    List<TruSo> mid = new ArrayList<>();    // 5–15km
+            .filter(this::isAvailable)
 
-    for (TruSo ts : candidates) {
+            .min((a, b) -> Double.compare(
 
-        double d = distanceService.distance(
-                lat, lng,
-                ts.getViDo(), ts.getKinhDo()
+                    distanceService.distance(
+                            lat, lng,
+                            a.getViDo(), a.getKinhDo()
+                    ),
+
+                    distanceService.distance(
+                            lat, lng,
+                            b.getViDo(), b.getKinhDo()
+                    )
+            ))
+
+            .orElse(null);
+
+    if (best == null) {
+
+        event.setTrangThai("CHO_ADMIN");
+
+        tinHieuSOSRepository.save(event);
+
+        messagingTemplate.convertAndSend(
+                "/topic/admin",
+                event
         );
 
-        if (d <= 5000) {
-            fast.add(ts);
-        } 
-        else if (d <= 15000) {
-            mid.add(ts);
-        }
-    }
-
-    // =========================
-    // CASE 1: FAST PATH (<=5km)    
-    // =========================
-    if (!fast.isEmpty()) {
-
-        TruSo best = fast.get(0); // hoặc min distance nếu muốn
-
-        event.setTrangThai("DANG_XU_LY");
-        event.setIdTruSoTiepNhan(best.getId());
-        event.setIdTruSoDeXuat(best.getId());
-
-        tinHieuSOSRepository.save(event);
-
-        send(event, best.getId());
         return;
     }
 
-    // =========================
-    // CASE 2: MID (5–15km)
-    // =========================
-    if (!mid.isEmpty()) {
+    event.setTrangThai("DANG_XU_LY");
 
-        event.setTrangThai("CHO_XU_LY");
-        tinHieuSOSRepository.save(event);
+    event.setIdTruSoTiepNhan(best.getId());
 
-        for (TruSo ts : mid) {
+    event.setIdTruSoDeXuat(best.getId());
 
-    SosDieuPhoi dp = new SosDieuPhoi();
-    dp.setSosId(event.getId());
-    dp.setTruSoId(ts.getId());
-    dp.setTrangThai("CHO_TIEP_NHAN");
-
-    dieuPhoiRepo.save(dp);
-
-    send(event, ts.getId());
-}
-
-        return;
-    }
-
-    // =========================
-    // CASE 3: fallback (nếu cần)
-    // =========================
-    event.setTrangThai("CHO_ADMIN");
     tinHieuSOSRepository.save(event);
 
-    messagingTemplate.convertAndSend("/topic/admin", event);
+    best.setSoLuongDangXuLy(
+            best.getSoLuongDangXuLy() + 1
+    );
+
+    send(event, best.getId());
 }
 
-    // =====================================================
-    // 2. REJECT
-    // =====================================================
-    public void reject(TinHieuSOS event) {
+private boolean isAvailable(TruSo truSo) {
 
-        SosDieuPhoi current = dieuPhoiRepo
-                .findBySosIdAndTrangThai(event.getId(), "CHO_TIEP_NHAN")
-                .orElse(null);
+    return truSo.getDangNhanTinHieu()
 
-        if (current == null) {
-            return;
-        }
+            && truSo.getTrangThaiHoatDong()
+            == TrangThaiHoatDongTruSo.SAN_SANG
 
-        // CURRENT -> TU_CHOI
-        current.setTrangThai("TU_CHOI");
-        current.setThoiGianXuLy(LocalDateTime.now());
+            && truSo.getSoLuongDangXuLy()
+            < truSo.getGioiHanXuLy();
+}
 
-        dieuPhoiRepo.save(current);
-    }
-
-    // =====================================================
-    // 3. TIMEOUT
-    // =====================================================
-    public void timeout(TinHieuSOS event) {
-
-        SosDieuPhoi current = dieuPhoiRepo
-                .findBySosIdAndTrangThai(event.getId(), "CHO_TIEP_NHAN")
-                .orElse(null);
-
-        if (current == null) {
-            return;
-        }
-
-        // CURRENT -> TIMEOUT
-        current.setTrangThai("TIMEOUT");
-        current.setThoiGianXuLy(LocalDateTime.now());
-
-        dieuPhoiRepo.save(current);
-    }
-
-    // =====================================================
-    // 4. ACCEPT
-    // =====================================================
-
- public void accept(TinHieuSOS event, Long truSoId) {
-
-        // check đã có ai nhận chưa (RACE CONDITION PROTECTION)
-        if (event.getIdTruSoTiepNhan() != null) {
-            return;
-        }
-
-        event.setTrangThai("DANG_XU_LY");
-        event.setIdTruSoTiepNhan(truSoId);
-        event.setIdTruSoDeXuat(truSoId);
-
-        tinHieuSOSRepository.save(event);
-
-        send(event, truSoId);
-    }
-
-    // =====================================================
-    // 5. CANCEL
-    // =====================================================
-    public void cancel(TinHieuSOS event) {
-
-        List<SosDieuPhoi> list =
-                dieuPhoiRepo.findBySosIdOrderByThuTuAsc(event.getId());
-
-        for (SosDieuPhoi dp : list) {
-
-            if (!"TIEP_NHAN".equals(dp.getTrangThai())) {
-
-                dp.setTrangThai("HUY_BO");
-                dp.setThoiGianXuLy(LocalDateTime.now());
-            }
-        }
-
-        dieuPhoiRepo.saveAll(list);
-
-        event.setTrangThai("HUY_BO");
-    }
-
-    
     // =====================================================
     // SOCKET
     // =====================================================

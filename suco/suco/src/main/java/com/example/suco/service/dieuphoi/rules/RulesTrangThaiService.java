@@ -44,18 +44,6 @@ public class RulesTrangThaiService {
         }
     }
 
-    public void checkQuyenTuChoi(TinHieuSOS sos, TruSo current) {
-        boolean hopLe =
-                (sos.getIdTruSoDeXuat() != null &&
-                 sos.getIdTruSoDeXuat().equals(current.getId()))
-                ||
-                (sos.getIdTruSoTiepNhan() != null &&
-                 sos.getIdTruSoTiepNhan().equals(current.getId()));
-
-        if (!hopLe) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền từ chối SOS này");
-        }
-    }
 
     public void checkTransition(String current, String next) {
 
@@ -64,10 +52,8 @@ public class RulesTrangThaiService {
             case "CHO_XU_LY":
 
     if (!(
-            "TIEP_NHAN".equals(next)
-            || "DANG_XU_LY".equals(next)
-            || "TU_CHOI".equals(next)
-            || "TIMEOUT".equals(next)
+            "DANG_XU_LY".equals(next)
+            || "DA_HUY".equals(next)
     )) {
 
         throw new ResponseStatusException(
@@ -79,11 +65,21 @@ public class RulesTrangThaiService {
     break;
 
             case "DANG_XU_LY":
-                if (!"HOAN_THANH".equals(next)) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transition không hợp lệ");
-                }
-                break;
 
+    if (!(
+
+            "HOAN_THANH".equals(next)
+            || "DA_HUY".equals(next)
+
+    )) {
+
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Transition không hợp lệ"
+        );
+    }
+
+    break;
             default:
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ");
         }
