@@ -38,24 +38,6 @@ public class TruSo {
     private TrangThaiHoatDongTruSo trangThaiHoatDong =
             TrangThaiHoatDongTruSo.SAN_SANG;
 
-    /**
-     * Có đang nhận tín hiệu không
-     */
-    @Column(name = "dang_nhan_tin_hieu")
-    private Boolean dangNhanTinHieu = true;
-
-    /**
-     * Tổng số case đang xử lý
-     */
-    @Column(name = "so_luong_dang_xu_ly")
-    private Integer soLuongDangXuLy = 0;
-
-    /**
-     * Giới hạn xử lý tối đa
-     */
-    @Column(name = "gioi_han_xu_ly")
-    private Integer gioiHanXuLy = 10;
-
     public TruSo() {}
 
     // =========================
@@ -127,27 +109,5 @@ public class TruSo {
         this.trangThaiHoatDong = trangThaiHoatDong;
     }
 
-    public Boolean getDangNhanTinHieu() {
-        return dangNhanTinHieu;
-    }
 
-    public void setDangNhanTinHieu(Boolean dangNhanTinHieu) {
-        this.dangNhanTinHieu = dangNhanTinHieu;
-    }
-
-    public Integer getSoLuongDangXuLy() {
-        return soLuongDangXuLy;
-    }
-
-    public void setSoLuongDangXuLy(Integer soLuongDangXuLy) {
-        this.soLuongDangXuLy = soLuongDangXuLy;
-    }
-
-    public Integer getGioiHanXuLy() {
-        return gioiHanXuLy;
-    }
-
-    public void setGioiHanXuLy(Integer gioiHanXuLy) {
-        this.gioiHanXuLy = gioiHanXuLy;
-    }
 }

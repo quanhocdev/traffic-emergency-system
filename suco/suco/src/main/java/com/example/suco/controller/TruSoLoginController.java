@@ -1,17 +1,17 @@
 package com.example.suco.controller;
 
 import java.util.Optional;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.example.suco.config.AppConfig;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
@@ -19,10 +19,13 @@ import com.example.suco.repository.TinHieuSOSRepository;
 import com.example.suco.repository.TruSoRepository;
 import java.util.Map;
 import java.util.List;
-
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.RequestBody;
+import com.example.suco.dto.truso.TruSoConfigDTO;
+import com.example.suco.service.xacthuc.truso.TruSoConfigService;
+
 @Controller
 @RequestMapping("/truso")
 public class TruSoLoginController {
@@ -31,6 +34,10 @@ public class TruSoLoginController {
     private final TinHieuSOSRepository tinHieuSOSRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final AppConfig appConfig;
+    @Autowired
+    private TruSoConfigService truSoConfigService;
+
+
     public TruSoLoginController(TruSoRepository truSoRepository,
                              TinHieuSOSRepository tinHieuSOSRepository,
                              AppConfig appConfig) {
@@ -45,20 +52,6 @@ public String trangLogin() {
 }
 
 
-    // @PostMapping("/login")
-    // public String xuLyLogin(@RequestParam String username, 
-    //                         @RequestParam String password, 
-    //                         HttpSession session, 
-    //                         Model model) {
-    //     Optional<TruSo> truSo = truSoRepository.findByTenDangNhap(username);
-    //     if (truSo.isPresent() && passwordEncoder.matches(password, truSo.get().getMatKhau())) {
-    //         // Lưu vào session để dùng ở trang chủ và chặn truy cập trái phép
-    //         session.setAttribute("currentTruSo", truSo.get());
-    //         return "redirect:/truso/trang-chu";
-    //     }
-    //     model.addAttribute("error", "Tài khoản hoặc mật khẩu không đúng!");
-    //     return "truso/login";
-    // }
 
     @PostMapping("/login")
 @ResponseBody
@@ -152,5 +145,28 @@ public List<TinHieuSOS> sosCuaToi(HttpSession session) {
 
     return tinHieuSOSRepository.findActiveByTruSo(current.getId());
 }
+@PatchMapping("/config")
+@ResponseBody
+public ResponseEntity<?> updateConfig(
+        @RequestBody TruSoConfigDTO dto,
+        HttpSession session) {
 
+    TruSo current =
+            (TruSo) session.getAttribute("currentTruSo");
+
+    if (current == null) {
+        return ResponseEntity.status(401)
+                .body(Map.of("message", "Chưa đăng nhập"));
+    }
+
+    TruSo truSo =
+            truSoConfigService.updateConfig(
+                    current.getId(),
+                    dto);
+
+    return ResponseEntity.ok(Map.of(
+            "message", "Cập nhật thành công",
+            "trangThaiHoatDong", truSo.getTrangThaiHoatDong()
+    ));
+}
 }

@@ -72,12 +72,6 @@ public class TrangThaiService {
 
         sos.setTrangThai("HOAN_THANH");
 
-        current.setSoLuongDangXuLy(
-            Math.max(
-                    0,
-                    current.getSoLuongDangXuLy() - 1
-            )
-    );
 
         tinHieuSOSRepository.save(sos);
 

@@ -18,113 +18,62 @@
     <link rel="stylesheet" th:href="@{/css/truso/trang-chu.css}" />
   </head>
   <body>
+    <!-- Sidebar cố định bên trái -->
     <div th:replace="~{fragments/truso/sidebar :: sidebar('map')}"></div>
 
+    <!-- Toàn bộ không gian làm việc bên phải -->
     <main class="main-content">
-      <div
-        id="noti-bell"
-        onclick="toggleNotiList()"
-        style="
-          position: absolute;
-          top: 20px;
-          right: 20px;
-          z-index: 1000;
-          cursor: pointer;
-        "
-      >
-        <div
-          style="
-            background: white;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-            border: 1px solid #e2e8f0;
-          "
-        >
-          <i
-            class="fa-solid fa-bell"
-            style="font-size: 20px; color: #1e293b"
-          ></i>
-          <span
-            id="noti-count"
-            style="
-              position: absolute;
-              top: -5px;
-              right: -5px;
-              background: #ef4444;
-              color: white;
-              border-radius: 50%;
-              width: 20px;
-              height: 20px;
-              font-size: 11px;
-              font-weight: bold;
-              display: none;
-              align-items: center;
-              justify-content: center;
-              border: 2px solid white;
-              box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-              line-height: 1;
-            "
-            >0</span
-          >
+      <!-- BẢNG ĐIỀU KHIỂN TRỤ SỞ (Đã được làm gọn và hiện đại hóa) -->
+      <!-- BẢNG ĐIỀU KHIỂN TRỤ SỞ MINI DROPDOWN -->
+      <div id="station-control-panel" class="scp-dropdown">
+        <!-- Phần hiển thị trạng thái hiện tại (Click vào để mở/đóng) -->
+        <div class="scp-trigger" onclick="toggleScpDropdown(event)">
+          <div class="station-status-preview">
+            <i
+              class="fa-solid fa-circle status-dot"
+              id="station-status-dot"
+            ></i>
+            <span id="station-status-text">🟢 Sẵn sàng</span>
+          </div>
+          <i class="fa-solid fa-chevron-down chevron-icon"></i>
         </div>
 
-        <div
-          id="noti-list"
-          style="
-            display: none;
-            position: absolute;
-            top: 55px;
-            right: 0;
-            width: 300px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            border: 1px solid #eee;
-            overflow: hidden;
-          "
-        >
-          <div
-            style="
-              padding: 12px;
-              background: #f8fafc;
-              border-bottom: 1px solid #eee;
-              font-weight: bold;
-              font-size: 14px;
-              display: flex;
-              justify-content: space-between;
-            "
-          >
-            <span>Thông báo mới</span>
-            <span
-              onclick="clearNoti(event)"
-              style="color: #ef4444; font-size: 11px; cursor: pointer"
-              >Xóa tất cả</span
-            >
+        <!-- Phần nội dung ẩn, chỉ hiện khi click -->
+        <div class="scp-content" id="scp-content">
+          <div class="form-group">
+            <label for="trangThaiHoatDong">Cập nhật trạng thái</label>
+            <select id="trangThaiHoatDong" onchange="updatePreviewDot()">
+              <option value="SAN_SANG">🟢 Sẵn sàng</option>
+              <option value="NGOAI_TUYEN">⚪ Ngoại tuyến</option>
+            </select>
           </div>
-          <div
-            id="noti-items-container"
-            style="max-height: 350px; overflow-y: auto"
-          >
-            <div
-              id="empty-noti"
-              style="
-                padding: 20px;
-                text-align: center;
-                color: #94a3b8;
-                font-size: 13px;
-              "
-            >
-              Không có thông báo mới
-            </div>
+
+          <button onclick="handleSaveStationConfig(event)">
+            <i class="fa-solid fa-floppy-disk"></i>
+            Lưu trạng thái
+          </button>
+        </div>
+      </div>
+
+      <!-- NÚT THÔNG BÁO -->
+      <div id="noti-bell" onclick="toggleNotiList()">
+        <div class="bell-icon-wrapper">
+          <i class="fa-solid fa-bell"></i>
+          <span id="noti-count" style="display: none">0</span>
+        </div>
+
+        <div id="noti-list">
+          <div class="noti-header">
+            <span>Thông báo mới</span>
+            <span onclick="clearNoti(event)" class="clear-all">Xóa tất cả</span>
+          </div>
+          <div id="noti-items-container">
+            <div id="empty-noti">Không có thông báo mới</div>
           </div>
         </div>
       </div>
+
+      <!-- CHI TIẾT SỰ CỐ SOS -->
       <div id="sos-detail-panel">
         <div class="panel-header">
           <span
@@ -138,6 +87,8 @@
         </div>
         <div class="panel-body" id="panel-content"></div>
       </div>
+
+      <!-- BẢN ĐỒ CHIẾM TOÀN BỘ KHÔNG GIAN CÒN LẠI -->
       <div id="map"></div>
     </main>
 
@@ -145,7 +96,6 @@
       const idTruSo = /*[[${session.currentTruSo.id}]]*/ 0;
       const tsLng = /*[[${session.currentTruSo.kinhDo}]]*/ 106.660172;
       const tsLat = /*[[${session.currentTruSo.viDo}]]*/ 10.762622;
-
       const MAPBOX_TOKEN = /*[[${mapboxToken}]]*/ "";
     </script>
     <script th:src="@{/js/truso/trang-chu.js}"></script>
