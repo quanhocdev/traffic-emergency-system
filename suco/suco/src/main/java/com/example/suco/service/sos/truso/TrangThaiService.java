@@ -40,82 +40,75 @@ public class TrangThaiService {
     // =========================================
     // UPDATE TRẠNG THÁI
     // =========================================
-    public void capNhatTrangThaiSOS(Long id, String status, TruSo current) {
+    public void capNhatTrangThaiSOS(
+        Long id,
+        String status,
+        TruSo current
+) {
 
-        if (status != null) {
-            status = status.split(",")[0].trim();
-        }
+    if (status != null) {
+        status = status.split(",")[0].trim();
+    }
 
-        TinHieuSOS sos = tinHieuSOSRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Không tìm thấy SOS"
-                ));
+    TinHieuSOS sos = tinHieuSOSRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Không tìm thấy SOS"
+            ));
 
-        String currentStatus = sos.getTrangThai();
+    String currentStatus = sos.getTrangThai();
 
-        checkTrangThaiService.validateAll(sos, currentStatus, status, current);
+    checkTrangThaiService.validateAll(
+            sos,
+            currentStatus,
+            status,
+            current
+    );
 
-        // =================================================
-        // 1. TỪ CHỐI
-        // =================================================
-        if ("TU_CHOI".equals(status)) {
+    // =========================================
+    // HOÀN THÀNH
+    // =========================================
+    if ("HOAN_THANH".equals(status)) {
 
-dispatchEngineService.reject(sos);
+        sos.setTrangThai("HOAN_THANH");
 
-            notify(sos, current);
-            return;
-        }
+        current.setSoLuongDangXuLy(
+            Math.max(
+                    0,
+                    current.getSoLuongDangXuLy() - 1
+            )
+    );
 
-        // =================================================
-        // 2. TIMEOUT (nếu FE hoặc scheduler gọi)
-        // =================================================
-        if ("TIMEOUT".equals(status)) {
-dispatchEngineService.timeout(sos);
-
-            notify(sos, current);
-            return;
-        }
-
-        // =================================================
-        // 3. TIẾP NHẬN
-        // =================================================
-        if ("TIEP_NHAN".equals(status)) {
-
-            sos.setTrangThai("DANG_XU_LY");
-            sos.setIdTruSoTiepNhan(current.getId());
-
-            dispatchEngineService.accept(sos, current.getId());
-
-            tinHieuSOSRepository.save(sos);
-            notify(sos, current);
-            return;
-        }
-
-        // =================================================
-        // 4. HỦY
-        // =================================================
-        if ("HUY_BO".equals(status)) {
-
-            sos.setTrangThai("HUY_BO");
-
-            dispatchEngineService.cancel(sos);
-
-            tinHieuSOSRepository.save(sos);
-
-            notify(sos, current);
-            return;
-        }
-
-        // =================================================
-        // 5. DEFAULT UPDATE
-        // =================================================
-        sos.setTrangThai(status);
         tinHieuSOSRepository.save(sos);
 
         notify(sos, current);
+
+        return;
     }
 
+    // =========================================
+    // HỦY
+    // =========================================
+    if ("DA_HUY".equals(status)) {
+
+        sos.setTrangThai("DA_HUY");
+
+        tinHieuSOSRepository.save(sos);
+
+        notify(sos, current);
+
+        return;
+    }
+
+    // =========================================
+    // DEFAULT
+    // =========================================
+    sos.setTrangThai(status);
+
+    tinHieuSOSRepository.save(sos);
+
+    notify(sos, current);
+}
     // =========================================
     // COMMON NOTIFY
     // =========================================

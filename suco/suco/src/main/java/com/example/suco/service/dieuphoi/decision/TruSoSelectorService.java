@@ -1,6 +1,7 @@
 package com.example.suco.service.dieuphoi.decision;
 
 import com.example.suco.model.TruSo;
+import com.example.suco.model.enums.TrangThaiHoatDongTruSo;
 import com.example.suco.repository.TruSoRepository;
 import com.example.suco.service.dieuphoi.distance.DistanceService;
 import com.example.suco.service.dieuphoi.geohash.GeoHashService;
@@ -25,6 +26,17 @@ public class TruSoSelectorService {
     /**
      * CHỌN TRỤ SỞ GẦN NHẤT (single decision point)
      */
+    private boolean isAvailable(TruSo truSo) {
+
+    return truSo.getDangNhanTinHieu()
+
+            && truSo.getTrangThaiHoatDong()
+            == TrangThaiHoatDongTruSo.SAN_SANG
+
+            && truSo.getSoLuongDangXuLy()
+            < truSo.getGioiHanXuLy();
+}
+
     public TruSo selectNearest(double lat, double lng) {
 
         List<TruSo> candidates = geoHashService.findTruSoInArea(lat, lng);
@@ -34,6 +46,7 @@ public class TruSoSelectorService {
         }
 
         return candidates.stream()
+                .filter(this::isAvailable)
                 .min(Comparator.comparingDouble(ts ->
                         distanceService.distance(lat, lng, ts.getViDo(), ts.getKinhDo())
                 ))
@@ -48,6 +61,7 @@ public class TruSoSelectorService {
         List<TruSo> candidates = geoHashService.findTruSoInArea(lat, lng);
 
         return candidates.stream()
+        
                 .sorted(Comparator.comparingDouble(ts ->
                         distanceService.distance(lat, lng, ts.getViDo(), ts.getKinhDo())
                 ))

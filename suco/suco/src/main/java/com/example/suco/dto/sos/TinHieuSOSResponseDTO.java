@@ -1,6 +1,7 @@
 package com.example.suco.dto.sos;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class TinHieuSOSResponseDTO {
     private Long id;
@@ -12,7 +13,6 @@ public class TinHieuSOSResponseDTO {
     private String ghiAm;
     private LocalDateTime createdAt;
     private String trangThai;
-
     private Long thoiGianConLai;
 
     private String userId; // giữ lại nếu cần
@@ -49,5 +49,5 @@ public void setThoiGianConLai(Long thoiGianConLai) {
     public void setUserId(String userId) { this.userId = userId; }
     public UserMiniDTO getUser() { return user; }
     public void setUser(UserMiniDTO user) { this.user = user; }
-
+   
 }
