@@ -26,15 +26,10 @@ public class TruSoSelectorService {
     /**
      * CHỌN TRỤ SỞ GẦN NHẤT (single decision point)
      */
-    private boolean isAvailable(TruSo truSo) {
+ private boolean isAvailable(TruSo truSo) {
 
-    return truSo.getDangNhanTinHieu()
-
-            && truSo.getTrangThaiHoatDong()
-            == TrangThaiHoatDongTruSo.SAN_SANG
-
-            && truSo.getSoLuongDangXuLy()
-            < truSo.getGioiHanXuLy();
+    return truSo.getTrangThaiHoatDong()
+            == TrangThaiHoatDongTruSo.SAN_SANG;
 }
 
     public TruSo selectNearest(double lat, double lng) {

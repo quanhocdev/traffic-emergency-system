@@ -25,10 +25,8 @@ map.on("load", () => {
   });
 });
 
-map.on("click", (e) => {
-  if (e.originalEvent.target.classList.contains("mapboxgl-canvas")) {
-    closeDetail();
-  }
+map.on("click", () => {
+  closeDetail();
 });
 
 function closeDetail() {
@@ -37,35 +35,53 @@ function closeDetail() {
 }
 
 function removeRoute() {
-  if (map.getSource("route")) {
+  if (map.getLayer("route")) {
     map.removeLayer("route");
+  }
+
+  if (map.getSource("route")) {
     map.removeSource("route");
   }
 }
-
 async function drawRoute(targetLng, targetLat) {
-  removeRoute();
-  const query = await fetch(
-    `https://api.mapbox.com/directions/v5/mapbox/driving/${tsLng},${tsLat};${targetLng},${targetLat}?geometries=geojson&access_token=${mapboxgl.accessToken}`,
-  );
-  const json = await query.json();
-  if (!json.routes[0]) return;
-  const data = json.routes[0].geometry;
-  map.addSource("route", {
-    type: "geojson",
-    data: { type: "Feature", geometry: data },
-  });
-  map.addLayer({
-    id: "route",
-    type: "line",
-    source: "route",
-    layout: { "line-join": "round", "line-cap": "round" },
-    paint: {
-      "line-color": "#3b82f6",
-      "line-width": 6,
-      "line-opacity": 0.8,
-    },
-  });
+  try {
+    removeRoute();
+
+    const query = await fetch(
+      `https://api.mapbox.com/directions/v5/mapbox/driving/${tsLng},${tsLat};${targetLng},${targetLat}?geometries=geojson&access_token=${mapboxgl.accessToken}`,
+    );
+
+    const json = await query.json();
+
+    if (!json.routes || !json.routes[0]) return;
+
+    const data = json.routes[0].geometry;
+
+    map.addSource("route", {
+      type: "geojson",
+      data: {
+        type: "Feature",
+        geometry: data,
+      },
+    });
+
+    map.addLayer({
+      id: "route",
+      type: "line",
+      source: "route",
+      layout: {
+        "line-join": "round",
+        "line-cap": "round",
+      },
+      paint: {
+        "line-color": "#3b82f6",
+        "line-width": 6,
+        "line-opacity": 0.8,
+      },
+    });
+  } catch (err) {
+    console.error("Lỗi vẽ route:", err);
+  }
 }
 
 function showSOSDetail(item) {
@@ -428,7 +444,10 @@ function addSOSMarker(item, type = "SOS") {
 
   el.addEventListener("click", (e) => {
     e.stopPropagation();
-    type === "SU_CO" ? showSuCoDetail(item) : showSOSDetail(item);
+
+    const latestData = activeMarkers[markerKey].data;
+
+    type === "SU_CO" ? showSuCoDetail(latestData) : showSOSDetail(latestData);
   });
 }
 function doiTrangThai(id, status) {
@@ -512,28 +531,16 @@ function doiTrangThaiSuCo(id, status) {
   });
 }
 
-function doiTrangThai(id, status) {
-  // Truyền thêm &idTruSo=${idTruSo} vào URL (biến idTruSo lấy từ session đầu script)
-  const url = `/sos/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${idTruSo}`;
-
-  fetch(url, { method: "PATCH" }).then((res) => {
-    if (res.ok) {
-      closeDetail();
-      // WebSocket sẽ tự cập nhật lại Marker với dữ liệu mới có idTruSoTiepNhan
-    } else {
-      alert("Lỗi cập nhật!");
-    }
-  });
-}
-
 function handleRedirectParams() {
   const params = new URLSearchParams(window.location.search);
+
   const toLat = params.get("toLat");
   const toLng = params.get("toLng");
   const sosId = params.get("sosId");
 
   if (toLat && toLng) {
     drawRoute(parseFloat(toLng), parseFloat(toLat));
+
     map.flyTo({
       center: [parseFloat(toLng), parseFloat(toLat)],
       zoom: 17,
@@ -542,19 +549,24 @@ function handleRedirectParams() {
   }
 
   if (sosId) {
-    // If marker already exists, show detail; otherwise wait a bit for markers to be added
+    const markerKey = "SOS_" + sosId;
+
     const showIfReady = () => {
-      const entry = activeMarkers[sosId];
+      const entry = activeMarkers[markerKey];
+
       if (entry) {
         showSOSDetail(entry.data);
       } else {
-        // try once more after small delay
         setTimeout(() => {
-          const e2 = activeMarkers[sosId];
-          if (e2) showSOSDetail(e2.data);
+          const e2 = activeMarkers[markerKey];
+
+          if (e2) {
+            showSOSDetail(e2.data);
+          }
         }, 500);
       }
     };
+
     showIfReady();
   }
 }
@@ -571,18 +583,32 @@ function toggleNotiList() {
 function addNotiItem(data, type, isInitialLoad = false) {
   const container = document.getElementById("noti-items-container");
   const emptyMsg = document.getElementById("empty-noti");
+
+  // Tạo một ID duy nhất cho mỗi dòng thông báo để check trùng
+  const notiId = `noti-item-${type}-${data.id}`;
+  if (document.getElementById(notiId)) {
+    return; // Nếu thông báo này đã có trong danh sách rồi thì bỏ qua không đếm nữa
+  }
+
   if (emptyMsg) emptyMsg.remove();
 
   bellCount++;
   const countEl = document.getElementById("noti-count");
-  countEl.style.display = "flex";
-  countEl.innerText = bellCount;
+  if (countEl) {
+    countEl.style.display = "flex";
+    countEl.innerText = bellCount;
+  }
 
   // Chỉ rung chuông nếu KHÔNG PHẢI nạp dữ liệu cũ lúc load trang
   if (!isInitialLoad) {
-    const bell = document.getElementById("noti-bell");
-    bell.classList.add("animate-shake");
-    setTimeout(() => bell.classList.remove("animate-shake"), 1000);
+    bellCount++;
+
+    const countEl = document.getElementById("noti-count");
+
+    if (countEl) {
+      countEl.style.display = "flex";
+      countEl.innerText = bellCount;
+    }
   }
 
   const time = data.thoiGian
@@ -590,8 +616,9 @@ function addNotiItem(data, type, isInitialLoad = false) {
     : "Vừa xong";
   const isVip = data.isVip || (data.user && data.user.totalPoints >= 500);
 
+  // Thêm id="${notiId}" vào thẻ div bọc ngoài cùng
   const itemHtml = `
-  <div class="noti-item" onclick="focusOnMarker('${type}_${data.id}')" 
+  <div class="noti-item" id="${notiId}" onclick="focusOnMarker('${type}_${data.id}')" 
        style="padding: 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; border-left: 4px solid ${type === "SOS" ? "#ef4444" : "#f59e0b"};">
       <div style="display: flex; gap: 10px; align-items: center;">
           <div style="flex: 1;">
@@ -603,7 +630,6 @@ function addNotiItem(data, type, isInitialLoad = false) {
 
   container.insertAdjacentHTML("afterbegin", itemHtml);
 }
-
 // 3. Hàm xóa thông báo
 function clearNoti(e) {
   e.stopPropagation();
@@ -645,17 +671,21 @@ function connectWebSocket() {
   stompClient.debug = null;
   stompClient.connect({}, () => {
     // --- 1. KÊNH SOS ---
+    // --- 1. KÊNH SOS ---
     stompClient.subscribe("/topic/truso/" + idTruSo, (msg) => {
       const sosData = JSON.parse(msg.body);
       const markerKey = "SOS_" + sosData.id;
 
-      // Nếu là tín hiệu mới (chưa có trong activeMarkers)
-      if (!activeMarkers[markerKey]) {
-        playAlarm(); // Phát âm thanh
-        addNotiItem(sosData, "SOS"); // Rung chuông + tăng số
+      // Nếu là tín hiệu mới tinh (chưa từng được vẽ và chưa có thông báo tương ứng)
+      if (
+        !activeMarkers[markerKey] &&
+        !document.getElementById(`noti-item-SOS-${sosData.id}`)
+      ) {
+        playAlarm();
+        addNotiItem(sosData, "SOS", false); // Chỉ tăng số và phát âm thanh khi là hàng mới thật sự
       }
 
-      // Logic ẩn/hiện dựa trên trạng thái
+      // Logic ẩn/hiện dựa trên trạng thái (Giữ nguyên của bạn)
       if (sosData.trangThai === "HOAN_THANH") {
         if (activeMarkers[markerKey]) {
           activeMarkers[markerKey].marker.remove();
@@ -663,11 +693,10 @@ function connectWebSocket() {
           closeDetail();
         }
       } else {
-        addSOSMarker(sosData, "SOS"); // Thêm/Cập nhật marker
+        addSOSMarker(sosData, "SOS");
         if (activeMarkers[markerKey]) activeMarkers[markerKey].data = sosData;
       }
 
-      // Cập nhật Panel nếu đang mở đúng cái này
       const panel = document.getElementById("sos-detail-panel");
       if (panel.style.display === "flex" && activeMarkers[markerKey]) {
         showSOSDetail(sosData);
@@ -697,6 +726,7 @@ function connectWebSocket() {
     });
 
     // --- 4. KÊNH SỰ CỐ (Chỉnh lại để rung chuông) ---
+    // --- 4. KÊNH SỰ CỐ ---
     stompClient.subscribe("/topic/su-co", (msg) => {
       const updatedSuCo = JSON.parse(msg.body);
       if (updatedSuCo.trangThaiDuyet !== "VERIFIED") {
@@ -704,13 +734,14 @@ function connectWebSocket() {
       }
       const markerKey = "SU_CO_" + updatedSuCo.id;
 
-      // Nếu là sự cố mới gửi tới bản đồ
+      // Kiểm tra chặt chẽ xem có trùng lặp với dữ liệu nạp ban đầu không
       if (
         !activeMarkers[markerKey] &&
-        updatedSuCo.trangThaiXuLy !== "HOAN_THANH"
+        updatedSuCo.trangThaiXuLy !== "HOAN_THANH" &&
+        !document.getElementById(`noti-item-SU_CO-${updatedSuCo.id}`)
       ) {
         playAlarm();
-        addNotiItem(updatedSuCo, "SU_CO");
+        addNotiItem(updatedSuCo, "SU_CO", false);
       }
 
       if (updatedSuCo.trangThaiXuLy === "HOAN_THANH") {
@@ -782,3 +813,69 @@ function tiepNhanSOS(idTinHieu, maThietBi) {
     }
   });
 }
+
+async function saveStationConfig() {
+  const payload = {
+    trangThaiHoatDong: document.getElementById("trangThaiHoatDong").value,
+  };
+
+  const response = await fetch("/truso/config", {
+    method: "PATCH",
+
+    headers: {
+      "Content-Type": "application/json",
+    },
+
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    alert("Cập nhật thất bại");
+    return;
+  }
+
+  alert("Đã cập nhật trạng thái");
+}
+
+// Bật/Tắt ẩn hiện dropdown
+function toggleScpDropdown(event) {
+  event.stopPropagation(); // Tránh lan truyền sự kiện
+  const panel = document.getElementById("station-control-panel");
+  panel.classList.toggle("show");
+}
+
+// Cập nhật text và màu chấm preview ngay khi thay đổi trên Select (chưa bấm lưu)
+function updatePreviewDot() {
+  const select = document.getElementById("trangThaiHoatDong");
+  const selectedText = select.options[select.selectedIndex].text;
+
+  // Cập nhật text cho preview hiển thị ra ngoài
+  document.getElementById("station-status-text").innerText = selectedText;
+}
+
+// Xử lý sự kiện lưu trạng thái
+function handleSaveStationConfig(event) {
+  event.stopPropagation();
+
+  // Gọi tới hàm lưu logic nghiệp vụ sẵn có của bạn
+  if (typeof saveStationConfig === "function") {
+    saveStationConfig();
+  } else {
+    console.log(
+      "Đã lưu trạng thái: " +
+        document.getElementById("trangThaiHoatDong").value,
+    );
+  }
+
+  // Lưu xong tự động thu gọn bảng lại cho đẹp
+  const panel = document.getElementById("station-control-panel");
+  panel.classList.remove("show");
+}
+
+// Click ra ngoài map hoặc bất kỳ đâu thì tự động đóng bảng điều khiển lại
+document.addEventListener("click", function (event) {
+  const panel = document.getElementById("station-control-panel");
+  if (!panel.contains(event.target)) {
+    panel.classList.remove("show");
+  }
+});

@@ -87,24 +87,15 @@ private TinHieuSOSRepository tinHieuSOSRepository;
 
     tinHieuSOSRepository.save(event);
 
-    best.setSoLuongDangXuLy(
-            best.getSoLuongDangXuLy() + 1
-    );
 
     send(event, best.getId());
 }
 
 private boolean isAvailable(TruSo truSo) {
 
-    return truSo.getDangNhanTinHieu()
-
-            && truSo.getTrangThaiHoatDong()
-            == TrangThaiHoatDongTruSo.SAN_SANG
-
-            && truSo.getSoLuongDangXuLy()
-            < truSo.getGioiHanXuLy();
+    return truSo.getTrangThaiHoatDong()
+            == TrangThaiHoatDongTruSo.SAN_SANG;
 }
-
     // =====================================================
     // SOCKET
     // =====================================================
