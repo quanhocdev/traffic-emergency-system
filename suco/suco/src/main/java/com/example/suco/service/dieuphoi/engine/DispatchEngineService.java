@@ -87,6 +87,13 @@ private TinHieuSOSRepository tinHieuSOSRepository;
 
     tinHieuSOSRepository.save(event);
 
+    SosDieuPhoi dp = new SosDieuPhoi();
+dp.setSosId(event.getId());
+dp.setTruSoId(best.getId());
+dp.setTrangThai("CHO_TIEP_NHAN");
+dp.setThuTu(0);
+
+dieuPhoiRepo.save(dp);
 
     send(event, best.getId());
 }
