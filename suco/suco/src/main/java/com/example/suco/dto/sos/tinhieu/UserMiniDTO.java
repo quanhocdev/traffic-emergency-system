@@ -1,7 +1,5 @@
 package com.example.suco.dto.sos.tinhieu;
 
-import org.checkerframework.checker.units.qual.t;
-
 public class UserMiniDTO {
     private String id;
     private String name;

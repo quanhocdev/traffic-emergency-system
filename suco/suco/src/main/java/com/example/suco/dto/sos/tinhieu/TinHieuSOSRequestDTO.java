@@ -1,4 +1,4 @@
-package com.example.suco.dto;
+package com.example.suco.dto.sos.tinhieu;
 
 public class TinHieuSOSRequestDTO {
     private double viDo;
@@ -7,7 +7,7 @@ public class TinHieuSOSRequestDTO {
     private String hinhAnhBase64;
     private String ghiChu;
     private String thoiGianTao;
-    private String diaChi; // Thêm trường
+    private String diaChi; 
 
     // Constructor mặc định (Bắt buộc để Jackson map JSON)
     public TinHieuSOSRequestDTO() {}

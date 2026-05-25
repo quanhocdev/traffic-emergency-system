@@ -1,4 +1,4 @@
-package com.example.suco.service.sos.tinhieu.system.mapper;
+package com.example.suco.mapper;
 
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
 import com.example.suco.dto.sos.tinhieu.UserMiniDTO;

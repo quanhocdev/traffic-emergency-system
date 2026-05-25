@@ -4,7 +4,7 @@ import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.repository.HoaDonRepository;
-import com.example.suco.repository.TinHieuSOSRepository;
+import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.repository.BaoCaoSuCoRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;

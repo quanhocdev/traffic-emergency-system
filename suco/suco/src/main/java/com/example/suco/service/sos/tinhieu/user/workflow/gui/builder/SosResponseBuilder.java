@@ -1,8 +1,8 @@
-package com.example.suco.service.sos.tinhieu.user.workflow.gui.mapper;
+package com.example.suco.service.sos.tinhieu.user.workflow.gui.builder;
 
+import com.example.suco.mapper.TinHieuMapper;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
-import com.example.suco.service.sos.tinhieu.system.mapper.TinHieuMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

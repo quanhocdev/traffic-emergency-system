@@ -1,6 +1,7 @@
 package com.example.suco.service.suco.baocao.admin;
 
 import com.example.suco.dto.SuCoMapDto;
+import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
 import com.example.suco.model.TruSo;
@@ -9,7 +10,6 @@ import com.example.suco.repository.SpamRepository;
 import com.example.suco.repository.UserRepository;
 import com.example.suco.repository.BaoCaoSuCoRepository;
 import com.example.suco.service.dieuphoi.decision.TruSoSelectorService;
-import com.example.suco.service.suco.baocao.system.mapper.SuCoMapper;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.reward.UserRewardService;
 import org.springframework.beans.factory.annotation.Autowired;

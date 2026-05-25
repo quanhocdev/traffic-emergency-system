@@ -1,8 +1,9 @@
-package com.example.suco.service.suco.baocao.system.location;
+package com.example.suco.service.location;
 
-import com.example.suco.util.GeocodingUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.example.suco.util.GeocodingUtil;
 
 @Service
 public class GeocodingService {

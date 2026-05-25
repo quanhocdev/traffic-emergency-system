@@ -3,7 +3,7 @@ package com.example.suco.service.sos.tinhieu.user.workflow.gui.create;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.suco.dto.TinHieuSOSRequestDTO;
+import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.User;
 import com.example.suco.repository.UserRepository;

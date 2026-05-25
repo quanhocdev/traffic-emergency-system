@@ -1,10 +1,10 @@
 package com.example.suco.controller.suco.baocao.system;
 
 import com.example.suco.dto.SuCoMapDto;
+import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.BaoCaoSuCoRepository;
-import com.example.suco.service.suco.baocao.system.mapper.SuCoMapper;
 
 import jakarta.servlet.http.HttpSession;
 
