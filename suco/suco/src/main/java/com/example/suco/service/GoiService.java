@@ -67,13 +67,7 @@ public class GoiService {
         dto.setUuDai(g.getUuDai());
         return dto;
     }
-//     public boolean deleteGoiWithCheck(Long id) {
-//     if (!goiRepository.existsById(id)) {
-//         return false;
-//     }
-//     goiRepository.deleteById(id);
-//     return true;
-// }
+
 public Goi createGoi(GoiDto dto) {
     if (dto.getTen() == null || dto.getTen().isBlank()) {
         throw new RuntimeException("Tên gói không được để trống");
@@ -114,7 +108,8 @@ if (dto.getKhoangCachMienPhi() < 0) {
     return goiRepository.save(g);
 }
 
-public void updateGoi(Long id, GoiDto dto) {
+public Goi updateGoi(Long id, GoiDto dto) {
+
     Goi goi = goiRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Không tìm thấy gói"));
 
@@ -123,30 +118,38 @@ public void updateGoi(Long id, GoiDto dto) {
     }
 
     if (dto.getGia() != null) {
+
         if (dto.getGia().compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Giá phải lớn hơn 0");
         }
+
         goi.setGia(dto.getGia());
     }
 
     if (dto.getThoiHan() != null) {
+
         if (dto.getThoiHan() <= 0) {
             throw new RuntimeException("Thời hạn phải lớn hơn 0");
         }
+
         goi.setThoiHan(dto.getThoiHan());
     }
 
-    // if (dto.getKhoangCachMienPhi() != null) {
-    //     if (dto.getKhoangCachMienPhi() < 0) {
-    //         throw new RuntimeException("Khoảng cách miễn phí phải lớn hơn hoặc bằng 0");
-    //     }
-    //     goi.setKhoangCachMienPhi(dto.getKhoangCachMienPhi());
-    // }
+    if (dto.getKhoangCachMienPhi() != null) {
+
+        if (dto.getKhoangCachMienPhi() < 0) {
+            throw new RuntimeException(
+                "Khoảng cách miễn phí phải lớn hơn hoặc bằng 0"
+            );
+        }
+
+        goi.setKhoangCachMienPhi(dto.getKhoangCachMienPhi());
+    }
 
     if (dto.getUuDai() != null) {
         goi.setUuDai(dto.getUuDai());
     }
 
-    goiRepository.save(goi);
+    return goiRepository.save(goi);
 }
 }
