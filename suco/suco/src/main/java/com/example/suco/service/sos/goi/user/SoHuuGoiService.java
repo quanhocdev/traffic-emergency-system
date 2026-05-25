@@ -1,47 +1,41 @@
-package com.example.suco.service;
+package com.example.suco.service.sos.goi.user;
 
 import com.example.suco.dto.sos.goi.MuaGoiDto;
 import com.example.suco.model.Goi;
 import com.example.suco.model.MuaGoi;
-import com.example.suco.repository.sos.goi.GoiRepository;
-import com.example.suco.repository.sos.goi.MuaGoiRepository;
-
+import com.example.suco.repository.sos.goi.admin.CRUDGoiRepository;
+import com.example.suco.repository.sos.goi.user.SoHuuGoiRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class MuaGoiService {
+public class SoHuuGoiService {
 
     @Autowired
-    private MuaGoiRepository muaGoiRepository;
-    
-    @Autowired
-    private GoiRepository goiRepository;
+    private CRUDGoiRepository goiRepository;
 
     @Autowired
-    private com.example.suco.repository.UserRepository userRepository;
-
+    private SoHuuGoiRepository soHuuGoiRepository;
+ 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate; // Thêm để bắn Socket
+    private SimpMessagingTemplate messagingTemplate;
 
-    // Logic tự động kích hoạt sau 1 phút
-    @Scheduled(fixedRate = 60000) // 🔥 đổi 10s -> 1 phút
-public void tuDongKichHoatGoi() {
+    @Scheduled(fixedRate = 60000) 
+    public void tuDongKichHoatGoi() {
 
     LocalDateTime threshold = LocalDateTime.now().minusMinutes(1);
 
     List<MuaGoi> danhSachCho =
-            muaGoiRepository.findByTrangThaiAndNgayMuaBefore("PENDING", threshold);
+            soHuuGoiRepository.findByTrangThaiAndNgayMuaBefore("PENDING", threshold);
 
     for (MuaGoi mg : danhSachCho) {
         mg.setTrangThai("ACTIVE");
-        muaGoiRepository.save(mg);
+        soHuuGoiRepository.save(mg);
 
         messagingTemplate.convertAndSend(
                 "/topic/package-status/" + mg.getUserId(),
@@ -52,7 +46,7 @@ public void tuDongKichHoatGoi() {
 
     public MuaGoi dangKyGoi(String userId, Long goiId) {
         // 1. Tìm xem người dùng đã có gói nào chưa (Pending hoặc Active)
-        List<MuaGoi> existingPackages = muaGoiRepository.findByUserId(userId);
+        List<MuaGoi> existingPackages = soHuuGoiRepository.findByUserId(userId);
 
         for (MuaGoi mg : existingPackages) {
             if ("PENDING".equals(mg.getTrangThai())) {
@@ -68,9 +62,8 @@ public void tuDongKichHoatGoi() {
             }
         }
 
-        // 2. Nếu không vướng các điều kiện trên thì mới cho mua
         Goi goi = goiRepository.findById(goiId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy gói cứu hộ"));
+        .orElseThrow(() -> new RuntimeException("Không tìm thấy gói cứu hộ"));
 
         MuaGoi muaGoi = new MuaGoi();
         muaGoi.setUserId(userId);
@@ -79,11 +72,11 @@ public void tuDongKichHoatGoi() {
         muaGoi.setTrangThai("PENDING");
         muaGoi.setNgayHetHan(muaGoi.getNgayMua().plusDays(goi.getThoiHan()));
 
-        return muaGoiRepository.save(muaGoi);
+        return soHuuGoiRepository.save(muaGoi);
     }
 
     public List<MuaGoiDto> getGoiByUserId(String userId) {
-        List<MuaGoi> list = muaGoiRepository.findByUserId(userId);
+        List<MuaGoi> list = soHuuGoiRepository.findByUserId(userId);
         return list.stream().map(mg -> {
             String tenGoi = goiRepository.findById(mg.getGoiId()).map(Goi::getTen).orElse("Gói không xác định");
             return new MuaGoiDto(mg.getId(), mg.getUserId(), mg.getGoiId(), tenGoi, mg.getNgayMua(), mg.getNgayHetHan(), mg.getTrangThai());
@@ -91,7 +84,7 @@ public void tuDongKichHoatGoi() {
     }
 
     public void huyGoi(Long id, String userId) {
-    MuaGoi mg = muaGoiRepository.findById(id)
+    MuaGoi mg = soHuuGoiRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy gói"));
 
     // ❗ Check chủ sở hữu
@@ -105,12 +98,11 @@ public void tuDongKichHoatGoi() {
     }
 
     mg.setTrangThai("CANCELLED"); // Đổi trạng thái thay vì delete
-    muaGoiRepository.save(mg);
+    soHuuGoiRepository.save(mg);
 
     messagingTemplate.convertAndSend(
             "/topic/package-status/" + userId,
             "REFRESH"
     );
 }
-
 }

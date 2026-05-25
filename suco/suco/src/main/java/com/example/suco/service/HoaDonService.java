@@ -2,8 +2,8 @@ package com.example.suco.service;
 
 import com.example.suco.model.*;
 import com.example.suco.repository.*;
-import com.example.suco.repository.sos.goi.GoiRepository;
-import com.example.suco.repository.sos.goi.MuaGoiRepository;
+import com.example.suco.repository.sos.goi.admin.CRUDGoiRepository;
+import com.example.suco.repository.sos.goi.user.SoHuuGoiRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class HoaDonService {
     @Autowired private HoaDonRepository hoaDonRepository;
-    @Autowired private MuaGoiRepository muaGoiRepository;
-    @Autowired private GoiRepository goiRepository;
+    @Autowired private SoHuuGoiRepository muaGoiRepository;
+    @Autowired private CRUDGoiRepository goiRepository;
     @Autowired private TinHieuSOSRepository tinHieuSOSRepository;
     @Autowired private TruSoRepository truSoRepository;
     @Autowired private DoiQuaRepository doiQuaRepository;

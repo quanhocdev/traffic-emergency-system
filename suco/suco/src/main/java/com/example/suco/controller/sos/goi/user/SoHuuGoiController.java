@@ -1,26 +1,27 @@
 package com.example.suco.controller.sos.goi.user;
 
-import com.example.suco.service.MuaGoiService;
+import com.example.suco.service.sos.goi.admin.CRUDGoiService;
+import com.example.suco.service.sos.goi.user.SoHuuGoiService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.example.suco.service.GoiService;
+
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/mua-goi")
-public class MuaGoiApiController {
+public class SoHuuGoiController {
 
     @Autowired
-    private MuaGoiService muaGoiService;
+    private SoHuuGoiService muaGoiService;
 
     @Autowired
-    private GoiService goiService;
+    private CRUDGoiService goiService;
 
     @Autowired
     private FirebaseService firebaseService;

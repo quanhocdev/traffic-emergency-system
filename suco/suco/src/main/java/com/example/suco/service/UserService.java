@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import com.example.suco.model.Goi;
 import com.example.suco.model.User;
 import com.example.suco.repository.UserRepository;
-import com.example.suco.repository.sos.goi.GoiRepository;
-import com.example.suco.repository.sos.goi.MuaGoiRepository;
+import com.example.suco.repository.sos.goi.admin.CRUDGoiRepository;
+import com.example.suco.repository.sos.goi.user.SoHuuGoiRepository;
 
 @Service
 public class UserService {
@@ -18,10 +18,10 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private MuaGoiRepository muaGoiRepository;
+    private SoHuuGoiRepository muaGoiRepository;
 
     @Autowired
-    private GoiRepository goiRepository;
+    private CRUDGoiRepository goiRepository;
     
     public boolean existsById(String uid) {
     return userRepository.existsById(uid);

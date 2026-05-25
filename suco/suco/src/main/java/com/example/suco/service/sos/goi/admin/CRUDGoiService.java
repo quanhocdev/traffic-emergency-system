@@ -1,22 +1,19 @@
-package com.example.suco.service;
+package com.example.suco.service.sos.goi.admin;
 
 import com.example.suco.dto.sos.goi.GoiDto;
 import com.example.suco.model.Goi;
-import com.example.suco.repository.sos.goi.GoiRepository;
-
+import com.example.suco.repository.sos.goi.admin.CRUDGoiRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
-public class GoiService {
+public class CRUDGoiService {
 
     @Autowired
-    private GoiRepository goiRepository;
+    private CRUDGoiRepository goiRepository;
 
     // Lấy danh sách gói và chuyển sang DTO
     public List<GoiDto> getAllGoi() {
@@ -28,7 +25,6 @@ public class GoiService {
         return dtos;
     }
 
-    // Lưu hoặc cập nhật gói
     public void saveGoi(GoiDto dto) {
         Goi g = new Goi();
         if (dto.getId() != null) {
@@ -46,12 +42,6 @@ public class GoiService {
     public void deleteGoi(Long id) {
     Goi goi = goiRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Gói không tồn tại"));
-
-    // (OPTIONAL) Nếu có ràng buộc, check ở đây
-    // ví dụ: không cho xóa nếu đang có người dùng
-    // if (muaGoiRepository.existsByGoiId(id)) {
-    //     throw new RuntimeException("Không thể xóa gói đang được sử dụng");
-    // }
 
     goiRepository.delete(goi);
 }
