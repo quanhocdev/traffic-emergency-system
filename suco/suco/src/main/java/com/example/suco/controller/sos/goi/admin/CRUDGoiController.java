@@ -3,6 +3,9 @@ package com.example.suco.controller.sos.goi.admin;
 import com.example.suco.dto.sos.goi.GoiDto;
 import com.example.suco.model.Goi;
 import com.example.suco.service.GoiService;
+
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -19,34 +22,35 @@ public class CRUDGoiController {
     @GetMapping
     public String hienThiQuanLyGoi(Model model) {
         model.addAttribute("listGoi", goiService.getAllGoi());
-        model.addAttribute("goiMoi", new GoiDto()); 
         model.addAttribute("activePage", "quan-ly-goi");
         return "admin/quan-ly-goi";
     }
 
+    @PostMapping
+@ResponseBody
+public ResponseEntity<?> createGoi(
+        @ModelAttribute GoiDto dto
+) {
 
-    @GetMapping("/danh-sach")
-    public ResponseEntity<?> getDanhSachGoi() {
-        return ResponseEntity.ok(goiService.getAllGoi());
-    }
+    Goi goi = goiService.createGoi(dto);
 
-    @PostMapping("/create")
+    return ResponseEntity.ok(goi);
+}
+
+    @DeleteMapping("/{id}")
     @ResponseBody
-    public ResponseEntity<?> createGoi(@RequestBody GoiDto dto) {
-        Goi goi = goiService.createGoi(dto);
-        return ResponseEntity.ok(goi);
-    }
-
-    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteGoi(@PathVariable Long id) {
         goiService.deleteGoi(id);
-        return ResponseEntity.ok("Xóa thành công");
+        return ResponseEntity.ok(Map.of("message", "Xóa thành công"));
     }
 
-    @PatchMapping("/update/{id}")
-    public ResponseEntity<?> updateGoi(@PathVariable Long id,
-                                   @RequestBody GoiDto dto) {
-    goiService.updateGoi(id, dto);
-    return ResponseEntity.ok("Cập nhật thành công");
-    }
+    @PatchMapping("/{id}")
+@ResponseBody
+public ResponseEntity<?> updateGoi(
+        @PathVariable Long id,
+        @ModelAttribute GoiDto dto
+) {
+    Goi updated = goiService.updateGoi(id, dto);
+    return ResponseEntity.ok(updated);
+}
 }
