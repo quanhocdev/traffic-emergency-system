@@ -52,11 +52,6 @@ function renderSOSItem(sos) {
                   <i class="fa-solid fa-star"></i> ${userPoints} pts
                 </span>
 
-                <!-- Đồng hồ đếm ngược 60s -->
-                <span class="countdown-timer me-2" id="timer-sos-${sos.id}">
-                  <i class="fa-solid fa-clock"></i> 60s
-                </span>
-
                 <div class="flex-grow-1 d-flex flex-column">
                     <div class="d-flex align-items-center" style="gap:12px;">
                       <span><strong>Người gửi:</strong> ${userName}</span>
@@ -97,9 +92,6 @@ function appendSOS(sos) {
   // If this SOS was just handled by this client, don't duplicate
   if (handledSOS.has(sos.id)) return;
   list.insertAdjacentHTML("afterbegin", renderSOSItem(sos));
-
-  const remain = sos.thoiGianConLai ?? 60;
-  batDauDemNguocInline(sos.id, remain);
 }
 
 function loadPendingSOS() {
@@ -152,21 +144,6 @@ function loadPendingSOS() {
         if (!existed) {
           list.insertAdjacentHTML("beforeend", renderSOSItem(sos));
         }
-      });
-
-      // Khởi động đếm ngược cho tất cả SOS đã load
-      // Tính thời gian còn lại dựa trên createdAt
-      pendingSOS.forEach((sos) => {
-        const thoiGianConLai = sos.thoiGianConLai ?? 60;
-        console.log(
-          "SOS:",
-          sos.id,
-          "createdAt=",
-          sos.createdAt,
-          "remain=",
-          sos.thoiGianConLai,
-        );
-        batDauDemNguocInline(sos.id, thoiGianConLai);
       });
     });
 }
@@ -315,11 +292,6 @@ function handleRealtimeSOS(sos) {
       // Chèn vào đầu danh sách
       list.insertAdjacentHTML("afterbegin", renderSOSItem(sos));
 
-      // Kích hoạt đếm ngược cho card mới
-      if (!demNguocIntervals[sos.id]) {
-        batDauDemNguocInline(sos.id, 60);
-      }
-
       // Phát âm thanh
       const audio = new Audio("/assets/sounds/alert.mp3");
       audio.play().catch((e) => {
@@ -369,19 +341,6 @@ function connectRealtime() {
   stompClient.connect(
     {},
     function (frame) {
-      // Kênh điều phối - nhận thông tin chuyển tiếp SOS
-      stompClient.subscribe(
-        "/topic/truso/" + TRUSO_ID + "/dieu-phoi",
-        function (message) {
-          try {
-            const thongBao = JSON.parse(message.body);
-            xuLyThongBaoDieuPhoi(thongBao);
-          } catch (e) {
-            console.error("Lỗi xử lý thông báo điều phối", e);
-          }
-        },
-      );
-
       stompClient.subscribe("/topic/truso/" + TRUSO_ID, function (message) {
         console.log("🔥 RAW MESSAGE =", message.body);
 
@@ -410,129 +369,6 @@ function connectRealtime() {
       console.error("STOMP error", err);
     },
   );
-}
-
-// Xử lý thông báo điều phối từ server
-function xuLyThongBaoDieuPhoi(thongBao) {
-  const loaiThongBao = thongBao.loaiThongBao;
-  const idSos = thongBao.idSos;
-
-  if (loaiThongBao === "SOS_MOI") {
-    // SOS mới được điều phối đến trụ sở này
-    const viTri = thongBao.viTriTrongDanhSach;
-    const tongSo = thongBao.tongSoTruSo;
-    const thoiGianCho = thongBao.thoiGianConLai || 60;
-
-    console.log(`[ĐIỀU PHỐI] Nhận SOS #${idSos} - Vị trí ${viTri}/${tongSo}`);
-
-    // Bắt đầu đếm ngược với thời gian từ server
-    if (!demNguocIntervals[idSos]) {
-      batDauDemNguocInline(idSos, thoiGianCho);
-    }
-
-    // Bắt đầu đếm ngược badge
-    batDauDemNguoc(idSos, thoiGianCho, viTri, tongSo);
-
-    // Hiển thị thông báo
-    hienThiThongBaoSOS(idSos, viTri, tongSo);
-  } else if (loaiThongBao === "XOA_SOS") {
-    // SOS đã được chuyển tiếp hoặc tiếp nhận bởi trụ sở khác
-    const lyDo = thongBao.lyDo;
-    console.log(`[ĐIỀU PHỐI] Xóa SOS #${idSos} - Lý do: ${lyDo}`);
-
-    // Dừng đếm ngược
-    dungDemNguoc(idSos);
-    dungDemNguocInline(idSos);
-
-    // Xóa card khỏi danh sách
-    xoaCardSOS(idSos, lyDo);
-  }
-}
-
-// ========== ĐẾM NGƯỢC INLINE (hiển thị trên mỗi card) ==========
-function batDauDemNguocInline(idSos, thoiGianGiay) {
-  // Nếu đã có timer rồi thì không tạo nữa
-  if (demNguocIntervals[idSos]) {
-    return;
-  }
-
-  let thoiGianConLai = Math.max(0, parseInt(thoiGianGiay) || 0);
-
-  const timerElem = document.getElementById("timer-sos-" + idSos);
-  if (!timerElem) return;
-
-  capNhatHienThiTimer(timerElem, thoiGianConLai);
-
-  if (thoiGianConLai <= 0) return;
-
-  demNguocIntervals[idSos] = setInterval(() => {
-    if (!document.getElementById("sos-card-" + idSos)) {
-      clearInterval(demNguocIntervals[idSos]);
-      delete demNguocIntervals[idSos];
-      return;
-    }
-
-    thoiGianConLai--;
-
-    // CHẶN ÂM
-    if (thoiGianConLai <= 0) {
-      thoiGianConLai = 0;
-
-      capNhatHienThiTimer(timerElem, 0);
-
-      clearInterval(demNguocIntervals[idSos]);
-      delete demNguocIntervals[idSos];
-
-      console.log("⏰ TIMEOUT SOS =", idSos);
-
-      fetch(`/sos/cap-nhat-trang-thai/${idSos}?status=TIMEOUT`, {
-        method: "PATCH",
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("TIMEOUT RESULT =", data);
-
-          const card = document.getElementById("sos-card-" + idSos);
-
-          if (card) {
-            card.remove();
-            checkEmptyList();
-          }
-        })
-        .catch((err) => {
-          console.error("TIMEOUT ERROR =", err);
-        });
-
-      return;
-    }
-
-    capNhatHienThiTimer(timerElem, thoiGianConLai);
-  }, 1000);
-}
-function dungDemNguocInline(idSos) {
-  if (demNguocIntervals[idSos]) {
-    clearInterval(demNguocIntervals[idSos]);
-    delete demNguocIntervals[idSos];
-  }
-}
-
-function capNhatHienThiTimer(timerElem, giay) {
-  if (!timerElem) return;
-
-  const phut = Math.floor(giay / 60);
-  const giayConLai = giay % 60;
-  const thoiGianStr =
-    phut > 0 ? `${phut}:${giayConLai.toString().padStart(2, "0")}` : `${giay}s`;
-
-  timerElem.innerHTML = `<i class="fa-solid fa-clock"></i> ${thoiGianStr}`;
-
-  // Đổi màu theo thời gian còn lại
-  timerElem.classList.remove("warning", "danger");
-  if (giay <= 10) {
-    timerElem.classList.add("danger");
-  } else if (giay <= 30) {
-    timerElem.classList.add("warning");
-  }
 }
 
 // ========== TỪ CHỐI TIẾP NHẬN ==========
@@ -605,76 +441,6 @@ function tuChoiTiepNhan(idSos, tuDong = false) {
     });
 }
 
-// Bắt đầu đếm ngược cho SOS (badge phiên bản cũ - giữ lại để tương thích)
-function batDauDemNguoc(idSos, thoiGianGiay, viTri, tongSo) {
-  // Dừng đếm ngược cũ nếu có
-  dungDemNguoc(idSos);
-
-  demNguocSOS[idSos] = {
-    thoiGianConLai: thoiGianGiay,
-    viTri: viTri,
-    tongSo: tongSo,
-    interval: setInterval(() => {
-      demNguocSOS[idSos].thoiGianConLai--;
-      capNhatHienThiDemNguoc(idSos);
-
-      if (demNguocSOS[idSos].thoiGianConLai <= 0) {
-        dungDemNguoc(idSos);
-      }
-    }, 1000),
-  };
-
-  // Cập nhật hiển thị ngay lập tức
-  capNhatHienThiDemNguoc(idSos);
-}
-
-// Dừng đếm ngược
-function dungDemNguoc(idSos) {
-  if (demNguocSOS[idSos] && demNguocSOS[idSos].interval) {
-    clearInterval(demNguocSOS[idSos].interval);
-    delete demNguocSOS[idSos];
-  }
-}
-
-// Cập nhật hiển thị đếm ngược trên card
-function capNhatHienThiDemNguoc(idSos) {
-  const card = document.getElementById("sos-card-" + idSos);
-  if (!card) return;
-
-  const thongTin = demNguocSOS[idSos];
-  if (!thongTin) return;
-
-  let demNguocElem = card.querySelector(".dem-nguoc-badge");
-  if (!demNguocElem) {
-    // Tạo element đếm ngược nếu chưa có
-    demNguocElem = document.createElement("span");
-    demNguocElem.className = "dem-nguoc-badge badge bg-danger ms-2";
-    demNguocElem.style.cssText =
-      "animation: pulse 1s infinite; font-size: 0.9rem;";
-
-    const cardBody = card.querySelector(".card-sos");
-    if (cardBody) {
-      cardBody.insertBefore(demNguocElem, cardBody.firstChild);
-    }
-  }
-
-  const phut = Math.floor(thongTin.thoiGianConLai / 60);
-  const giay = thongTin.thoiGianConLai % 60;
-  const thoiGianStr = `${phut}:${giay.toString().padStart(2, "0")}`;
-
-  demNguocElem.innerHTML = `<i class="fa-solid fa-clock"></i> ${thoiGianStr} <small>(${thongTin.viTri}/${thongTin.tongSo})</small>`;
-
-  // Đổi màu khi sắp hết thời gian
-  if (thongTin.thoiGianConLai <= 10) {
-    demNguocElem.classList.remove("bg-danger", "bg-warning");
-    demNguocElem.classList.add("bg-danger");
-    demNguocElem.style.animation = "pulse 0.5s infinite";
-  } else if (thongTin.thoiGianConLai <= 30) {
-    demNguocElem.classList.remove("bg-danger");
-    demNguocElem.classList.add("bg-warning", "text-dark");
-  }
-}
-
 // Hiển thị thông báo khi có SOS mới
 function hienThiThongBaoSOS(idSos, viTri, tongSo) {
   // Phát âm thanh cảnh báo
@@ -685,28 +451,6 @@ function hienThiThongBaoSOS(idSos, viTri, tongSo) {
 
   // Có thể thêm toast notification ở đây
   console.log(`🚨 SOS mới! Bạn là trụ sở thứ ${viTri}/${tongSo} nhận tin này.`);
-}
-
-// Xóa card SOS khi bị chuyển tiếp
-function xoaCardSOS(idSos, lyDo) {
-  const card = document.getElementById("sos-card-" + idSos);
-  if (card) {
-    // Hiệu ứng bay sang phải và mờ dần
-    card.style.transition = "all 0.4s ease";
-    card.style.opacity = "0";
-    card.style.transform = "translateX(50px)";
-
-    setTimeout(() => {
-      dungDemNguocInline(idSos);
-      card.remove();
-      checkEmptyList(); // Cập nhật lại giao diện "Hiện không có yêu cầu nào"
-
-      // Thông báo nhanh (Toast) cho nhân viên trực trụ sở
-      if (lyDo === "NGUOI_DUNG_HUY") {
-        console.warn(`SOS #${idSos} đã bị người dùng hủy.`);
-      }
-    }, 400);
-  }
 }
 
 /* Detail panel for list page + overlay */
