@@ -1,6 +1,5 @@
 package com.example.suco.service.suco.baocao.admin;
 
-import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.LoaiSuCo;
 import com.example.suco.model.TruSo;
@@ -8,7 +7,6 @@ import com.example.suco.model.User;
 import com.example.suco.repository.LoaiSuCoRepository;
 import com.example.suco.repository.UserRepository;
 import com.example.suco.repository.BaoCaoSuCoRepository;
-import com.example.suco.service.TruSoService;
 import com.example.suco.service.suco.baocao.system.file.ImageStorageService;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.dieuphoi.decision.TruSoSelectorService;
@@ -18,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 
 @Service
 public class AdminBaoCaoService {
@@ -41,7 +40,8 @@ public class AdminBaoCaoService {
     private BaoCaoRealtimeService realtimeService;
 
     @Autowired
-    private SuCoMapper suCoMapper;
+    private SuCoResponseBuilder suCoResponseBuilder;
+
 
     @Transactional
     public BaoCaoSuCo submitAdminReport(BaoCaoSuCo report, MultipartFile image) {
@@ -82,12 +82,12 @@ public class AdminBaoCaoService {
         BaoCaoSuCo savedReport = reportRepository.save(report);
 
         realtimeService.broadcastReport(
-                suCoMapper.convertToDto(savedReport));
+                suCoResponseBuilder.buildSuCoDto(savedReport));
 
         if (ganNhat != null) {
             realtimeService.broadcastTruSo(
                     ganNhat.getId(),
-                    suCoMapper.convertToDto(savedReport));
+                    suCoResponseBuilder.buildSuCoDto(savedReport));
         }
 
         return savedReport;

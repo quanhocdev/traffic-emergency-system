@@ -1,9 +1,9 @@
 package com.example.suco.service.suco.baocao.user;
 
 import com.example.suco.dto.SuCoMapDto;
-import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.service.AiVerifyResult;
 import com.example.suco.service.location.GeocodingService;
+import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.system.file.ImageStorageService;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.reward.UserRewardService;
@@ -55,9 +55,6 @@ public class UserBaoCaoService {
     private BaoCaoRealtimeService realtimeService;
 
     @Autowired
-    private SuCoMapper suCoMapper;
-
-    @Autowired
     private GeocodingService geocodingService;
 
     @Autowired
@@ -66,11 +63,14 @@ public class UserBaoCaoService {
     @Autowired
     private QuyenHanService quyenHanService;
 
+    @Autowired
+private SuCoResponseBuilder suCoResponseBuilder;
+
     public List<SuCoMapDto> getMyReports(String uid) {
 
         return reportRepository.findByReporterUid(uid)
                 .stream()
-                .map(suCoMapper::convertToDto)
+                .map(suCoResponseBuilder::buildSuCoDto)
                 .toList();
     }
 
@@ -78,7 +78,7 @@ public class UserBaoCaoService {
 
         return reportRepository.findPendingReportsForAdmin()
                 .stream()
-                .map(suCoMapper::convertToDto)
+                .map(suCoResponseBuilder::buildSuCoDto)
                 .toList();
     }
 
@@ -225,7 +225,7 @@ public class UserBaoCaoService {
             }
 
             realtimeService.broadcastReport(
-                    suCoMapper.convertToDto(existingReport)
+                    suCoResponseBuilder.buildSuCoDto(existingReport)
             );
 
             ai.setDistance(matchedDistance);
@@ -319,7 +319,7 @@ public class UserBaoCaoService {
         );
 
         realtimeService.broadcastReport(
-                suCoMapper.convertToDto(savedReport)
+                suCoResponseBuilder.buildSuCoDto(savedReport)
         );
 
         realtimeService.broadcastAdminNotification(
@@ -406,7 +406,7 @@ public class UserBaoCaoService {
                 reportRepository.save(report);
 
         SuCoMapDto dto =
-                suCoMapper.convertToDto(saved);
+                suCoResponseBuilder.buildSuCoDto(saved);
 
         dto.setDiaChi(saved.getDiaChi());
 

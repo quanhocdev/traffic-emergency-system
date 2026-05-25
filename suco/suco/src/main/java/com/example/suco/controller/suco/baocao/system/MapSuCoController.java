@@ -1,10 +1,10 @@
 package com.example.suco.controller.suco.baocao.system;
 
 import com.example.suco.dto.SuCoMapDto;
-import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.BaoCaoSuCoRepository;
+import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -20,7 +20,7 @@ public class MapSuCoController {
     private BaoCaoSuCoRepository repo;
 
     @Autowired
-    private SuCoMapper suCoMapper;
+private SuCoResponseBuilder suCoResponseBuilder;
 
     @GetMapping("/map")
 public List<SuCoMapDto> getMapData(
@@ -43,7 +43,7 @@ public List<SuCoMapDto> getMapData(
     }
 
     return list.stream()
-            .map(suCoMapper::convertToDto)
+            .map(suCoResponseBuilder::buildSuCoDto)
             .toList();
 }
 }

@@ -1,21 +1,13 @@
 package com.example.suco.mapper;
 
 import com.example.suco.dto.SuCoMapDto;
-import com.example.suco.dto.TruSoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
-import com.example.suco.model.TruSo;
-import com.example.suco.repository.TruSoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class SuCoMapper {
 
-    @Autowired
-    private TruSoRepository truSoRepository;
-
-    public SuCoMapDto convertToDto(BaoCaoSuCo b) {
-
+    public SuCoMapDto toDto(BaoCaoSuCo b) {
         String tenLoai =
                 (b.getLoaiSuCo() != null)
                         ? b.getLoaiSuCo().getTen()
@@ -31,7 +23,7 @@ public class SuCoMapper {
                         ? b.getReporter().getName()
                         : "Người dân báo";
 
-        SuCoMapDto dto = new SuCoMapDto(
+        return new SuCoMapDto(
                 b.getId(),
                 b.getViDo(),
                 b.getKinhDo(),
@@ -50,48 +42,5 @@ public class SuCoMapper {
                 b.getDiaChi(),
                 tenNguoiBao
         );
-
-        if (b.getReporter() != null) {
-            dto.setReporterUid(b.getReporter().getUid());
-        }
-
-        if (b.getTruSoDeXuat() != null) {
-
-            TruSo ts = truSoRepository
-                    .findById(b.getTruSoDeXuat().getId())
-                    .orElse(null);
-
-            if (ts != null) {
-
-                dto.setTruSoDeXuat(
-                        new TruSoMapDto(
-                                ts.getId(),
-                                ts.getTenTruSo(),
-                                ts.getKinhDo(),
-                                ts.getViDo()
-                        )
-                );
-            }
-        }
-
-        if (b.getTruSoTiepNhan() != null) {
-
-            TruSo ts = truSoRepository
-                    .findById(b.getTruSoTiepNhan().getId())
-                    .orElse(null);
-
-            if (ts != null) {
-
-                dto.setTruSoTiepNhan(
-                        new TruSoMapDto(
-                                ts.getId(),
-                                ts.getTenTruSo(),
-                                ts.getKinhDo(),
-                                ts.getViDo()
-                        )
-                );
-            }
-        }
-        return dto;
     }
 }

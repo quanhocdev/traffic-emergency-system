@@ -1,10 +1,10 @@
 package com.example.suco.controller.suco.baocao.truso;
 
 import com.example.suco.dto.SuCoMapDto;
-import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.BaoCaoSuCoRepository;
+import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.truso.TrangThaiSuCoService;
 
 import jakarta.servlet.http.HttpSession;
@@ -23,8 +23,10 @@ public class TrangThaiSuCoController {
     @Autowired
     private BaoCaoSuCoRepository repo;
 
-    @Autowired
-private SuCoMapper suCoMapper;
+
+
+@Autowired
+private SuCoResponseBuilder suCoResponseBuilder;
 
     @Autowired
     private TrangThaiSuCoService trangThaiServiceService;
@@ -39,7 +41,7 @@ public List<SuCoMapDto> getSuCoHienTai(
     List<BaoCaoSuCo> entities = repo.findAll();
 
     List<SuCoMapDto> allActive = entities.stream()
-            .map(suCoMapper::convertToDto)
+            .map(suCoResponseBuilder::buildSuCoDto)
             .toList();
 
     if (status != null && !status.isEmpty()) {
@@ -60,7 +62,7 @@ public List<SuCoMapDto> getSuCoHistory(HttpSession session) {
 
     return repo.findHistoryByTruSo(current.getId())
             .stream()
-            .map(suCoMapper::convertToDto)
+            .map(suCoResponseBuilder::buildSuCoDto)
             .toList();
 }
 

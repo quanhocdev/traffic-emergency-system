@@ -16,7 +16,7 @@ public class SosResponseBuilder {
     @Autowired
     private TinHieuMapper tinHieuMapper;
 
-    public Map<String, Object> build(TinHieuSOS sos, TruSo truSo) {
+    public Map<String, Object> buildSosDto(TinHieuSOS sos, TruSo truSo) {
 
     Map<String, Object> result = new HashMap<>();
 

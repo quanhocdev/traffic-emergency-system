@@ -1,10 +1,10 @@
 package com.example.suco.service.suco.baocao.truso;
 
 import com.example.suco.dto.SuCoMapDto;
-import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.BaoCaoSuCoRepository;
+import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,7 @@ public class MucDoSuCoService {
     private BaoCaoRealtimeService realtimeService;
 
     @Autowired
-    private SuCoMapper suCoMapper;
+    private SuCoResponseBuilder suCoResponseBuilder;
 
     @Transactional
     public Map<String, Object> capNhatMucDo(
@@ -138,7 +138,7 @@ public class MucDoSuCoService {
                 reportRepository.save(suCo);
 
         SuCoMapDto dto =
-                suCoMapper.convertToDto(saved);
+                suCoResponseBuilder.buildSuCoDto(saved);
 
         log.info(
                 "\nCập nhật mức độ thành công. Mức độ mới: {}"
