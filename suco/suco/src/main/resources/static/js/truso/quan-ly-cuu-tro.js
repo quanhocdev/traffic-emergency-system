@@ -390,10 +390,6 @@ function tuChoiTiepNhan(idSos, tuDong = false) {
     btnAccept.disabled = true;
   }
 
-  // Dừng đếm ngược
-  dungDemNguocInline(idSos);
-  dungDemNguoc(idSos);
-
   fetch(`/sos/cap-nhat-trang-thai/${idSos}?status=TU_CHOI`, {
     method: "PATCH",
   })
@@ -407,22 +403,6 @@ function tuChoiTiepNhan(idSos, tuDong = false) {
         card.style.transition = "opacity 0.3s, transform 0.3s";
         card.style.opacity = "0";
         card.style.transform = "translateX(100%)";
-
-        setTimeout(() => {
-          dungDemNguocInline(idSos);
-          card.remove();
-          checkEmptyList();
-        }, 300);
-      }
-
-      // Thông báo cho người dùng
-      if (tuDong) {
-        console.log(
-          `⏰ Đã hết 60 giây - SOS #${idSos} được chuyển cho trụ sở tiếp theo`,
-        );
-      } else {
-        // Không dùng alert để tránh gián đoạn
-        console.log(`✓ Đã từ chối tiếp nhận SOS #${idSos}`);
       }
     })
     .catch((err) => {

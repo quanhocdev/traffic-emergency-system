@@ -67,9 +67,7 @@ public class UserService {
 public User getUserInfo(String uid) {
     return userRepository.findById(uid).map(user -> {
 
-        // 👉 LẤY DATA THẬT TỪ DB (user đã có sẵn)
-        // KHÔNG GÁN = 0 nữa
-        System.out.println("=== USER FROM DB ===");
+System.out.println("=== USER FROM DB ===");
 System.out.println("UID: " + user.getUid());
 System.out.println("POINTS: " + user.getTotalPoints());
 System.out.println("SPAM: " + user.getSpamCount());

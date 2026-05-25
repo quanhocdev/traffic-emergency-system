@@ -2,15 +2,11 @@ package com.example.suco.service.suco.loai;
 
 import com.example.suco.model.LoaiSuCo;
 import com.example.suco.repository.LoaiSuCoRepository;
-
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.List;
-
 import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Path;
 import java.nio.file.Files;
