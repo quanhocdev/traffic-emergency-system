@@ -1,10 +1,11 @@
 package com.example.suco.service;
 
-import com.example.suco.dto.MuaGoiDto;
+import com.example.suco.dto.sos.goi.MuaGoiDto;
 import com.example.suco.model.Goi;
 import com.example.suco.model.MuaGoi;
-import com.example.suco.repository.GoiRepository;
-import com.example.suco.repository.MuaGoiRepository;
+import com.example.suco.repository.sos.goi.GoiRepository;
+import com.example.suco.repository.sos.goi.MuaGoiRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;

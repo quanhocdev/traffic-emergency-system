@@ -1,8 +1,8 @@
 package com.example.suco.service.suco.baocao.system.reward;
 
 import com.example.suco.model.User;
-import com.example.suco.repository.MuaGoiRepository;
 import com.example.suco.repository.UserRepository;
+import com.example.suco.repository.sos.goi.MuaGoiRepository;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

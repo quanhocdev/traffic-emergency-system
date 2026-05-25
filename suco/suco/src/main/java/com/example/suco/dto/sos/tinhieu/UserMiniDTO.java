@@ -1,4 +1,4 @@
-package com.example.suco.dto.sos;
+package com.example.suco.dto.sos.tinhieu;
 
 import org.checkerframework.checker.units.qual.t;
 

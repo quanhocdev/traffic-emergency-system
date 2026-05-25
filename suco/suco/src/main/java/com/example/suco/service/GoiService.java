@@ -1,8 +1,9 @@
 package com.example.suco.service;
 
-import com.example.suco.dto.GoiDto;
+import com.example.suco.dto.sos.goi.GoiDto;
 import com.example.suco.model.Goi;
-import com.example.suco.repository.GoiRepository;
+import com.example.suco.repository.sos.goi.GoiRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

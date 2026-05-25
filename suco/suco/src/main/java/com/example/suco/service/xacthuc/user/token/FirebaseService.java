@@ -16,11 +16,6 @@ public class FirebaseService {
 
         String token = authHeader.replace("Bearer ", "");
 
-        // Token giả để test Postman/dev
-        if ("dev-token".equals(token)) {
-            return "test-user";
-        }
-
         FirebaseToken decodedToken =
                 FirebaseAuth.getInstance().verifyIdToken(token);
 

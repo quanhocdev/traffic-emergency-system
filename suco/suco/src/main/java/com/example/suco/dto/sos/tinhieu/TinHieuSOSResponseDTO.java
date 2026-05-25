@@ -1,4 +1,4 @@
-package com.example.suco.dto.sos;
+package com.example.suco.dto.sos.tinhieu;
 
 import java.time.LocalDateTime;
 import java.util.List;

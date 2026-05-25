@@ -1,6 +1,6 @@
 package com.example.suco.service.sos.tinhieu.truso;
 
-import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
+import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.TinHieuSOSRepository;

@@ -2,6 +2,9 @@ package com.example.suco.service;
 
 import com.example.suco.model.*;
 import com.example.suco.repository.*;
+import com.example.suco.repository.sos.goi.GoiRepository;
+import com.example.suco.repository.sos.goi.MuaGoiRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;

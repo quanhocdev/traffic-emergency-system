@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 import com.example.suco.dto.TinHieuSOSRequestDTO;
-import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
+import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.service.sos.tinhieu.user.TinHieuGuiService;
 import com.example.suco.service.sos.tinhieu.user.TinHieuHuyService;
