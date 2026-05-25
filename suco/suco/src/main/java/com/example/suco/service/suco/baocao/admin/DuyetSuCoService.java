@@ -1,7 +1,6 @@
 package com.example.suco.service.suco.baocao.admin;
 
 import com.example.suco.dto.SuCoMapDto;
-import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
 import com.example.suco.model.TruSo;
@@ -10,6 +9,7 @@ import com.example.suco.repository.SpamRepository;
 import com.example.suco.repository.UserRepository;
 import com.example.suco.repository.BaoCaoSuCoRepository;
 import com.example.suco.service.dieuphoi.decision.TruSoSelectorService;
+import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.reward.UserRewardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,10 +44,10 @@ public class DuyetSuCoService {
     private BaoCaoRealtimeService realtimeService;
 
     @Autowired
-    private SuCoMapper suCoMapper;
+    private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+        private SuCoResponseBuilder suCoResponseBuilder;
 
     private static final Logger log =
         LoggerFactory.getLogger(DuyetSuCoService.class);
@@ -59,7 +59,7 @@ public class DuyetSuCoService {
     log.info("Đang tải {} báo cáo chờ duyệt", reports.size());
 
     return reports.stream()
-            .map(suCoMapper::convertToDto)
+            .map(suCoResponseBuilder::buildSuCoDto)
             .toList();
 }
 
@@ -105,13 +105,13 @@ public class DuyetSuCoService {
             BaoCaoSuCo updatedReport = reportRepository.save(report);
 
             realtimeService.broadcastReport(
-                    suCoMapper.convertToDto(updatedReport));
+                    suCoResponseBuilder.buildSuCoDto(updatedReport));
 
             if (updatedReport.getTruSoDeXuat() != null) {
 
                 realtimeService.broadcastTruSo(
                         updatedReport.getTruSoDeXuat().getId(),
-                        suCoMapper.convertToDto(updatedReport)
+                        suCoResponseBuilder.buildSuCoDto(updatedReport)
                 );
             }
 
@@ -119,7 +119,7 @@ public class DuyetSuCoService {
 
                 realtimeService.broadcastTruSo(
                         updatedReport.getTruSoTiepNhan().getId(),
-                        suCoMapper.convertToDto(updatedReport)
+                        suCoResponseBuilder.buildSuCoDto(updatedReport)
                 );
             }
 
@@ -145,7 +145,7 @@ public class DuyetSuCoService {
             report.setTrangThaiXuLy("REJECTED");
 
             realtimeService.broadcastReport(
-                    suCoMapper.convertToDto(report));
+                    suCoResponseBuilder.buildSuCoDto(report));
 
             reportRepository.delete(report);
 

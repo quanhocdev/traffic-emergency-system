@@ -78,6 +78,6 @@ public class TinHieuGuiService {
 
     sos = tinHieuSOSRepository.save(sos);
 
-    return sosResponseBuilder.build(sos, truSo);
+    return sosResponseBuilder.buildSosDto(sos, truSo);
 }
 }
