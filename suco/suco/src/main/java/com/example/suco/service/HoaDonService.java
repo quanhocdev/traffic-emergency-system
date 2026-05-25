@@ -4,6 +4,7 @@ import com.example.suco.model.*;
 import com.example.suco.repository.*;
 import com.example.suco.repository.sos.goi.admin.CRUDGoiRepository;
 import com.example.suco.repository.sos.goi.user.SoHuuGoiRepository;
+import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

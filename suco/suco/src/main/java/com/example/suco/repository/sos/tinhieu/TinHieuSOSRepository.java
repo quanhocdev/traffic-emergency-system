@@ -1,4 +1,4 @@
-package com.example.suco.repository;
+package com.example.suco.repository.sos.tinhieu;
 
 import com.example.suco.model.TinHieuSOS;
 import org.springframework.data.jpa.repository.JpaRepository;

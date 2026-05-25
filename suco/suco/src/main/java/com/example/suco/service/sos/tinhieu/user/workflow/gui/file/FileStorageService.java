@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.suco.dto.TinHieuSOSRequestDTO;
+import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
 import com.example.suco.model.TinHieuSOS;
 
 import java.io.IOException;

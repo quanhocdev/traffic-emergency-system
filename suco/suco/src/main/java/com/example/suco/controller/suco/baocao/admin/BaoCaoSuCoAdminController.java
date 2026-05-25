@@ -19,12 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.suco.service.suco.baocao.admin.AdminBaoCaoService;
 import com.example.suco.service.suco.baocao.admin.DuyetSuCoService;
-import com.example.suco.service.suco.baocao.user.UserBaoCaoService;
 import com.example.suco.dto.SuCoMapDto;
-import com.example.suco.mapper.SuCoMapDtoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
-import com.example.suco.repository.LoaiSuCoRepository;
 import com.example.suco.repository.SpamRepository;
 import com.example.suco.repository.BaoCaoSuCoRepository;
 
@@ -35,12 +32,6 @@ public class BaoCaoSuCoAdminController {
 
     @Autowired
     private BaoCaoSuCoRepository reportRepository;
-
-     @Autowired
-    private LoaiSuCoRepository loaiSuCoRepository;
-
-    @Autowired
-    private SuCoMapDtoMapper suCoMapDtoMapper;
 
     @Autowired
     private SpamRepository spamRepository;

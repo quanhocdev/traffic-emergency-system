@@ -1,4 +1,4 @@
-package com.example.suco.service.suco.baocao.system.mapper;
+package com.example.suco.mapper;
 
 import com.example.suco.dto.SuCoMapDto;
 import com.example.suco.dto.TruSoMapDto;

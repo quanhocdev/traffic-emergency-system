@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 public interface TruSoRepository extends JpaRepository<TruSo, Long> {
     Optional<TruSo> findByTenDangNhap(String tenDangNhap);
     
-    // Giữ lại cái cũ nếu cần
     List<TruSo> findByGeohashStartingWith(String prefix);
 
 @Query("SELECT t FROM TruSo t WHERE SUBSTRING(t.geohash, 1, 6) IN :prefixes")

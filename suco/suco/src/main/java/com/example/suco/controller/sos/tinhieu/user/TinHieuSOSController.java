@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-import com.example.suco.dto.TinHieuSOSRequestDTO;
+import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.service.sos.tinhieu.user.TinHieuGuiService;
@@ -42,12 +42,12 @@ public ResponseEntity<?> submitSOS(
 
         String uid = decodedToken.getUid();
 
-        TinHieuSOS sos = tinHieuService.submitSOS(uid, dto);
+        Map<String, Object> result = tinHieuService.submitSOS(uid, dto);
 
         return ResponseEntity.ok(
             Map.of(
                 "success", true,
-                "id", sos.getId(),
+                "id", result.get("id"),
                 "message", "Gửi SOS thành công"
             )
         );

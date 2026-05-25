@@ -3,7 +3,7 @@ package com.example.suco.service.dieuphoi.engine;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
 import com.example.suco.model.enums.TrangThaiHoatDongTruSo;
-import com.example.suco.repository.TinHieuSOSRepository;
+import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.dieuphoi.distance.DistanceService;
 import com.example.suco.service.dieuphoi.geohash.GeoHashService;
 
@@ -94,7 +94,6 @@ public class DispatchEngineService {
         return truSo.getTrangThaiHoatDong()
                 == TrangThaiHoatDongTruSo.SAN_SANG;
     }
-
     // =====================================================
     // SOCKET
     // =====================================================

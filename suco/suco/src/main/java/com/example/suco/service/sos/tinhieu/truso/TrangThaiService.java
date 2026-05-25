@@ -1,11 +1,10 @@
 package com.example.suco.service.sos.tinhieu.truso;
 
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
+import com.example.suco.mapper.TinHieuMapper;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.TinHieuSOSRepository;
-import com.example.suco.service.dieuphoi.engine.DispatchEngineService;
-import com.example.suco.service.sos.tinhieu.system.mapper.TinHieuMapper;
+import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.sos.tinhieu.system.notification.TinHieuRealtimeService;
 import com.example.suco.service.sos.tinhieu.system.validation.CheckTrangThaiService;
 
@@ -22,9 +21,6 @@ public class TrangThaiService {
 
     @Autowired
     private TinHieuSOSRepository tinHieuSOSRepository;
-
-    @Autowired
-    private DispatchEngineService dispatchEngineService;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;

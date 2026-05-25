@@ -1,7 +1,8 @@
 package com.example.suco.controller.sos.tinhieu.system;
 
 import com.example.suco.model.TinHieuSOS;
-import com.example.suco.repository.TinHieuSOSRepository;
+import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

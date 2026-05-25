@@ -1,7 +1,7 @@
 package com.example.suco.service.sos.tinhieu.user;
 
 import com.example.suco.model.TinHieuSOS;
-import com.example.suco.repository.TinHieuSOSRepository;
+import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.sos.tinhieu.system.notification.TinHieuRealtimeService;
 
 import org.springframework.beans.factory.annotation.Autowired;
