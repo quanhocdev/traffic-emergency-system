@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/admin/loai-su-co")
-public class LoaiSuCoAdminController {
+public class CRUDLoaiSuCoController {
 
     @Autowired
     private LoaiSuCoService loaiSuCo;

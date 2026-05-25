@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.suco.model.Goi;
 import com.example.suco.model.User;
-import com.example.suco.repository.GoiRepository;
-import com.example.suco.repository.MuaGoiRepository;
 import com.example.suco.repository.UserRepository;
+import com.example.suco.repository.sos.goi.GoiRepository;
+import com.example.suco.repository.sos.goi.MuaGoiRepository;
 
 @Service
 public class UserService {

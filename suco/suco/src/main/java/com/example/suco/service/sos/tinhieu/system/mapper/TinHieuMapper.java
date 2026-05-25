@@ -1,7 +1,7 @@
 package com.example.suco.service.sos.tinhieu.system.mapper;
 
-import com.example.suco.dto.sos.TinHieuSOSResponseDTO;
-import com.example.suco.dto.sos.UserMiniDTO;
+import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
+import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 import com.example.suco.model.TinHieuSOS;
 
 import org.springframework.stereotype.Component;

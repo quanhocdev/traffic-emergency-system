@@ -1,4 +1,4 @@
-package com.example.suco.controller.api;
+package com.example.suco.controller.sos.goi.user;
 
 import com.example.suco.service.MuaGoiService;
 import com.google.firebase.auth.FirebaseAuth;
@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.suco.service.GoiService;
+import com.example.suco.service.xacthuc.user.token.FirebaseService;
 
 import java.util.Map;
 
@@ -21,18 +22,9 @@ public class MuaGoiApiController {
     @Autowired
     private GoiService goiService;
 
-    private String getUidFromHeader(String authHeader) throws Exception {
-        String token = authHeader.replace("Bearer ", "");
+    @Autowired
+    private FirebaseService firebaseService;
 
-        if ("dev-token".equals(token)) {
-            return "test-user"; 
-        }
-
-        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-        return decodedToken.getUid();
-    }
-
-        // 🔹 Danh sách
     @GetMapping("/danh-sach")
     public ResponseEntity<?> getDanhSachGoi() {
         return ResponseEntity.ok(goiService.getAllGoi());
@@ -45,7 +37,7 @@ public class MuaGoiApiController {
             @RequestBody Map<String, Object> request
     ) {
         try {
-            String uid = getUidFromHeader(authHeader);
+            String uid = firebaseService.extractUid(authHeader);
 
             Long goiId = Long.valueOf(request.get("goiId").toString());
             muaGoiService.dangKyGoi(uid, goiId);
@@ -61,22 +53,6 @@ public class MuaGoiApiController {
         }
     }
 
-    // LẤY GÓI CỦA TÔI 
-    @GetMapping("/my-packages")
-    public ResponseEntity<?> getMyPackages(
-            @RequestHeader("Authorization") String authHeader
-    ) {
-        try {
-            String uid = getUidFromHeader(authHeader);
-
-            return ResponseEntity.ok(muaGoiService.getGoiByUserId(uid));
-
-        } catch (Exception e) {
-            return ResponseEntity.status(401)
-                    .body("Xác thực thất bại");
-        }
-    }
-
     // HỦY GÓI 
     @PostMapping("/cancel/{id}")
     public ResponseEntity<?> cancelGoi(
@@ -84,7 +60,7 @@ public class MuaGoiApiController {
             @PathVariable Long id
     ) {
         try {
-            String uid = getUidFromHeader(authHeader);
+            String uid = firebaseService.extractUid(authHeader);
 
             muaGoiService.huyGoi(id, uid);
 
@@ -95,6 +71,22 @@ public class MuaGoiApiController {
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", e.getMessage()));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(401)
+                    .body("Xác thực thất bại");
+        }
+    }
+    
+    // LẤY DANH SÁCH GÓI ĐÃ MUA CỦA USER
+    @GetMapping("/my-packages")
+    public ResponseEntity<?> getMyPackages(
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        try {
+            String uid = firebaseService.extractUid(authHeader);
+
+            return ResponseEntity.ok(muaGoiService.getGoiByUserId(uid));
 
         } catch (Exception e) {
             return ResponseEntity.status(401)

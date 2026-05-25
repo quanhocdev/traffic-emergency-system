@@ -1,4 +1,4 @@
-package com.example.suco.repository;
+package com.example.suco.repository.sos.goi;
 
 import com.example.suco.model.Goi;
 import org.springframework.data.jpa.repository.JpaRepository;
