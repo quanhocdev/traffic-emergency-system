@@ -2,7 +2,7 @@ package com.example.suco.controller.sos.goi.admin;
 
 import com.example.suco.dto.sos.goi.GoiDto;
 import com.example.suco.model.Goi;
-import com.example.suco.service.GoiService;
+import com.example.suco.service.sos.goi.admin.CRUDGoiService;
 
 import java.util.Map;
 
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class CRUDGoiController {
 
     @Autowired
-    private GoiService goiService;
+    private CRUDGoiService goiService;
 
     @GetMapping
     public String hienThiQuanLyGoi(Model model) {
@@ -27,10 +27,10 @@ public class CRUDGoiController {
     }
 
     @PostMapping
-@ResponseBody
-public ResponseEntity<?> createGoi(
+    @ResponseBody
+    public ResponseEntity<?> createGoi(
         @ModelAttribute GoiDto dto
-) {
+    ) {
 
     Goi goi = goiService.createGoi(dto);
 
