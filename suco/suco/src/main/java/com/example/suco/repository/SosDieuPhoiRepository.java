@@ -1,6 +1,8 @@
 package com.example.suco.repository;
 
 import com.example.suco.model.SosDieuPhoi;
+import com.example.suco.model.TruSo;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

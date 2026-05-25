@@ -12,8 +12,8 @@ public interface TruSoRepository extends JpaRepository<TruSo, Long> {
     // Giữ lại cái cũ nếu cần
     List<TruSo> findByGeohashStartingWith(String prefix);
 
-    // THÊM CÁI NÀY: Tìm tất cả trụ sở nằm trong danh sách các ô Geohash
-    @Query("SELECT t FROM TruSo t WHERE SUBSTRING(t.geohash, 1, 6) IN :prefixes")
-    List<TruSo> findByGeohashIn(List<String> prefixes);
+@Query("SELECT t FROM TruSo t WHERE SUBSTRING(t.geohash, 1, 6) IN :prefixes")
+List<TruSo> findByGeohashIn(@org.springframework.data.repository.query.Param("prefixes") List<String> prefixes);
     boolean existsByTenDangNhap(String tenDangNhap);
+
 }
