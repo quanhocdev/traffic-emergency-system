@@ -1,8 +1,8 @@
-package com.example.suco.service.payment.hoadonsos.admin;
+package com.example.suco.service.payment.admin;
 
 import com.example.suco.model.*;
 import com.example.suco.repository.*;
-import com.example.suco.repository.payment.hoadonsos.HoaDonRepository;
+import com.example.suco.repository.payment.HoaDonRepository;
 import com.example.suco.repository.sos.goi.admin.CRUDGoiRepository;
 import com.example.suco.repository.sos.goi.user.SoHuuGoiRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;

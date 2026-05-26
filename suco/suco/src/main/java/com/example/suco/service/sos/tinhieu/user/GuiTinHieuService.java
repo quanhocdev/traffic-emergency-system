@@ -16,7 +16,7 @@ import com.example.suco.service.sos.tinhieu.user.workflow.gui.resolver.TruSoReso
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.vip.VipService;
 import java.util.Map;
 @Service
-public class TinHieuGuiService {
+public class GuiTinHieuService {
 
      @Autowired
     private TinHieuSOSRepository tinHieuSOSRepository;

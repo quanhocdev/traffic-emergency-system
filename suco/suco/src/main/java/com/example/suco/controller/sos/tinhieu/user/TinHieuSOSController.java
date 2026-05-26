@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
 import com.example.suco.model.TinHieuSOS;
-import com.example.suco.service.sos.tinhieu.user.TinHieuGuiService;
-import com.example.suco.service.sos.tinhieu.user.TinHieuHuyService;
+import com.example.suco.service.sos.tinhieu.user.GuiTinHieuService;
+import com.example.suco.service.sos.tinhieu.user.HuyTinHieuService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class TinHieuSOSController {
 
     @Autowired
-    private TinHieuGuiService tinHieuService;
+    private GuiTinHieuService tinHieuService;
 
     @Autowired
-    private TinHieuHuyService tinHieuHuyService;
+    private HuyTinHieuService tinHieuHuyService;
 
     @PostMapping("/submit")
 public ResponseEntity<?> submitSOS(

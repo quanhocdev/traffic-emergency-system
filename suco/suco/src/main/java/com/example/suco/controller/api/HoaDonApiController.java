@@ -2,9 +2,9 @@ package com.example.suco.controller.api;
 
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.payment.hoadonsos.HoaDonRepository;
+import com.example.suco.repository.payment.HoaDonRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
-import com.example.suco.service.payment.hoadonsos.admin.HoaDonService;
+import com.example.suco.service.payment.admin.HoaDonService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
