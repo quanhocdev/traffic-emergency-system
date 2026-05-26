@@ -1,4 +1,4 @@
-package com.example.suco.controller.admin;
+package com.example.suco.controller.tienich.qua.admin;
 
 import com.example.suco.dto.QuaDto;
 import com.example.suco.model.Qua;

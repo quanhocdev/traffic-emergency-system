@@ -1,4 +1,4 @@
-package com.example.suco.controller.admin;
+package com.example.suco.controller.tienich.quyenloi.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

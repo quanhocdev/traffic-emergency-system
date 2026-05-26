@@ -6,15 +6,14 @@ import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.*
+import com.example.canhbao.data.model.suco.baocao.request.BaoCaoSuCoRequest
+import com.example.canhbao.data.model.suco.loai.LoaiSuCo
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.google.firebase.auth.FirebaseAuth
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 class BaoCaoSuCoViewModel : ViewModel() {
 
@@ -55,7 +54,6 @@ class BaoCaoSuCoViewModel : ViewModel() {
         return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
     }
 
-    // ✅ CHỈ GỬI SERVER – KHÔNG AI TRONG ANDROID
     fun guiBaoCao(
         bitmap: Bitmap,
         moTa: String,

@@ -1,4 +1,4 @@
-package com.example.suco.controller.admin;
+package com.example.suco.controller.xacthuc.admin;
 import com.example.suco.model.User;
 import com.example.suco.repository.UserRepository;
 import com.example.suco.security.JwtService;

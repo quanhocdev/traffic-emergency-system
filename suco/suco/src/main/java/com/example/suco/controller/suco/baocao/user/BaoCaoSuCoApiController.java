@@ -1,20 +1,17 @@
 
 package com.example.suco.controller.suco.baocao.user;
 
-import com.example.suco.dto.AiRejectResponse;
-import com.example.suco.dto.BaoCaoResponse;
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
-
 import com.example.suco.service.suco.baocao.user.GuiBaoCaoService;
 import com.example.suco.service.suco.baocao.user.HuyBaoCaoService;
 import com.google.firebase.auth.FirebaseAuthException;
 import jakarta.validation.Valid;
 import com.example.suco.dto.suco.baocao.user.request.BaoCaoRequest;
-
+import com.example.suco.dto.suco.baocao.user.response.BaoCaoResponse;
 
 @RestController
 @RequestMapping("/api/su-co")
@@ -28,7 +25,6 @@ public class BaoCaoSuCoApiController {
 
     @Autowired
     private HuyBaoCaoService huyBaoCaoService;
-
 
     @PostMapping
 public ResponseEntity<?> submitReport(
@@ -51,7 +47,7 @@ public ResponseEntity<?> submitReport(
     } catch (FirebaseAuthException e) {
 
         return ResponseEntity.status(401).body(
-                new AiRejectResponse(
+                new BaoCaoResponse(
                         "UNAUTHORIZED",
                         "Lỗi xác thực: " + e.getMessage(),
                         0

@@ -1,4 +1,4 @@
-package com.example.suco.dto;
+package com.example.suco.dto.suco.baocao.user.response;
 
 public class BaoCaoResponse {
 

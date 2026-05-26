@@ -1,4 +1,4 @@
-package com.example.canhbao.data.model
+package com.example.canhbao.data.model.suco.baocao.request
 
 data class LoaiSuCoIdRequest(val id: Long)
 

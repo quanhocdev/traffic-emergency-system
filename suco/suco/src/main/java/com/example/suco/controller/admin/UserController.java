@@ -24,7 +24,6 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
-    // ===================== HTML PAGE =====================
     @GetMapping
     public String index(Model model,
                         @RequestParam(required = false) String keyword) {
@@ -84,7 +83,6 @@ public class UserController {
         return "redirect:/admin/quan-ly-user";
     }
 
-    // ===================== VALIDATION =====================
     private boolean isValidUid(String uid) {
         return uid != null
                 && uid.length() <= 255

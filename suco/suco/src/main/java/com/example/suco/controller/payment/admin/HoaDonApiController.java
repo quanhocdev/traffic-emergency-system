@@ -1,4 +1,4 @@
-package com.example.suco.controller.api;
+package com.example.suco.controller.payment.admin;
 
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;

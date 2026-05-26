@@ -1,14 +1,13 @@
     package com.example.canhbao.data.network
 
-    import com.example.canhbao.data.model.AiVerifyResponse
-    import com.example.canhbao.data.model.BaoCaoSuCoRequest
+    import com.example.canhbao.data.model.suco.baocao.response.BaoCaoResponse
+    import com.example.canhbao.data.model.suco.baocao.request.BaoCaoSuCoRequest
     import com.example.canhbao.data.model.CameraMapDto
     import com.example.canhbao.data.model.DoiQuaDto
     import com.example.canhbao.data.model.DoiTienDto
     import com.example.canhbao.data.model.GoiDto
     import com.example.canhbao.data.model.LichSuDto
-    //import com.example.canhbao.data.model.MessageDTO
-    import com.example.canhbao.data.model.LoaiSuCo
+    import com.example.canhbao.data.model.suco.loai.LoaiSuCo
     import com.example.canhbao.data.model.MuaGoiDto
     import com.example.canhbao.data.model.MuaGoiRequest
     import com.example.canhbao.data.model.QuaDto
@@ -18,7 +17,6 @@
     import com.example.canhbao.data.model.TinHieuSOSRequest
     import com.example.canhbao.data.model.TruSoMapDto
     import com.example.canhbao.data.model.TuiDto
-    import retrofit2.Call
     import retrofit2.Response
     import retrofit2.http.Body
     import retrofit2.http.GET
@@ -36,7 +34,7 @@
         suspend fun submitReport(
             @Header("Authorization") token: String,
             @Body request: BaoCaoSuCoRequest
-        ): Response<AiVerifyResponse>
+        ): Response<BaoCaoResponse>
         @PATCH("/api/su-co/{id}")
         suspend fun cancelSuCo(
             @Header("Authorization") token: String,
