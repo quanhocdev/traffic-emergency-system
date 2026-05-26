@@ -1,7 +1,8 @@
-package com.example.suco.service;
+package com.example.suco.service.payment.hoadonsos.admin;
 
 import com.example.suco.model.*;
 import com.example.suco.repository.*;
+import com.example.suco.repository.payment.hoadonsos.HoaDonRepository;
 import com.example.suco.repository.sos.goi.admin.CRUDGoiRepository;
 import com.example.suco.repository.sos.goi.user.SoHuuGoiRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
@@ -61,10 +62,6 @@ if (!"DANG_XU_LY".equals(sos.getTrangThai())) {
     double distance = calculateDistance(truso.getViDo(), truso.getKinhDo(), sos.getViDo(), sos.getKinhDo());
     double freeKm = (goi.getKhoangCachMienPhi() != null) ? goi.getKhoangCachMienPhi() : 0;
 
-    // ❌ XÓA dòng này
-    // double finalPrice = (distance > freeKm) ? (distance - freeKm) * 10000 : 0;
-
-    // ✅ THAY BẰNG
     double extraKm = Math.max(0, distance - freeKm);
     long soKmTinhTien = (long) Math.ceil(extraKm);
     double finalPrice = soKmTinhTien * 10000;

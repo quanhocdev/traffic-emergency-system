@@ -1,4 +1,4 @@
-package com.example.suco.service;
+package com.example.suco.service.xacthuc.truso;
 
 import java.util.ArrayList;
 import java.util.HashSet;

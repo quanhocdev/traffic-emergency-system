@@ -1,4 +1,4 @@
-package com.example.suco.service;
+package com.example.suco.service.xacthuc.camera;
 
 import com.example.suco.dto.CameraMapDto;
 import com.example.suco.model.Camera;

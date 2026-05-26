@@ -1,4 +1,4 @@
-package com.example.suco.service;
+package com.example.suco.service.tienich.qua.user;
 
 import com.example.suco.dto.DoiQuaDto;
 import com.example.suco.model.*;

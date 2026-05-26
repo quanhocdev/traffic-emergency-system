@@ -1,14 +1,15 @@
 package com.example.suco.controller.api;
 
 import com.example.suco.dto.CameraMapDto;
-import com.example.suco.service.CameraService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.suco.model.BaoCaoSuCo;
-import com.example.suco.repository.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.service.xacthuc.camera.CameraService;
 
 import java.util.List;
 

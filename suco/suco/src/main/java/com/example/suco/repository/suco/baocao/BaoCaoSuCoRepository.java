@@ -1,4 +1,4 @@
-package com.example.suco.repository;
+package com.example.suco.repository.suco.baocao;
 
 import com.example.suco.model.BaoCaoSuCo;
 import org.springframework.data.jpa.repository.JpaRepository;

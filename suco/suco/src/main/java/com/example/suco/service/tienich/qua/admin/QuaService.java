@@ -1,4 +1,4 @@
-    package com.example.suco.service;
+    package com.example.suco.service.tienich.qua.admin;
 
     import com.example.suco.dto.QuaDto;
     import com.example.suco.model.Qua;

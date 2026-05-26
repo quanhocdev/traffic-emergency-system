@@ -1,4 +1,4 @@
-package com.example.suco.service;
+package com.example.suco.service.xacthuc.user;
 
 import java.util.List;
 

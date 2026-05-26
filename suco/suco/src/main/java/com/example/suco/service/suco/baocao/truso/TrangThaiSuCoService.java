@@ -3,8 +3,8 @@ package com.example.suco.service.suco.baocao.truso;
 import com.example.suco.dto.SuCoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.BaoCaoSuCoRepository;
 import com.example.suco.repository.TruSoRepository;
+import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 

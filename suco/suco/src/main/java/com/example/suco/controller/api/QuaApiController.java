@@ -1,7 +1,8 @@
 package com.example.suco.controller.api;
 
 import com.example.suco.model.Qua;
-import com.example.suco.service.QuaService;
+import com.example.suco.service.tienich.qua.admin.QuaService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

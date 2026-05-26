@@ -19,8 +19,8 @@ import com.example.suco.dto.CameraMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Camera;
 import com.example.suco.repository.CameraRepository;
-import com.example.suco.repository.BaoCaoSuCoRepository;
-import com.example.suco.service.CameraService;
+import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.service.xacthuc.camera.CameraService;
 
 @Controller
 @RequestMapping("/admin/quan-ly-camera")
