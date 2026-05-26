@@ -22,8 +22,8 @@ import com.example.suco.service.suco.baocao.admin.DuyetSuCoService;
 import com.example.suco.dto.SuCoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
-import com.example.suco.repository.SpamRepository;
-import com.example.suco.repository.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SpamRepository;
 
 @Controller
 @RequestMapping("/admin/bao-cao-su-co")

@@ -1,4 +1,4 @@
-package com.example.suco.service;
+package com.example.suco.service.tienich.quyenloi;
 
 import com.example.suco.dto.DoiTienDto;
 import com.example.suco.model.DoiTien;

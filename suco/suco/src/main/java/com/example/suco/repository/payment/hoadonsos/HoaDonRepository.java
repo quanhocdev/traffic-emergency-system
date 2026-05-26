@@ -1,4 +1,4 @@
-package com.example.suco.repository;
+package com.example.suco.repository.payment.hoadonsos;
 
 import com.example.suco.model.HoaDon;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package com.example.suco.repository;
+package com.example.suco.repository.suco.loai;
 
 import com.example.suco.model.LoaiSuCo;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,8 +1,8 @@
 package com.example.suco.controller.admin;
 
 import com.example.suco.model.User;
-import com.example.suco.service.UserService;
 import com.example.suco.repository.UserRepository;
+import com.example.suco.service.xacthuc.user.UserService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

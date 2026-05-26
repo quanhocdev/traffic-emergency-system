@@ -3,9 +3,9 @@ import com.example.suco.dto.LichSuDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TinHieuSOS;
-import com.example.suco.repository.HoaDonRepository;
+import com.example.suco.repository.payment.hoadonsos.HoaDonRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
-import com.example.suco.repository.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -13,7 +13,7 @@ public class SchedulerConfig {
     @Bean
     public TaskScheduler taskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(1); // 🔥 cực quan trọng
+        scheduler.setPoolSize(1); 
         return scheduler;
     }
 }

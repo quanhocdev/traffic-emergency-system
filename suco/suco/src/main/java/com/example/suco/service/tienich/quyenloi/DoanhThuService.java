@@ -1,4 +1,4 @@
-package com.example.suco.service;
+package com.example.suco.service.tienich.quyenloi;
 
 import java.math.BigDecimal;
 import java.util.List;

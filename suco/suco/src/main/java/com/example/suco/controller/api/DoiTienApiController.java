@@ -6,7 +6,7 @@ import com.example.suco.model.DoiTien;
 import com.example.suco.model.User;
 import com.example.suco.repository.DoiTienRepository;
 import com.example.suco.repository.UserRepository;
-import com.example.suco.service.DoiTienService;
+import com.example.suco.service.tienich.quyenloi.DoiTienService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 

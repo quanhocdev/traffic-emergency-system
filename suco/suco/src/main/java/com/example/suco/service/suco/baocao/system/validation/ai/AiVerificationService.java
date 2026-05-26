@@ -1,7 +1,6 @@
-package com.example.suco.service.suco.baocao.system.validation;
+package com.example.suco.service.suco.baocao.system.validation.ai;
 
 import com.example.suco.service.AiVerifyResult;
-import com.example.suco.service.GeminiAiService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

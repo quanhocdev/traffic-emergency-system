@@ -3,10 +3,10 @@ package com.example.suco.controller;
 import com.example.suco.dto.AuthRequest;
 import com.example.suco.model.User;
 import com.example.suco.repository.UserRepository;
+import com.example.suco.service.xacthuc.user.UserService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import org.springframework.http.ResponseEntity;
-import com.example.suco.service.UserService; // THÊM DÒNG NÀY ĐỂ HẾT LỖI
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
