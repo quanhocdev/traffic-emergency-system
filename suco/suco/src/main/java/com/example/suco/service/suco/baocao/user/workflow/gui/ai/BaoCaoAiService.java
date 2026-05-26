@@ -1,12 +1,10 @@
 package com.example.suco.service.suco.baocao.user.workflow.gui.ai;
 
+import com.example.suco.dto.suco.baocao.system.AiVerifyResult;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.LoaiSuCo;
 
 import com.example.suco.repository.suco.loai.LoaiSuCoRepository;
-
-import com.example.suco.service.AiVerifyResult;
-
 import com.example.suco.service.suco.baocao.system.validation.ai.GeminiAiService;
 
 import org.springframework.beans.factory.annotation.Autowired;

@@ -18,18 +18,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-        // NOTE: Removed MaxUploadSizeExceededException handler to avoid imposing file-size limits here.
-        // Server-level limits (if any) are controlled by application properties / container settings.
-
-    @ExceptionHandler(AiRejectException.class)
-    public ResponseEntity<Map<String, String>> handleAiReject(AiRejectException ex) {
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(Map.of(
-                        "code", "AI_REJECTED",
-                        "message", ex.getMessage()
-                ));
-    }
 
     // ID không tồn tại
     @ExceptionHandler(ResponseStatusException.class)
