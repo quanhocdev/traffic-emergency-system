@@ -1,9 +1,7 @@
-package com.example.canhbao.data.model
+package com.example.canhbao.data.model.suco.loai
 
 data class LoaiSuCo(
     val id: Long,
     val ten: String,
     val iconUrl: String? // nullable vì có thể chưa upload icon
 )
-
-

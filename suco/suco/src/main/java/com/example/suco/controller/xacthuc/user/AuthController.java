@@ -1,4 +1,4 @@
-package com.example.suco.controller;
+package com.example.suco.controller.xacthuc.user;
 
 import com.example.suco.dto.AuthRequest;
 import com.example.suco.model.User;
@@ -111,10 +111,3 @@ public ResponseEntity<?> getMyInfo(@RequestHeader("Authorization") String authHe
     }
     
 }
-
-// 4. SỬA TẠI ĐÂY: Gọi userService.getUserInfo thay vì userRepository
-        // User user = userService.getUserInfo(uid);
-        // if (user != null) {
-        //     return ResponseEntity.ok(user);
-        // }
-        // return ResponseEntity.notFound().build();

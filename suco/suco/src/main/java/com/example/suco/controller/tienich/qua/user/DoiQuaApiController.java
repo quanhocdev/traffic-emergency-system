@@ -1,4 +1,4 @@
-package com.example.suco.controller.api;
+package com.example.suco.controller.tienich.qua.user;
 
 import com.example.suco.dto.DoiQuaDto;
 import com.example.suco.repository.DoiQuaRepository;

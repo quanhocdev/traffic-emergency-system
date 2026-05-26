@@ -1,7 +1,7 @@
 package com.example.suco.service.suco.baocao.user;
 
 import com.example.suco.dto.suco.baocao.user.request.BaoCaoRequest;
-import com.example.suco.dto.BaoCaoResponse;
+import com.example.suco.dto.suco.baocao.user.response.BaoCaoResponse;
 import com.example.suco.dto.SuCoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 
