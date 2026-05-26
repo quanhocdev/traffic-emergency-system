@@ -1,4 +1,4 @@
-package com.example.suco.service.payment.admin;
+package com.example.suco.service.payment.truso;
 
 import com.example.suco.model.*;
 import com.example.suco.repository.*;
@@ -6,7 +6,7 @@ import com.example.suco.repository.payment.HoaDonRepository;
 import com.example.suco.repository.sos.goi.admin.CRUDGoiRepository;
 import com.example.suco.repository.sos.goi.user.SoHuuGoiRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
-
+import com.example.suco.service.payment.truso.validation.DistanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class HoaDonService {
+public class HoaDonSOSService {
     @Autowired private HoaDonRepository hoaDonRepository;
     @Autowired private SoHuuGoiRepository muaGoiRepository;
     @Autowired private CRUDGoiRepository goiRepository;
@@ -22,6 +22,7 @@ public class HoaDonService {
     @Autowired private TruSoRepository truSoRepository;
     @Autowired private DoiQuaRepository doiQuaRepository;
     @Autowired private QuaRepository quaRepository;
+    @Autowired private DistanceService distanceService;
 
     @Transactional // Quan trọng: Đảm bảo tính toàn vẹn dữ liệu
     public HoaDon taoHoaDon(Long sosId, String tenSos, String xuLy, Double giaThuCong, Long trusoId, Long quaId) {
@@ -32,17 +33,14 @@ public class HoaDonService {
         TruSo truso = truSoRepository.findById(trusoId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy Trụ sở"));
 
-  // ✅ chưa có trụ sở nhận
 if (sos.getIdTruSoTiepNhan() == null) {
     throw new RuntimeException("SOS chưa được tiếp nhận");
 }
 
-// ✅ sai trụ slkasflasfjaslk
 if (!sos.getIdTruSoTiepNhan().equals(trusoId)) {
     throw new RuntimeException("SOS này không thuộc trụ sở của bạn");
 }
 
-// ✅ sai trạng thái
 if (!"DANG_XU_LY".equals(sos.getTrangThai())) {
     throw new RuntimeException("Chỉ tạo hóa đơn khi SOS đang xử lý");
 }
@@ -59,7 +57,7 @@ if (!"DANG_XU_LY".equals(sos.getTrangThai())) {
 
         if (muaGoiOpt.isPresent()) {
     Goi goi = goiRepository.findById(muaGoiOpt.get().getGoiId()).get();
-    double distance = calculateDistance(truso.getViDo(), truso.getKinhDo(), sos.getViDo(), sos.getKinhDo());
+    double distance = distanceService.calculateDistance(truso.getViDo(), truso.getKinhDo(), sos.getViDo(), sos.getKinhDo());
     double freeKm = (goi.getKhoangCachMienPhi() != null) ? goi.getKhoangCachMienPhi() : 0;
 
     double extraKm = Math.max(0, distance - freeKm);
@@ -122,6 +120,7 @@ if (!"DANG_XU_LY".equals(sos.getTrangThai())) {
 
         return savedHd; // Trả về kết quả cuối cùng ở đây
     }
+
     @Transactional
 public void apDungVoucherChoHoaDon(HoaDon hd, Long quaId) {
     // 1. Lấy thông tin Voucher từ bảng 'qua'
@@ -164,13 +163,4 @@ public void apDungVoucherChoHoaDon(HoaDon hd, Long quaId) {
     // Lưu lại hóa đơn đã cập nhật số tiền
     hoaDonRepository.save(hd);
 }
-    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371; // KM
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                   Math.sin(dLon/2) * Math.sin(dLon/2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    }
 }
