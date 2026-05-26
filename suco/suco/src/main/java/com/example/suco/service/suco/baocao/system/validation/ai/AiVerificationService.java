@@ -1,45 +1,45 @@
-package com.example.suco.service.suco.baocao.system.validation.ai;
+// package com.example.suco.service.suco.baocao.system.validation.ai;
 
-import com.example.suco.service.AiVerifyResult;
+// import com.example.suco.service.AiVerifyResult;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+// import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.stereotype.Service;
 
-@Service
-public class AiVerificationService {
+// @Service
+// public class AiVerificationService {
 
-    @Autowired
-    private GeminiAiService geminiAiService;
+//     @Autowired
+//     private GeminiAiService geminiAiService;
 
-    public AiVerifyResult verifyReportImage(
-            String base64FullData,
-            String loaiSuCo
-    ) {
+//     public AiVerifyResult verifyReportImage(
+//             String base64FullData,
+//             String loaiSuCo
+//     ) {
 
-        AiVerifyResult ai;
+//         AiVerifyResult ai;
 
-        if (base64FullData != null && !base64FullData.isBlank()) {
+//         if (base64FullData != null && !base64FullData.isBlank()) {
 
-            ai = geminiAiService.verifyImage(
-                    base64FullData,
-                    loaiSuCo
-            );
+//             ai = geminiAiService.verifyImage(
+//                     base64FullData,
+//                     loaiSuCo
+//             );
 
-            System.out.println("=== AI RESULT ===");
-            System.out.println("Valid: " + ai.isValid());
-            System.out.println("Confidence: " + ai.getConfidence());
-            System.out.println("Distance (before): " + ai.getDistance());
+//             System.out.println("=== AI RESULT ===");
+//             System.out.println("Valid: " + ai.isValid());
+//             System.out.println("Confidence: " + ai.getConfidence());
+//             System.out.println("Distance (before): " + ai.getDistance());
 
-        } else {
+//         } else {
 
-            ai = new AiVerifyResult(
-                    true,
-                    50,
-                    "Không có ảnh",
-                    null
-            );
-        }
+//             ai = new AiVerifyResult(
+//                     true,
+//                     50,
+//                     "Không có ảnh",
+//                     null
+//             );
+//         }
 
-        return ai;
-    }
-}
+//         return ai;
+//     }
+// }

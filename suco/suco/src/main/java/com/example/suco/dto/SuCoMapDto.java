@@ -12,7 +12,7 @@ public class SuCoMapDto {
     private String iconUrl;
     private String mucDoNghiemTrong;
     private String hinhAnhUrl;
-    private Integer doTinCay; // QUAN TRỌNG: Thêm biến này
+    private Integer doTinCay;
     private String tenNguoiBao;
     private TruSoMapDto truSoDeXuat;
     private TruSoMapDto truSoTiepNhan;

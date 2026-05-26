@@ -3,7 +3,7 @@ import com.example.suco.dto.LichSuDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TinHieuSOS;
-import com.example.suco.repository.payment.hoadonsos.HoaDonRepository;
+import com.example.suco.repository.payment.HoaDonRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 

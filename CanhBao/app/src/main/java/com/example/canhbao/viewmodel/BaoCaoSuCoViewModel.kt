@@ -15,10 +15,6 @@ import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import com.example.canhbao.data.model.SuCoMapDto
-import com.example.canhbao.data.network.BaoCaoSuCoApi
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 
 class BaoCaoSuCoViewModel : ViewModel() {
 
@@ -76,21 +72,17 @@ class BaoCaoSuCoViewModel : ViewModel() {
                 isSubmitting = true
                 uploadStatus = "Đang gửi báo cáo..."
 
-                val time =
-                    LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 
-                // 🚀 ĐẨY SANG THREAD NẶNG
                 val base64Image = withContext(Dispatchers.IO) {
                     bitmapToBase64(bitmap) // chỉ Base64, bỏ "data:image/jpeg;base64,"
                 }
 
 
                 val request = BaoCaoSuCoRequest(
-                    loaiSuCo = LoaiSuCoIdRequest(selectedLoaiSuCo!!.id),
+                    loaiSuCoId = selectedLoaiSuCo!!.id,
                     kinhDo = lng,
                     viDo = lat,
                     moTa = moTa,
-                    thoiGianTao = time,
                     hinhAnhUrl = base64Image
                 )
                 val token = withContext(Dispatchers.IO) {

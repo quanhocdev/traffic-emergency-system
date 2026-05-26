@@ -2,73 +2,63 @@
 package com.example.suco.controller.suco.baocao.user;
 
 import com.example.suco.dto.AiRejectResponse;
+import com.example.suco.dto.BaoCaoResponse;
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
-import com.example.suco.model.BaoCaoSuCo;
-import com.example.suco.model.User;
-import com.example.suco.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
-import org.springframework.http.HttpStatus;
-import com.example.suco.service.AiVerifyResult;
-import com.example.suco.service.suco.baocao.user.UserBaoCaoService;
+
+import com.example.suco.service.suco.baocao.user.GuiBaoCaoService;
+import com.example.suco.service.suco.baocao.user.HuyBaoCaoService;
 import com.google.firebase.auth.FirebaseAuthException;
 import jakarta.validation.Valid;
+import com.example.suco.dto.suco.baocao.user.request.BaoCaoRequest;
+
 
 @RestController
 @RequestMapping("/api/su-co")
 public class BaoCaoSuCoApiController {
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private FirebaseService firebaseService;
 
     @Autowired
-    private UserBaoCaoService userBaoCaoService;
+    private GuiBaoCaoService userBaoCaoService;
+
+    @Autowired
+    private HuyBaoCaoService huyBaoCaoService;
 
 
     @PostMapping
-    public ResponseEntity<AiRejectResponse> submitReport(
-            @RequestHeader("Authorization") String authHeader,
-            @Valid @RequestBody BaoCaoSuCo report
-    ) {
-        try {
-            String uid = firebaseService.extractUid(authHeader);
+public ResponseEntity<?> submitReport(
+        @RequestHeader("Authorization") String authHeader,
+        @Valid @RequestBody BaoCaoRequest request
+) {
+    try {
 
-            User user = userRepository.findById(uid)
-                    .orElseThrow(() -> new RuntimeException("User chưa tồn tại trong hệ thống"));
-            report.setReporter(user);
+        String uid = firebaseService.extractUid(authHeader);
 
-                AiVerifyResult ai = userBaoCaoService.submitReport(uid, report, report.getHinhAnhUrl());
-            if (!ai.isValid()) {
-                String code = ai.getReason().contains("trước đó") 
-                    ? "DUPLICATE" 
-                    : "AI_REJECTED";
-
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                new AiRejectResponse(code, ai.getReason(), ai.getConfidence(), ai.getDistance())
+        BaoCaoResponse response =
+                userBaoCaoService.submitReport(
+                        uid,
+                        request,
+                        request.getHinhAnhUrl()
                 );
-            }
 
-            // NẾU HỢP LỆ -> SOCKET SẼ GỬI ĐẾN ADMIN/MAP
-            return ResponseEntity.ok(
-                new AiRejectResponse(
-                "AI_APPROVED",
-                "Báo cáo sự cố thành công",
-                ai.getConfidence(),
-                ai.getDistance()
-        )
-    );
+        return ResponseEntity.ok(response);
 
-        } catch (FirebaseAuthException e) {
+    } catch (FirebaseAuthException e) {
+
         return ResponseEntity.status(401).body(
-            new AiRejectResponse("UNAUTHORIZED", "Lỗi xác thực: " + e.getMessage(), 0)
+                new AiRejectResponse(
+                        "UNAUTHORIZED",
+                        "Lỗi xác thực: " + e.getMessage(),
+                        0
+                )
         );
     }
-    }
+}
 
 @PatchMapping("/{id}")
 public ResponseEntity<?> cancelReport(
@@ -77,7 +67,7 @@ public ResponseEntity<?> cancelReport(
 ) {
     try {
         String currentUid = firebaseService.extractUid(authHeader);
-        return userBaoCaoService.cancelReport(id, currentUid);
+        return huyBaoCaoService.cancelReport(id, currentUid);
     } catch (Exception e) {
         return ResponseEntity.status(401)
                 .body(Map.of("message", "Xác thực thất bại"));
