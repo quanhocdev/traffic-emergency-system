@@ -1,7 +1,7 @@
 package com.example.suco.service.suco.baocao.user.workflow.gui.response;
 
-import com.example.suco.dto.suco.baocao.system.AiVerifyResult;
-import com.example.suco.dto.suco.baocao.user.response.BaoCaoResponse;
+import com.example.suco.dto.suco.baocao.response.AiVerifyResult;
+import com.example.suco.dto.suco.baocao.response.BaoCaoResponse;
 import com.example.suco.model.BaoCaoSuCo;
 
 import org.springframework.stereotype.Component;
