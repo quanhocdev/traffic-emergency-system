@@ -185,7 +185,7 @@ async function submitPayment(e) {
   };
 
   try {
-    const res = await fetch("/api/hoa-don/tao", {
+    const res = await fetch("/truso/hoa-don/tao", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

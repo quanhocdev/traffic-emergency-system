@@ -14,23 +14,21 @@ import com.example.suco.dto.sos.payment.hoadon.request.ThanhToanRequestDTO;
 import com.example.suco.dto.sos.payment.hoadon.response.ThanhToanResponseDTO;
 import java.util.HashMap;
 import java.util.Map;
-
+import com.example.suco.service.sos.payment.hoadon.user.ThanhToanSOSService;
 @RestController
 @RequestMapping("/api/hoa-don")
 @CrossOrigin(origins = "*")
 public class ThanhToanSOSController {
 
     @Autowired 
-    private HoaDonSOSService hoaDonService;
+    private ThanhToanSOSService thanhToanSOSService;
 
-    @Autowired
-    private HoaDonRepository hoaDonRepository;
     
     @Autowired 
     private SimpMessagingTemplate messagingTemplate;
 
 
-@PostMapping("/xac-nhan/{id}")
+@PostMapping("/xac-nhan")
 @Transactional
 public ResponseEntity<?> xacNhanThanhToan(
     @RequestHeader("Authorization") String authHeader,
@@ -49,58 +47,28 @@ public ResponseEntity<?> xacNhanThanhToan(
         }
 
         // 2. Tìm hóa đơn
-        return hoaDonRepository.findById(request.getHoaDonId()).map(hd -> {
+       ThanhToanResponseDTO response =
+        thanhToanSOSService.thanhToanHoaDon(
+                uid,
+                request
+        );
 
-            // 3. Check chính chủ
-            if (hd.getUserId() == null || !hd.getUserId().equals(uid)) {
-                return ResponseEntity.status(403)
-                        .body(Map.of("message", "Bạn không có quyền thanh toán hóa đơn này"));
-            }
+messagingTemplate.convertAndSend(
+        "/topic/truso/" + response.getTrusoId(),
+        response
+);
 
-            // 4. Check trạng thái (tránh thanh toán lại)
-            if ("PAID".equalsIgnoreCase(hd.getTrangThai())) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("message", "Hóa đơn đã được thanh toán trước đó"));
-            }
+messagingTemplate.convertAndSend(
+        "/topic/user/" + uid + "/invoice",
+        response
+);
 
-            // 5. Áp dụng voucher nếu có
-            if (request.getQuaId() != null) {
-                hoaDonService.apDungVoucherChoHoaDon(hd, request.getQuaId());
-            }
+messagingTemplate.convertAndSend(
+        "/topic/user/" + uid + "/history",
+        "REFRESH"
+);
 
-            // 6. Cập nhật trạng thái
-            hd.setTrangThai("PAID");
-            hoaDonRepository.save(hd);
-
-            // 7. Response trả về
-            ThanhToanResponseDTO response =
-        new ThanhToanResponseDTO();
-
-response.setHoaDonId(hd.getId());
-response.setTrangThai("PAID");
-response.setTongThanhToan(hd.getTongThanhToan());
-response.setMessage("Thanh toán thành công");
-
-            // 8. Realtime cho trụ sở
-            messagingTemplate.convertAndSend(
-                "/topic/truso/" + hd.getTrusoId(),
-                response
-            );
-
-            // 9. Realtime cho user
-            messagingTemplate.convertAndSend(
-                "/topic/user/" + uid + "/invoice",
-                response
-            );
-
-            messagingTemplate.convertAndSend(
-                "/topic/user/" + uid + "/history",
-                "REFRESH"
-            );
-
-            return ResponseEntity.ok(response);
-
-        }).orElse(ResponseEntity.notFound().build());
+return ResponseEntity.ok(response);
 
     } catch (FirebaseAuthException e) {
         return ResponseEntity.status(401)
