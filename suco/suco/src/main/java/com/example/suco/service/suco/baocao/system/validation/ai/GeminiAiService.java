@@ -1,7 +1,7 @@
 
 package com.example.suco.service.suco.baocao.system.validation.ai;
 
-import com.example.suco.service.AiVerifyResult;
+import com.example.suco.dto.suco.baocao.system.AiVerifyResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;

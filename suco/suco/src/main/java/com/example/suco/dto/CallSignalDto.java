@@ -1,16 +1,12 @@
 package com.example.suco.dto;
 
-
-
-// File: CallSignalDto.java tại Backend (Java thuần)
 public class CallSignalDto {
     private String type;
     private String from;
     private String to;
     private String sdp;
-    private Object candidate; // Dùng Object để nhận mọi loại dữ liệu ICE Candidate
+    private Object candidate; 
 
-    // BẮT BUỘC: Phải có Constructor không tham số
     public CallSignalDto() {}
 
     // Getter và Setter thủ công (Vì không dùng Lombok)

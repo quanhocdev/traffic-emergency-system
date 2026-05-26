@@ -1,4 +1,4 @@
-package com.example.suco.service;
+package com.example.suco.dto.suco.baocao.system;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
