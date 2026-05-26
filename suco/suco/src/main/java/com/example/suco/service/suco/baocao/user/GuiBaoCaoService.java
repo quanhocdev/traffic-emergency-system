@@ -1,8 +1,8 @@
 package com.example.suco.service.suco.baocao.user;
 
-import com.example.suco.dto.suco.baocao.system.AiVerifyResult;
-import com.example.suco.dto.suco.baocao.user.request.BaoCaoRequest;
-import com.example.suco.dto.suco.baocao.user.response.BaoCaoResponse;
+import com.example.suco.dto.suco.baocao.request.BaoCaoRequest;
+import com.example.suco.dto.suco.baocao.response.AiVerifyResult;
+import com.example.suco.dto.suco.baocao.response.BaoCaoResponse;
 import com.example.suco.dto.SuCoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;

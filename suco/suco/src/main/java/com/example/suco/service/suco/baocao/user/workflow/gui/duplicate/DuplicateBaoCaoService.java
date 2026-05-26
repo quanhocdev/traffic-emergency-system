@@ -1,6 +1,6 @@
 package com.example.suco.service.suco.baocao.user.workflow.gui.duplicate;
 
-import com.example.suco.dto.suco.baocao.user.response.BaoCaoResponse;
+import com.example.suco.dto.suco.baocao.response.BaoCaoResponse;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.User;
 
