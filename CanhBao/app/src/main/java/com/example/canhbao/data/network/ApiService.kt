@@ -111,7 +111,7 @@
             @Header("Authorization") token: String
         ): List<TuiDto>
 
-        @POST("/api/hoa-don/xac-nhan/{id}")
+        @POST("/api/hoa-don/xac-nhan")
         suspend fun confirmPayment(
             @Header("Authorization") token: String,
             @Path("id") id: Long,

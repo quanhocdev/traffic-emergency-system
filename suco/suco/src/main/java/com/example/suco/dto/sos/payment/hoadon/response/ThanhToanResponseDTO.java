@@ -6,6 +6,8 @@ public class ThanhToanResponseDTO {
 
     private Long hoaDonId;
 
+    private Long trusoId;
+
     private String trangThai;
 
     private BigDecimal tongThanhToan;
@@ -20,6 +22,13 @@ public class ThanhToanResponseDTO {
         this.hoaDonId = hoaDonId;
     }
 
+    public Long getTrusoId() {
+        return trusoId;
+    }
+    public void setTrusoId(Long trusoId) {
+        this.trusoId = trusoId;
+    }
+    
     public String getTrangThai() {
         return trangThai;
     }

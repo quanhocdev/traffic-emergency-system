@@ -3,23 +3,16 @@ package com.example.suco.service.sos.payment.hoadon.user;
 import com.example.suco.model.*;
 import com.example.suco.repository.*;
 import com.example.suco.repository.payment.HoaDonRepository;
-import com.example.suco.repository.sos.goi.admin.CRUDGoiRepository;
-import com.example.suco.repository.sos.goi.user.SoHuuGoiRepository;
-import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
-
+import com.example.suco.dto.sos.payment.hoadon.request.ThanhToanRequestDTO;
+import com.example.suco.dto.sos.payment.hoadon.response.ThanhToanResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
-import java.util.Optional;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ThanhToanSOSService {
     @Autowired private HoaDonRepository hoaDonRepository;
-    @Autowired private SoHuuGoiRepository muaGoiRepository;
-    @Autowired private CRUDGoiRepository goiRepository;
-    @Autowired private TinHieuSOSRepository tinHieuSOSRepository;
-    @Autowired private TruSoRepository truSoRepository;
     @Autowired private DoiQuaRepository doiQuaRepository;
     @Autowired private QuaRepository quaRepository;
 
@@ -65,6 +58,53 @@ public void apDungVoucherChoHoaDon(HoaDon hd, Long quaId) {
     
     // Lưu lại hóa đơn đã cập nhật số tiền
     hoaDonRepository.save(hd);
+}
+@Transactional
+public ThanhToanResponseDTO thanhToanHoaDon(
+        String uid,
+        ThanhToanRequestDTO request
+) {
+
+    HoaDon hd = hoaDonRepository.findById(request.getHoaDonId())
+            .orElseThrow(() ->
+                    new RuntimeException("Không tìm thấy hóa đơn")
+            );
+
+    // Check chính chủ
+    if (hd.getUserId() == null || !hd.getUserId().equals(uid)) {
+        throw new RuntimeException(
+                "Bạn không có quyền thanh toán hóa đơn này"
+        );
+    }
+
+    // Tránh thanh toán lại
+    if ("PAID".equalsIgnoreCase(hd.getTrangThai())) {
+        throw new RuntimeException(
+                "Hóa đơn đã được thanh toán trước đó"
+        );
+    }
+
+    // Áp voucher nếu có
+    if (request.getQuaId() != null) {
+        apDungVoucherChoHoaDon(hd, request.getQuaId());
+    }
+
+    // Update trạng thái
+    hd.setTrangThai("PAID");
+
+    hoaDonRepository.save(hd);
+
+    // Response
+    ThanhToanResponseDTO response =
+            new ThanhToanResponseDTO();
+
+    response.setHoaDonId(hd.getId());
+    response.setTrusoId(hd.getTrusoId());
+    response.setTrangThai(hd.getTrangThai());
+    response.setTongThanhToan(hd.getTongThanhToan());
+    response.setMessage("Thanh toán thành công");
+
+    return response;
 }
     
 }

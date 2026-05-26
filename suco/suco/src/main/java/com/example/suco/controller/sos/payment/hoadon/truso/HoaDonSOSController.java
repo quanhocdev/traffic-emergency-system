@@ -5,32 +5,22 @@ import com.example.suco.model.TruSo;
 import com.example.suco.repository.payment.HoaDonRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.sos.payment.hoadon.truso.HoaDonSOSService;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.FirebaseToken;
 import com.example.suco.dto.sos.payment.hoadon.request.HoaDonRequestDTO;
 import com.example.suco.dto.sos.payment.hoadon.response.HoaDonResponseDTO;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api/hoa-don")
+@RequestMapping("/truso/hoa-don")
 @CrossOrigin(origins = "*")
 public class HoaDonSOSController {
 
     @Autowired 
     private HoaDonSOSService hoaDonService;
-    
-    @Autowired
-    private TinHieuSOSRepository tinHieuSOSRepository;
 
     @Autowired
     private HoaDonRepository hoaDonRepository;
