@@ -1,4 +1,4 @@
-package com.example.suco.service.sos.goi.admin.validation;
+package com.example.suco.service.sos.goi.validation;
 
 import com.example.suco.dto.sos.goi.GoiRequestDTO;
 

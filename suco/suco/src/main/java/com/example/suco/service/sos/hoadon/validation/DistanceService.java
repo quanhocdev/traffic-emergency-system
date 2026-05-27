@@ -1,4 +1,4 @@
-package com.example.suco.service.sos.hoadon.truso.validation;
+package com.example.suco.service.sos.hoadon.validation;
 
 import org.springframework.stereotype.Service;
 

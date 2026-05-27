@@ -1,12 +1,9 @@
 package com.example.suco.controller.payment.goi;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseToken;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.example.suco.dto.payment.goi.MuaGoiRequestDTO;
 import com.example.suco.service.payment.goi.user.SoHuuGoiService;
 import com.example.suco.service.sos.goi.admin.CRUDGoiService;
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
@@ -35,13 +32,12 @@ public class SoHuuGoiController {
     @PostMapping("/dang-ky")
     public ResponseEntity<?> dangKyMuaGoi(
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody Map<String, Object> request
+                    @RequestBody MuaGoiRequestDTO request
     ) {
         try {
             String uid = firebaseService.extractUid(authHeader);
 
-            Long goiId = Long.valueOf(request.get("goiId").toString());
-            muaGoiService.dangKyGoi(uid, goiId);
+            muaGoiService.dangKyGoi(uid, request);
 
             return ResponseEntity.ok(Map.of(
                     "status", "success",

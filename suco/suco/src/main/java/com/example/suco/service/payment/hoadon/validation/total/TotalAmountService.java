@@ -1,4 +1,4 @@
-package com.example.suco.service.payment.hoadon.user.total;
+package com.example.suco.service.payment.hoadon.validation.total;
 
 import org.springframework.stereotype.Service;
 

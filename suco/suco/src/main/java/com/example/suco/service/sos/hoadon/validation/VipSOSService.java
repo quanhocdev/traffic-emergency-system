@@ -1,4 +1,4 @@
-package com.example.suco.service.sos.hoadon.truso.validation;
+package com.example.suco.service.sos.hoadon.validation;
 import com.example.suco.model.Goi;
 import com.example.suco.repository.payment.MuaGoiRepository;
 import com.example.suco.repository.sos.goi.CRUDGoiRepository;
