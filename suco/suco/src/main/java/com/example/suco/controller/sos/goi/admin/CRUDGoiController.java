@@ -2,7 +2,7 @@ package com.example.suco.controller.sos.goi.admin;
 
 import com.example.suco.dto.sos.goi.GoiDto;
 import com.example.suco.model.Goi;
-import com.example.suco.service.sos.payment.goi.admin.CRUDGoiService;
+import com.example.suco.service.sos.goi.admin.CRUDGoiService;
 
 import java.util.Map;
 

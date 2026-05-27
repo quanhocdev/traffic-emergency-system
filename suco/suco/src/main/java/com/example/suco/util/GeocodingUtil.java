@@ -19,7 +19,6 @@ public class GeocodingUtil {
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     /**
-     * Chuyển đổi kinh độ, vĩ độ thành địa chỉ chi tiết (quận, huyện, đường)
      * @param latitude vĩ độ
      * @param longitude kinh độ
      * @return Map chứa các thông tin địa chỉ

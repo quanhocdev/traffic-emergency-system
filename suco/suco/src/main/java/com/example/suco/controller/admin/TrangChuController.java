@@ -1,9 +1,9 @@
 package com.example.suco.controller.admin;
 
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.TruSoRepository;
 import com.example.suco.repository.suco.loai.LoaiSuCoRepository;
-import com.example.suco.repository.CameraRepository;
+import com.example.suco.repository.xacthuc.CameraRepository;
+import com.example.suco.repository.xacthuc.TruSoRepository;
 import com.example.suco.config.AppConfig;
 import com.example.suco.model.Camera; 
 import org.springframework.beans.factory.annotation.Autowired; // Thêm import này

@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.suco.dto.truso.TruSoConfigDTO;
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.TruSoRepository;
+import com.example.suco.repository.xacthuc.TruSoRepository;
 
 @Service
 public class TruSoConfigService {

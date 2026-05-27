@@ -3,10 +3,8 @@ package com.example.suco.service.suco.baocao.user.workflow.gui.duplicate;
 import com.example.suco.dto.suco.baocao.response.BaoCaoResponse;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.User;
-
-import com.example.suco.repository.UserRepository;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
-
+import com.example.suco.repository.xacthuc.UserRepository;
 import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.reward.UserRewardService;

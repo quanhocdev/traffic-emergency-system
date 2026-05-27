@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.suco.dto.TruSoMapDto;
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.TruSoRepository;
+import com.example.suco.repository.xacthuc.TruSoRepository;
 
 import ch.hsr.geohash.GeoHash;
 

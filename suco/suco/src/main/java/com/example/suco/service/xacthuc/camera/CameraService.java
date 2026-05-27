@@ -2,7 +2,8 @@ package com.example.suco.service.xacthuc.camera;
 
 import com.example.suco.dto.CameraMapDto;
 import com.example.suco.model.Camera;
-import com.example.suco.repository.CameraRepository;
+import com.example.suco.repository.xacthuc.CameraRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
