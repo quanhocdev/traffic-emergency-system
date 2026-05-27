@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import com.example.suco.model.Goi;
 import com.example.suco.model.User;
 import com.example.suco.repository.UserRepository;
-import com.example.suco.repository.sos.goi.admin.CRUDGoiRepository;
-import com.example.suco.repository.sos.goi.user.SoHuuGoiRepository;
+import com.example.suco.repository.sos.goi.CRUDGoiRepository;
+import com.example.suco.repository.sos.goi.SoHuuGoiRepository;
 
 @Service
 public class UserService {

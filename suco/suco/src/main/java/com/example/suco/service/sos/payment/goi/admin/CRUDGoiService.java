@@ -1,8 +1,9 @@
 package com.example.suco.service.sos.payment.goi.admin;
 
-import com.example.suco.dto.sos.payment.goi.GoiDto;
+import com.example.suco.dto.sos.goi.GoiDto;
 import com.example.suco.model.Goi;
-import com.example.suco.repository.sos.goi.admin.CRUDGoiRepository;
+import com.example.suco.repository.sos.goi.CRUDGoiRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;

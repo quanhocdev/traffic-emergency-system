@@ -1,63 +1,54 @@
-package com.example.suco.model;
-
-import jakarta.persistence.*;
+package com.example.suco.dto.payment.hoadon;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "thanh_toan_hoa_don")
-public class ThanhToanHoaDon {
+public class ThanhToanResponseDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long thanhToanId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hoa_don_id")
-    private HoaDon hoaDon;
+    private Long hoaDonId;
 
-    @Column(name = "phuong_thuc_thanh_toan")
+    private Long trusoId;
+
     private String phuongThucThanhToan;
-    // CASH, MOMO, VNPAY
 
-    @Column(name = "ma_giao_dich")
     private String maGiaoDich;
 
-    @Column(name = "trang_thai")
     private String trangThai;
-    // PENDING, SUCCESS, FAILED
 
-    @Column(name = "thanh_tien", precision = 12, scale = 2)
-    private BigDecimal thanhTien; 
+    private BigDecimal thanhTien;
 
-    @Column(name = "qua_id")
-    private Long quaId;
-
-    @Column(name = "so_tien_giam", precision = 12, scale = 2)
     private BigDecimal soTienGiam;
 
-    @Column(name = "tong_thanh_toan", precision = 12, scale = 2)
     private BigDecimal tongThanhToan;
 
-    @Column(name = "created_at")
+    private String message;
+
     private LocalDateTime createdAt;
 
-    
-    public ThanhToanHoaDon() {
-        this.createdAt = LocalDateTime.now();
+    public Long getThanhToanId() {
+        return thanhToanId;
     }
 
-    public Long getId() {
-        return id;
+    public void setThanhToanId(Long thanhToanId) {
+        this.thanhToanId = thanhToanId;
     }
 
-    public HoaDon getHoaDon() {
-        return hoaDon;
+    public Long getHoaDonId() {
+        return hoaDonId;
     }
 
-    public void setHoaDon(HoaDon hoaDon) {
-        this.hoaDon = hoaDon;
+    public void setHoaDonId(Long hoaDonId) {
+        this.hoaDonId = hoaDonId;
+    }
+
+    public Long getTrusoId() {
+        return trusoId;
+    }
+
+    public void setTrusoId(Long trusoId) {
+        this.trusoId = trusoId;
     }
 
     public String getPhuongThucThanhToan() {
@@ -92,14 +83,6 @@ public class ThanhToanHoaDon {
         this.thanhTien = thanhTien;
     }
 
-    public Long getQuaId() {
-        return quaId;
-    }
-
-    public void setQuaId(Long quaId) {
-        this.quaId = quaId;
-    }
-
     public BigDecimal getSoTienGiam() {
         return soTienGiam;
     }
@@ -116,7 +99,19 @@ public class ThanhToanHoaDon {
         this.tongThanhToan = tongThanhToan;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

@@ -3,7 +3,7 @@ import com.example.suco.dto.LichSuDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TinHieuSOS;
-import com.example.suco.repository.payment.HoaDonRepository;
+import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 
@@ -23,7 +23,7 @@ public class LichSuService {
     private TinHieuSOSRepository sosRepository;
 
     @Autowired
-    private HoaDonRepository hoaDonRepository;
+    private HoaDonCuuHoRepository hoaDonRepository;
 
     public List<LichSuDto> getAllHistory(String uid, String type) {
 
