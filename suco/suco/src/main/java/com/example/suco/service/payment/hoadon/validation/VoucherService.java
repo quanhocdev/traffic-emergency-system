@@ -1,4 +1,4 @@
-package com.example.suco.service.payment.hoadon.user.validation;
+package com.example.suco.service.payment.hoadon.validation;
 
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.Qua;

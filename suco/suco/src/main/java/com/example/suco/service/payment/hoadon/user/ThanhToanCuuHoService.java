@@ -10,9 +10,9 @@ import com.example.suco.model.ThanhToanHoaDon;
 
 import com.example.suco.repository.payment.ThanhToanHoaDonRepository;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
-import com.example.suco.service.payment.hoadon.user.total.TotalAmountService;
-import com.example.suco.service.payment.hoadon.user.validation.StatusService;
-import com.example.suco.service.payment.hoadon.user.validation.VoucherService;
+import com.example.suco.service.payment.hoadon.validation.StatusService;
+import com.example.suco.service.payment.hoadon.validation.VoucherService;
+import com.example.suco.service.payment.hoadon.validation.total.TotalAmountService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

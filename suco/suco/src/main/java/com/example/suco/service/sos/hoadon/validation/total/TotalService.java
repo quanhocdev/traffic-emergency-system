@@ -1,8 +1,8 @@
-package com.example.suco.service.sos.hoadon.truso.total;
+package com.example.suco.service.sos.hoadon.validation.total;
 
 import com.example.suco.model.Goi;
 import com.example.suco.model.TruSo;
-import com.example.suco.service.sos.hoadon.truso.validation.DistanceService;
+import com.example.suco.service.sos.hoadon.validation.DistanceService;
 import com.example.suco.model.TinHieuSOS;
 
 import org.springframework.beans.factory.annotation.Autowired;
