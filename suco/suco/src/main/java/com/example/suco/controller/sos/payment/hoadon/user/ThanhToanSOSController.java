@@ -39,12 +39,9 @@ public ResponseEntity<?> xacNhanThanhToan(
         String token = authHeader.replace("Bearer ", "");
         String uid;
 
-        if ("dev-token".equals(token)) {
-            uid = "test-user";
-        } else {
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
             uid = decodedToken.getUid();
-        }
+        
 
         // 2. Tìm hóa đơn
        ThanhToanResponseDTO response =

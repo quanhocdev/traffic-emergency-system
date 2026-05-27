@@ -14,9 +14,7 @@ public class HoaDon {
     private Long sosId;
     private Long trusoId;
     private String userId;
-
-    private String tenSos; // Tên hư hỏng/sự cố
-    private String noiDungXuLy; // Trụ sở đã làm gì
+    private String noiDungXuLy; 
     
     @Column(precision = 12, scale = 2)
     private BigDecimal thanhTien;
@@ -43,8 +41,6 @@ public class HoaDon {
     public void setTrusoId(Long trusoId) { this.trusoId = trusoId; }
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
-    public String getTenSos() { return tenSos; }
-    public void setTenSos(String tenSos) { this.tenSos = tenSos; }
     public String getNoiDungXuLy() { return noiDungXuLy; }
     public void setNoiDungXuLy(String noiDungXuLy) { this.noiDungXuLy = noiDungXuLy; }
     public BigDecimal getThanhTien() { return thanhTien; }
