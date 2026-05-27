@@ -1,4 +1,4 @@
-package com.example.suco.dto.sos.goi;
+package com.example.suco.dto.payment.goi;
 
 import java.time.LocalDateTime;
 

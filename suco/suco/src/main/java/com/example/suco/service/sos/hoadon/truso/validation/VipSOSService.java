@@ -1,6 +1,6 @@
 package com.example.suco.service.sos.hoadon.truso.validation;
 import com.example.suco.model.Goi;
-import com.example.suco.repository.payment.SoHuuGoiRepository;
+import com.example.suco.repository.payment.MuaGoiRepository;
 import com.example.suco.repository.sos.goi.CRUDGoiRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,7 @@ import java.util.Optional;
 public class VipSOSService {
 
     @Autowired
-    private SoHuuGoiRepository muaGoiRepository;
+    private MuaGoiRepository muaGoiRepository;
 
     @Autowired
     private CRUDGoiRepository goiRepository;

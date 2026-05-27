@@ -2,7 +2,8 @@ package com.example.suco.dto.sos.goi;
 
 import java.math.BigDecimal;
 
-public class GoiDto {
+public class GoiResponseDTO {
+
     private Long id;
     private String ten;
     private Integer thoiHan;
@@ -10,7 +11,7 @@ public class GoiDto {
     private Integer khoangCachMienPhi;
     private String uuDai;
 
-    public GoiDto() {}
+    public GoiResponseDTO() {}
 
     // Getters and Setters
     public Long getId() { return id; }
@@ -30,4 +31,5 @@ public class GoiDto {
 
     public String getUuDai() { return uuDai; }
     public void setUuDai(String uuDai) { this.uuDai = uuDai; }
+    
 }

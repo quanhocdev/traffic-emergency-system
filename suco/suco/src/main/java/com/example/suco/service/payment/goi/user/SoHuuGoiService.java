@@ -1,9 +1,9 @@
 package com.example.suco.service.payment.goi.user;
 
-import com.example.suco.dto.sos.goi.MuaGoiDto;
+import com.example.suco.dto.payment.goi.MuaGoiDto;
 import com.example.suco.model.Goi;
 import com.example.suco.model.MuaGoi;
-import com.example.suco.repository.payment.SoHuuGoiRepository;
+import com.example.suco.repository.payment.MuaGoiRepository;
 import com.example.suco.repository.sos.goi.CRUDGoiRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ public class SoHuuGoiService {
     private CRUDGoiRepository goiRepository;
 
     @Autowired
-    private SoHuuGoiRepository soHuuGoiRepository;
+    private MuaGoiRepository soHuuGoiRepository;
  
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
