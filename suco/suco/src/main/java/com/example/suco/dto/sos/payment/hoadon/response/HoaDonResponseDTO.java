@@ -9,7 +9,6 @@ public class HoaDonResponseDTO {
     private Long sosId;
     private Long trusoId;
     private String userId;
-    private String tenSos;
     private String noiDungXuLy;
     private BigDecimal thanhTien;
     private Long quaId;
@@ -41,12 +40,6 @@ public class HoaDonResponseDTO {
     }
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-    public String getTenSos() {
-        return tenSos;
-    }
-    public void setTenSos(String tenSos) {
-        this.tenSos = tenSos;
     }
     public String getNoiDungXuLy() {
         return noiDungXuLy;

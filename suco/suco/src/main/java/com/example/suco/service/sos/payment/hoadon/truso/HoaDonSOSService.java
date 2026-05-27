@@ -55,16 +55,12 @@ public HoaDonResponseDTO taoHoaDon(
         );
     }
 
-    HoaDon hd = new HoaDon();
-    hd.setSosId(req.getSosId());
-    hd.setTrusoId(trusoId);
-    hd.setUserId(sos.getUserId());
-    hd.setThanhTien(gia);
-    hd.setTrangThai("PENDING");
+    HoaDon hd = hoaDonMapper.toEntity(req, trusoId, sos.getUserId(), gia);
 
     HoaDon saved = hoaDonRepository.save(hd);
 
     sos.setHoaDon(saved);
+    
     tinHieuSOSRepository.save(sos);
 
     return hoaDonMapper.toDTO(saved);

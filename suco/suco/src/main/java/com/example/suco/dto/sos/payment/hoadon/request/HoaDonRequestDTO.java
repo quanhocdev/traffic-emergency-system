@@ -3,7 +3,6 @@ package com.example.suco.dto.sos.payment.hoadon.request;
 public class HoaDonRequestDTO {
 
     private Long sosId;
-    private String tenSos;
     private String noiDungXuLy;
     private Double giaThuCong;
 
@@ -12,12 +11,6 @@ public class HoaDonRequestDTO {
     }
     public void setSosId(Long sosId) {
         this.sosId = sosId;
-    }
-    public String getTenSos() {
-        return tenSos;
-    }
-    public void setTenSos(String tenSos) {
-        this.tenSos = tenSos;
     }
     public String getNoiDungXuLy() {
         return noiDungXuLy;
