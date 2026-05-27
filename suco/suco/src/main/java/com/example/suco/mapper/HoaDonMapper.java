@@ -1,6 +1,6 @@
 package com.example.suco.mapper;
-import com.example.suco.dto.sos.payment.hoadon.request.HoaDonRequestDTO;
-import com.example.suco.dto.sos.payment.hoadon.response.HoaDonResponseDTO;
+import com.example.suco.dto.sos.payment.hoadoncuuho.HoaDonRequestDTO;
+import com.example.suco.dto.sos.payment.hoadoncuuho.HoaDonResponseDTO;
 import com.example.suco.model.HoaDon;
 
 import java.math.BigDecimal;
@@ -22,13 +22,6 @@ public class HoaDonMapper {
         hd.setNoiDungXuLy(req.getNoiDungXuLy());
 
         hd.setThanhTien(gia);
-
-        hd.setSoTienGiam(BigDecimal.ZERO);
-        hd.setTongThanhToan(gia);
-
-        hd.setTrangThai("PENDING");
-
-
         return hd;
     }
 
@@ -43,9 +36,6 @@ public class HoaDonMapper {
         dto.setUserId(hd.getUserId());
         dto.setNoiDungXuLy(hd.getNoiDungXuLy());
         dto.setThanhTien(hd.getThanhTien());
-        dto.setSoTienGiam(hd.getSoTienGiam());
-        dto.setTongThanhToan(hd.getTongThanhToan());
-        dto.setTrangThai(hd.getTrangThai());
         dto.setCreatedAt(hd.getCreatedAt());
 
         return dto;

@@ -8,10 +8,5 @@ import java.util.Optional;
 public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
     Optional<HoaDon> findBySosId(Long sosId);
     Optional<HoaDon> findFirstBySosIdOrderByIdDesc(Long sosId);
-    // Thêm dòng này để tìm hóa đơn theo Trụ sở và sắp xếp mới nhất lên trước
     List<HoaDon> findByTrusoIdOrderByIdDesc(Long trusoId);
-    
-    // Nếu bạn muốn lọc theo trạng thái (ví dụ chỉ xem các hóa đơn chưa thanh toán)
-    List<HoaDon> findByTrusoIdAndTrangThai(Long trusoId, String trangThai);
-    
 }
