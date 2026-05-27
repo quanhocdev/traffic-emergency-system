@@ -1,10 +1,12 @@
 package com.example.suco.service.sos.payment.hoadon.user;
 
+import com.example.suco.dto.sos.payment.thanhtoancuuho.ThanhToanRequestDTO;
+import com.example.suco.dto.sos.payment.thanhtoancuuho.ThanhToanResponseDTO;
 import com.example.suco.model.*;
 import com.example.suco.repository.*;
 import com.example.suco.repository.payment.HoaDonRepository;
-import com.example.suco.dto.sos.payment.hoadon.request.ThanhToanRequestDTO;
-import com.example.suco.dto.sos.payment.hoadon.response.ThanhToanResponseDTO;
+import com.example.suco.repository.payment.ThanhToanHoaDonRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
@@ -15,49 +17,70 @@ public class ThanhToanSOSService {
     @Autowired private HoaDonRepository hoaDonRepository;
     @Autowired private DoiQuaRepository doiQuaRepository;
     @Autowired private QuaRepository quaRepository;
-
+@Autowired
+private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
     
     @Transactional
-public void apDungVoucherChoHoaDon(HoaDon hd, Long quaId) {
-    // 1. Lấy thông tin Voucher từ bảng 'qua'
+public BigDecimal apDungVoucher(
+        HoaDon hd,
+        Long quaId
+) {
+
     Qua voucher = quaRepository.findById(quaId)
-            .orElseThrow(() -> new RuntimeException("Voucher không tồn tại"));
+            .orElseThrow(() ->
+                    new RuntimeException("Voucher không tồn tại")
+            );
 
     if (voucher.getLoai() != Qua.LoaiQua.VOUCHER) {
-        throw new RuntimeException("Vật phẩm này không phải là Voucher");
+        throw new RuntimeException(
+                "Vật phẩm này không phải Voucher"
+        );
     }
 
-    // 2. Tính toán lại số tiền giảm
     BigDecimal giaGoc = hd.getThanhTien();
-    BigDecimal phanTram = BigDecimal.valueOf(voucher.getGiaTriGiamPercent())
-            .divide(new BigDecimal(100));
-    BigDecimal soTienGiam = giaGoc.multiply(phanTram);
 
-    // Kiểm tra trần giảm giá (nếu có)
-    if (voucher.getGiaTriToiDa() != null && soTienGiam.compareTo(voucher.getGiaTriToiDa()) > 0) {
+    BigDecimal phanTram =
+            BigDecimal.valueOf(voucher.getGiaTriGiamPercent())
+                    .divide(new BigDecimal(100));
+
+    BigDecimal soTienGiam =
+            giaGoc.multiply(phanTram);
+
+    if (
+            voucher.getGiaTriToiDa() != null
+            &&
+            soTienGiam.compareTo(voucher.getGiaTriToiDa()) > 0
+    ) {
         soTienGiam = voucher.getGiaTriToiDa();
     }
 
-    // 3. Cập nhật thông tin vào hóa đơn
-    hd.setQuaId(quaId);
-    hd.setSoTienGiam(soTienGiam);
-    
-    BigDecimal tongMoi = giaGoc.subtract(soTienGiam);
-    if (tongMoi.compareTo(BigDecimal.ZERO) < 0) tongMoi = BigDecimal.ZERO;
-    hd.setTongThanhToan(tongMoi);
+    // Trừ kho voucher user
+    doiQuaRepository
+            .findByUserIdAndQuaId(
+                    hd.getUserId(),
+                    quaId
+            )
+            .ifPresent(dq -> {
 
-    // 4. Thực hiện trừ số lượng Voucher trong túi của người dùng
-    doiQuaRepository.findByUserIdAndQuaId(hd.getUserId(), quaId).ifPresent(dq -> {
-        if (dq.getSoLuong() != null && dq.getSoLuong() > 1) {
-            dq.setSoLuong(dq.getSoLuong() - 1);
-            doiQuaRepository.save(dq);
-        } else {
-            doiQuaRepository.delete(dq);
-        }
-    });
-    
-    // Lưu lại hóa đơn đã cập nhật số tiền
-    hoaDonRepository.save(hd);
+                if (
+                        dq.getSoLuong() != null
+                        &&
+                        dq.getSoLuong() > 1
+                ) {
+
+                    dq.setSoLuong(
+                            dq.getSoLuong() - 1
+                    );
+
+                    doiQuaRepository.save(dq);
+
+                } else {
+
+                    doiQuaRepository.delete(dq);
+                }
+            });
+
+    return soTienGiam;
 }
 @Transactional
 public ThanhToanResponseDTO thanhToanHoaDon(
@@ -65,46 +88,110 @@ public ThanhToanResponseDTO thanhToanHoaDon(
         ThanhToanRequestDTO request
 ) {
 
-    HoaDon hd = hoaDonRepository.findById(request.getHoaDonId())
+    HoaDon hd = hoaDonRepository
+            .findById(request.getHoaDonId())
             .orElseThrow(() ->
-                    new RuntimeException("Không tìm thấy hóa đơn")
+                    new RuntimeException(
+                            "Không tìm thấy hóa đơn"
+                    )
             );
 
-    // Check chính chủ
-    if (hd.getUserId() == null || !hd.getUserId().equals(uid)) {
+    // Check chủ hóa đơn
+    if (
+            hd.getUserId() == null
+            ||
+            !hd.getUserId().equals(uid)
+    ) {
+
         throw new RuntimeException(
                 "Bạn không có quyền thanh toán hóa đơn này"
         );
     }
 
-    // Tránh thanh toán lại
-    if ("PAID".equalsIgnoreCase(hd.getTrangThai())) {
-        throw new RuntimeException(
-                "Hóa đơn đã được thanh toán trước đó"
+    // Giá gốc
+    BigDecimal thanhTien =
+            hd.getThanhTien();
+
+    // Giảm giá
+    BigDecimal soTienGiam =
+            BigDecimal.ZERO;
+
+    if (request.getQuaId() != null) {
+
+        soTienGiam = apDungVoucher(
+                hd,
+                request.getQuaId()
         );
     }
 
-    // Áp voucher nếu có
-    if (request.getQuaId() != null) {
-        apDungVoucherChoHoaDon(hd, request.getQuaId());
+    // Tổng cuối
+    BigDecimal tongThanhToan =
+            thanhTien.subtract(soTienGiam);
+
+    if (
+            tongThanhToan.compareTo(BigDecimal.ZERO)
+                    < 0
+    ) {
+
+        tongThanhToan = BigDecimal.ZERO;
     }
 
-    // Update trạng thái
-    hd.setTrangThai("PAID");
+    // Tạo payment transaction
+    ThanhToanHoaDon thanhToan =
+            new ThanhToanHoaDon();
 
-    hoaDonRepository.save(hd);
+    thanhToan.setHoaDon(hd);
+
+    thanhToan.setPhuongThucThanhToan(
+            request.getPhuongThucThanhToan()
+    );
+
+    thanhToan.setTrangThai("SUCCESS");
+
+    thanhToan.setThanhTien(thanhTien);
+
+    thanhToan.setSoTienGiam(soTienGiam);
+
+    thanhToan.setTongThanhToan(tongThanhToan);
+
+    thanhToanHoaDonRepository.save(thanhToan);
 
     // Response
     ThanhToanResponseDTO response =
             new ThanhToanResponseDTO();
 
+    response.setThanhToanId(
+            thanhToan.getId()
+    );
+
     response.setHoaDonId(hd.getId());
+
     response.setTrusoId(hd.getTrusoId());
-    response.setTrangThai(hd.getTrangThai());
-    response.setTongThanhToan(hd.getTongThanhToan());
-    response.setMessage("Thanh toán thành công");
+
+    response.setPhuongThucThanhToan(
+            thanhToan.getPhuongThucThanhToan()
+    );
+
+    response.setTrangThai(
+            thanhToan.getTrangThai()
+    );
+
+    response.setThanhTien(
+            thanhToan.getThanhTien()
+    );
+
+    response.setSoTienGiam(
+            thanhToan.getSoTienGiam()
+    );
+
+    response.setTongThanhToan(
+            thanhToan.getTongThanhToan()
+    );
+
+    response.setMessage(
+            "Thanh toán thành công"
+    );
 
     return response;
 }
-    
 }

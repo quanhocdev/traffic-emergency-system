@@ -1,5 +1,7 @@
 package com.example.suco.controller.sos.payment.hoadon.user;
 
+import com.example.suco.dto.sos.payment.thanhtoancuuho.ThanhToanRequestDTO;
+import com.example.suco.dto.sos.payment.thanhtoancuuho.ThanhToanResponseDTO;
 import com.example.suco.repository.payment.HoaDonRepository;
 import com.example.suco.service.sos.payment.hoadon.truso.HoaDonSOSService;
 import com.google.firebase.auth.FirebaseAuth;
@@ -10,8 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import com.example.suco.dto.sos.payment.hoadon.request.ThanhToanRequestDTO;
-import com.example.suco.dto.sos.payment.hoadon.response.ThanhToanResponseDTO;
+
 import java.util.HashMap;
 import java.util.Map;
 import com.example.suco.service.sos.payment.hoadon.user.ThanhToanSOSService;

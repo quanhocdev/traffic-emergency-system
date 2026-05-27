@@ -1,13 +1,13 @@
 package com.example.suco.service.sos.payment.hoadon.truso;
 
-import com.example.suco.dto.sos.payment.hoadon.request.HoaDonRequestDTO;
-import com.example.suco.dto.sos.payment.hoadon.response.HoaDonResponseDTO;
 import com.example.suco.model.*;
 import com.example.suco.repository.*;
 import com.example.suco.repository.payment.HoaDonRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.sos.payment.hoadon.truso.validation.VipSOSService;
 import com.example.suco.service.sos.payment.hoadon.truso.total.TotalAmountService;
+import com.example.suco.dto.sos.payment.hoadoncuuho.HoaDonRequestDTO;
+import com.example.suco.dto.sos.payment.hoadoncuuho.HoaDonResponseDTO;
 import com.example.suco.mapper.HoaDonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

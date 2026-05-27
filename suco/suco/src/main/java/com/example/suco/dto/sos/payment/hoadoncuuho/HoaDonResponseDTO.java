@@ -1,4 +1,4 @@
-package com.example.suco.dto.sos.payment.hoadon.response;
+package com.example.suco.dto.sos.payment.hoadoncuuho;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,10 +11,6 @@ public class HoaDonResponseDTO {
     private String userId;
     private String noiDungXuLy;
     private BigDecimal thanhTien;
-    private Long quaId;
-    private BigDecimal soTienGiam;
-    private BigDecimal tongThanhToan;
-    private String trangThai;
     private LocalDateTime createdAt;
 
     public Long getId() {
@@ -52,30 +48,6 @@ public class HoaDonResponseDTO {
     }
     public void setThanhTien(BigDecimal thanhTien) {
         this.thanhTien = thanhTien;
-    }
-    public Long getQuaId() {
-        return quaId;
-    }
-    public void setQuaId(Long quaId) {
-        this.quaId = quaId;
-    }
-    public BigDecimal getSoTienGiam() {
-        return soTienGiam;
-    }
-    public void setSoTienGiam(BigDecimal soTienGiam) {
-        this.soTienGiam = soTienGiam;
-    }
-    public BigDecimal getTongThanhToan() {
-        return tongThanhToan;
-    }
-    public void setTongThanhToan(BigDecimal tongThanhToan) {
-        this.tongThanhToan = tongThanhToan;
-    }
-    public String getTrangThai() {
-        return trangThai;
-    }
-    public void setTrangThai(String trangThai) {
-        this.trangThai = trangThai;
     }
     public LocalDateTime getCreatedAt() {
         return createdAt;

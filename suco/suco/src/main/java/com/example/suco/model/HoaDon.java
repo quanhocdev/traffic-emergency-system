@@ -3,6 +3,7 @@ package com.example.suco.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "hoa_don")
@@ -18,17 +19,12 @@ public class HoaDon {
     
     @Column(precision = 12, scale = 2)
     private BigDecimal thanhTien;
-
-    private Long quaId; // ID của Voucher áp dụng
-
-    @Column(precision = 12, scale = 2)
-    private BigDecimal soTienGiam; // SỐ TIỀN ĐƯỢC GIẢM
-
-    @Column(precision = 12, scale = 2)
-    private BigDecimal tongThanhToan; // GIÁ CUỐI CÙNG (Thực trả)
     
-    private String trangThai; // PENDING (Chờ thanh toán), PAID (Đã thanh toán)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL)
+private List<ThanhToanHoaDon> thanhToans;
+
 
     public HoaDon() { this.createdAt = LocalDateTime.now(); }
 
@@ -45,18 +41,15 @@ public class HoaDon {
     public void setNoiDungXuLy(String noiDungXuLy) { this.noiDungXuLy = noiDungXuLy; }
     public BigDecimal getThanhTien() { return thanhTien; }
     public void setThanhTien(BigDecimal thanhTien) { this.thanhTien = thanhTien; }
-    public String getTrangThai() { return trangThai; }
-    public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    // Getters and Setters cho các trường mới
-    public Long getQuaId() { return quaId; }
-    public void setQuaId(Long quaId) { this.quaId = quaId; }
+    public List<ThanhToanHoaDon> getThanhToans() {
+    return thanhToans;
+}
 
-    public BigDecimal getSoTienGiam() { return soTienGiam; }
-    public void setSoTienGiam(BigDecimal soTienGiam) { this.soTienGiam = soTienGiam; }
+public void setThanhToans(List<ThanhToanHoaDon> thanhToans) {
+    this.thanhToans = thanhToans;
+}
 
-    public BigDecimal getTongThanhToan() { return tongThanhToan; }
-    public void setTongThanhToan(BigDecimal tongThanhToan) { this.tongThanhToan = tongThanhToan; }
 }

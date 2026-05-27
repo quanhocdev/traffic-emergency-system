@@ -1,4 +1,4 @@
-package com.example.suco.dto.sos.payment.hoadon.request;
+package com.example.suco.dto.sos.payment.thanhtoancuuho;
 
 public class ThanhToanRequestDTO {
 
