@@ -1,7 +1,7 @@
 package com.example.suco.controller.sos.goi.admin;
 
-import com.example.suco.dto.sos.goi.GoiDto;
-import com.example.suco.model.Goi;
+import com.example.suco.dto.sos.goi.GoiRequestDTO;
+import com.example.suco.dto.sos.goi.GoiResponseDTO;
 import com.example.suco.service.sos.goi.admin.CRUDGoiService;
 
 import java.util.Map;
@@ -26,15 +26,13 @@ public class CRUDGoiController {
         return "admin/quan-ly-goi";
     }
 
-    @PostMapping
-    @ResponseBody
-    public ResponseEntity<?> createGoi(
-        @ModelAttribute GoiDto dto
-    ) {
-
-    Goi goi = goiService.createGoi(dto);
-
-    return ResponseEntity.ok(goi);
+@PostMapping
+@ResponseBody
+public ResponseEntity<?> createGoi(
+        @RequestBody GoiRequestDTO dto
+) {
+    GoiResponseDTO result = goiService.createGoi(dto);
+    return ResponseEntity.ok(result);
 }
 
     @DeleteMapping("/{id}")
@@ -44,13 +42,13 @@ public class CRUDGoiController {
         return ResponseEntity.ok(Map.of("message", "Xóa thành công"));
     }
 
-    @PatchMapping("/{id}")
+@PatchMapping("/{id}")
 @ResponseBody
 public ResponseEntity<?> updateGoi(
         @PathVariable Long id,
-        @ModelAttribute GoiDto dto
+        @RequestBody GoiRequestDTO dto
 ) {
-    Goi updated = goiService.updateGoi(id, dto);
-    return ResponseEntity.ok(updated);
+    GoiResponseDTO result = goiService.updateGoi(id, dto);
+    return ResponseEntity.ok(result);
 }
 }

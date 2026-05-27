@@ -8,7 +8,7 @@ import java.util.List;
 import java.time.LocalDateTime;
 
 @Repository
-public interface SoHuuGoiRepository extends JpaRepository<MuaGoi, Long> {
+public interface MuaGoiRepository extends JpaRepository<MuaGoi, Long> {
 List<MuaGoi> findByUserId(String userId);
 Optional<MuaGoi> findFirstByUserIdAndTrangThai(String userId, String trangThai);
 Optional<MuaGoi> findFirstByUserIdAndTrangThaiAndNgayHetHanAfter(

@@ -1,7 +1,7 @@
 package com.example.suco.service.suco.baocao.system.reward;
 
 import com.example.suco.model.User;
-import com.example.suco.repository.payment.SoHuuGoiRepository;
+import com.example.suco.repository.payment.MuaGoiRepository;
 import com.example.suco.repository.xacthuc.UserRepository;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class UserRewardService {
 
     @Autowired
-    private SoHuuGoiRepository muaGoiRepository;
+    private MuaGoiRepository muaGoiRepository;
 
     @Autowired
     private UserRepository userRepository;

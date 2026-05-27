@@ -8,7 +8,7 @@ import com.example.suco.mapper.ThanhToanCuuHoMapper;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.ThanhToanHoaDon;
 
-import com.example.suco.repository.payment.ThanhToanCuuHoRepository;
+import com.example.suco.repository.payment.ThanhToanHoaDonRepository;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
 import com.example.suco.service.payment.hoadon.user.total.TotalAmountService;
 import com.example.suco.service.payment.hoadon.user.validation.StatusService;
@@ -27,7 +27,7 @@ public class ThanhToanCuuHoService {
     private HoaDonCuuHoRepository hoaDonRepository;
 
     @Autowired
-    private ThanhToanCuuHoRepository thanhToanHoaDonRepository;
+    private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
 
     @Autowired
     private VoucherService voucherService;

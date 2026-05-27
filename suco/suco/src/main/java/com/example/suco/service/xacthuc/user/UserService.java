@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.suco.model.Goi;
 import com.example.suco.model.User;
-import com.example.suco.repository.payment.SoHuuGoiRepository;
+import com.example.suco.repository.payment.MuaGoiRepository;
 import com.example.suco.repository.sos.goi.CRUDGoiRepository;
 import com.example.suco.repository.xacthuc.UserRepository;
 
@@ -18,7 +18,7 @@ public class UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private SoHuuGoiRepository muaGoiRepository;
+    private MuaGoiRepository muaGoiRepository;
 
     @Autowired
     private CRUDGoiRepository goiRepository;
