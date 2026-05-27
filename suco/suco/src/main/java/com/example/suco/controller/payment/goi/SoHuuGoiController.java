@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.example.suco.service.sos.payment.goi.admin.CRUDGoiService;
-import com.example.suco.service.sos.payment.goi.user.SoHuuGoiService;
+import com.example.suco.service.payment.goi.user.SoHuuGoiService;
+import com.example.suco.service.sos.goi.admin.CRUDGoiService;
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
 
 import java.util.Map;

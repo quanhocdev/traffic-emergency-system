@@ -3,7 +3,8 @@ package com.example.suco.controller.payment.hoadon;
 import com.example.suco.dto.payment.hoadon.ThanhToanRequestDTO;
 import com.example.suco.dto.payment.hoadon.ThanhToanResponseDTO;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
-import com.example.suco.service.sos.payment.hoadon.truso.HoaDonCuuHoService;
+import com.example.suco.service.payment.hoadon.user.ThanhToanCuuHoService;
+import com.example.suco.service.sos.hoadon.truso.HoaDonCuuHoService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -15,7 +16,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
-import com.example.suco.service.sos.payment.hoadon.user.ThanhToanCuuHoService;
 @RestController
 @RequestMapping("/api/hoa-don")
 @CrossOrigin(origins = "*")

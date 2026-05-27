@@ -6,7 +6,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.example.suco.service.tienich.quyenloi.DoanhThuService;
+import com.example.suco.service.quyenloi.admin.DoanhThuService;
 
 @Controller
 @RequestMapping("/admin/quan-ly-doanh-thu")

@@ -11,8 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import com.example.suco.config.AppConfig;
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.TruSoRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
+import com.example.suco.repository.xacthuc.TruSoRepository;
+
 import jakarta.servlet.http.HttpSession;
 import java.util.Map;
 import java.util.List;

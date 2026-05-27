@@ -1,8 +1,8 @@
 package com.example.suco.controller.qua.admin;
 
-import com.example.suco.dto.QuaDto;
+import com.example.suco.dto.qua.QuaDto;
 import com.example.suco.model.Qua;
-import com.example.suco.service.tienich.qua.admin.QuaService;
+import com.example.suco.service.qua.admin.QuaService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class AdminQuaController {
     private QuaService quaService;
 
     @Autowired
-    private com.example.suco.repository.QuaRepository quaRepository;
+    private com.example.suco.repository.qua.QuaRepository quaRepository;
 
 
     @GetMapping

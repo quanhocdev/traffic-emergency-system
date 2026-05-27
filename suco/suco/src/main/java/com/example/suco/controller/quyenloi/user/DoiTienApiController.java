@@ -1,12 +1,12 @@
 package com.example.suco.controller.quyenloi.user;
 
-import com.example.suco.dto.DoiTienDto;
-import com.example.suco.dto.ThongKeQuyDto;
+import com.example.suco.dto.quyenloi.DoiTienDto;
+import com.example.suco.dto.quyenloi.ThongKeQuyDto;
 import com.example.suco.model.DoiTien;
 import com.example.suco.model.User;
-import com.example.suco.repository.DoiTienRepository;
-import com.example.suco.repository.UserRepository;
-import com.example.suco.service.tienich.quyenloi.DoiTienService;
+import com.example.suco.repository.quyenloi.DoiTienRepository;
+import com.example.suco.repository.xacthuc.UserRepository;
+import com.example.suco.service.quyenloi.user.DoiTienService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 
