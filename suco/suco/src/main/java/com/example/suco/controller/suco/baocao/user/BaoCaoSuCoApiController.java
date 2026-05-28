@@ -11,8 +11,8 @@ import com.example.suco.service.suco.baocao.user.HuyBaoCaoService;
 import com.google.firebase.auth.FirebaseAuthException;
 import jakarta.validation.Valid;
 
-import com.example.suco.dto.suco.baocao.request.BaoCaoRequest;
-import com.example.suco.dto.suco.baocao.response.BaoCaoResponse;
+import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
+import com.example.suco.dto.suco.baocao.ai.AiResponse;
 
 @RestController
 @RequestMapping("/api/su-co")
@@ -30,13 +30,13 @@ public class BaoCaoSuCoApiController {
     @PostMapping
 public ResponseEntity<?> submitReport(
         @RequestHeader("Authorization") String authHeader,
-        @Valid @RequestBody BaoCaoRequest request
+        @Valid @RequestBody SuCoRequestDTO request
 ) {
     try {
 
         String uid = firebaseService.extractUid(authHeader);
 
-        BaoCaoResponse response =
+        AiResponse response =
                 userBaoCaoService.submitReport(
                         uid,
                         request,
@@ -48,7 +48,7 @@ public ResponseEntity<?> submitReport(
     } catch (FirebaseAuthException e) {
 
         return ResponseEntity.status(401).body(
-                new BaoCaoResponse(
+                new AiResponse(
                         "UNAUTHORIZED",
                         "Lỗi xác thực: " + e.getMessage(),
                         0

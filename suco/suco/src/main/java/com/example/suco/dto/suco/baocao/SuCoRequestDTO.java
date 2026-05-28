@@ -1,9 +1,9 @@
-package com.example.suco.dto.suco.baocao.request;
+package com.example.suco.dto.suco.baocao;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public class BaoCaoRequest {
+public class SuCoRequestDTO {
 
     @NotNull(message = "Loại sự cố không được để trống")
     private Long loaiSuCoId;
@@ -20,7 +20,7 @@ public class BaoCaoRequest {
     @NotBlank(message = "Hình ảnh không được để trống")
     private String hinhAnhUrl;
 
-    public BaoCaoRequest() {
+    public SuCoRequestDTO() {
     }
 
     public Long getLoaiSuCoId() {

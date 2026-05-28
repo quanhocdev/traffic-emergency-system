@@ -1,6 +1,8 @@
-package com.example.suco.dto;
+package com.example.suco.dto.suco.baocao;
 
-public class SuCoMapDto {
+import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
+
+public class SuCoResponseDTO {
 
     private Long id;
     private Double viDo;
@@ -24,7 +26,7 @@ public class SuCoMapDto {
     private String reporterUid;
 
     // Constructor rút gọn (thường dùng cho Socket nhanh)
-    public SuCoMapDto(Long id, Double viDo, Double kinhDo, String moTa, String tenLoai, 
+    public SuCoResponseDTO(Long id, Double viDo, Double kinhDo, String moTa, String tenLoai, 
                       String trangThaiDuyet, String trangThaiXuLy, String iconUrl, 
                       String mucDoNghiemTrong, String hinhAnhUrl, Integer doTinCay, String tenNguoiBao) {
         this.id = id;
@@ -42,7 +44,7 @@ public class SuCoMapDto {
     }
 
     // Constructor đầy đủ địa chỉ
-    public SuCoMapDto(Long id, Double viDo, Double kinhDo, String moTa, String tenLoai, String trangThaiDuyet,
+    public SuCoResponseDTO(Long id, Double viDo, Double kinhDo, String moTa, String tenLoai, String trangThaiDuyet,
                       String trangThaiXuLy, String iconUrl, String mucDoNghiemTrong, String hinhAnhUrl,
                       Integer doTinCay, String tenDuong, String quan, String huyenHoac, String thanhPho, 
                       String diaChi, String tenNguoiBao) {
@@ -53,7 +55,7 @@ public class SuCoMapDto {
         this.thanhPho = thanhPho;
         this.diaChi = diaChi;
     }
-    public SuCoMapDto(Long id,Double viDo,Double kinhDo,String moTa,String tenLoai,String trangThaiDuyet,
+    public SuCoResponseDTO(Long id,Double viDo,Double kinhDo,String moTa,String tenLoai,String trangThaiDuyet,
     String trangThaiXuLy,String iconUrl,String mucDoNghiemTrong,String hinhAnhUrl,Integer doTinCay,
     String tenDuong,String quan,String huyenHoac,String thanhPho,String diaChi,String tenNguoiBao,String reporterUid
 ) {

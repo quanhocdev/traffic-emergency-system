@@ -1,4 +1,4 @@
-package com.example.suco.dto;
+package com.example.suco.dto.suco.baocao;
 
 import com.example.suco.model.HoaDon;
 
@@ -15,8 +15,6 @@ public class LichSuDto {
     private String ghiAmUrl;
     private String tenTruSoTiepNhan;
     private String thoiGian;
-    
-    // THÊM TRƯỜNG NÀY ĐỂ MOBILE NHẬN ĐỊA CHỈ
     private String diaChi; 
     private HoaDon hoaDon;
 

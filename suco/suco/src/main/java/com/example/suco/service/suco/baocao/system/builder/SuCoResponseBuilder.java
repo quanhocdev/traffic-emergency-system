@@ -1,6 +1,6 @@
 package com.example.suco.service.suco.baocao.system.builder;
-import com.example.suco.dto.SuCoMapDto;
-import com.example.suco.dto.TruSoMapDto;
+import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
+import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
@@ -18,9 +18,9 @@ public class SuCoResponseBuilder {
     @Autowired
     private SuCoMapper suCoMapper;
 
-    public SuCoMapDto buildSuCoDto(BaoCaoSuCo b) {
+    public SuCoResponseDTO buildSuCoDto(BaoCaoSuCo b) {
 
-        SuCoMapDto dto = suCoMapper.toDto(b);
+        SuCoResponseDTO dto = suCoMapper.toDto(b);
 
         if (b.getReporter() != null) {
             dto.setReporterUid(b.getReporter().getUid());

@@ -1,6 +1,6 @@
 package com.example.suco.controller.vanhanh.truso;
 
-import com.example.suco.dto.TruSoMapDto;
+import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.service.xacthuc.truso.TruSoService;
 
 import org.springframework.beans.factory.annotation.Autowired;

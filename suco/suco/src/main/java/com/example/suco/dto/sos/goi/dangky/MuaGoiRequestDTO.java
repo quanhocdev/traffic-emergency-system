@@ -1,4 +1,4 @@
-package com.example.suco.dto.sos.goi.payment;
+package com.example.suco.dto.sos.goi.dangky;
 
 public class MuaGoiRequestDTO {
     private Long goiId;

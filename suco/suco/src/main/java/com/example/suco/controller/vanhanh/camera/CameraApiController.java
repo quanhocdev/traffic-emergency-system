@@ -1,12 +1,12 @@
 package com.example.suco.controller.vanhanh.camera;
 
-import com.example.suco.dto.CameraMapDto;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.example.suco.dto.vanhanh.camera.CameraMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.service.vanhanh.camera.CameraService;

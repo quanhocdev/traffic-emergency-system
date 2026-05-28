@@ -1,6 +1,6 @@
 package com.example.suco.controller.suco.baocao.truso;
 
-import com.example.suco.dto.SuCoMapDto;
+import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
@@ -31,7 +31,7 @@ private SuCoResponseBuilder suCoResponseBuilder;
     @Autowired
     private TrangThaiSuCoService trangThaiServiceService;
 @GetMapping("/danh-sach-hien-tai")
-public List<SuCoMapDto> getSuCoHienTai(
+public List<SuCoResponseDTO> getSuCoHienTai(
         @RequestParam(required = false) String status,
         HttpSession session) {
 
@@ -40,7 +40,7 @@ public List<SuCoMapDto> getSuCoHienTai(
 
     List<BaoCaoSuCo> entities = repo.findAll();
 
-    List<SuCoMapDto> allActive = entities.stream()
+    List<SuCoResponseDTO> allActive = entities.stream()
             .map(suCoResponseBuilder::buildSuCoDto)
             .toList();
 
@@ -55,7 +55,7 @@ public List<SuCoMapDto> getSuCoHienTai(
 }
   
     @GetMapping("/lich-su")
-public List<SuCoMapDto> getSuCoHistory(HttpSession session) {
+public List<SuCoResponseDTO> getSuCoHistory(HttpSession session) {
 
     TruSo current = (TruSo) session.getAttribute("currentTruSo");
     if (current == null) return List.of();

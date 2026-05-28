@@ -1,4 +1,4 @@
-package com.example.suco.dto.sos.goi.payment;
+package com.example.suco.dto.sos.goi.dangky;
 import java.time.LocalDateTime;
 
 public class MuaGoiResponseDTO {

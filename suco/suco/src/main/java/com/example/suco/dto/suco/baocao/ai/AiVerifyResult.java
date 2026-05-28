@@ -1,4 +1,4 @@
-package com.example.suco.dto.suco.baocao.response;
+package com.example.suco.dto.suco.baocao.ai;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

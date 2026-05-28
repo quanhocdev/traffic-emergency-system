@@ -1,5 +1,5 @@
 package com.example.suco.service.suco.baocao.user;
-import com.example.suco.dto.LichSuDto;
+import com.example.suco.dto.suco.baocao.LichSuDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TinHieuSOS;

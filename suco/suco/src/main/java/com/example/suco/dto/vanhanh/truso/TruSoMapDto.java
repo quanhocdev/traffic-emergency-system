@@ -1,4 +1,4 @@
-package com.example.suco.dto;
+package com.example.suco.dto.vanhanh.truso;
 
 public class TruSoMapDto {
     private Long id;

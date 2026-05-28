@@ -13,7 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.suco.dto.TruSoMapDto;
+import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.xacthuc.TruSoRepository;
 

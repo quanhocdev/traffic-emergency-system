@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.example.suco.dto.TruSoMapDto;
+import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.xacthuc.TruSoRepository;
 import com.example.suco.service.xacthuc.truso.TruSoService;
