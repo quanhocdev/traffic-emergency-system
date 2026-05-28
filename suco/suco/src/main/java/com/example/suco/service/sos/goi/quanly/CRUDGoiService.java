@@ -1,7 +1,7 @@
 package com.example.suco.service.sos.goi.quanly;
 
-import com.example.suco.dto.sos.goi.GoiRequestDTO;
-import com.example.suco.dto.sos.goi.GoiResponseDTO;
+import com.example.suco.dto.sos.goi.quanly.GoiRequestDTO;
+import com.example.suco.dto.sos.goi.quanly.GoiResponseDTO;
 import com.example.suco.mapper.GoiMapper;
 import com.example.suco.model.Goi;
 import com.example.suco.repository.sos.goi.CRUDGoiRepository;

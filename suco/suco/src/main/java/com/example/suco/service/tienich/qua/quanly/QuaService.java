@@ -1,6 +1,6 @@
     package com.example.suco.service.tienich.qua.quanly;
 
-    import com.example.suco.dto.quanly.qua.QuaDto;
+    import com.example.suco.dto.tienich.qua.quanly.QuaDto;
 import com.example.suco.model.Qua;
 import com.example.suco.repository.qua.QuaRepository;
 

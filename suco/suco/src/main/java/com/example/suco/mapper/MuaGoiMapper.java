@@ -1,7 +1,7 @@
 package com.example.suco.mapper;
 
-import com.example.suco.dto.payment.goi.MuaGoiRequestDTO;
-import com.example.suco.dto.payment.goi.MuaGoiResponseDTO;
+import com.example.suco.dto.sos.goi.payment.MuaGoiRequestDTO;
+import com.example.suco.dto.sos.goi.payment.MuaGoiResponseDTO;
 import com.example.suco.model.Goi;
 import com.example.suco.model.MuaGoi;
 

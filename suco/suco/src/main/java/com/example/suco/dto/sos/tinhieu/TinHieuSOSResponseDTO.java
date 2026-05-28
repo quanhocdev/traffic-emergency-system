@@ -1,7 +1,6 @@
 package com.example.suco.dto.sos.tinhieu;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public class TinHieuSOSResponseDTO {
     private Long id;
@@ -13,9 +12,9 @@ public class TinHieuSOSResponseDTO {
     private String ghiAm;
     private LocalDateTime createdAt;
     private String trangThai;
-    private String userId; 
+    private String userId;
 
-    private UserMiniDTO user; 
+    private UserMiniDTO user;
 
     public TinHieuSOSResponseDTO() {}
     public Long getId() { return id; }
