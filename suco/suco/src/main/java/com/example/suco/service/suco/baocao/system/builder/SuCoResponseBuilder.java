@@ -4,7 +4,7 @@ import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.xacthuc.TruSoRepository;
+import com.example.suco.repository.vanhanh.TruSoRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

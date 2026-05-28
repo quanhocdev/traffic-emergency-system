@@ -4,7 +4,7 @@ import com.example.suco.model.*;
 import com.example.suco.repository.*;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
-import com.example.suco.repository.xacthuc.TruSoRepository;
+import com.example.suco.repository.vanhanh.TruSoRepository;
 import com.example.suco.service.sos.hoadon.truso.validation.StatusService;
 import com.example.suco.service.sos.hoadon.truso.validation.VipSOSService;
 import com.example.suco.service.sos.hoadon.truso.validation.total.TotalService;

@@ -2,7 +2,7 @@ package com.example.suco.service.dieuphoi.decision;
 
 import com.example.suco.model.TruSo;
 import com.example.suco.model.enums.TrangThaiHoatDongTruSo;
-import com.example.suco.repository.xacthuc.TruSoRepository;
+import com.example.suco.repository.vanhanh.TruSoRepository;
 import com.example.suco.service.dieuphoi.distance.DistanceService;
 import com.example.suco.service.dieuphoi.geohash.GeoHashService;
 import org.springframework.beans.factory.annotation.Autowired;

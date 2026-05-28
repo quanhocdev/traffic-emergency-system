@@ -2,7 +2,7 @@
 
     import com.example.suco.dto.tienich.qua.quanly.QuaDto;
 import com.example.suco.model.Qua;
-import com.example.suco.repository.qua.QuaRepository;
+import com.example.suco.repository.tienich.qua.QuaRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.stereotype.Service;

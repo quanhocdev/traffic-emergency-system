@@ -1,7 +1,8 @@
 package com.example.suco.service.sos.goi.user.validation;
 
 import com.example.suco.model.MuaGoi;
-import com.example.suco.repository.payment.MuaGoiRepository;
+import com.example.suco.repository.sos.goi.MuaGoiRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;

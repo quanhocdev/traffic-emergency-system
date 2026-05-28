@@ -1,4 +1,4 @@
-package com.example.suco.repository.payment;
+package com.example.suco.repository.sos.hoadon;
 
 import com.example.suco.model.ThanhToanHoaDon;
 

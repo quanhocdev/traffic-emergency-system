@@ -3,9 +3,9 @@ package com.example.suco.service.tienich.qua.user;
 import com.example.suco.dto.tienich.qua.quydoi.DoiQuaDto;
 import com.example.suco.model.*;
 import com.example.suco.repository.*;
-import com.example.suco.repository.qua.DoiQuaRepository;
-import com.example.suco.repository.qua.QuaRepository;
-import com.example.suco.repository.xacthuc.UserRepository;
+import com.example.suco.repository.tienich.qua.DoiQuaRepository;
+import com.example.suco.repository.tienich.qua.QuaRepository;
+import com.example.suco.repository.vanhanh.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
