@@ -4,7 +4,7 @@ import com.example.suco.dto.suco.baocao.ai.AiResponse;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.User;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
-import com.example.suco.repository.xacthuc.UserRepository;
+import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.reward.UserRewardService;

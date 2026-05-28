@@ -1,4 +1,4 @@
-package com.example.suco.repository.qua;
+package com.example.suco.repository.tienich.qua;
 
 import com.example.suco.model.Qua;
 import org.springframework.data.jpa.repository.JpaRepository;

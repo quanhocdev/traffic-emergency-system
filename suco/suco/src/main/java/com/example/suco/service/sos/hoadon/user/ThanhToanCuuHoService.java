@@ -6,9 +6,8 @@ import com.example.suco.mapper.ThanhToanCuuHoMapper;
 
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.ThanhToanHoaDon;
-
-import com.example.suco.repository.payment.ThanhToanHoaDonRepository;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
+import com.example.suco.repository.sos.hoadon.ThanhToanHoaDonRepository;
 import com.example.suco.service.sos.hoadon.user.validation.StatusService;
 import com.example.suco.service.sos.hoadon.user.validation.VoucherService;
 import com.example.suco.service.sos.hoadon.user.validation.total.TotalAmountService;

@@ -2,7 +2,7 @@ package com.example.suco.controller.xacthuc.user;
 
 import com.example.suco.dto.xacthuc.user.AuthRequest;
 import com.example.suco.model.User;
-import com.example.suco.repository.xacthuc.UserRepository;
+import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.service.vanhanh.user.UserService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;

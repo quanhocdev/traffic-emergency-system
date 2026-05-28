@@ -2,8 +2,8 @@ package com.example.suco.service.sos.hoadon.user.validation;
 
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.Qua;
-import com.example.suco.repository.qua.DoiQuaRepository;
-import com.example.suco.repository.qua.QuaRepository;
+import com.example.suco.repository.tienich.qua.DoiQuaRepository;
+import com.example.suco.repository.tienich.qua.QuaRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

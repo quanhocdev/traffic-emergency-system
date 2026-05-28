@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.suco.model.HoaDon;
-import com.example.suco.repository.quyenloi.DoanhThuRepository;
+import com.example.suco.repository.tienich.tien.DoanhThuRepository;
 
 @Service
 public class DoanhThuService {

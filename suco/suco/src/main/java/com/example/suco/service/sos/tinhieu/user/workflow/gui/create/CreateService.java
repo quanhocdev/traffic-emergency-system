@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.User;
-import com.example.suco.repository.xacthuc.UserRepository;
+import com.example.suco.repository.vanhanh.UserRepository;
 
 @Service
 public class CreateService {

@@ -3,8 +3,8 @@ package com.example.suco.service.tienich.tien.user;
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienDto;
 import com.example.suco.model.DoiTien;
 import com.example.suco.model.User;
-import com.example.suco.repository.quyenloi.DoiTienRepository;
-import com.example.suco.repository.xacthuc.UserRepository;
+import com.example.suco.repository.tienich.tien.DoiTienRepository;
+import com.example.suco.repository.vanhanh.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

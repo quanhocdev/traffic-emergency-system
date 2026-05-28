@@ -1,4 +1,4 @@
-package com.example.suco.repository.xacthuc;
+package com.example.suco.repository.vanhanh;
 
 import com.example.suco.model.Camera;
 import org.springframework.data.jpa.repository.JpaRepository;

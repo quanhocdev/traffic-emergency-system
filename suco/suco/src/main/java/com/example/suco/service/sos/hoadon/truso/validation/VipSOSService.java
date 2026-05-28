@@ -1,7 +1,7 @@
 package com.example.suco.service.sos.hoadon.truso.validation;
 import com.example.suco.model.Goi;
-import com.example.suco.repository.payment.MuaGoiRepository;
 import com.example.suco.repository.sos.goi.CRUDGoiRepository;
+import com.example.suco.repository.sos.goi.MuaGoiRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

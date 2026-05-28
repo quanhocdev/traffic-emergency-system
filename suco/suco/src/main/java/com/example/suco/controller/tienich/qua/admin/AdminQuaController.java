@@ -20,7 +20,7 @@ public class AdminQuaController {
     private QuaService quaService;
 
     @Autowired
-    private com.example.suco.repository.qua.QuaRepository quaRepository;
+    private com.example.suco.repository.tienich.qua.QuaRepository quaRepository;
 
 
     @GetMapping

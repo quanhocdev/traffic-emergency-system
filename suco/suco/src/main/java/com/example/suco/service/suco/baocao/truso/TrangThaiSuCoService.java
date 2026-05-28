@@ -4,7 +4,7 @@ import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
-import com.example.suco.repository.xacthuc.TruSoRepository;
+import com.example.suco.repository.vanhanh.TruSoRepository;
 import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 

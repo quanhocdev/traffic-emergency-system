@@ -2,7 +2,7 @@ package com.example.suco.service.vanhanh.camera;
 
 import com.example.suco.dto.vanhanh.camera.CameraMapDto;
 import com.example.suco.model.Camera;
-import com.example.suco.repository.xacthuc.CameraRepository;
+import com.example.suco.repository.vanhanh.CameraRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

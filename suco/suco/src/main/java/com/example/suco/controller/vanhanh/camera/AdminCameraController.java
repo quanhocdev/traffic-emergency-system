@@ -19,7 +19,7 @@ import com.example.suco.dto.vanhanh.camera.CameraMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Camera;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
-import com.example.suco.repository.xacthuc.CameraRepository;
+import com.example.suco.repository.vanhanh.CameraRepository;
 import com.example.suco.service.vanhanh.camera.CameraService;
 
 @Controller

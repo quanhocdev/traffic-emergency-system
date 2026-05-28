@@ -1,4 +1,4 @@
-package com.example.suco.repository.quyenloi;
+package com.example.suco.repository.tienich.tien;
 
 import com.example.suco.model.DoiTien;
 import org.springframework.data.jpa.repository.JpaRepository;

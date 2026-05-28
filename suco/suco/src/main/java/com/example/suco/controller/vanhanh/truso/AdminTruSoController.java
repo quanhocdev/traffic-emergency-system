@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.xacthuc.TruSoRepository;
+import com.example.suco.repository.vanhanh.TruSoRepository;
 import com.example.suco.service.xacthuc.truso.TruSoService;
 
 import jakarta.servlet.http.HttpServletRequest;

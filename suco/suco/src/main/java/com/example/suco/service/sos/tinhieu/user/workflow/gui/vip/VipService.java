@@ -2,7 +2,7 @@ package com.example.suco.service.sos.tinhieu.user.workflow.gui.vip;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.payment.MuaGoiRepository;
+import com.example.suco.repository.sos.goi.MuaGoiRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

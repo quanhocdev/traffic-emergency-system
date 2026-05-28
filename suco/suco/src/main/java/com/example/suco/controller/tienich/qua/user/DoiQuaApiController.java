@@ -1,8 +1,8 @@
 package com.example.suco.controller.tienich.qua.user;
 
 import com.example.suco.dto.tienich.qua.quydoi.DoiQuaDto;
-import com.example.suco.repository.qua.DoiQuaRepository;
-import com.example.suco.repository.qua.QuaRepository;
+import com.example.suco.repository.tienich.qua.DoiQuaRepository;
+import com.example.suco.repository.tienich.qua.QuaRepository;
 import com.example.suco.service.tienich.qua.user.DoiQuaService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;

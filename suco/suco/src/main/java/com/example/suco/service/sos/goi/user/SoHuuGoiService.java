@@ -5,8 +5,8 @@ import com.example.suco.dto.sos.goi.dangky.MuaGoiResponseDTO;
 import com.example.suco.mapper.MuaGoiMapper;
 import com.example.suco.model.Goi;
 import com.example.suco.model.MuaGoi;
-import com.example.suco.repository.payment.MuaGoiRepository;
 import com.example.suco.repository.sos.goi.CRUDGoiRepository;
+import com.example.suco.repository.sos.goi.MuaGoiRepository;
 import com.example.suco.service.sos.goi.user.validation.StatusService;
 
 import org.springframework.beans.factory.annotation.Autowired;

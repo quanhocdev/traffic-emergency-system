@@ -1,6 +1,6 @@
 package com.example.suco.controller.xacthuc.admin;
 import com.example.suco.model.User;
-import com.example.suco.repository.xacthuc.UserRepository;
+import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.security.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;

@@ -1,7 +1,7 @@
 package com.example.suco.controller.vanhanh.user;
 
 import com.example.suco.model.User;
-import com.example.suco.repository.xacthuc.UserRepository;
+import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.service.vanhanh.user.UserService;
 
 import org.springframework.http.ResponseEntity;
