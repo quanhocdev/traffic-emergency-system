@@ -1,6 +1,6 @@
 package com.example.suco.service.tienich.tien.quydoi;
 
-import com.example.suco.dto.quydoi.tien.DoiTienDto;
+import com.example.suco.dto.tienich.tien.user.DoiTienDto;
 import com.example.suco.model.DoiTien;
 import com.example.suco.model.User;
 import com.example.suco.repository.quyenloi.DoiTienRepository;

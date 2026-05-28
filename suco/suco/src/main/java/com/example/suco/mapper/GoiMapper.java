@@ -1,7 +1,7 @@
 package com.example.suco.mapper;
 
-import com.example.suco.dto.sos.goi.GoiRequestDTO;
-import com.example.suco.dto.sos.goi.GoiResponseDTO;
+import com.example.suco.dto.sos.goi.quanly.GoiRequestDTO;
+import com.example.suco.dto.sos.goi.quanly.GoiResponseDTO;
 import com.example.suco.model.Goi;
 
 public class GoiMapper {

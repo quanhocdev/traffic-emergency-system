@@ -1,9 +1,9 @@
 package com.example.suco.service.sos.goi.quanly.validation;
 
-import com.example.suco.dto.sos.goi.GoiRequestDTO;
-
 import java.math.BigDecimal;
 import org.springframework.stereotype.Service;
+
+import com.example.suco.dto.sos.goi.quanly.GoiRequestDTO;
 
 @Service
 public class ValidationService {

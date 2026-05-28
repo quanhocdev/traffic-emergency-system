@@ -1,6 +1,6 @@
 package com.example.suco.mapper;
-import com.example.suco.dto.sos.hoadon.HoaDonRequestDTO;
-import com.example.suco.dto.sos.hoadon.HoaDonResponseDTO;
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonRequestDTO;
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 import com.example.suco.model.HoaDon;
 
 import java.math.BigDecimal;

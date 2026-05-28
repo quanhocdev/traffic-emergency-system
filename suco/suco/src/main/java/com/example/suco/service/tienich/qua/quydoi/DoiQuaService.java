@@ -1,6 +1,6 @@
 package com.example.suco.service.tienich.qua.quydoi;
 
-import com.example.suco.dto.quydoi.qua.DoiQuaDto;
+import com.example.suco.dto.tienich.qua.quydoi.DoiQuaDto;
 import com.example.suco.model.*;
 import com.example.suco.repository.*;
 import com.example.suco.repository.qua.DoiQuaRepository;
