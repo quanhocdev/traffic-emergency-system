@@ -6,7 +6,6 @@ import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeSe
 import com.example.suco.dto.SuCoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
-import com.example.suco.service.LichSuService;
 import com.example.suco.service.suco.baocao.system.validation.QuyenHanService;
 import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
