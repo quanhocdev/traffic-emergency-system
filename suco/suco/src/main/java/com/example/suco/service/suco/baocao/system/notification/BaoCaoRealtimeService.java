@@ -1,9 +1,10 @@
 package com.example.suco.service.suco.baocao.system.notification;
 
-import com.example.suco.dto.SuCoMapDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
+import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
 
 @Service
 public class BaoCaoRealtimeService {
@@ -11,7 +12,7 @@ public class BaoCaoRealtimeService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    public void broadcastReport(SuCoMapDto dto) {
+    public void broadcastReport(SuCoResponseDTO dto) {
         messagingTemplate.convertAndSend(
                 "/topic/su-co",
                 dto
@@ -25,7 +26,7 @@ public class BaoCaoRealtimeService {
         );
     }
 
-    public void broadcastTruSo(Long truSoId, SuCoMapDto dto) {
+    public void broadcastTruSo(Long truSoId, SuCoResponseDTO dto) {
         messagingTemplate.convertAndSend(
                 "/topic/tru-so/" + truSoId + "/su-co",
                 dto

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.suco.dto.CameraMapDto;
+import com.example.suco.dto.vanhanh.camera.CameraMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Camera;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;

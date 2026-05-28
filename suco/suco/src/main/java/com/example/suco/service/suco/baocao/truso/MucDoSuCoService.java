@@ -1,6 +1,6 @@
 package com.example.suco.service.suco.baocao.truso;
 
-import com.example.suco.dto.SuCoMapDto;
+import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
@@ -137,7 +137,7 @@ public class MucDoSuCoService {
         BaoCaoSuCo saved =
                 reportRepository.save(suCo);
 
-        SuCoMapDto dto =
+        SuCoResponseDTO dto =
                 suCoResponseBuilder.buildSuCoDto(saved);
 
         log.info(

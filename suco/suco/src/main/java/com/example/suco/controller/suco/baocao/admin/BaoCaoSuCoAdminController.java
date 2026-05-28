@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.suco.service.suco.baocao.admin.AdminBaoCaoService;
 import com.example.suco.service.suco.baocao.admin.DuyetSuCoService;
-import com.example.suco.dto.SuCoMapDto;
+import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
@@ -114,7 +114,7 @@ public String page(Model model) {
 
     @GetMapping("/pending")
     @ResponseBody
-    public ResponseEntity<List<SuCoMapDto>> getPendingReports() {
+    public ResponseEntity<List<SuCoResponseDTO>> getPendingReports() {
         return ResponseEntity.ok(duyetSuCoService.getPendingReportsForAdmin());
     }
 }

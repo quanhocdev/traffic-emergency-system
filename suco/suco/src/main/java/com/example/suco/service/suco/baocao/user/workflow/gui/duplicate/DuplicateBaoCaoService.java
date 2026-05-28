@@ -1,6 +1,6 @@
 package com.example.suco.service.suco.baocao.user.workflow.gui.duplicate;
 
-import com.example.suco.dto.suco.baocao.response.BaoCaoResponse;
+import com.example.suco.dto.suco.baocao.ai.AiResponse;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.User;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
@@ -39,7 +39,7 @@ public class DuplicateBaoCaoService {
     @Autowired
     private BaoCaoResponseFactory responseFactory;
 
-    public BaoCaoResponse process(
+    public AiResponse process(
             String uid,
             BaoCaoSuCo report
     ) {

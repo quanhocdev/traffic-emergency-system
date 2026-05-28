@@ -1,7 +1,7 @@
 package com.example.suco.service.suco.baocao.user.workflow.gui.response;
 
-import com.example.suco.dto.suco.baocao.response.AiVerifyResult;
-import com.example.suco.dto.suco.baocao.response.BaoCaoResponse;
+import com.example.suco.dto.suco.baocao.ai.AiResponse;
+import com.example.suco.dto.suco.baocao.ai.AiVerifyResult;
 import com.example.suco.model.BaoCaoSuCo;
 
 import org.springframework.stereotype.Component;
@@ -9,34 +9,34 @@ import org.springframework.stereotype.Component;
 @Component
 public class BaoCaoResponseFactory {
 
-    public BaoCaoResponse success(
+    public AiResponse success(
             BaoCaoSuCo report
     ) {
 
-        return new BaoCaoResponse(
+        return new AiResponse(
                 "SUCCESS",
                 "OK",
                 report.getDoTinCay()
         );
     }
 
-    public BaoCaoResponse reject(
+    public AiResponse reject(
             AiVerifyResult ai
     ) {
 
-        return new BaoCaoResponse(
+        return new AiResponse(
                 "REJECTED",
                 ai.getReason(),
                 ai.getConfidence()
         );
     }
 
-    public BaoCaoResponse duplicate(
+    public AiResponse duplicate(
             String message,
             Integer confidence
     ) {
 
-        return new BaoCaoResponse(
+        return new AiResponse(
                 "DUPLICATE",
                 message,
                 confidence

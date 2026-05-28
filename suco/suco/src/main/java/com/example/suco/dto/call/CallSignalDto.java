@@ -1,4 +1,4 @@
-package com.example.suco.dto;
+package com.example.suco.dto.call;
 
 public class CallSignalDto {
     private String type;
@@ -9,7 +9,6 @@ public class CallSignalDto {
 
     public CallSignalDto() {}
 
-    // Getter và Setter thủ công (Vì không dùng Lombok)
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
 

@@ -1,4 +1,4 @@
-package com.example.suco.dto.tienich.tien.user;
+package com.example.suco.dto.tienich.tien.quydoi;
 
 public class DoiTienDto {
     private int soDiemDoi;

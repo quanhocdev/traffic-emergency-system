@@ -1,14 +1,14 @@
-package com.example.suco.dto.suco.baocao.response;
+package com.example.suco.dto.suco.baocao.ai;
 
-public class BaoCaoResponse {
+public class AiResponse {
 
     private String code;
     private String message;
     private Integer confidence;
 
-    public BaoCaoResponse() {}
+    public AiResponse() {}
 
-    public BaoCaoResponse(String code, String message, Integer confidence) {
+    public AiResponse(String code, String message, Integer confidence) {
         this.code = code;
         this.message = message;
         this.confidence = confidence;

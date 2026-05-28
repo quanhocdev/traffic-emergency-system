@@ -1,9 +1,9 @@
 package com.example.suco.service.suco.baocao.user;
 
-import com.example.suco.dto.suco.baocao.request.BaoCaoRequest;
-import com.example.suco.dto.suco.baocao.response.AiVerifyResult;
-import com.example.suco.dto.suco.baocao.response.BaoCaoResponse;
-import com.example.suco.dto.SuCoMapDto;
+import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
+import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
+import com.example.suco.dto.suco.baocao.ai.AiResponse;
+import com.example.suco.dto.suco.baocao.ai.AiVerifyResult;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 
@@ -50,9 +50,9 @@ public class GuiBaoCaoService {
     private SuCoResponseBuilder suCoResponseBuilder;
 
     @Transactional
-    public BaoCaoResponse submitReport(
+    public AiResponse submitReport(
             String uid,
-            BaoCaoRequest dto,
+            SuCoRequestDTO dto,
             String base64FullData
     ) {
 
@@ -69,7 +69,7 @@ public class GuiBaoCaoService {
             return baoCaoResponseFactory.reject(ai);
         }
 
-        BaoCaoResponse duplicateResponse =
+        AiResponse duplicateResponse =
                 duplicateBaoCaoService.process(
                         uid,
                         report
@@ -95,7 +95,7 @@ public class GuiBaoCaoService {
         );
     }
 
-    public List<SuCoMapDto> getMyReports(String uid) {
+    public List<SuCoResponseDTO> getMyReports(String uid) {
 
         return reportRepository.findByReporterUid(uid)
                 .stream()
@@ -103,7 +103,7 @@ public class GuiBaoCaoService {
                 .toList();
     }
 
-    public List<SuCoMapDto> getPendingReportsForAdmin() {
+    public List<SuCoResponseDTO> getPendingReportsForAdmin() {
 
         return reportRepository.findPendingReportsForAdmin()
                 .stream()

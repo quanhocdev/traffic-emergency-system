@@ -1,12 +1,12 @@
-package com.example.suco.dto;
+package com.example.suco.dto.vanhanh.camera;
 
 public class CameraMapDto {
     private Long id;
     private String tenCamera;
     private Double kinhDo;
     private Double viDo;
-    private String anhCamera; // THÊM MỚI
-    private String videoUrl;  // THÊM MỚI
+    private String anhCamera;
+    private String videoUrl;
     private String moTa;
     private double distance;
 

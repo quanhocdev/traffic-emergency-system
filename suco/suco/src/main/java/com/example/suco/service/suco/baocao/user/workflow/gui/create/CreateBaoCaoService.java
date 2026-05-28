@@ -1,6 +1,6 @@
 package com.example.suco.service.suco.baocao.user.workflow.gui.create;
 
-import com.example.suco.dto.suco.baocao.request.BaoCaoRequest;
+import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.LoaiSuCo;
 import com.example.suco.model.User;
@@ -21,7 +21,7 @@ public class CreateBaoCaoService {
 
     public BaoCaoSuCo create(
             String uid,
-            BaoCaoRequest dto
+            SuCoRequestDTO dto
     ) {
 
         User user = userRepository.findById(uid)

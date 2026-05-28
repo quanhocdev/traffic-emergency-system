@@ -1,6 +1,6 @@
 package com.example.suco.service.suco.baocao.admin;
 
-import com.example.suco.dto.SuCoMapDto;
+import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
 import com.example.suco.model.TruSo;
@@ -52,7 +52,7 @@ public class DuyetSuCoService {
     private static final Logger log =
         LoggerFactory.getLogger(DuyetSuCoService.class);
 
-    public List<SuCoMapDto> getPendingReportsForAdmin() {
+    public List<SuCoResponseDTO> getPendingReportsForAdmin() {
 
     List<BaoCaoSuCo> reports = reportRepository.findPendingReportsForAdmin();
 
