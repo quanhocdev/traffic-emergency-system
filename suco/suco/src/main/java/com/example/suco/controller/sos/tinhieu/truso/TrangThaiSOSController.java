@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
-import com.example.suco.service.sos.tinhieu.quanly.TrangThaiService;
+import com.example.suco.service.sos.tinhieu.truso.TrangThaiService;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;

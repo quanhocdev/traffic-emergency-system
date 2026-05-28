@@ -5,8 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.suco.dto.sos.goi.payment.MuaGoiRequestDTO;
-import com.example.suco.service.sos.goi.payment.SoHuuGoiService;
-import com.example.suco.service.sos.goi.quanly.CRUDGoiService;
+import com.example.suco.service.sos.goi.admin.CRUDGoiService;
+import com.example.suco.service.sos.goi.user.SoHuuGoiService;
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
 
 import java.util.Map;

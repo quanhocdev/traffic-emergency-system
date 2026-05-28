@@ -2,7 +2,7 @@ package com.example.suco.controller.tienich.qua.admin;
 
 import com.example.suco.dto.tienich.qua.quanly.QuaDto;
 import com.example.suco.model.Qua;
-import com.example.suco.service.tienich.qua.quanly.QuaService;
+import com.example.suco.service.tienich.qua.admin.QuaService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
