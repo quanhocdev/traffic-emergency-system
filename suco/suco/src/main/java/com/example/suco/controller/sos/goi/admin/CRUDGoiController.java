@@ -2,7 +2,7 @@ package com.example.suco.controller.sos.goi.admin;
 
 import com.example.suco.dto.sos.goi.quanly.GoiRequestDTO;
 import com.example.suco.dto.sos.goi.quanly.GoiResponseDTO;
-import com.example.suco.service.sos.goi.quanly.CRUDGoiService;
+import com.example.suco.service.sos.goi.admin.CRUDGoiService;
 
 import java.util.Map;
 

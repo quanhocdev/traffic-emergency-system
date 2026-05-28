@@ -1,7 +1,7 @@
 package com.example.suco.controller.tienich.qua.user;
 
 import com.example.suco.model.Qua;
-import com.example.suco.service.tienich.qua.quanly.QuaService;
+import com.example.suco.service.tienich.qua.admin.QuaService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

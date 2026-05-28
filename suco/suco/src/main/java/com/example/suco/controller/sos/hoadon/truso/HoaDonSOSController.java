@@ -6,7 +6,7 @@ import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
-import com.example.suco.service.sos.hoadon.quanly.HoaDonCuuHoService;
+import com.example.suco.service.sos.hoadon.truso.HoaDonCuuHoService;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
