@@ -1,22 +1,10 @@
 package com.example.suco.repository.tienich.qua;
 
-import com.example.suco.model.TuiQua;
+import com.example.suco.model.DoiQua;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import java.util.List;
-import java.util.Optional;
 
 @Repository
-public interface DoiQuaRepository extends JpaRepository<TuiQua, Long> {
-    List<TuiQua> findByUserId(String userId);
-    Optional<TuiQua> findByUserIdAndQuaId(String userId, Long quaId);
-    @Query("""
-SELECT d, q
-FROM DoiQua d
-JOIN Qua q ON d.quaId = q.id
-WHERE d.userId = :uid
-""")
-List<Object[]> getMyGiftsWithQua(@Param("uid") String uid);
+public interface DoiQuaRepository extends JpaRepository<DoiQua, Long> {
+
 }
