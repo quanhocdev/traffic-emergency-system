@@ -1,8 +1,9 @@
 package com.example.suco.controller.tienich.qua.admin;
 
-import com.example.suco.dto.tienich.qua.quanly.QuaDto;
 import com.example.suco.model.Qua;
 import com.example.suco.service.tienich.qua.admin.QuaService;
+import com.example.suco.dto.tienich.qua.quanly.QuaRequestDTO;
+import com.example.suco.dto.tienich.qua.quanly.QuaResponseDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,31 +20,28 @@ public class AdminQuaController {
     @Autowired
     private QuaService quaService;
 
-    @Autowired
-    private com.example.suco.repository.tienich.qua.QuaRepository quaRepository;
-
 
     @GetMapping
     public String listQua(Model model) {
         model.addAttribute("listQua", quaService.getAllQua());
-        model.addAttribute("quaDto", new QuaDto());
+        model.addAttribute("quaRequestDTO", new QuaRequestDTO());
         model.addAttribute("loaiQua", Qua.LoaiQua.values());
         model.addAttribute("activePage", "quan-ly-qua");
 
         return "admin/quan-ly-qua";
     }
 
-    @GetMapping("/all")
+@GetMapping("/all")
 @ResponseBody
-public List<Qua> getAllQuaApi() {
-return quaRepository.findAll();
+public List<QuaResponseDTO> getAllQuaApi() {
+    return quaService.getAllQua();
 }
 
     @PostMapping("/add")
 @ResponseBody
-public ResponseEntity<?> addQua(@ModelAttribute QuaDto quaDto) {
+public ResponseEntity<?> addQua(@ModelAttribute QuaRequestDTO quaRequestDTO) {
     try {
-        quaService.addQua(quaDto);
+        quaService.createQua(quaRequestDTO);
 
         return ResponseEntity.ok(Map.of(
                 "code", "SUCCESS",
@@ -58,11 +56,6 @@ public ResponseEntity<?> addQua(@ModelAttribute QuaDto quaDto) {
     }
 }
 
-    // @GetMapping("/delete/{id}")
-    // public String deleteQua(@PathVariable Long id) {
-    //     quaService.deleteQua(id);
-    //     return "redirect:/admin/quan-ly-qua";
-    // }
 @DeleteMapping("/delete/{id}")
 public ResponseEntity<?> deleteQua(@PathVariable Long id) {
     try {
@@ -78,47 +71,26 @@ public ResponseEntity<?> deleteQua(@PathVariable Long id) {
         ));
     }
 }
-// @PutMapping("/edit/{id}")
-// @ResponseBody
-// public ResponseEntity<?> editQua(
-//         @PathVariable Long id,
-//         @RequestBody QuaDto dto
-// ) {
-//     try {
-//         quaService.updateQua(id, dto);
-//         return ResponseEntity.ok("Cập nhật thành công");
-//     } catch (Exception e) {
-//         return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
-//     }
-// }
 
 @PatchMapping("/edit/{id}")
 @ResponseBody
 public ResponseEntity<?> editQua(
         @PathVariable Long id,
-        @ModelAttribute QuaDto dto 
+        @ModelAttribute QuaRequestDTO dto 
 ) {
     System.out.println("DTO ngayKetThuc = " + dto.getNgayKetThuc());
     try {
         quaService.updateQua(id, dto);
-        return ResponseEntity.ok("Cập nhật thành công");
+        return ResponseEntity.ok(Map.of(
+    "code", "SUCCESS",
+    "message", "Cập nhật thành công"
+));
     } catch (Exception e) {
-        return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
+        return ResponseEntity.badRequest().body(Map.of(
+    "code", "ERROR",
+    "message", e.getMessage()
+));
     }
 }
 
-// @PutMapping("/status/{id}")
-// @ResponseBody
-// public ResponseEntity<?> updateStatus(
-//         @PathVariable Long id,
-//         @RequestParam Qua.TrangThai trangThai
-// ) {
-//     try {
-//         quaService.updateStatus(id, trangThai);
-//         return ResponseEntity.ok("OK");
-//     } catch (Exception e) {
-//         e.printStackTrace();
-//         return ResponseEntity.badRequest().body("Lỗi: " + e.getMessage());
-//     }
-// }
 }
