@@ -1,6 +1,6 @@
 package com.example.suco.controller.tienich.qua.user;
 
-import com.example.suco.dto.tienich.qua.quydoi.DoiQuaDto;
+import com.example.suco.dto.tienich.qua.quydoi.TuiQuaDTO;
 import com.example.suco.repository.tienich.qua.DoiQuaRepository;
 import com.example.suco.repository.tienich.qua.QuaRepository;
 import com.example.suco.service.tienich.qua.user.DoiQuaService;
@@ -43,7 +43,7 @@ public class DoiQuaApiController {
     @PostMapping("/exchange")
 public ResponseEntity<?> exchange(
         @RequestHeader("Authorization") String authHeader,
-        @RequestBody DoiQuaDto dto
+        @RequestBody TuiQuaDTO dto
 ) {
     try {
         String uid = getUidFromHeader(authHeader);
@@ -74,7 +74,7 @@ public ResponseEntity<?> getMyGifts(@RequestHeader("Authorization") String authH
         String uid = getUidFromHeader(authHeader);
 
         // 2. Gọi Service để xử lý tác vụ
-        List<DoiQuaDto> result = doiQuaService.getMyGifts(uid);
+        List<TuiQuaDTO> result = doiQuaService.getMyGifts(uid);
 
         // 3. Trả về kết quả
         return ResponseEntity.ok(result);
