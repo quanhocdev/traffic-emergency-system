@@ -5,24 +5,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.DoiQuaDto
-import com.example.canhbao.data.model.QuaDto
 import com.example.canhbao.data.model.SuCoUserDto
-import com.example.canhbao.data.model.TuiDto
+import com.example.canhbao.data.model.qua.danhsach.QuaResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoApi
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
+import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 
 class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
 
-    var allQua by mutableStateOf<List<QuaDto>>(emptyList())
-    var filteredQua by mutableStateOf<List<QuaDto>>(emptyList())
+    var allQua by mutableStateOf<List<QuaResponseDTO>>(emptyList())
+    var filteredQua by mutableStateOf<List<QuaResponseDTO>>(emptyList())
     var userProfile by mutableStateOf<SuCoUserDto?>(null)
     var isLoading by mutableStateOf(false)
     var selectedTab by mutableStateOf("TẤT CẢ")
     private val auth = FirebaseAuth.getInstance()
-    var listTuiQua by mutableStateOf<List<TuiDto>>(emptyList())
+    var listTuiQua by mutableStateOf<List<TuiQuaResponseDTO>>(emptyList())
     var isTuiLoading by mutableStateOf(false)
 
     var isExchanging by mutableStateOf(false)
@@ -48,7 +48,7 @@ class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
 
     // ================== ĐỔI QUÀ ==================
     fun thucHienDoiQua(
-        qua: QuaDto,
+        qua: QuaResponseDTO,
         onResult: (Boolean, String) -> Unit
     ) {
         if (isExchanging) return
@@ -59,7 +59,10 @@ class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
                 val user = auth.currentUser ?: return@launch
                 val token = user.getIdToken(false).await().token ?: return@launch
 
-                val dto = DoiQuaDto(quaId = qua.id)
+                val dto = DoiQuaRequestDTO(
+                    quaId = qua.id,
+                    soLuong = 1
+                )
 
                 val response = api.exchangeQua("Bearer $token", dto)
 

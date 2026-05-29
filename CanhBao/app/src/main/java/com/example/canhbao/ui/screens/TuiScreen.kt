@@ -1,6 +1,5 @@
 package com.example.canhbao.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -20,9 +19,9 @@ import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.canhbao.data.model.TuiDto
 import com.example.canhbao.viewmodel.QuaViewModel
 import androidx.compose.foundation.shape.CircleShape
+import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -183,7 +182,7 @@ fun TuiScreen(viewModel: QuaViewModel, uid: String, onBack: () -> Unit) {
 }
 
 @Composable
-fun TuiItemRow(item: TuiDto, onNhanNgayClick: () -> Unit) {
+fun TuiItemRow(item: TuiQuaResponseDTO, onNhanNgayClick: () -> Unit) {
     val isVoucher = item.loai == "VOUCHER"
     val isExpired = item.ngayKetThuc != null &&
             java.time.LocalDateTime.parse(item.ngayKetThuc)
@@ -232,14 +231,6 @@ fun TuiItemRow(item: TuiDto, onNhanNgayClick: () -> Unit) {
                             fontWeight = FontWeight.Bold
                         )
                     }
-                }
-
-                if (isVoucher && item.giaTriGiamPercent != null) {
-                    Text(
-                        "Giảm ${item.giaTriGiamPercent}% - Tối đa ${item.giaTriToiDa?.toInt()}đ",
-                        color = Color(0xFF1976D2),
-                        fontSize = 12.sp
-                    )
                 }
                 if (isExpired) {
                     Text(
