@@ -28,10 +28,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.canhbao.data.model.QuaDto
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.viewmodel.QuaViewModel
 import android.util.Log
+import com.example.canhbao.data.model.qua.danhsach.QuaResponseDTO
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuaScreen(
@@ -41,7 +42,7 @@ fun QuaScreen(
     val tabs = listOf("TẤT CẢ", "SAN_PHAM", "VOUCHER")
     val context = LocalContext.current
     val userPoints = viewModel.userProfile?.totalPoints ?: 0
-
+    val selectedIndex = tabs.indexOf(viewModel.selectedTab).coerceAtLeast(0)
     LaunchedEffect(Unit) {
         viewModel.loadData()
     }
@@ -122,7 +123,7 @@ fun QuaScreen(
 
             // ===== TAB =====
             TabRow(
-                selectedTabIndex = tabs.indexOf(viewModel.selectedTab),
+                selectedTabIndex = selectedIndex,
                 containerColor = Color.Transparent,
                 divider = {},
                 indicator = { tabPositions ->
@@ -180,7 +181,7 @@ fun QuaScreen(
 
 @Composable
 fun ModernQuaItem(
-    qua: QuaDto,
+    qua: QuaResponseDTO,
     userPoints: Int,
     onExchange: () -> Unit
 ) {

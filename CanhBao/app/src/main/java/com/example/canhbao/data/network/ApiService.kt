@@ -10,13 +10,15 @@
     import com.example.canhbao.data.model.suco.loai.LoaiSuCo
     import com.example.canhbao.data.model.MuaGoiDto
     import com.example.canhbao.data.model.MuaGoiRequest
-    import com.example.canhbao.data.model.QuaDto
     import com.example.canhbao.data.model.SuCoMapDto
     import com.example.canhbao.data.model.SuCoUserDto
     import com.example.canhbao.data.model.ThongKeQuyDto
     import com.example.canhbao.data.model.TinHieuSOSRequest
     import com.example.canhbao.data.model.TruSoMapDto
     import com.example.canhbao.data.model.TuiDto
+    import com.example.canhbao.data.model.qua.danhsach.QuaResponseDTO
+    import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
+    import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
     import retrofit2.Response
     import retrofit2.http.Body
     import retrofit2.http.GET
@@ -99,17 +101,17 @@
         ): Response<Map<String, Any>>
 
         @GET("/api/qua/all")
-        suspend fun getAllQua(): List<QuaDto>
+        suspend fun getAllQua(): List<QuaResponseDTO>
         @POST("/api/qua/exchange")
         suspend fun exchangeQua(
             @Header("Authorization") token: String,
-            @Body request: DoiQuaDto
+            @Body request: DoiQuaRequestDTO
         ): Response<Map<String, Any>>
 
         @GET("/api/qua/my-gifts")
         suspend fun getMyGifts(
             @Header("Authorization") token: String
-        ): List<TuiDto>
+        ): List<TuiQuaResponseDTO>
 
         @POST("/api/hoa-don/xac-nhan")
         suspend fun confirmPayment(
