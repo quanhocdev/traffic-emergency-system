@@ -6,28 +6,76 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "doi_qua")
 public class DoiQua {
-        @Id
+
+    @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Người đổi quà
     private String userId;
 
+    // Quà được đổi
     private Long quaId;
 
+    // Số lượng đổi
     @Column(name = "so_luong")
-    private Integer soLuong = 1;
+    private Integer soLuong;
 
+    // Tổng điểm đã trừ ở lần đổi này
+    @Column(name = "diem_da_tru")
+    private Integer diemDaTru;
 
+    // Thời gian đổi
+    @Column(name = "ngay_doi")
+    private LocalDateTime ngayDoi;
 
-    // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
-    public Long getQuaId() { return quaId; }
-    public void setQuaId(Long quaId) { this.quaId = quaId; }
+    public DoiQua() {}
 
-    public Integer getSoLuong() { return soLuong; }
-    public void setSoLuong(Integer soLuong) { this.soLuong = soLuong; }
-   
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public Long getQuaId() {
+        return quaId;
+    }
+
+    public void setQuaId(Long quaId) {
+        this.quaId = quaId;
+    }
+
+    public Integer getSoLuong() {
+        return soLuong;
+    }
+
+    public void setSoLuong(Integer soLuong) {
+        this.soLuong = soLuong;
+    }
+
+    public Integer getDiemDaTru() {
+        return diemDaTru;
+    }
+
+    public void setDiemDaTru(Integer diemDaTru) {
+        this.diemDaTru = diemDaTru;
+    }
+
+    public LocalDateTime getNgayDoi() {
+        return ngayDoi;
+    }
+
+    public void setNgayDoi(LocalDateTime ngayDoi) {
+        this.ngayDoi = ngayDoi;
+    }
 }

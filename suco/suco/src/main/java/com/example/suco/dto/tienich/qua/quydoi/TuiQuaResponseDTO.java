@@ -1,17 +1,14 @@
 package com.example.suco.dto.tienich.qua.quydoi;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class DoiQuaDto {
+public class TuiQuaResponseDTO {
     private Long quaId;
     private String tenQua;
-    private Integer soLuong; // THÊM TRƯỜNG NÀY
-    private String loai;    // Nên thêm loai để Android biết là VOUCHER hay SAN_PHAM
-    private Integer giaTriGiamPercent;
-    private java.math.BigDecimal giaTriToiDa;
+    private Integer soLuong;
+    private String loai;
     private LocalDateTime ngayKetThuc;
 
-  public DoiQuaDto() {}
+  public TuiQuaResponseDTO() {}
 
 
 
@@ -27,13 +24,8 @@ public class DoiQuaDto {
     public String getLoai() { return loai; }
     public void setLoai(String loai) { this.loai = loai; }
 
-    public Integer getGiaTriGiamPercent() { return giaTriGiamPercent; }
-    public void setGiaTriGiamPercent(Integer giaTriGiamPercent) { this.giaTriGiamPercent = giaTriGiamPercent; }
-
-    public java.math.BigDecimal getGiaTriToiDa() { return giaTriToiDa; }
-    public void setGiaTriToiDa(java.math.BigDecimal giaTriToiDa) { this.giaTriToiDa = giaTriToiDa; }
-
     public LocalDateTime getNgayKetThuc() { return ngayKetThuc; }
     public void setNgayKetThuc(LocalDateTime ngayKetThuc) { this.ngayKetThuc = ngayKetThuc; }
+
   
 }

@@ -1,6 +1,6 @@
 package com.example.suco.service.tienich.qua.user;
 
-import com.example.suco.dto.tienich.qua.quydoi.DoiQuaDto;
+import com.example.suco.dto.tienich.qua.quydoi.TuiQuaDTO;
 import com.example.suco.model.*;
 import com.example.suco.repository.*;
 import com.example.suco.repository.tienich.qua.DoiQuaRepository;
@@ -21,7 +21,7 @@ public class DoiQuaService {
     @Autowired private QuaRepository quaRepository;
 
 @Transactional
-public boolean thucHienDoiQua(String uid, DoiQuaDto dto) {
+public boolean thucHienDoiQua(String uid, TuiQuaDTO dto) {
 
     LocalDateTime now = LocalDateTime.now();
 
@@ -51,16 +51,16 @@ public boolean thucHienDoiQua(String uid, DoiQuaDto dto) {
     userRepository.save(user);
 
     // 5. GỘP QUÀ
-    Optional<DoiQua> existing =
+    Optional<TuiQua> existing =
             doiQuaRepository.findByUserIdAndQuaId(uid, dto.getQuaId());
 
     if (existing.isPresent()) {
-        DoiQua item = existing.get();
+        TuiQua item = existing.get();
         item.setSoLuong(item.getSoLuong() + 1);
         doiQuaRepository.save(item);
 
     } else {
-        DoiQua newItem = new DoiQua();
+        TuiQua newItem = new TuiQua();
         newItem.setUserId(uid);
         newItem.setQuaId(dto.getQuaId());
         newItem.setSoLuong(1);
@@ -70,15 +70,15 @@ public boolean thucHienDoiQua(String uid, DoiQuaDto dto) {
 
     return true;
 }
-public List<DoiQuaDto> getMyGifts(String uid) {
+public List<TuiQuaDTO> getMyGifts(String uid) {
 
     return doiQuaRepository.getMyGiftsWithQua(uid)
         .stream()
         .map(obj -> {
-            DoiQua d = (DoiQua) obj[0];
+            TuiQua d = (TuiQua) obj[0];
             Qua q = (Qua) obj[1];
 
-            DoiQuaDto dto = new DoiQuaDto();
+            TuiQuaDTO dto = new TuiQuaDTO();
             dto.setQuaId(q.getId());
             dto.setTenQua(q.getTen());
             dto.setLoai(q.getLoai().name());

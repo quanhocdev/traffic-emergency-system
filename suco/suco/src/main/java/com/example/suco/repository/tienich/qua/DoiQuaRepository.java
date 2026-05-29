@@ -1,6 +1,6 @@
 package com.example.suco.repository.tienich.qua;
 
-import com.example.suco.model.DoiQua;
+import com.example.suco.model.TuiQua;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface DoiQuaRepository extends JpaRepository<DoiQua, Long> {
-    List<DoiQua> findByUserId(String userId);
-    Optional<DoiQua> findByUserIdAndQuaId(String userId, Long quaId);
+public interface DoiQuaRepository extends JpaRepository<TuiQua, Long> {
+    List<TuiQua> findByUserId(String userId);
+    Optional<TuiQua> findByUserIdAndQuaId(String userId, Long quaId);
     @Query("""
 SELECT d, q
 FROM DoiQua d
