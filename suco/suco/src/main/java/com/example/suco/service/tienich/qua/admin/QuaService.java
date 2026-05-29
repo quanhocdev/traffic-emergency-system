@@ -1,179 +1,238 @@
-    package com.example.suco.service.tienich.qua.admin;
+package com.example.suco.service.tienich.qua.admin;
 
-    import com.example.suco.dto.tienich.qua.quanly.QuaDto;
+import com.example.suco.dto.tienich.qua.quanly.QuaRequestDTO;
+import com.example.suco.dto.tienich.qua.quanly.QuaResponseDTO;
+import com.example.suco.mapper.QuaMapper;
 import com.example.suco.model.Qua;
 import com.example.suco.repository.tienich.qua.QuaRepository;
+import com.example.suco.service.tienich.qua.admin.validation.ValidateService;
+import com.example.suco.service.tienich.qua.admin.storage.FileStorageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-    import org.springframework.stereotype.Service;
-    import java.io.IOException;
-    import java.nio.file.*;
-    import java.util.List;
-    import java.util.UUID;
-    import org.slf4j.Logger;
-    import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-    @Service
-    public class QuaService {
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
-        private static final Logger log = LoggerFactory.getLogger(QuaService.class);
+@Service
+@Transactional
+public class QuaService {
+
+    private static final Logger log = LoggerFactory.getLogger(QuaService.class);
+
+    @Autowired
+    private QuaRepository quaRepository;
+
+    @Autowired
+private ValidateService validateService;
+
+@Autowired
+private FileStorageService fileStorageService;
 
 
-        @Autowired
-        private QuaRepository quaRepository;
 
-        private final String uploadDir = System.getProperty("user.dir") + "/uploads/";
+    /**
+     * Lấy tất cả quà
+     */
+    public List<QuaResponseDTO> getAllQua() {
+        return quaRepository.findAll()
+                .stream()
+                .map(QuaMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
 
-        public List<Qua> getAllQua() {
-            return quaRepository.findAll();
-        }
+    /**
+     * Lấy quà theo id
+     */
+    public QuaResponseDTO getQuaById(Long id) {
+        Qua qua = quaRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Không tìm thấy quà với id = " + id));
 
-        public void addQua(QuaDto quaDto) throws IOException {
+        return QuaMapper.toResponseDTO(qua);
+    }
 
-    
-        log.info("\n===== Admin tạo quà =====");
-        log.info("\nTên: {}", quaDto.getTen());
-        log.info("\nLoại: {}", quaDto.getLoai());
-        log.info("\nĐiểm nhập vào: {}", quaDto.getDiem());
-        log.info("\nMô tả: {}", quaDto.getMoTa());
-        log.info("\nNgày kết thúc: {}", quaDto.getNgayKetThuc());
+    /**
+     * Tạo quà
+     */
+    public QuaResponseDTO createQua(QuaRequestDTO requestDTO) {
 
-        if (quaDto.getDiem() == null) {
-            log.error("ADD QUÀ FAILED - diem NULL | dto={}", quaDto);
-            throw new IllegalArgumentException("Điểm đổi quà không được để trống");
-        }
-        if (quaDto.getDiem() <= 0) {
-            log.error("ADD QUÀ FAILED - diem Không hợp lệ | dto={}", quaDto);
-            throw new IllegalArgumentException("Điểm đổi quà phải lớn hơn 0");
-        }
+        log.info("===== Admin tạo quà =====");
+        log.info("Tên: {}", requestDTO.getTen());
+        log.info("Loại: {}", requestDTO.getLoai());
+        log.info("Điểm: {}", requestDTO.getDiem());
 
-            String fileName = "default.png";
-            if (quaDto.getHinhAnh() != null && !quaDto.getHinhAnh().isEmpty()) {
-                fileName = UUID.randomUUID().toString() + "_" + quaDto.getHinhAnh().getOriginalFilename();
-                Path uploadPath = Paths.get(uploadDir);
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
-                }
-                try (var inputStream = quaDto.getHinhAnh().getInputStream()) {
-                    Files.copy(inputStream, uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
-                }
-            }
+        // Validate
+        validateService.validateCreate(requestDTO);
 
-            Qua qua = new Qua();
-            qua.setTen(quaDto.getTen());
-            qua.setLoai(quaDto.getLoai());
-            qua.setMoTa(quaDto.getMoTa());
-            qua.setDiem(quaDto.getDiem());
-            qua.setHinhAnh(fileName);
-            qua.setNgayKetThuc(quaDto.getNgayKetThuc());
+        Qua qua = QuaMapper.toEntity(requestDTO);
+
+        // Mặc định trạng thái
+        if (qua.getTrangThai() == null) {
             qua.setTrangThai(Qua.TrangThai.HOAT_DONG);
-            // Trong file QuaService.java
-    if (quaDto.getLoai() == Qua.LoaiQua.VOUCHER) {
-        qua.setGiaTriGiamPercent(quaDto.getGiaTriGiamPercent());
-        // Đảm bảo quaDto.getGiaTriToiDa() trả về BigDecimal
-        qua.setGiaTriToiDa(quaDto.getGiaTriToiDa()); 
-    } else {
+        }
+
+        // Upload ảnh
+        String fileName = "default.png";
+
+if (requestDTO.getHinhAnh() != null
+        && !requestDTO.getHinhAnh().isEmpty()) {
+
+    fileName = fileStorageService.saveFile(
+            requestDTO.getHinhAnh());
+}
+
+        qua.setHinhAnh(fileName);
+
+        // Logic Voucher
+        if (requestDTO.getLoai() == Qua.LoaiQua.VOUCHER) {
+
+            qua.setGiaTriGiamPercent(
+                    requestDTO.getGiaTriGiamPercent());
+
+            qua.setGiaTriToiDa(
+                    requestDTO.getGiaTriToiDa());
+
+        } else {
+
             qua.setGiaTriGiamPercent(null);
             qua.setGiaTriToiDa(null);
         }
-            quaRepository.save(qua);
-    log.info("\nQuà đã được lưu với ID: {}", qua.getId());
-    log.info("\nLoại quà: {}", qua.getLoai());
-    log.info("\nĐiểm cần đổi: {}", qua.getDiem());
-    log.info("\nTrạng thái: {}", qua.getTrangThai());
-    log.info("\nNgày kết thúc: {}", qua.getNgayKetThuc());
-        }
 
-        public void deleteQua(Long id) {
-        Qua qua = quaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy quà với id = " + id));
+        Qua savedQua = quaRepository.save(qua);
 
-        quaRepository.delete(qua);
+        log.info("Tạo quà thành công ID={}", savedQua.getId());
+
+        return QuaMapper.toResponseDTO(savedQua);
     }
-    public void updateQua(Long id, QuaDto dto) {
 
-            log.info("===== Bắt đầu cập nhật quà =====");
-        log.info("ID: {}", id);
-        log.info("DTO loai: {}", dto.getLoai());
-        log.info("DTO trangThai: {}", dto.getTrangThai());
-        log.info("DTO giamPercent: {}", dto.getGiaTriGiamPercent());
-        log.info("DTO toiDa: {}", dto.getGiaTriToiDa());
-        log.info("DTO ngayKetThuc: {}", dto.getNgayKetThuc());
+    /**
+     * Cập nhật quà (PATCH)
+     */
+    public QuaResponseDTO updateQua(
+            Long id,
+            QuaRequestDTO requestDTO) {
+
+        log.info("===== Cập nhật quà ID={} =====", id);
 
         Qua qua = quaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy quà"));
+                .orElseThrow(() ->
+                        new RuntimeException("Không tìm thấy quà"));
 
-        if (dto.getTen() != null) {
-            qua.setTen(dto.getTen());
+        if (requestDTO.getTen() != null) {
+            qua.setTen(requestDTO.getTen());
         }
 
-        if (dto.getMoTa() != null) {
-            qua.setMoTa(dto.getMoTa());
+        if (requestDTO.getMoTa() != null) {
+            qua.setMoTa(requestDTO.getMoTa());
         }
 
-        if (dto.getLoai() != null) {
-            qua.setLoai(dto.getLoai());
+        if (requestDTO.getLoai() != null) {
+            qua.setLoai(requestDTO.getLoai());
         }
 
-        if (dto.getDiem() != null) {
-            qua.setDiem(dto.getDiem());
-        }
+        validateService.validateUpdate(requestDTO);
 
-        if (dto.getNgayKetThuc() != null) {
-    qua.setNgayKetThuc(dto.getNgayKetThuc());
+if (requestDTO.getDiem() != null) {
+    qua.setDiem(requestDTO.getDiem());
 }
 
-        if (dto.getTrangThai() != null) {
-            qua.setTrangThai(dto.getTrangThai());
+        if (requestDTO.getNgayKetThuc() != null) {
+            qua.setNgayKetThuc(
+                    requestDTO.getNgayKetThuc());
         }
 
-        if (dto.getHinhAnh() != null && !dto.getHinhAnh().isEmpty()) {
-            String fileName = UUID.randomUUID().toString() + "_" + dto.getHinhAnh().getOriginalFilename();
-            Path uploadPath = Paths.get(uploadDir);
+        if (requestDTO.getTrangThai() != null) {
+            qua.setTrangThai(
+                    requestDTO.getTrangThai());
+        }
 
-            try {
-                if (!Files.exists(uploadPath)) {
-                    Files.createDirectories(uploadPath);
+        // Upload ảnh mới
+        if (requestDTO.getHinhAnh() != null
+        && !requestDTO.getHinhAnh().isEmpty()) {
+
+    String fileName =
+            fileStorageService.saveFile(
+                    requestDTO.getHinhAnh());
+
+    qua.setHinhAnh(fileName);
+}
+
+        // Logic voucher
+        if (requestDTO.getLoai() != null) {
+
+            if (requestDTO.getLoai()
+                    == Qua.LoaiQua.VOUCHER) {
+
+                if (requestDTO.getGiaTriGiamPercent()
+                        != null) {
+
+                    qua.setGiaTriGiamPercent(
+                            requestDTO.getGiaTriGiamPercent());
                 }
 
-                try (var inputStream = dto.getHinhAnh().getInputStream()) {
-                    Files.copy(inputStream, uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+                if (requestDTO.getGiaTriToiDa()
+                        != null) {
+
+                    qua.setGiaTriToiDa(
+                            requestDTO.getGiaTriToiDa());
                 }
 
-                qua.setHinhAnh(fileName);
-            } catch (IOException e) {
-                throw new RuntimeException("Không thể lưu ảnh quà", e);
+            } else {
+
+                qua.setGiaTriGiamPercent(null);
+                qua.setGiaTriToiDa(null);
             }
         }
 
-        // logic voucher
-        if (dto.getLoai() != null) {
-        qua.setLoai(dto.getLoai());
+        Qua updatedQua = quaRepository.save(qua);
 
-    if (dto.getLoai() == Qua.LoaiQua.VOUCHER) {
-        if (dto.getGiaTriGiamPercent() != null) {
-            qua.setGiaTriGiamPercent(dto.getGiaTriGiamPercent());
-        }
-        if (dto.getGiaTriToiDa() != null) {
-            qua.setGiaTriToiDa(dto.getGiaTriToiDa());
-        }
-    }
-}
-        
-        
+        log.info("Cập nhật thành công ID={}", id);
 
-        quaRepository.save(qua);
-        log.info("===== Giá trị sau khi cập nhật =====");
-        log.info("NEW giamPercent: {}", qua.getGiaTriGiamPercent());
-        log.info("NEW toiDa: {}", qua.getGiaTriToiDa());
-        log.info("NEW trangThai: {}", qua.getTrangThai());
+        return QuaMapper.toResponseDTO(updatedQua);
     }
-    public void updateStatus(Long id, Qua.TrangThai trangThai) {
+
+    /**
+     * Xóa quà
+     */
+    public void deleteQua(Long id) {
+
         Qua qua = quaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy"));
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Không tìm thấy quà với id = " + id));
+
+        quaRepository.delete(qua);
+
+        log.info("Đã xóa quà ID={}", id);
+    }
+
+    /**
+     * Đổi trạng thái
+     */
+    public void updateStatus(
+            Long id,
+            Qua.TrangThai trangThai) {
+
+        Qua qua = quaRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Không tìm thấy quà"));
 
         qua.setTrangThai(trangThai);
 
         quaRepository.save(qua);
+
+        log.info(
+                "Đổi trạng thái quà ID={} -> {}",
+                id,
+                trangThai
+        );
     }
-    }
+}
