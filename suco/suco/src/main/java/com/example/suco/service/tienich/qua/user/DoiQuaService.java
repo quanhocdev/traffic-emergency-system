@@ -1,12 +1,13 @@
 package com.example.suco.service.tienich.qua.user;
 
-import com.example.suco.dto.tienich.qua.quydoi.TuiQuaDTO;
+import com.example.suco.dto.tienich.qua.quydoi.TuiQuaResponseDTO;
+import com.example.suco.mapper.DoiQuaMapper;
 import com.example.suco.model.*;
-import com.example.suco.repository.*;
+import com.example.suco.repository.tienich.qua.TuiQuaRepository;
 import com.example.suco.repository.tienich.qua.DoiQuaRepository;
 import com.example.suco.repository.tienich.qua.QuaRepository;
 import com.example.suco.repository.vanhanh.UserRepository;
-
+import com.example.suco.dto.tienich.qua.quydoi.DoiQuaRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +17,20 @@ import java.util.List;
 
 @Service
 public class DoiQuaService {
-    @Autowired private DoiQuaRepository doiQuaRepository;
-    @Autowired private UserRepository userRepository;
-    @Autowired private QuaRepository quaRepository;
+    @Autowired
+    private DoiQuaRepository doiQuaRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private QuaRepository quaRepository;
+    
+    @Autowired
+    private TuiQuaRepository tuiQuaRepository;
 
 @Transactional
-public boolean thucHienDoiQua(String uid, TuiQuaDTO dto) {
+public boolean thucHienDoiQua(String uid, DoiQuaRequestDTO dto) {
 
     LocalDateTime now = LocalDateTime.now();
 
@@ -41,53 +50,56 @@ public boolean thucHienDoiQua(String uid, TuiQuaDTO dto) {
         throw new RuntimeException("Quà đã hết thời gian");
     }
 
-    // 3. Check điểm
-    if (user.getTotalPoints() < qua.getDiem()) {
-        throw new RuntimeException("Không đủ điểm");
-    }
-
     // 4. Trừ điểm
-    user.setTotalPoints(user.getTotalPoints() - qua.getDiem());
+    int tongDiem = qua.getDiem() * dto.getSoLuong();
+
+    // Check đủ điểm
+    if (user.getTotalPoints() < tongDiem){
+        throw new RuntimeException("Không đủ điểm để đổi số lượng này");
+    }
+    user.setTotalPoints(user.getTotalPoints() - tongDiem);
     userRepository.save(user);
 
     // 5. GỘP QUÀ
     Optional<TuiQua> existing =
-            doiQuaRepository.findByUserIdAndQuaId(uid, dto.getQuaId());
+            tuiQuaRepository.findByUserIdAndQuaId(uid, dto.getQuaId());
 
     if (existing.isPresent()) {
         TuiQua item = existing.get();
-        item.setSoLuong(item.getSoLuong() + 1);
-        doiQuaRepository.save(item);
+        item.setSoLuong(
+        item.getSoLuong() + dto.getSoLuong()
+);
+        tuiQuaRepository.save(item);
 
     } else {
         TuiQua newItem = new TuiQua();
         newItem.setUserId(uid);
         newItem.setQuaId(dto.getQuaId());
-        newItem.setSoLuong(1);
+        newItem.setSoLuong(dto.getSoLuong());
 
-        doiQuaRepository.save(newItem);
+        tuiQuaRepository.save(newItem);
     }
+
+    // 6. Lưu lịch sử đổi quà
+    DoiQua lichSu = DoiQuaMapper.toDoiQuaEntity(
+        dto,
+        uid,
+        qua.getDiem() * dto.getSoLuong()
+);
+
+doiQuaRepository.save(lichSu);
 
     return true;
 }
-public List<TuiQuaDTO> getMyGifts(String uid) {
+public List<TuiQuaResponseDTO> getMyGifts(String uid)
+{
 
-    return doiQuaRepository.getMyGiftsWithQua(uid)
+    return tuiQuaRepository.getMyGiftsWithQua(uid)
         .stream()
         .map(obj -> {
-            TuiQua d = (TuiQua) obj[0];
+            TuiQua t = (TuiQua) obj[0];
             Qua q = (Qua) obj[1];
-
-            TuiQuaDTO dto = new TuiQuaDTO();
-            dto.setQuaId(q.getId());
-            dto.setTenQua(q.getTen());
-            dto.setLoai(q.getLoai().name());
-            dto.setSoLuong(d.getSoLuong());
-            dto.setGiaTriGiamPercent(q.getGiaTriGiamPercent());
-            dto.setGiaTriToiDa(q.getGiaTriToiDa());
-            dto.setNgayKetThuc(q.getNgayKetThuc());
-
-            return dto;
+            return DoiQuaMapper.toTuiQuaResponse(t, q);
         })
         .toList();
 }

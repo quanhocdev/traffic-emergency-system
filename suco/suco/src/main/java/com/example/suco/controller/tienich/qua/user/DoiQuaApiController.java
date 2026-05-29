@@ -1,12 +1,12 @@
 package com.example.suco.controller.tienich.qua.user;
 
-import com.example.suco.dto.tienich.qua.quydoi.TuiQuaDTO;
-import com.example.suco.repository.tienich.qua.DoiQuaRepository;
+import com.example.suco.repository.tienich.qua.TuiQuaRepository;
 import com.example.suco.repository.tienich.qua.QuaRepository;
 import com.example.suco.service.tienich.qua.user.DoiQuaService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
-
+import com.example.suco.dto.tienich.qua.quydoi.DoiQuaRequestDTO;
+import com.example.suco.dto.tienich.qua.quydoi.TuiQuaResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +20,6 @@ public class DoiQuaApiController {
 
     @Autowired
     private DoiQuaService doiQuaService;
-
-    @Autowired
-    private DoiQuaRepository doiQuaRepository;
-
-    @Autowired
-    private QuaRepository quaRepository;
 
     // ================== HÀM LẤY UID ==================
     private String getUidFromHeader(String authHeader) throws Exception {
@@ -43,7 +37,7 @@ public class DoiQuaApiController {
     @PostMapping("/exchange")
 public ResponseEntity<?> exchange(
         @RequestHeader("Authorization") String authHeader,
-        @RequestBody TuiQuaDTO dto
+        @RequestBody DoiQuaRequestDTO dto
 ) {
     try {
         String uid = getUidFromHeader(authHeader);
@@ -74,7 +68,7 @@ public ResponseEntity<?> getMyGifts(@RequestHeader("Authorization") String authH
         String uid = getUidFromHeader(authHeader);
 
         // 2. Gọi Service để xử lý tác vụ
-        List<TuiQuaDTO> result = doiQuaService.getMyGifts(uid);
+        List<TuiQuaResponseDTO> result = doiQuaService.getMyGifts(uid);
 
         // 3. Trả về kết quả
         return ResponseEntity.ok(result);

@@ -2,7 +2,7 @@ package com.example.suco.service.sos.hoadon.user.validation;
 
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.Qua;
-import com.example.suco.repository.tienich.qua.DoiQuaRepository;
+import com.example.suco.repository.tienich.qua.TuiQuaRepository;
 import com.example.suco.repository.tienich.qua.QuaRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ public class VoucherService {
     private QuaRepository quaRepository;
 
     @Autowired
-    private DoiQuaRepository doiQuaRepository;
+    private TuiQuaRepository doiQuaRepository;
 
     public BigDecimal apDungVoucher(
             HoaDon hd,
