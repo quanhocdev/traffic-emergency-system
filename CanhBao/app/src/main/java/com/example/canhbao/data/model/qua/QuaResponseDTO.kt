@@ -1,6 +1,8 @@
-package com.example.canhbao.data.model.qua.danhsach
+package com.example.canhbao.data.model.qua
 
 import java.math.BigDecimal
+
+
 
 data class QuaResponseDTO(
     val id: Long,
@@ -14,3 +16,5 @@ data class QuaResponseDTO(
     val ngayKetThuc: String?,
     val trangThai: String
 )
+
+

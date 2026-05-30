@@ -1,5 +1,6 @@
 package com.example.canhbao.viewmodel
 
+import android.annotation.SuppressLint
 import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -7,9 +8,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.HoaDonDto
+import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import com.example.canhbao.data.model.LichSuDto
-import com.example.canhbao.data.model.TuiDto
+import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
 import com.google.android.gms.tasks.Tasks
@@ -32,10 +33,10 @@ class LichSuViewModel : ViewModel() {
     var uiState: LichSuUiState by mutableStateOf(LichSuUiState.Loading)
         private set
 
-    var listTuiQua by mutableStateOf<List<TuiDto>>(emptyList())
+    var listTuiQua by mutableStateOf<List<TuiQuaResponseDTO>>(emptyList())
         private set
 
-    var pendingInvoicesMap by mutableStateOf<Map<Long, HoaDonDto>>(emptyMap())
+    var pendingInvoicesMap by mutableStateOf<Map<Long, ThanhToanResponseDTO>>(emptyMap())
         private set
 
     private var mStompClient: StompClient? = null
@@ -140,6 +141,7 @@ class LichSuViewModel : ViewModel() {
     }
 
     // ================= WEBSOCKET =================
+    @SuppressLint("CheckResult")
     private fun connectWebSocket() {
         if (mStompClient?.isConnected == true) return
 
@@ -163,15 +165,21 @@ class LichSuViewModel : ViewModel() {
         }
 
         mStompClient?.topic("/topic/user/invoice")?.subscribe({ topicMessage ->
-            val hoaDon = Gson().fromJson(topicMessage.payload, HoaDonDto::class.java)
+
+            val thanhToan = Gson().fromJson(
+                topicMessage.payload,
+                ThanhToanResponseDTO::class.java
+            )
 
             viewModelScope.launch {
+                val hoaDonId = thanhToan.hoaDonId ?: return@launch
+
                 val currentMap = pendingInvoicesMap.toMutableMap()
 
-                if (hoaDon.trangThai == "PAID") {
-                    currentMap.remove(hoaDon.sosId)
+                if (thanhToan.trangThai == "SUCCESS") {
+                    currentMap.remove(hoaDonId)
                 } else {
-                    currentMap[hoaDon.sosId] = hoaDon
+                    currentMap[hoaDonId] = thanhToan
                 }
 
                 pendingInvoicesMap = currentMap
@@ -183,55 +191,52 @@ class LichSuViewModel : ViewModel() {
         }, {
             Log.e("WebSocket", "Invoice error: ${it.message}")
         })
-
-        mStompClient?.connect()
     }
+        // ================= UTILS =================
+        fun clearInvoice(sosId: Long) {
+            val currentMap = pendingInvoicesMap.toMutableMap()
+            currentMap.remove(sosId)
+            pendingInvoicesMap = currentMap
+        }
 
-    // ================= UTILS =================
-    fun clearInvoice(sosId: Long) {
-        val currentMap = pendingInvoicesMap.toMutableMap()
-        currentMap.remove(sosId)
-        pendingInvoicesMap = currentMap
-    }
+        // ================= AUDIO =================
+        fun playRecording(url: String, id: Long) {
+            viewModelScope.launch(Dispatchers.IO) {
+                try {
+                    if (currentlyPlayingId == id) {
+                        stopPlayback()
+                        return@launch
+                    }
 
-    // ================= AUDIO =================
-    fun playRecording(url: String, id: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                if (currentlyPlayingId == id) {
                     stopPlayback()
-                    return@launch
+
+                    mediaPlayer = MediaPlayer().apply {
+                        setDataSource(url)
+                        prepare()
+                        start()
+                        currentlyPlayingId = id
+                        setOnCompletionListener { stopPlayback() }
+                    }
+
+                } catch (e: Exception) {
+                    currentlyPlayingId = null
+                    Log.e("MediaPlayer", "Play error: ${e.message}")
                 }
-
-                stopPlayback()
-
-                mediaPlayer = MediaPlayer().apply {
-                    setDataSource(url)
-                    prepare()
-                    start()
-                    currentlyPlayingId = id
-                    setOnCompletionListener { stopPlayback() }
-                }
-
-            } catch (e: Exception) {
-                currentlyPlayingId = null
-                Log.e("MediaPlayer", "Play error: ${e.message}")
             }
         }
-    }
 
-    fun stopPlayback() {
-        mediaPlayer?.apply {
-            if (isPlaying) stop()
-            release()
+        fun stopPlayback() {
+            mediaPlayer?.apply {
+                if (isPlaying) stop()
+                release()
+            }
+            mediaPlayer = null
+            currentlyPlayingId = null
         }
-        mediaPlayer = null
-        currentlyPlayingId = null
-    }
 
-    override fun onCleared() {
-        super.onCleared()
-        mStompClient?.disconnect()
-        stopPlayback()
+        override fun onCleared() {
+            super.onCleared()
+            mStompClient?.disconnect()
+            stopPlayback()
+        }
     }
-}

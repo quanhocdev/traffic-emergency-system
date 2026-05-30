@@ -3,7 +3,6 @@
     import com.example.canhbao.data.model.suco.baocao.response.BaoCaoResponse
     import com.example.canhbao.data.model.suco.baocao.request.BaoCaoSuCoRequest
     import com.example.canhbao.data.model.CameraMapDto
-    import com.example.canhbao.data.model.DoiQuaDto
     import com.example.canhbao.data.model.DoiTienDto
     import com.example.canhbao.data.model.GoiDto
     import com.example.canhbao.data.model.LichSuDto
@@ -15,8 +14,7 @@
     import com.example.canhbao.data.model.ThongKeQuyDto
     import com.example.canhbao.data.model.TinHieuSOSRequest
     import com.example.canhbao.data.model.TruSoMapDto
-    import com.example.canhbao.data.model.TuiDto
-    import com.example.canhbao.data.model.qua.danhsach.QuaResponseDTO
+    import com.example.canhbao.data.model.qua.QuaResponseDTO
     import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
     import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
     import retrofit2.Response
@@ -49,11 +47,11 @@
         @GET("/api/tru-so/all")
         suspend fun getAllTruSo(): List<TruSoMapDto>
 
-        @GET("api/camera/all")
+        @GET("/api/camera/all")
         suspend fun getAllCamera(): List<CameraMapDto>
 
         // URL: BASE_URL + /api/tin-hieu-sos + /submit
-        @POST("api/tin-hieu-sos/submit")
+        @POST("/api/tin-hieu-sos/submit")
         suspend fun submitSOS(
             @Header("Authorization") token: String,
             @Body request: TinHieuSOSRequest
@@ -116,7 +114,7 @@
         @POST("/api/hoa-don/xac-nhan")
         suspend fun confirmPayment(
             @Header("Authorization") token: String,
-            @Path("id") id: Long,
+            @Query("id") id: Long,
             @Query("quaId") quaId: Long?
         ): Response<Map<String, Any>>
 

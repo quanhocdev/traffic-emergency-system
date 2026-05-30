@@ -31,7 +31,7 @@ import coil.compose.AsyncImage
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.viewmodel.QuaViewModel
 import android.util.Log
-import com.example.canhbao.data.model.qua.danhsach.QuaResponseDTO
+import com.example.canhbao.data.model.qua.QuaResponseDTO
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
