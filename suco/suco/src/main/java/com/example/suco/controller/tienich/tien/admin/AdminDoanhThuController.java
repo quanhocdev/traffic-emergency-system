@@ -10,16 +10,23 @@ import com.example.suco.service.tienich.tien.admin.DoanhThuService;
 
 @Controller
 @RequestMapping("/admin/quan-ly-doanh-thu")
-public class AdminDoanhThuContronller {
-    
+
+public class AdminDoanhThuController {
+
     @Autowired
     private DoanhThuService doanhThuService;
 
     @GetMapping
     public String viewDoanhThu(Model model) {
-        model.addAttribute("tongDoanhThu", doanhThuService.layTongDoanhThu());
-        model.addAttribute("listHoaDon", doanhThuService.layDanhSachHoaDon());
+
+        model.addAttribute("tongDoanhThu",
+                doanhThuService.layTongDoanhThu());
+
+        model.addAttribute("listDoanhThu",
+                doanhThuService.layDanhSachDoanhThu());
+
         model.addAttribute("activePage", "quan-ly-doanh-thu");
+
         return "admin/quan-ly-doanh-thu";
     }
 }

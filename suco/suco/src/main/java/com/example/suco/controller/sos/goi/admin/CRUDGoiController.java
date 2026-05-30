@@ -22,6 +22,7 @@ public class CRUDGoiController {
     @GetMapping
     public String hienThiQuanLyGoi(Model model) {
         model.addAttribute("listGoi", goiService.getAllGoi());
+        model.addAttribute("goiMoi", new GoiRequestDTO());
         model.addAttribute("activePage", "quan-ly-goi");
         return "admin/quan-ly-goi";
     }

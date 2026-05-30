@@ -6,7 +6,7 @@ import com.example.suco.mapper.QuaMapper;
 import com.example.suco.model.Qua;
 import com.example.suco.repository.tienich.qua.QuaRepository;
 import com.example.suco.service.tienich.qua.admin.validation.ValidateService;
-import com.example.suco.service.tienich.qua.admin.storage.FileStorageService;
+import com.example.suco.service.tienich.qua.admin.storage.FileStorageQuaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +33,7 @@ public class QuaService {
 private ValidateService validateService;
 
 @Autowired
-private FileStorageService fileStorageService;
+private FileStorageQuaService fileStorageService;
 
 
 

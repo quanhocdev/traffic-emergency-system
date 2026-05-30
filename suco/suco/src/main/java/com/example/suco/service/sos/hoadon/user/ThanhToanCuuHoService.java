@@ -8,7 +8,7 @@ import com.example.suco.model.HoaDon;
 import com.example.suco.model.ThanhToanHoaDon;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
 import com.example.suco.repository.sos.hoadon.ThanhToanHoaDonRepository;
-import com.example.suco.service.sos.hoadon.user.validation.StatusService;
+import com.example.suco.service.sos.hoadon.user.validation.StatusUserService;
 import com.example.suco.service.sos.hoadon.user.validation.VoucherService;
 import com.example.suco.service.sos.hoadon.user.validation.total.TotalAmountService;
 
@@ -31,7 +31,7 @@ public class ThanhToanCuuHoService {
     private VoucherService voucherService;
 
     @Autowired
-    private StatusService statusService;
+    private StatusUserService statusService;
 
     @Autowired
     private TotalAmountService totalAmountService;

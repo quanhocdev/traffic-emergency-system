@@ -62,8 +62,6 @@
                     <th>Người dùng</th>
                     <th>Nội dung</th>
                     <th>Thành tiền</th>
-                    <th>Giảm giá</th>
-                    <th>Thực thu</th>
                     <th class="text-center">Trạng thái</th>
                   </tr>
                 </thead>
@@ -72,23 +70,8 @@
                     <td class="ps-4" th:text="${hd.id}">1</td>
                     <td th:text="${hd.sosId}">101</td>
                     <td th:text="${hd.userId}">user123</td>
-                    <td th:text="${hd.tenSos}">Cứu hộ xe máy</td>
-                    <td
-                      th:text="${#numbers.formatDecimal(hd.thanhTien, 0, 'COMMA', 0, 'POINT')}"
-                    >
-                      50,000
-                    </td>
-                    <td
-                      th:text="${#numbers.formatDecimal(hd.soTienGiam, 0, 'COMMA', 0, 'POINT')}"
-                    >
-                      0
-                    </td>
-                    <td
-                      th:text="${#numbers.formatDecimal(hd.tongThanhToan, 0, 'COMMA', 0, 'POINT')}"
-                      class="fw-bold text-success"
-                    >
-                      50,000
-                    </td>
+                    <td th:text="${hd.noiDungXuLy}">Gói SOS 1 tháng</td>
+                    <td th:text="${hd.thanhTien}"></td>
                     <td class="text-center">
                       <span
                         th:if="${hd.trangThai == 'PAID'}"

@@ -8,7 +8,7 @@ import java.nio.file.*;
 import java.util.UUID;
 
 @Service
-public class FileStorageService {
+public class FileStorageQuaService {
 
     private final String uploadDir =
             System.getProperty("user.dir") + "/uploads/";

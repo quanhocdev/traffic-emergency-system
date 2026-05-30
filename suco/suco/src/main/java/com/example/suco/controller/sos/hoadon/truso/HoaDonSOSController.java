@@ -5,7 +5,6 @@ import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
-import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.sos.hoadon.truso.HoaDonCuuHoService;
 
 import jakarta.servlet.http.HttpSession;

@@ -5,7 +5,7 @@ import com.example.suco.model.HoaDon;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StatusService {
+public class StatusUserService {
 
     public void validateHoaDon(
             HoaDon hd,

@@ -4,7 +4,7 @@ import com.example.suco.model.MuaGoi;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StatusService {
+public class StatusGoiService {
 
     public void validateCanBuy(MuaGoi mg) {
 
