@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.SuCoUserDto
-import com.example.canhbao.data.model.qua.danhsach.QuaResponseDTO
+import com.example.canhbao.data.model.qua.QuaResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoApi
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
