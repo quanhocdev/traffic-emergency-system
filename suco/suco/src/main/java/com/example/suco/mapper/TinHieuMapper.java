@@ -1,5 +1,6 @@
 package com.example.suco.mapper;
 
+import com.example.suco.dto.sos.tinhieu.TheoDoiTinHieuResponseDTO;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
 import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 import com.example.suco.model.TinHieuSOS;
@@ -65,4 +66,45 @@ public class TinHieuMapper {
 
         return dto;
     }
+    public TheoDoiTinHieuResponseDTO toTheoDoiDto(TinHieuSOS sos) {
+
+    TheoDoiTinHieuResponseDTO dto =
+            new TheoDoiTinHieuResponseDTO();
+
+    dto.setId(sos.getId());
+
+    dto.setViDo(sos.getViDo());
+    dto.setKinhDo(sos.getKinhDo());
+
+    dto.setDiaChi(sos.getDiaChi());
+
+    dto.setGhiChu(sos.getGhiChu());
+    dto.setHinhAnh(sos.getHinhAnh());
+    dto.setGhiAm(sos.getGhiAm());
+
+    dto.setTrangThai(sos.getTrangThai());
+
+    dto.setCreatedAt(sos.getCreatedAt());
+
+    dto.setIdTruSoTiepNhan(
+            sos.getIdTruSoTiepNhan()
+    );
+
+    if (sos.getHoaDon() != null) {
+
+        dto.setHoaDonId(
+                sos.getHoaDon().getId()
+        );
+
+        dto.setThanhTien(
+                sos.getHoaDon().getThanhTien()
+        );
+
+        dto.setTrangThaiHoaDon(
+                sos.getHoaDon().getTrangThai()
+        );
+    }
+
+    return dto;
+}
 }
