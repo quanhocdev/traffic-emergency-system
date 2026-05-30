@@ -23,8 +23,10 @@ public class HoaDon {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "hoaDon", cascade = CascadeType.ALL)
-private List<ThanhToanHoaDon> thanhToans;
+    private List<ThanhToanHoaDon> thanhToans;
 
+    @Column(name = "trang_thai")
+    private String trangThai; // PENDING, PAID, CANCELLED, FAILED
 
     public HoaDon() { this.createdAt = LocalDateTime.now(); }
 
@@ -52,4 +54,11 @@ public void setThanhToans(List<ThanhToanHoaDon> thanhToans) {
     this.thanhToans = thanhToans;
 }
 
+public String getTrangThai() {
+    return trangThai;
+}
+
+public void setTrangThai(String trangThai) {
+    this.trangThai = trangThai;
+}
 }
