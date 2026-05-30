@@ -13,6 +13,7 @@ public class HoaDonResponseDTO {
     private BigDecimal thanhTien;
     private LocalDateTime createdAt;
 
+    private String trangThai;
     public Long getId() {
         return id;
     }
@@ -54,5 +55,11 @@ public class HoaDonResponseDTO {
     }
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+    public String getTrangThai() {
+        return trangThai;
+    }
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
     }
 }

@@ -20,7 +20,7 @@ public class HoaDonCuuHoMapper {
         hd.setTrusoId(trusoId);
         hd.setUserId(userId);
         hd.setNoiDungXuLy(req.getNoiDungXuLy());
-
+        hd.setTrangThai("PENDING");
         hd.setThanhTien(gia);
         return hd;
     }
@@ -37,6 +37,7 @@ public class HoaDonCuuHoMapper {
         dto.setNoiDungXuLy(hd.getNoiDungXuLy());
         dto.setThanhTien(hd.getThanhTien());
         dto.setCreatedAt(hd.getCreatedAt());
+        dto.setTrangThai(hd.getTrangThai());
 
         return dto;
     }
