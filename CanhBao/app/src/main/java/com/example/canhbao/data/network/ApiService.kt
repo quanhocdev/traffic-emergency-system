@@ -14,6 +14,9 @@
     import com.example.canhbao.data.model.ThongKeQuyDto
     import com.example.canhbao.data.model.TinHieuSOSRequest
     import com.example.canhbao.data.model.TruSoMapDto
+    import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
+    import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
+    import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
     import com.example.canhbao.data.model.qua.QuaResponseDTO
     import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
     import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
@@ -111,12 +114,22 @@
             @Header("Authorization") token: String
         ): List<TuiQuaResponseDTO>
 
+        @GET("/api/hoa-don/user/danh-sach")
+        suspend fun getHoaDonUser(
+            @Header("Authorization") token: String
+        ): List<HoaDonUserResponseDTO>
+
+        @GET("/api/hoa-don/user/{id}")
+        suspend fun getHoaDonDetail(
+            @Header("Authorization") token: String,
+            @Path("id") id: Long
+        ): HoaDonUserResponseDTO
+
         @POST("/api/hoa-don/xac-nhan")
         suspend fun confirmPayment(
             @Header("Authorization") token: String,
-            @Query("id") id: Long,
-            @Query("quaId") quaId: Long?
-        ): Response<Map<String, Any>>
+            @Body request: ThanhToanRequestDTO
+        ): Response<ThanhToanResponseDTO>
 
         @POST("/api/doi-tien/thuc-hien")
         suspend fun thucHienDoiTien(

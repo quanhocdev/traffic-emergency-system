@@ -1,6 +1,6 @@
 package com.example.suco.dto.suco.baocao;
 
-import com.example.suco.model.HoaDon;
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonUserResponseDTO;
 
 public class LichSuDto {
     private Long id;
@@ -16,14 +16,14 @@ public class LichSuDto {
     private String tenTruSoTiepNhan;
     private String thoiGian;
     private String diaChi; 
-    private HoaDon hoaDon;
+    private HoaDonUserResponseDTO hoaDon;
 
     public LichSuDto() {}
 
     // Cập nhật Constructor (Sửa lại constructor để nhận thêm diaChi)
     public LichSuDto(Long id, String loai, String tieuDe, String moTa, String trangThaiXuLy, 
                      String trangThaiDuyet, String hinhAnhUrl, Double viDo, Double kinhDo, 
-                     String ghiAmUrl, String tenTruSoTiepNhan, String thoiGian, String diaChi, HoaDon hoaDon) {
+                     String ghiAmUrl, String tenTruSoTiepNhan, String thoiGian, String diaChi, HoaDonUserResponseDTO hoaDon) {
         this.id = id;
         this.loai = loai;
         this.tieuDe = tieuDe;
@@ -43,8 +43,8 @@ public class LichSuDto {
     public String getDiaChi() { return diaChi; }
     public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
 
-    public HoaDon getHoaDon() { return hoaDon; }
-    public void setHoaDon(HoaDon hoaDon) { this.hoaDon = hoaDon; }
+    public HoaDonUserResponseDTO getHoaDon() { return hoaDon; }
+    public void setHoaDon(HoaDonUserResponseDTO hoaDon) { this.hoaDon = hoaDon; }
     
     // Getters và Setters...
     public Long getId() { return id; }

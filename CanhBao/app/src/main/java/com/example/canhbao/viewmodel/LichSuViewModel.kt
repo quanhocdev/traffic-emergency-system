@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import com.example.canhbao.data.model.LichSuDto
+import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
@@ -95,17 +96,22 @@ class LichSuViewModel : ViewModel() {
     }
 
     // ================= ACTIONS =================
-    fun confirmPayment(hoaDonId: Long, quaId: Long?, sosId: Long) {
+    fun confirmPayment(hoaDonId: Long, quaId: Long?) {
         viewModelScope.launch {
             try {
                 val isSuccessful = withContext(Dispatchers.IO) {
                     val token = getToken()
-                    val response = api.confirmPayment(token, hoaDonId, quaId)
+                    val request = ThanhToanRequestDTO(
+                        hoaDonId = hoaDonId,
+                        quaId = quaId,
+                        phuongThucThanhToan = "MOMO"
+                    )
+
+                    val response = api.confirmPayment(token, request)
                     response.isSuccessful
                 }
 
                 if (isSuccessful) {
-                    clearInvoice(sosId)
                     fetchHistory()
                 }
 
@@ -193,9 +199,9 @@ class LichSuViewModel : ViewModel() {
         })
     }
         // ================= UTILS =================
-        fun clearInvoice(sosId: Long) {
+        fun clearInvoice(hoaDonId: Long) {
             val currentMap = pendingInvoicesMap.toMutableMap()
-            currentMap.remove(sosId)
+            currentMap.remove(hoaDonId)
             pendingInvoicesMap = currentMap
         }
 

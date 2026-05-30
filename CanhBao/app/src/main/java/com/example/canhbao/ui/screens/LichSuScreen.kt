@@ -32,6 +32,8 @@ import com.example.canhbao.viewmodel.LichSuUiState
 import com.example.canhbao.viewmodel.LichSuViewModel
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.canhbao.data.network.AppConfig
+import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
+import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,13 +45,15 @@ fun LichSuScreen(
     val sosRed = Color(0xFFD32F2F)
 
     // State quản lý UI
-    var tempSelectedInvoice by remember { mutableStateOf<HoaDonDto?>(null) }
+    var tempSelectedInvoice by remember {
+        mutableStateOf<ThanhToanResponseDTO?>(null)
+    }
     var selectedMainTab by remember { mutableIntStateOf(0) }
     val mainTabs = listOf("SỰ CỐ", "SOS")
     var selectedStatusTab by remember { mutableIntStateOf(0) }
     val statusFilters = listOf("Chờ tiếp nhận", "Đang xử lý", "Đã xong", "Đã hủy")
     var showPayDialog by remember { mutableStateOf(false) }
-    var selectedVoucher by remember { mutableStateOf<TuiDto?>(null) }
+    var selectedVoucher by remember { mutableStateOf<TuiQuaResponseDTO?>(null) }
 
     // 1. CẬP NHẬT: Gọi fetchHistory chỉ với uid (Bỏ maThietBi)
     LaunchedEffect(Unit) {
@@ -155,15 +159,15 @@ fun LichSuScreen(
                             items(filteredData, key = { it.id }) { item ->
                                 HistoryItemUI(
                                     item = item,
-                                    pendingInvoice = viewModel.pendingInvoicesMap[item.id],
+                                    pendingInvoice = viewModel.pendingInvoicesMap[item.hoaDon?.id],
                                     isPlaying = viewModel.currentlyPlayingId == item.id,
                                     onPlayAudio = { url -> viewModel.playRecording(url, item.id) },
-                                    // 2. CẬP NHẬT: Bỏ maThietBi trong cancelOrder
                                     onCancelClick = { viewModel.cancelOrder(item) },
                                     onPayClick = {
-                                        tempSelectedInvoice = viewModel.pendingInvoicesMap[item.id]
+                                        tempSelectedInvoice = viewModel.pendingInvoicesMap[item.hoaDon?.id]
                                         showPayDialog = true
-                                    }
+                                    },
+                                    pendingMap = viewModel.pendingInvoicesMap
                                 )
                             }
                         }
@@ -180,13 +184,15 @@ fun LichSuScreen(
     // --- DIALOG THANH TOÁN ---
     if (showPayDialog && tempSelectedInvoice != null) {
         val inv = tempSelectedInvoice!!
-        val giaGoc = inv.thanhTien
+        val giaGoc = inv.thanhTien?.toDouble() ?: 0.0
+
         var soTienGiam = 0.0
-        selectedVoucher?.let { voucher ->
-            val phanTram = (voucher.giaTriGiamPercent ?: 0) / 100.0
+
+        selectedVoucher?.let { v ->
+            val phanTram = 0.1 // fallback 10% (tạm)
             soTienGiam = giaGoc * phanTram
-            voucher.giaTriToiDa?.let { if (soTienGiam > it) soTienGiam = it }
         }
+
         val tongThanhToanHienTai = (giaGoc - soTienGiam).coerceAtLeast(0.0)
 
         AlertDialog(
@@ -194,12 +200,12 @@ fun LichSuScreen(
             confirmButton = {
                 Button(onClick = {
                     // 4. CẬP NHẬT: Bỏ maThietBi trong confirmPayment
-                        viewModel.confirmPayment(
-                            inv.id,
-                            selectedVoucher?.quaId,
-                            inv.sosId
-                        )
+                    val hoaDonId = inv.hoaDonId ?: return@Button
 
+                    viewModel.confirmPayment(
+                        hoaDonId,
+                        selectedVoucher?.quaId
+                    )
                     showPayDialog = false
                     selectedVoucher = null
                 }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))) {
@@ -259,11 +265,12 @@ fun LichSuScreen(
 @Composable
 fun HistoryItemUI(
     item: LichSuDto,
-    pendingInvoice: HoaDonDto?,
+    pendingInvoice: ThanhToanResponseDTO?,
     isPlaying: Boolean,
     onPlayAudio: (String) -> Unit,
     onCancelClick: () -> Unit,
-    onPayClick: () -> Unit
+    onPayClick: () -> Unit,
+    pendingMap: Map<Long, ThanhToanResponseDTO>
 ) {
     val isSOS = item.loai == "SOS"
     val activeColor = if (isSOS) Color(0xFFD32F2F) else Color(0xFF1976D2)
@@ -365,7 +372,9 @@ fun HistoryItemUI(
                     }
 
                     // Nút Thanh toán
-                    if (pendingInvoice != null && pendingInvoice.trangThai == "PENDING") {
+                    val invoice = pendingMap[item.hoaDon?.id]
+
+                    if (invoice?.trangThai == "PENDING") {
                         Button(
                             onClick = onPayClick,
                             modifier = Modifier.height(36.dp),
