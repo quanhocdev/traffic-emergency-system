@@ -1,5 +1,8 @@
 package com.example.canhbao.data.model
 
+import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
+import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
+
 
 data class LichSuDto(
     val id: Long,
@@ -15,5 +18,6 @@ data class LichSuDto(
     val thongTinTiepNhan: String?,
     val thoiGian: String?,
     val diaChi: String?,
-    val hoaDon: HoaDonDto?
+    val hoaDon: HoaDonUserResponseDTO?,
+    val thanhToan: ThanhToanResponseDTO?
 )

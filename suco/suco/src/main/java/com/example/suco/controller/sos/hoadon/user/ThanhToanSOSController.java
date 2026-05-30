@@ -2,8 +2,8 @@ package com.example.suco.controller.sos.hoadon.user;
 
 import com.example.suco.dto.sos.hoadon.payment.ThanhToanRequestDTO;
 import com.example.suco.dto.sos.hoadon.payment.ThanhToanResponseDTO;
-import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
-import com.example.suco.service.sos.hoadon.truso.HoaDonCuuHoService;
+import com.example.suco.mapper.HoaDonCuuHoMapper;
+import com.example.suco.service.sos.hoadon.user.HoaDonService;
 import com.example.suco.service.sos.hoadon.user.ThanhToanCuuHoService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -13,8 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-
-import java.util.HashMap;
 import java.util.Map;
 @RestController
 @RequestMapping("/api/hoa-don")
@@ -24,11 +22,24 @@ public class ThanhToanSOSController {
     @Autowired 
     private ThanhToanCuuHoService thanhToanSOSService;
 
+    @Autowired
+private HoaDonService hoaDonService;
+
     
     @Autowired 
     private SimpMessagingTemplate messagingTemplate;
 
 
+
+   @GetMapping("/user/danh-sach")
+public ResponseEntity<?> getHoaDonCuaUser(@RequestHeader("Authorization") String authHeader) {
+    return ResponseEntity.ok(hoaDonService.getHoaDonUser(authHeader));
+}
+@GetMapping("/user/{id}")
+public ResponseEntity<?> getChiTiet(@PathVariable Long id,
+                                    @RequestHeader("Authorization") String authHeader) {
+    return ResponseEntity.ok(hoaDonService.getChiTietHoaDon(id, authHeader));
+}
 @PostMapping("/xac-nhan")
 @Transactional
 public ResponseEntity<?> xacNhanThanhToan(

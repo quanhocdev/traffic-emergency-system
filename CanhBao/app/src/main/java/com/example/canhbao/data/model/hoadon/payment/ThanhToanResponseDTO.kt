@@ -24,5 +24,5 @@ data class ThanhToanResponseDTO (
 
     val message: String? = null,
 
-    val createdAt: LocalDateTime? = null
+    val createdAt: String? = null
 )

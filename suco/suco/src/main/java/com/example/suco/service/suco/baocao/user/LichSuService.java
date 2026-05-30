@@ -6,7 +6,7 @@ import com.example.suco.model.TinHieuSOS;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
-
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonUserResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
@@ -61,7 +61,7 @@ public class LichSuService {
 
             for (TinHieuSOS s : sosList) {
 
-                HoaDon hd = hoaDonRepository
+                HoaDonUserResponseDTO hd = hoaDonRepository
                         .findFirstBySosIdOrderByIdDesc(s.getId())
                         .orElse(null);
 

@@ -9,4 +9,5 @@ public interface HoaDonCuuHoRepository extends JpaRepository<HoaDon, Long> {
     Optional<HoaDon> findBySosId(Long sosId);
     Optional<HoaDon> findFirstBySosIdOrderByIdDesc(Long sosId);
     List<HoaDon> findByTrusoIdOrderByIdDesc(Long trusoId);
+    List<HoaDon> findByUserIdOrderByIdDesc(String userId);
 }
