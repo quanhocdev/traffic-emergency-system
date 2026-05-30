@@ -1,0 +1,108 @@
+package com.example.suco.dto.suco.baocao;
+
+import java.time.LocalDateTime;
+
+public class TheoDoiBaoCaoResponseDTO {
+
+  
+
+    private Long id;
+
+    private String tenLoai;
+
+    private String moTa;
+
+    private String hinhAnhUrl;
+
+    private String diaChi;
+
+    private String trangThaiDuyet;
+
+    private String trangThaiXuLy;
+
+    private Integer doTinCay;
+
+    private Long idTruSoTiepNhan;
+
+    private String tenTruSoTiepNhan;
+
+    private String mucDoNghiemTrong;
+
+    private LocalDateTime thoiGianTao;
+
+
+    // getter/setter
+    public Long getId() {
+        return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+    public String getTenLoai() {
+        return tenLoai;
+    }
+    public void setTenLoai(String tenLoai) {
+        this.tenLoai = tenLoai;
+    }
+    public String getMoTa() {
+        return moTa;
+    }
+    public void setMoTa(String moTa) {
+        this.moTa = moTa;
+    }
+    public String getHinhAnhUrl() {
+        return hinhAnhUrl;
+    }
+    public void setHinhAnhUrl(String hinhAnhUrl) {
+        this.hinhAnhUrl = hinhAnhUrl;
+    }
+    public String getDiaChi() {
+        return diaChi;
+    }
+    public void setDiaChi(String diaChi) {
+        this.diaChi = diaChi;
+    }
+    public String getTrangThaiDuyet() {
+        return trangThaiDuyet;
+    }
+    public void setTrangThaiDuyet(String trangThaiDuyet) {
+        this.trangThaiDuyet = trangThaiDuyet;
+    }
+    public String getTrangThaiXuLy() {
+        return trangThaiXuLy;
+    }
+    public void setTrangThaiXuLy(String trangThaiXuLy) {
+        this.trangThaiXuLy = trangThaiXuLy;
+    }
+    public String getMucDoNghiemTrong() {
+        return mucDoNghiemTrong;
+    }
+    public void setMucDoNghiemTrong(String mucDoNghiemTrong) {
+        this.mucDoNghiemTrong = mucDoNghiemTrong;
+    }
+    public Integer getDoTinCay() {
+        return doTinCay;
+    }
+    public void setDoTinCay(Integer doTinCay) {
+        this.doTinCay = doTinCay;
+    }
+    public LocalDateTime getThoiGianTao() {
+        return thoiGianTao;
+    }
+    public void setThoiGianTao(LocalDateTime thoiGianTao) {
+        this.thoiGianTao = thoiGianTao;
+    }
+    public String getTenTruSoTiepNhan() {
+        return tenTruSoTiepNhan;
+    }
+    public void setTenTruSoTiepNhan(String tenTruSoTiepNhan) {
+        this.tenTruSoTiepNhan = tenTruSoTiepNhan;
+    }
+    public Long getIdTruSoTiepNhan() {
+        return idTruSoTiepNhan;
+    }
+    public void setIdTruSoTiepNhan(Long idTruSoTiepNhan) {
+        this.idTruSoTiepNhan = idTruSoTiepNhan;
+    }
+
+}

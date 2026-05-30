@@ -20,6 +20,8 @@
     import com.example.canhbao.data.model.qua.QuaResponseDTO
     import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
     import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
+    import com.example.canhbao.data.model.sos.tinhieu.TheoDoiTinHieuResponseDTO
+    import com.example.canhbao.data.model.suco.baocao.TheoDoiBaoCaoResponseDTO
     import retrofit2.Response
     import retrofit2.http.Body
     import retrofit2.http.GET
@@ -38,6 +40,17 @@
             @Header("Authorization") token: String,
             @Body request: BaoCaoSuCoRequest
         ): Response<BaoCaoResponse>
+
+        @GET("/api/sos/theo-doi")
+        suspend fun getTheoDoiSOS(
+            @Header("Authorization") token: String
+        ): List<TheoDoiTinHieuResponseDTO>
+
+        @GET("/api/su-co/theo-doi")
+        suspend fun getTheoDoiSuCo(
+            @Header("Authorization") token: String
+        ): List<TheoDoiBaoCaoResponseDTO>
+
         @PATCH("/api/su-co/{id}")
         suspend fun cancelSuCo(
             @Header("Authorization") token: String,
