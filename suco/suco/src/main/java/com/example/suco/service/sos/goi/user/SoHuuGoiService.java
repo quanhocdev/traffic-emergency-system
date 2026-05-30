@@ -7,7 +7,7 @@ import com.example.suco.model.Goi;
 import com.example.suco.model.MuaGoi;
 import com.example.suco.repository.sos.goi.CRUDGoiRepository;
 import com.example.suco.repository.sos.goi.MuaGoiRepository;
-import com.example.suco.service.sos.goi.user.validation.StatusService;
+import com.example.suco.service.sos.goi.user.validation.StatusGoiService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -26,7 +26,7 @@ public class SoHuuGoiService {
     private MuaGoiRepository muaGoiRepository;
 
     @Autowired
-    private StatusService statusService;
+    private StatusGoiService statusService;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;

@@ -13,9 +13,9 @@ import java.nio.file.*;
 import java.util.Base64;
 
 @Service
-public class FileStorageService {
+public class FileStorageSucoService {
 
-    private static final Logger log = LoggerFactory.getLogger(FileStorageService.class);
+    private static final Logger log = LoggerFactory.getLogger(FileStorageSucoService.class);
 
     public String saveBase64ToFile(String base64Data, String prefix) {
         try {

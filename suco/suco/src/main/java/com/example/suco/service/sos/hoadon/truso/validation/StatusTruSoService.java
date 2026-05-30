@@ -4,7 +4,7 @@ import com.example.suco.model.TinHieuSOS;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StatusService {
+public class StatusTruSoService {
     
     public void validate(TinHieuSOS sos, Long trusoId) {
 

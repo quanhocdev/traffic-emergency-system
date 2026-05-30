@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.suco.model.HoaDon;
+import com.example.suco.model.ThanhToanHoaDon;
 import com.example.suco.repository.tienich.tien.DoanhThuRepository;
 
 @Service
@@ -19,7 +20,7 @@ public class DoanhThuService {
         return doanhThuRepository.getTongDoanhThu();
     }
 
-    public List<HoaDon> layDanhSachHoaDon() {
-        return doanhThuRepository.getDanhSachHoaDon();
+        public List<ThanhToanHoaDon> layDanhSachDoanhThu() {
+        return doanhThuRepository.getDanhSachDoanhThu();
     }
 }

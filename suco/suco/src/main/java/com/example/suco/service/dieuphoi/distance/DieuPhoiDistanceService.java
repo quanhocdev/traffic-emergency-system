@@ -3,7 +3,7 @@ package com.example.suco.service.dieuphoi.distance;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DistanceService {
+public class DieuPhoiDistanceService {
 
     public double distance(double lat1, double lon1, double lat2, double lon2) {
 

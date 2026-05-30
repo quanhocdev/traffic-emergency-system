@@ -6,7 +6,7 @@ import com.example.suco.repository.vanhanh.TruSoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ch.hsr.geohash.GeoHash;
-import com.example.suco.service.dieuphoi.distance.DistanceService;
+import com.example.suco.service.dieuphoi.distance.DieuPhoiDistanceService;
 
 import java.util.*;
 import org.slf4j.Logger;
@@ -19,7 +19,7 @@ public class GeoHashService {
     private TruSoRepository truSoRepository;
 
     @Autowired
-    private DistanceService distanceService;
+    private DieuPhoiDistanceService distanceService;
 
     private static final Logger log = LoggerFactory.getLogger(GeoHashService.class);
 

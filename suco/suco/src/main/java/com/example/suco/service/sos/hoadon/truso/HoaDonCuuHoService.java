@@ -1,11 +1,10 @@
 package com.example.suco.service.sos.hoadon.truso;
 
 import com.example.suco.model.*;
-import com.example.suco.repository.*;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.repository.vanhanh.TruSoRepository;
-import com.example.suco.service.sos.hoadon.truso.validation.StatusService;
+import com.example.suco.service.sos.hoadon.truso.validation.StatusTruSoService;
 import com.example.suco.service.sos.hoadon.truso.validation.VipSOSService;
 import com.example.suco.service.sos.hoadon.truso.validation.total.TotalService;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonRequestDTO;
@@ -27,7 +26,7 @@ public class HoaDonCuuHoService {
         @Autowired private VipSOSService vipSOSService;
 @Autowired private HoaDonCuuHoMapper hoaDonMapper;
 @Autowired private TotalService totalAmountService;
-@Autowired private StatusService statusService;
+@Autowired private StatusTruSoService statusService;
 
 
     @Transactional

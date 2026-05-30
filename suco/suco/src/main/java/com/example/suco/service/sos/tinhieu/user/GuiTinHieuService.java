@@ -11,7 +11,7 @@ import com.example.suco.service.dieuphoi.engine.DispatchEngineService;
 import com.example.suco.service.location.GeocodingService;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.builder.SosResponseBuilder;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.create.CreateService;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.file.FileStorageService;
+import com.example.suco.service.sos.tinhieu.user.workflow.gui.file.FileStorageSucoService;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.resolver.TruSoResolver;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.vip.VipService;
 
@@ -29,7 +29,7 @@ public class GuiTinHieuService {
     private CreateService createService;
 
     @Autowired
-    private FileStorageService fileStorageService;
+    private FileStorageSucoService fileStorageService;
 
     @Autowired
     private GeocodingService geocodingService;
