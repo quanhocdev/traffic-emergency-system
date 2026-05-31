@@ -4,14 +4,17 @@
     <meta charset="UTF-8" />
     <title>Quản Lý Doanh Thu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
@@ -26,7 +29,10 @@
       <div th:replace="fragments/admin/sidebar :: sidebar"></div>
 
       <div class="main-content">
+        <!-- TITLE -->
         <h2 class="page-title">Quản Lý Doanh Thu</h2>
+
+        <!-- TOTAL -->
         <div class="row mb-4">
           <div class="col-md-4">
             <div class="card text-white bg-success shadow-sm border-0">
@@ -34,66 +40,91 @@
                 <h6 class="text-uppercase mb-2" style="opacity: 0.8">
                   Tổng Doanh Thu
                 </h6>
+
                 <h3
                   class="card-title mb-0"
                   th:text="${#numbers.formatDecimal(tongDoanhThu, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"
                 >
                   0 VNĐ
                 </h3>
-                <small class="mt-2 d-block"
-                  >Tổng số tiền từ hóa đơn đã thanh toán.</small
-                >
+
+                <small class="mt-2 d-block">
+                  Tổng tiền từ các giao dịch thành công.
+                </small>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- TABLE -->
         <div class="card shadow-sm border-0">
           <div class="card-header bg-white py-3 border-bottom">
-            <h5 class="m-0 font-weight-bold text-primary">Danh sách Hóa Đơn</h5>
+            <h5 class="m-0 text-primary">Danh sách thanh toán</h5>
           </div>
+
           <div class="card-body p-0">
             <div class="table-responsive">
-              <table class="table table-hover align-middle mb-0" id="dataTable">
+              <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th class="ps-4">ID</th>
-                    <th>Mã SOS</th>
-                    <th>Người dùng</th>
-                    <th>Nội dung</th>
-                    <th>Thành tiền</th>
+                    <th>ID TT</th>
+                    <th>Hóa đơn</th>
+                    <th>Trụ sở</th>
+                    <th>Phương thức</th>
+                    <th>Tổng tiền</th>
                     <th class="text-center">Trạng thái</th>
+                    <th class="text-center">Hành động</th>
                   </tr>
                 </thead>
+
                 <tbody>
-                  <tr th:each="hd : ${listHoaDon}">
-                    <td class="ps-4" th:text="${hd.id}">1</td>
-                    <td th:text="${hd.sosId}">101</td>
-                    <td th:text="${hd.userId}">user123</td>
-                    <td th:text="${hd.noiDungXuLy}">Gói SOS 1 tháng</td>
-                    <td th:text="${hd.thanhTien}"></td>
+                  <tr th:each="hd : ${listDoanhThu}">
+                    <td th:text="${hd.id}"></td>
+                    <td th:text="${hd.sosId}"></td>
+                    <td th:text="${hd.trusoId}"></td>
+                    <td th:text="${hd.userId}"></td>
+                    <td th:text="${hd.noiDungXuLy}"></td>
+
+                    <td
+                      th:text="${#numbers.formatDecimal(hd.thanhTien, 0, 'COMMA', 0, 'POINT')}"
+                    ></td>
+
                     <td class="text-center">
                       <span
                         th:if="${hd.trangThai == 'PAID'}"
                         class="badge bg-success"
-                        >Đã thanh toán</span
                       >
+                        Thành công
+                      </span>
+
                       <span
                         th:if="${hd.trangThai == 'PENDING'}"
                         class="badge bg-warning text-dark"
-                        >Chờ thanh toán</span
                       >
+                        Chờ xử lý
+                      </span>
+
                       <span
-                        th:if="${hd.trangThai != 'PAID' and hd.trangThai != 'PENDING'}"
-                        th:text="${hd.trangThai}"
+                        th:if="${hd.trangThai == 'FAILED'}"
                         class="badge bg-secondary"
-                        >Khác</span
                       >
+                        Thất bại
+                      </span>
+                    </td>
+
+                    <td class="text-center">
+                      <button
+                        class="btn btn-sm btn-primary"
+                        th:attr="onclick=|openDetail(${hd.id})|"
+                      >
+                        Xem chi tiết
+                      </button>
                     </td>
                   </tr>
-                  <tr th:if="${#lists.isEmpty(listHoaDon)}">
-                    <td colspan="8" class="text-center py-4 text-muted">
-                      Không có dữ liệu hóa đơn
+
+                  <tr th:if="${#lists.isEmpty(listDoanhThu)}">
+                    <td colspan="7" class="text-center py-4 text-muted">
+                      Không có dữ liệu
                     </td>
                   </tr>
                 </tbody>
@@ -104,7 +135,42 @@
       </div>
     </div>
 
+    <!-- MODAL -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Chi tiết hóa đơn</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <div id="hoaDonInfo" class="mb-3 text-muted">Đang tải...</div>
+
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Phương thức</th>
+                  <th>Số tiền</th>
+                  <th>Trạng thái</th>
+                </tr>
+              </thead>
+
+              <tbody id="paymentTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script th:src="@{/js/admin/quan-ly-doanh-thu.js}"></script>
     <script th:src="@{/js/fragments/admin/sidebar.js}"></script>
   </body>
