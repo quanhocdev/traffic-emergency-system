@@ -11,6 +11,12 @@ public class StatusUserService {
             HoaDon hd,
             String uid
     ) {
+        if ("PAID".equals(hd.getTrangThai())) {
+    throw new RuntimeException(
+        "Hóa đơn đã được thanh toán"
+    );
+}
+
 
         if (
                 hd.getUserId() == null

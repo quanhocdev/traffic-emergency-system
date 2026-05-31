@@ -49,6 +49,8 @@ class TheoDoiTinHieuViewModel : ViewModel() {
     var pendingInvoicesMap by mutableStateOf<Map<Long, ThanhToanResponseDTO>>(emptyMap())
         private set
 
+    var selectedPayment by mutableStateOf<ThanhToanResponseDTO?>(null)
+        private set
     private var mStompClient: StompClient? = null
 
     private var mediaPlayer: MediaPlayer? = null
@@ -363,5 +365,38 @@ class TheoDoiTinHieuViewModel : ViewModel() {
         super.onCleared()
         mStompClient?.disconnect()
         stopPlayback()
+    }
+    fun loadPaymentDetail(
+        hoaDonId: Long
+    ) {
+
+        viewModelScope.launch {
+
+            try {
+
+                val result =
+                    withContext(Dispatchers.IO) {
+
+                        val token = getToken()
+
+                        api.getChiTietThanhToan(
+                            token,
+                            hoaDonId
+                        )
+                    }
+
+                selectedPayment = result
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    "TheoDoiTinHieu",
+                    "load payment detail error: ${e.message}"
+                )
+            }
+        }
+    }
+    fun clearSelectedPayment() {
+        selectedPayment = null
     }
 }

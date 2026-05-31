@@ -19,6 +19,9 @@ public class SosResponseBuilder {
     public Map<String, Object> buildSosDto(TinHieuSOS sos, TruSo truSo) {
 
     Map<String, Object> result = new HashMap<>();
+    
+        result.put("id", sos.getId());
+
 
     result.put("entity", sos);
 

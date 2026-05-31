@@ -138,6 +138,12 @@
             @Path("id") id: Long
         ): HoaDonUserResponseDTO
 
+        @GET("/api/hoa-don/user/{hoaDonId}/thanh-toan")
+        suspend fun getChiTietThanhToan(
+            @Header("Authorization") token: String,
+            @Path("hoaDonId") hoaDonId: Long
+        ): ThanhToanResponseDTO
+
         @POST("/api/hoa-don/xac-nhan")
         suspend fun confirmPayment(
             @Header("Authorization") token: String,
