@@ -52,3 +52,35 @@ body {
 .toggle-btn i {
   transition: transform 0.3s;
 }
+
+.table {
+  font-size: 14px;
+}
+
+.table thead th {
+  font-weight: 600;
+  color: #334155;
+}
+
+.table tbody tr:hover {
+  background: #f8fafc;
+  transition: 0.2s;
+}
+.badge {
+  padding: 6px 10px;
+  font-weight: 500;
+  border-radius: 8px;
+}
+.btn-primary {
+  border-radius: 8px;
+  font-size: 13px;
+  padding: 4px 10px;
+}
+.modal-content {
+  border-radius: 12px;
+  border: none;
+}
+
+.modal-header {
+  border-bottom: 1px solid #e2e8f0;
+}
