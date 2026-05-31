@@ -135,17 +135,13 @@ fun NavGraph(authViewModel: AuthViewModel) {
             )
         ) { backStackEntry ->
 
-            val hoaDonId =
-                backStackEntry.arguments
-                    ?.getLong("hoaDonId")
-                    ?: 0L
-
             ChiTietHoaDonScreen(
-                hoaDonId = hoaDonId,
+                hoaDonId =
+                    backStackEntry.arguments?.getLong("hoaDonId")
+                        ?: 0L,
                 navController = navController
             )
         }
-
         composable("tui_screen") {
             TuiScreen(
                 viewModel = quaViewModel,
@@ -156,7 +152,8 @@ fun NavGraph(authViewModel: AuthViewModel) {
         composable("lich_su") {
             LichSuScreen(
                 navController = navController,
-                viewModel = lichSuViewModel
+                baoCaoViewModel = viewModel(),
+                tinHieuViewModel = viewModel()
             )
         }
 

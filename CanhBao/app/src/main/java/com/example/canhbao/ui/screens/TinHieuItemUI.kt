@@ -31,7 +31,8 @@ fun TinHieuItemUI(
     isPlaying: Boolean,
     onPlayAudio: (String) -> Unit,
     onCancelClick: () -> Unit,
-    onPayClick: () -> Unit
+    onPayClick: () -> Unit,
+    onViewInvoiceDetail: () -> Unit
 ) {
 
     val activeColor = Color(0xFFD32F2F)
@@ -166,16 +167,28 @@ fun TinHieuItemUI(
                     }
                 }
 
-                if (invoice?.trangThai == "PENDING") {
+                when (invoice?.trangThai) {
 
-                    Button(
-                        onClick = onPayClick
-                    ) {
-                        Icon(
-                            Icons.Default.Payment,
-                            null
-                        )
-                        Text(" Thanh toán")
+                    "PENDING" -> {
+
+                        Button(
+                            onClick = onPayClick
+                        ) {
+                            Icon(
+                                Icons.Default.Payment,
+                                null
+                            )
+                            Text(" Thanh toán")
+                        }
+                    }
+
+                    "SUCCESS" -> {
+
+                        Button(
+                            onClick = onViewInvoiceDetail
+                        ) {
+                            Text("Xem hóa đơn")
+                        }
                     }
                 }
             }

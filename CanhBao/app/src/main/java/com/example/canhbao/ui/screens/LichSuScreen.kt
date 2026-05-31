@@ -218,6 +218,13 @@ fun LichSuScreen(
                                         tempSelectedInvoice =
                                             tinHieuViewModel.pendingInvoicesMap[item.hoaDonId]
                                         showPayDialog = true
+                                    },
+                                    onViewInvoiceDetail = {
+                                        item.hoaDonId?.let { hoaDonId ->
+                                            navController.navigate(
+                                                "chi_tiet_hoa_don/$hoaDonId"
+                                            )
+                                        }
                                     }
                                 )
                             }
