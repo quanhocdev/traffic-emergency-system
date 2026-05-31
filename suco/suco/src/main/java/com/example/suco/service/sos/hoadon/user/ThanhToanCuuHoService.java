@@ -3,7 +3,7 @@ package com.example.suco.service.sos.hoadon.user;
 import com.example.suco.dto.sos.hoadon.payment.ThanhToanRequestDTO;
 import com.example.suco.dto.sos.hoadon.payment.ThanhToanResponseDTO;
 import com.example.suco.mapper.ThanhToanCuuHoMapper;
-
+import com.example.suco.service.xacthuc.user.token.FirebaseService;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.ThanhToanHoaDon;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
@@ -38,6 +38,9 @@ public class ThanhToanCuuHoService {
 
     @Autowired
     private ThanhToanCuuHoMapper mapper;
+
+    @Autowired
+private FirebaseService firebaseService;
 
     @Transactional
     public ThanhToanResponseDTO thanhToanHoaDon(
@@ -92,9 +95,53 @@ public class ThanhToanCuuHoService {
                 thanhToan
         );
 
+        
+
         // Entity -> Response
         return mapper.toDTO(
                 thanhToan
         );
     }
+    public ThanhToanResponseDTO getChiTietThanhToan(
+        Long hoaDonId,
+        String authHeader
+) {
+
+    String uid;
+
+    try {
+        uid = firebaseService.extractUid(authHeader);
+    } catch (Exception e) {
+        throw new RuntimeException(
+                "Token không hợp lệ"
+        );
+    }
+
+    HoaDon hoaDon = hoaDonRepository
+            .findById(hoaDonId)
+            .orElseThrow(() ->
+                    new RuntimeException(
+                            "Không tìm thấy hóa đơn"
+                    )
+            );
+
+    if (!uid.equals(hoaDon.getUserId())) {
+        throw new RuntimeException(
+                "Không có quyền truy cập"
+        );
+    }
+
+    ThanhToanHoaDon thanhToan =
+        thanhToanHoaDonRepository
+                .findFirstByHoaDonIdOrderByIdDesc(
+                        hoaDonId
+                )
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Chưa có giao dịch thanh toán"
+                        )
+                );
+
+    return mapper.toDTO(thanhToan);
+}
 }

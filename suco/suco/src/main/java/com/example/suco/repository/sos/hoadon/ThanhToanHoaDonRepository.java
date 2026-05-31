@@ -26,4 +26,5 @@ public interface ThanhToanHoaDonRepository
         Long hoaDonId,
         String trangThai
     );
+    
 }

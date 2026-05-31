@@ -126,6 +126,25 @@ fun NavGraph(authViewModel: AuthViewModel) {
                 userId = currentUser?.uid ?: "GUEST"
             )
         }
+        composable(
+            route = "chi_tiet_hoa_don/{hoaDonId}",
+            arguments = listOf(
+                navArgument("hoaDonId") {
+                    type = NavType.LongType
+                }
+            )
+        ) { backStackEntry ->
+
+            val hoaDonId =
+                backStackEntry.arguments
+                    ?.getLong("hoaDonId")
+                    ?: 0L
+
+            ChiTietHoaDonScreen(
+                hoaDonId = hoaDonId,
+                navController = navController
+            )
+        }
 
         composable("tui_screen") {
             TuiScreen(

@@ -40,6 +40,18 @@ public ResponseEntity<?> getChiTiet(@PathVariable Long id,
                                     @RequestHeader("Authorization") String authHeader) {
     return ResponseEntity.ok(hoaDonService.getChiTietHoaDon(id, authHeader));
 }
+@GetMapping("/user/{hoaDonId}/thanh-toan")
+public ResponseEntity<?> getChiTietThanhToan(
+        @PathVariable Long hoaDonId,
+        @RequestHeader("Authorization") String authHeader
+) {
+    return ResponseEntity.ok(
+            thanhToanSOSService.getChiTietThanhToan(
+                    hoaDonId,
+                    authHeader
+            )
+    );
+}
 @PostMapping("/xac-nhan")
 @Transactional
 public ResponseEntity<?> xacNhanThanhToan(
