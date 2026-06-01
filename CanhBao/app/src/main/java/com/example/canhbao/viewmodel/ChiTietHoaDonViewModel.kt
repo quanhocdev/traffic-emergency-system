@@ -6,17 +6,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
+import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
+import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ChiTietHoaDonViewModel : ViewModel() {
 
-    var paymentDetail by mutableStateOf<ThanhToanResponseDTO?>(null)
+    var hoaDon by mutableStateOf<HoaDonUserResponseDTO?>(null)
         private set
 
     var isLoading by mutableStateOf(false)
@@ -40,7 +41,7 @@ class ChiTietHoaDonViewModel : ViewModel() {
         return "Bearer ${tokenResult.token}"
     }
 
-    fun loadPaymentDetail(
+    fun loadHoaDonDetail(
         hoaDonId: Long
     ) {
 
@@ -48,35 +49,73 @@ class ChiTietHoaDonViewModel : ViewModel() {
 
             try {
 
+                Log.d(
+                    "ChiTietHoaDon",
+                    "STEP 1 - Start loadHoaDonDetail"
+                )
+
                 isLoading = true
                 errorMessage = null
 
-                val result =
+                val token =
                     withContext(Dispatchers.IO) {
 
-                        val token = getToken()
+                        Log.d(
+                            "ChiTietHoaDon",
+                            "STEP 2 - Getting token"
+                        )
 
-                        api.getChiTietThanhToan(
+                        getToken()
+                    }
+
+                Log.d(
+                    "ChiTietHoaDon",
+                    "STEP 3 - Got token"
+                )
+
+                hoaDon =
+                    withContext(Dispatchers.IO) {
+
+                        Log.d(
+                            "ChiTietHoaDon",
+                            "STEP 4 - Calling getHoaDonDetail"
+                        )
+
+                        api.getHoaDonDetail(
                             token,
                             hoaDonId
                         )
                     }
 
-                paymentDetail = result
+                Log.d(
+                    "ChiTietHoaDon",
+                    "STEP 5 - Loaded hoaDon"
+                )
+
+                Log.d(
+                    "ChiTietHoaDon",
+                    "STEP 7 - Finished"
+                )
 
             } catch (e: Exception) {
+
+                Log.e(
+                    "ChiTietHoaDon",
+                    "MAIN ERROR",
+                    e
+                )
 
                 errorMessage =
                     e.message ?: "Lỗi tải dữ liệu"
 
-                Log.e(
-                    "ChiTietHoaDon",
-                    e.message ?: ""
-                )
-
             } finally {
 
                 isLoading = false
+
+                Log.d(
+                    "ChiTietHoaDon",
+                    "STEP 8 - End"
+                )
             }
         }
     }
