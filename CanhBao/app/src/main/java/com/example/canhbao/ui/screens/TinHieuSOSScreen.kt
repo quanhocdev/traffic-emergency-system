@@ -65,22 +65,11 @@ fun TinHieuSOSScreen(
                 Toast.makeText(context, "Lỗi tọa độ!", Toast.LENGTH_LONG).show()
             } else {
                 // LẤY TOKEN MỚI NHẤT TỪ FIREBASE
-                val user = FirebaseAuth.getInstance().currentUser
-                user?.getIdToken(false)?.addOnSuccessListener { result ->
-                    val token = result.token
-                    if (token != null) {
-                        // Gọi ViewModel với Token thay vì userId
-                        viewModel.guiSOS(context, lat, lng, bitmap) { success ->
-                            if (success) {
-                                Toast.makeText(context, "Đã gửi cứu hộ thành công!", Toast.LENGTH_LONG).show()
-                                navController.popBackStack()
-                            }
-                        }
-                    } else {
-                        Toast.makeText(context, "Lỗi xác thực người dùng!", Toast.LENGTH_SHORT).show()
+                viewModel.guiSOS(context, lat, lng, bitmap) { success ->
+                    if (success) {
+                        Toast.makeText(context, "Đã gửi cứu hộ thành công!", Toast.LENGTH_LONG).show()
+                        navController.popBackStack()
                     }
-                }?.addOnFailureListener {
-                    Toast.makeText(context, "Không thể lấy token bảo mật!", Toast.LENGTH_SHORT).show()
                 }
             }
         }

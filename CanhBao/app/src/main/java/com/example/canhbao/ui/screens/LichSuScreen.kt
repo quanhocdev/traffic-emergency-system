@@ -194,10 +194,10 @@ fun LichSuScreen(
 
                         val filtered = state.data.filter { item ->
                             when (selectedStatusTab) {
-                                0 -> item.trangThai == "PENDING"
-                                1 -> item.trangThai == "PROCESSING"
-                                2 -> item.trangThai == "COMPLETED"
-                                3 -> item.trangThai == "CANCELLED"
+                                0 -> item.trangThai == "CHO_XU_LY"
+                                1 -> item.trangThai == "DANG_XU_LY"
+                                2 -> item.trangThai == "HOAN_THANH"
+                                3 -> item.trangThai == "HUY_BO"
                                 else -> true
                             }
                         }
