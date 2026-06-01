@@ -142,6 +142,23 @@ fun NavGraph(authViewModel: AuthViewModel) {
                 navController = navController
             )
         }
+        composable(
+            route = "thanh_toan/{hoaDonId}",
+            arguments = listOf(
+                navArgument("hoaDonId") {
+                    type = NavType.LongType
+                }
+            )
+        ) { backStackEntry ->
+
+            ThanhToanScreen(
+                hoaDonId =
+                    backStackEntry.arguments?.getLong("hoaDonId")
+                        ?: 0L,
+                navController = navController
+            )
+        }
+
         composable("tui_screen") {
             TuiScreen(
                 viewModel = quaViewModel,

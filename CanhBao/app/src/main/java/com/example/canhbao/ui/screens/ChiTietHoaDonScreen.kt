@@ -15,7 +15,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,14 +30,13 @@ fun ChiTietHoaDonScreen(
     viewModel: ChiTietHoaDonViewModel = viewModel()
 ) {
 
-    val payment by androidx.compose.runtime.remember {
-        androidx.compose.runtime.derivedStateOf {
-            viewModel.paymentDetail
+    val hoaDon by remember {
+        derivedStateOf {
+            viewModel.hoaDon
         }
     }
-
     LaunchedEffect(hoaDonId) {
-        viewModel.loadPaymentDetail(hoaDonId)
+        viewModel.loadHoaDonDetail(hoaDonId)
     }
 
     Column(
@@ -53,7 +53,9 @@ fun ChiTietHoaDonScreen(
             Text("← Quay lại")
         }
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
 
         when {
 
@@ -70,7 +72,7 @@ fun ChiTietHoaDonScreen(
                 )
             }
 
-            payment != null -> {
+            hoaDon != null -> {
 
                 Card(
                     modifier = Modifier.fillMaxWidth()
@@ -82,41 +84,64 @@ fun ChiTietHoaDonScreen(
                     ) {
 
                         Text(
-                            "Chi tiết thanh toán",
+                            text = "Chi tiết hóa đơn",
                             style = MaterialTheme.typography.titleLarge
                         )
 
                         Text(
-                            "Mã thanh toán: ${payment!!.thanhToanId}"
+                            text = "Mã hóa đơn: ${hoaDon!!.id}"
                         )
 
                         Text(
-                            "Mã hóa đơn: ${payment!!.hoaDonId}"
+                            text = "Nội dung xử lý: ${hoaDon!!.noiDungXuLy}"
                         )
 
                         Text(
-                            "Phương thức: ${payment!!.phuongThucThanhToan}"
+                            text = "Chi phí: ${hoaDon!!.thanhTien}"
                         )
 
                         Text(
-                            "Trạng thái: ${payment!!.trangThai}"
+                            text = "Trạng thái: ${hoaDon!!.trangThai}"
                         )
 
                         Text(
-                            "Tiền gốc: ${payment!!.thanhTien}"
+                            text = "Ngày tạo: ${hoaDon!!.createdAt}"
                         )
 
-                        Text(
-                            "Giảm giá: ${payment!!.soTienGiam}"
+                        Spacer(
+                            modifier = Modifier.height(12.dp)
                         )
 
-                        Text(
-                            "Tổng thanh toán: ${payment!!.tongThanhToan}"
-                        )
+                        when (hoaDon!!.trangThai) {
 
-                        Text(
-                            "Ngày thanh toán: ${payment!!.createdAt}"
-                        )
+                            "PENDING" -> {
+
+                                Button(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onClick = {
+                                        navController.navigate(
+                                            "thanh_toan/${hoaDon!!.id}"
+                                        )
+                                    }
+                                ) {
+                                    Text("Thanh toán")
+                                }
+                            }
+
+                            "SUCCESS" -> {
+
+                                Button(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onClick = {
+                                        navController.navigate(
+                                            "chi_tiet_thanh_toan/${hoaDon!!.id}"
+                                        )
+                                    }
+                                ) {
+                                    Text("Xem chi tiết thanh toán")
+                                }
+                            }
+                        }
                     }
                 }
             }
