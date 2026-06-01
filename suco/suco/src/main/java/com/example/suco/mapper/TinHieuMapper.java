@@ -1,8 +1,10 @@
 package com.example.suco.mapper;
 
 import com.example.suco.dto.sos.tinhieu.TheoDoiTinHieuResponseDTO;
+import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
 import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
+import com.example.suco.model.User;
 import com.example.suco.model.TinHieuSOS;
 
 import org.springframework.stereotype.Component;
@@ -15,6 +17,30 @@ public class TinHieuMapper {
     private static final Logger log =
             LoggerFactory.getLogger(TinHieuMapper.class);
 
+
+            // Request DTO → Entity
+        public TinHieuSOS toEntity(
+        TinHieuSOSRequestDTO dto,
+        String uid,
+        User user
+) {
+    TinHieuSOS sos = new TinHieuSOS();
+
+    // user info
+    sos.setUserId(uid);
+    sos.setUser(user);
+
+    // business data
+    sos.setViDo(dto.getViDo());
+    sos.setKinhDo(dto.getKinhDo());
+    sos.setGhiChu(dto.getGhiChu());
+
+    // default state
+    sos.setTrangThai("CHO_XU_LY");
+
+    return sos;
+}
+        // Entity → Response Map DTO
     public TinHieuSOSResponseDTO mapToDTO(TinHieuSOS sos) {
 
         log.info("=== MAP SOS ID={} userId={} userRelation={} ===",
@@ -66,6 +92,8 @@ public class TinHieuMapper {
 
         return dto;
     }
+
+    // Entity → ResponseDTO cá nhân
     public TheoDoiTinHieuResponseDTO toTheoDoiDto(TinHieuSOS sos) {
 
     TheoDoiTinHieuResponseDTO dto =

@@ -6,10 +6,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-
+import com.example.suco.dto.sos.tinhieu.GuiTinHieuResponseDTO;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
-import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
-import com.example.suco.model.TinHieuSOS;
 import com.example.suco.service.sos.tinhieu.user.GuiTinHieuService;
 import com.example.suco.service.sos.tinhieu.user.HuyTinHieuService;
 import com.google.firebase.auth.FirebaseAuth;
@@ -42,14 +40,16 @@ public ResponseEntity<?> submitSOS(
 
         String uid = decodedToken.getUid();
 
-        Map<String, Object> result = tinHieuService.submitSOS(uid, dto);
+        GuiTinHieuResponseDTO result =
+        tinHieuService.submitSOS(uid, dto);
 
         return ResponseEntity.ok(
-            Map.of(
-                "success", true,
-                "id", result.get("id"),
-                "message", "Gửi SOS thành công"
-            )
+                Map.of(
+                        "success", true,
+                        "sosData", result.getSosData(),
+                        "truSoGanNhat", result.getTruSoGanNhat(),
+                        "message", "Gửi SOS thành công"
+                )
         );
 
     } catch (Exception e) {

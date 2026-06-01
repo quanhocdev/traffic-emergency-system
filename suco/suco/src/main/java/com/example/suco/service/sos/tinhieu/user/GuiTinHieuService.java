@@ -1,7 +1,9 @@
 package com.example.suco.service.sos.tinhieu.user;
 
+import com.example.suco.dto.sos.tinhieu.GuiTinHieuResponseDTO;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
-import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
+import com.example.suco.mapper.TinHieuMapper;
+import com.example.suco.repository.vanhanh.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.suco.model.TinHieuSOS;
@@ -9,13 +11,11 @@ import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.dieuphoi.engine.DispatchEngineService;
 import com.example.suco.service.location.GeocodingService;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.builder.SosResponseBuilder;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.create.CreateService;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.file.FileStorageSucoService;
+import com.example.suco.service.sos.tinhieu.user.workflow.gui.file.StorageSOSService;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.resolver.TruSoResolver;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.vip.VipService;
+import com.example.suco.model.User;
 
-import java.util.Map;
 @Service
 public class GuiTinHieuService {
 
@@ -24,12 +24,9 @@ public class GuiTinHieuService {
        
     @Autowired
     private VipService vipService;
-        
+ 
     @Autowired
-    private CreateService createService;
-
-    @Autowired
-    private FileStorageSucoService fileStorageService;
+    private StorageSOSService fileStorageService;
 
     @Autowired
     private GeocodingService geocodingService;
@@ -41,11 +38,19 @@ public class GuiTinHieuService {
     private TruSoResolver truSoResolver;
 
     @Autowired
-    private SosResponseBuilder sosResponseBuilder;
+private TinHieuMapper tinHieuMapper;
 
-    public Map<String, Object> submitSOS(String uid, TinHieuSOSRequestDTO dto) {
+@Autowired
+private UserRepository userRepository;
 
-    TinHieuSOS sos = createService.createSOS(uid, dto);
+
+    public GuiTinHieuResponseDTO submitSOS(String uid, TinHieuSOSRequestDTO dto) {
+
+
+        // Nhận request, tạo entity từ DTO
+    User user = userRepository.findByUid(uid).orElse(null);
+    TinHieuSOS sos = tinHieuMapper.toEntity(dto, uid, user);
+
 
     // Nếu người dùng đã cung cấp địa chỉ, ưu tiên sử dụng địa chỉ đó
     if (dto.getDiaChi() != null && !dto.getDiaChi().isBlank()) {
@@ -60,6 +65,7 @@ public class GuiTinHieuService {
     );
     }
 
+    // Lưu SOS để có ID trước khi xử lý file
     fileStorageService.handleFiles(sos, dto);
 
     sos = tinHieuSOSRepository.save(sos);
@@ -79,6 +85,9 @@ public class GuiTinHieuService {
 
     sos = tinHieuSOSRepository.save(sos);
 
-    return sosResponseBuilder.buildSosDto(sos, truSo);
+    return new GuiTinHieuResponseDTO(
+        tinHieuMapper.mapToDTO(sos),
+        truSo
+);
 }
 }
