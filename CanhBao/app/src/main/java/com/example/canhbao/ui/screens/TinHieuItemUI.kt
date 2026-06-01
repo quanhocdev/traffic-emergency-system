@@ -27,7 +27,6 @@ import com.example.canhbao.data.network.AppConfig
 @Composable
 fun TinHieuItemUI(
     item: TheoDoiTinHieuResponseDTO,
-    invoice: ThanhToanResponseDTO?,
     isPlaying: Boolean,
     onPlayAudio: (String) -> Unit,
     onCancelClick: () -> Unit,
@@ -167,47 +166,50 @@ fun TinHieuItemUI(
                     }
                 }
 
-                when (invoice?.trangThai) {
+                item.trangThaiHoaDon?.let { status ->
+                    when (status) {
 
-                    "PENDING" -> {
+                        "PENDING" -> {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Button(onClick = onViewInvoiceDetail) {
+                                    Text("Xem hóa đơn")
+                                }
+                                Button(onClick = onPayClick) {
+                                    Text("Thanh toán")
+                                }
+                            }
+                        }
 
-                        Button(
-                            onClick = onPayClick
-                        ) {
-                            Icon(
-                                Icons.Default.Payment,
-                                null
-                            )
-                            Text(" Thanh toán")
+                        "SUCCESS" -> {
+                            Button(onClick = onViewInvoiceDetail) {
+                                Text("Xem hóa đơn")
+                            }
+                        }
+
+                        else -> {
+                            Text("Hóa đơn: $status")
                         }
                     }
-
-                    "SUCCESS" -> {
-
-                        Button(
-                            onClick = onViewInvoiceDetail
-                        ) {
-                            Text("Xem hóa đơn")
-                        }
-                    }
-                }
+                } ?: Text(
+                    text = "Chưa có hóa đơn từ trụ sở",
+                    color = Color.Gray
+                )
             }
 
             Spacer(Modifier.height(8.dp))
 
             item.thanhTien?.let {
-
-                Text(
-                    text = "Chi phí: ${String.format("%,.0f", it)} đ"
-                )
+                Text("Chi phí: ${String.format("%,.0f", it)} đ")
             }
 
-            item.trangThaiHoaDon?.let {
-
-                Text(
-                    text = "Hóa đơn: $it"
-                )
-            }
+            Text(
+                when (item.trangThaiHoaDon) {
+                    null -> "Hóa đơn: Chưa tạo"
+                    "PENDING" -> "Hóa đơn: Chờ thanh toán"
+                    "SUCCESS" -> "Hóa đơn: Đã thanh toán"
+                    else -> "Hóa đơn: ${item.trangThaiHoaDon}"
+                }
+            )
         }
     }
 }

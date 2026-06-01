@@ -178,12 +178,10 @@ async function submitPayment(e) {
 
   const payload = {
     sosId: currentSosId,
-    tenSos: document.getElementById("pay-sos-name").value,
-    xuLy: document.getElementById("pay-treatment").value,
+    noiDungXuLy: document.getElementById("pay-treatment").value,
     giaThuCong: document.getElementById("pay-amount").value,
     trusoId: TRUSO_ID,
   };
-
   try {
     const res = await fetch("/truso/hoa-don/tao", {
       method: "POST",
@@ -197,7 +195,9 @@ async function submitPayment(e) {
       closePayment();
 
       // SỬA TẠI ĐÂY: Tìm theo ID mà không phân biệt SOS hay SUCO
-      const idx = allData.findIndex((it) => it.id === currentSosId);
+      const idx = allData.findIndex(
+        (it) => it.id === currentSosId && it.itemType === "SOS",
+      );
 
       if (idx !== -1) {
         // Cập nhật dữ liệu để renderData() nhận diện được

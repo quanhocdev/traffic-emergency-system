@@ -206,24 +206,16 @@ fun LichSuScreen(
                             items(filtered) { item ->
                                 TinHieuItemUI(
                                     item = item,
-                                    invoice = tinHieuViewModel.pendingInvoicesMap[item.hoaDonId],
                                     isPlaying = tinHieuViewModel.currentlyPlayingId == item.id,
-                                    onPlayAudio = {
-                                        tinHieuViewModel.playRecording(it, item.id)
-                                    },
-                                    onCancelClick = {
-                                        tinHieuViewModel.cancelSOS(item.id)
-                                    },
+                                    onPlayAudio = { tinHieuViewModel.playRecording(it, item.id) },
+                                    onCancelClick = { tinHieuViewModel.cancelSOS(item.id) },
                                     onPayClick = {
-                                        tempSelectedInvoice =
-                                            tinHieuViewModel.pendingInvoicesMap[item.hoaDonId]
+                                        tempSelectedInvoice = tinHieuViewModel.pendingInvoicesMap[item.hoaDonId]
                                         showPayDialog = true
                                     },
                                     onViewInvoiceDetail = {
-                                        item.hoaDonId?.let { hoaDonId ->
-                                            navController.navigate(
-                                                "chi_tiet_hoa_don/$hoaDonId"
-                                            )
+                                        item.hoaDonId?.let {
+                                            navController.navigate("chi_tiet_hoa_don/$it")
                                         }
                                     }
                                 )
