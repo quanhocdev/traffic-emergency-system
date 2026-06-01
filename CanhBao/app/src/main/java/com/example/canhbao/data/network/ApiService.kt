@@ -12,7 +12,7 @@
     import com.example.canhbao.data.model.SuCoMapDto
     import com.example.canhbao.data.model.SuCoUserDto
     import com.example.canhbao.data.model.ThongKeQuyDto
-    import com.example.canhbao.data.model.TinHieuSOSRequest
+    import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequest
     import com.example.canhbao.data.model.TruSoMapDto
     import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
     import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
@@ -21,6 +21,7 @@
     import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
     import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
     import com.example.canhbao.data.model.sos.tinhieu.TheoDoiTinHieuResponseDTO
+    import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSResponse
     import com.example.canhbao.data.model.suco.baocao.TheoDoiBaoCaoResponseDTO
     import retrofit2.Response
     import retrofit2.http.Body
@@ -71,7 +72,7 @@
         suspend fun submitSOS(
             @Header("Authorization") token: String,
             @Body request: TinHieuSOSRequest
-        ): Response<Map<String, Any>>
+        ): Response<TinHieuSOSResponse>
 
 
         @GET("/api/auth/me")
