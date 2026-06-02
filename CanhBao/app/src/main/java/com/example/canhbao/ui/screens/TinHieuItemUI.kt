@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Payment
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Warning
@@ -17,12 +16,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiTinHieuResponseDTO
 import com.example.canhbao.data.network.AppConfig
+
+// Thống nhất bảng màu Đỏ - Trắng chủ đạo của hệ thống CanhBao
+private val PrimaryRed = Color(0xFFDC2626)
+private val LightRedBg = Color(0xFFFEF2F2)
+private val BorderRed = Color(0xFFFCA5A5)
+private val TextDark = Color(0xFF1F2937)
+private val TextGray = Color(0xFF6B7280)
+private val SuccessGreen = Color(0xFF10B981)
 
 @Composable
 fun TinHieuItemUI(
@@ -33,37 +41,40 @@ fun TinHieuItemUI(
     onPayClick: () -> Unit,
     onViewInvoiceDetail: () -> Unit
 ) {
-
-    val activeColor = Color(0xFFD32F2F)
-
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp)
+    // Sử dụng OutlinedCard kèm viền đỏ nhạt để tách biệt rõ ràng từng phần tử SOS
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp, vertical = 8.dp), // Tạo độ giãn cách, tránh dính sát nhau giữa các item
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.outlinedCardColors(containerColor = Color.White),
+        border = BorderStroke(1.5.dp, BorderRed), // Đường viền đỏ mảnh làm nổi bật tính chất Cảnh báo/SOS
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-
         Column(
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(14.dp)
         ) {
-
-            Row {
-
+            // --- PHẦN NỘI DUNG (ẢNH & THÔNG TIN) ---
+            Row(
+                verticalAlignment = Alignment.Top
+            ) {
+                // Ô hiển thị hình ảnh sự cố
                 Box(
                     modifier = Modifier
                         .size(85.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFFFEBEE))
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(LightRedBg)
                 ) {
-
                     if (item.hinhAnh.isNullOrEmpty()) {
-
                         Icon(
-                            Icons.Default.Warning,
-                            null,
-                            modifier = Modifier.align(Alignment.Center)
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = PrimaryRed,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .align(Alignment.Center)
                         )
-
                     } else {
-
                         AsyncImage(
                             model = "${AppConfig.HTTP_BASE_URL}${item.hinhAnh}",
                             contentDescription = null,
@@ -73,143 +84,148 @@ fun TinHieuItemUI(
                     }
                 }
 
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(14.dp))
 
+                // Khối Text thông tin
                 Column(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-
                     Text(
-                        "Yêu cầu cứu hộ",
-                        color = activeColor
+                        text = item.ghiChu ?: "Không có ghi chú",
+                        color = TextDark,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
 
-                    Text(
-                        item.ghiChu ?: "",
-                        fontSize = 13.sp
-                    )
-
-                    Row {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Icon(
-                            Icons.Default.LocationOn,
-                            null,
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = PrimaryRed,
                             modifier = Modifier.size(14.dp)
                         )
-
+                        Spacer(Modifier.width(4.dp))
                         Text(
-                            item.diaChi ?: "Không rõ vị trí",
-                            fontSize = 11.sp
+                            text = item.diaChi ?: "Không rõ vị trí",
+                            color = TextGray,
+                            fontSize = 12.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
 
                     Text(
-                        "Tiếp nhận: ${item.tenTruSoTiepNhan ?: "Chưa có"}",
-                        fontSize = 12.sp
-                    )
-
-                    Text(
-                        "Trạng thái: ${item.trangThai ?: "---"}",
-                        fontSize = 12.sp
+                        text = "Tiếp nhận: ${item.tenTruSoTiepNhan ?: "Chưa có"}",
+                        color = TextDark,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
 
+            Spacer(Modifier.height(14.dp))
+            Divider(color = Color(0xFFF3F4F6), thickness = 1.dp) // Thanh gạch ngang mờ phân cách giữa nội dung và nút bấm
             Spacer(Modifier.height(12.dp))
 
+            // --- PHẦN NÚT BẤM HÀNH ĐỘNG ---
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-
+                // 1. Nút phát Ghi âm (Đổi sang màu Cam/Đỏ để nổi bật tính năng)
                 if (!item.ghiAm.isNullOrEmpty()) {
-
                     Button(
-                        onClick = {
-                            onPlayAudio(
-                                "${AppConfig.HTTP_BASE_URL}${item.ghiAm}"
-                            )
-                        }
+                        onClick = { onPlayAudio("${AppConfig.HTTP_BASE_URL}${item.ghiAm}") },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isPlaying) Color.Black else Color(0xFFEA580C) // Cam đậm khi chưa chạy, Đen khi đang phát
+                        ),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.height(36.dp)
                     ) {
-
                         Icon(
-                            if (isPlaying)
-                                Icons.Default.Stop
-                            else
-                                Icons.Default.PlayArrow,
-                            null
+                            imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
                         )
-
+                        Spacer(Modifier.width(4.dp))
                         Text(
-                            if (isPlaying)
-                                " Dừng"
-                            else
-                                " Ghi âm"
+                            text = if (isPlaying) "Dừng" else "Ghi âm",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                 }
 
-                if (
-                    item.trangThai == "CHO_XU_LY" ||
-                    item.trangThai == "PENDING"
-                ) {
-
+                // 2. Nút Hủy tín hiệu cứu hộ
+                if (item.trangThai == "CHO_XU_LY" || item.trangThai == "PENDING") {
                     OutlinedButton(
                         onClick = onCancelClick,
-                        border = BorderStroke(
-                            1.dp,
-                            Color.Red
-                        )
+                        border = BorderStroke(1.dp, PrimaryRed),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryRed),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.height(36.dp)
                     ) {
-                        Text(
-                            "Hủy",
-                            color = Color.Red
-                        )
+                        Text("Hủy", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
 
+                Spacer(modifier = Modifier.weight(1f)) // Đẩy nút hóa đơn về phía bên phải cho gọn gàng
+
+                // 3. Trạng thái hoặc Nút xem Hóa đơn
                 item.trangThaiHoaDon?.let { status ->
                     when (status) {
-
                         "PENDING" -> {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Button(onClick = onViewInvoiceDetail) {
-                                    Text("Xem hóa đơn")
-                                }
-                                Button(onClick = onPayClick) {
-                                    Text("Thanh toán")
-                                }
+                            Button(
+                                onClick = onViewInvoiceDetail,
+                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed), // Đỏ đặc trưng cho hóa đơn chờ xử lý
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Text("Xem hóa đơn", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                         }
-
                         "SUCCESS" -> {
-                            Button(onClick = onViewInvoiceDetail) {
-                                Text("Xem hóa đơn")
+                            Button(
+                                onClick = onViewInvoiceDetail,
+                                colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen), // Xanh lá cây tượng trưng cho hóa đơn đã hoàn thành
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier.height(36.dp)
+                            ) {
+                                Text("Xem hóa đơn", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             }
                         }
-
                         else -> {
-                            Text("Hóa đơn: $status")
+                            Box(
+                                modifier = Modifier
+                                    .background(Color(0xFFE5E7EB), shape = RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "Hóa đơn: $status",
+                                    color = TextDark,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
                         }
                     }
                 } ?: Text(
-                    text = "Chưa có hóa đơn từ trụ sở",
-                    color = Color.Gray
+                    text = "Chưa có hóa đơn",
+                    color = TextGray,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Normal
                 )
             }
-
-            Spacer(Modifier.height(8.dp))
-
-            item.thanhTien?.let {
-                Text("Chi phí: ${String.format("%,.0f", it)} đ")
-            }
-
-            Text(
-                when (item.trangThaiHoaDon) {
-                    null -> "Hóa đơn: Chưa tạo"
-                    "PENDING" -> "Hóa đơn: Chờ thanh toán"
-                    "SUCCESS" -> "Hóa đơn: Đã thanh toán"
-                    else -> "Hóa đơn: ${item.trangThaiHoaDon}"
-                }
-            )
         }
     }
 }

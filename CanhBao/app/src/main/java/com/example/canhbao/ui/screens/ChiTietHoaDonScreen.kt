@@ -1,144 +1,272 @@
 package com.example.canhbao.ui.screens
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.canhbao.data.model.suco.baocao.TheoDoiBaoCaoResponseDTO
 import com.example.canhbao.viewmodel.ChiTietHoaDonViewModel
 
-@androidx.compose.runtime.Composable
+// Thống nhất bảng màu Đỏ - Trắng chủ đạo
+private val PrimaryRed = Color(0xFFDC2626)
+private val LightRedBg = Color(0xFFFEF2F2)
+private val BorderRed = Color(0xFFFCA5A5)
+private val TextDark = Color(0xFF1F2937)
+private val TextGray = Color(0xFF4B5563)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
 fun ChiTietHoaDonScreen(
     hoaDonId: Long,
     navController: NavController,
-    viewModel: ChiTietHoaDonViewModel = viewModel()
+    viewModel: ChiTietHoaDonViewModel = viewModel(),
 ) {
-
     val hoaDon by remember {
-        derivedStateOf {
-            viewModel.hoaDon
-        }
+        derivedStateOf { viewModel.hoaDon }
     }
+
     LaunchedEffect(hoaDonId) {
         viewModel.loadHoaDonDetail(hoaDonId)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-
-        TextButton(
-            onClick = {
-                navController.popBackStack()
-            }
-        ) {
-            Text("← Quay lại")
-        }
-
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-
-        when {
-
-            viewModel.isLoading -> {
-
-                CircularProgressIndicator()
-            }
-
-            viewModel.errorMessage != null -> {
-
-                Text(
-                    text = viewModel.errorMessage ?: "",
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-
-            hoaDon != null -> {
-
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Text(
                             text = "Chi tiết hóa đơn",
-                            style = MaterialTheme.typography.titleLarge
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            ),
+                            modifier = Modifier.padding(end = 48.dp) // Cân bằng khoảng trống với nút back
                         )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Quay lại",
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = PrimaryRed
+                )
+            )
+        },
+        containerColor = Color(0xFFF9FAFB) // Nền xám nhạt nhẹ để làm nổi bật Card trắng
+    ) { innerPadding ->
 
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            when {
+                // --- TRẠNG THÁI LOADING ---
+                viewModel.isLoading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = PrimaryRed)
+                    }
+                }
+
+                // --- TRẠNG THÁI LỖI ---
+                viewModel.errorMessage != null -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Text(
-                            text = "Mã hóa đơn: ${hoaDon!!.id}"
+                            text = viewModel.errorMessage ?: "Đã xảy ra lỗi không xác định",
+                            color = PrimaryRed,
+                            fontWeight = FontWeight.Medium,
+                            textAlign = TextAlign.Center
                         )
+                    }
+                }
 
-                        Text(
-                            text = "Nội dung xử lý: ${hoaDon!!.noiDungXuLy}"
-                        )
+                // --- HIỂN THỊ CHI TIẾT HÓA ĐƠN ---
+                hoaDon != null -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.SpaceBetween
+                    ) {
 
-                        Text(
-                            text = "Chi phí: ${hoaDon!!.thanhTien}"
-                        )
+                        // Khối thông tin chi tiết
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(20.dp)
+                            ) {
+                                // Tiêu đề phụ bên trong Card
+                                Text(
+                                    text = "THÔNG TIN ĐƠN HÀNG",
+                                    color = PrimaryRed,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.sp
+                                )
 
-                        Text(
-                            text = "Trạng thái: ${hoaDon!!.trangThai}"
-                        )
+                                Spacer(modifier = Modifier.height(16.dp))
 
-                        Text(
-                            text = "Ngày tạo: ${hoaDon!!.createdAt}"
-                        )
+                                // Danh sách các dòng thông tin dạng Key - Value
+                                InfoRow(label = "Mã hóa đơn", value = "#${hoaDon!!.id}")
+                                InfoRow(label = "Mã trụ sở cứu hộ", value = "${hoaDon!!.trusoId}")
+                                InfoRow(label = "Tên trụ sở cứu hộ", value = "${hoaDon!!.tenTruSo}")
+                                InfoRow(label = "Tên người dùng", value = hoaDon!!.user?.name ?: "N/A")
+                                InfoRow(label = "Email", value = hoaDon!!.user?.email ?: "N/A")
+                                InfoRow(label = "Nội dung xử lý", value = hoaDon!!.noiDungXuLy ?: "Không có")
+                                InfoRow(
+                                    label = "Chi phí",
+                                    value = "${hoaDon!!.thanhTien}",
+                                    valueColor = PrimaryRed,
+                                    isBoldValue = true
+                                )
+                                InfoRow(label = "Ngày tạo", value = hoaDon!!.createdAt ?: "")
 
-                        Spacer(
-                            modifier = Modifier.height(12.dp)
-                        )
+                                Spacer(modifier = Modifier.height(12.dp))
 
-                        when (hoaDon!!.trangThai) {
-
-                            "PENDING" -> {
-
-                                Button(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    onClick = {
-                                        navController.navigate(
-                                            "thanh_toan/${hoaDon!!.id}"
-                                        )
-                                    }
+                                // Dòng hiển thị Trạng thái (được bọc Badge màu sắc rõ ràng)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("Thanh toán")
+                                    Text(text = "Trạng thái", color = TextGray, fontSize = 14.sp)
+
+                                    val isSuccess = hoaDon!!.trangThai == "SUCCESS"
+                                    Box(
+                                        modifier = Modifier
+                                            .background(
+                                                color = if (isSuccess) Color(0xFFD1FAE5) else LightRedBg,
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(
+                                                imageVector = if (isSuccess) Icons.Default.CheckCircle else Icons.Default.Info,
+                                                contentDescription = null,
+                                                tint = if (isSuccess) Color(0xFF059669) else PrimaryRed,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = if (isSuccess) "Đã thanh toán" else "Chờ thanh toán",
+                                                color = if (isSuccess) Color(0xFF059669) else PrimaryRed,
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
                                 }
                             }
+                        }
 
-                            "SUCCESS" -> {
-
-                                Button(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    onClick = {
-                                        navController.navigate(
-                                            "chi_tiet_thanh_toan/${hoaDon!!.id}"
+                        // Khối xử lý Nút bấm hành động cố định ở phía dưới cùng
+                        Column(
+                            modifier = Modifier.padding(top = 32.dp)
+                        ) {
+                            when (hoaDon!!.trangThai) {
+                                "PENDING" -> {
+                                    Button(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(50.dp),
+                                        onClick = {
+                                            navController.navigate("thanh_toan/${hoaDon!!.id}")
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Text(
+                                            text = "Tiến hành thanh toán",
+                                            color = Color.White,
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold
                                         )
                                     }
-                                ) {
-                                    Text("Xem chi tiết thanh toán")
+                                }
+
+                                "SUCCESS" -> {
+                                    Button(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(50.dp),
+                                        onClick = {
+                                            navController.navigate("chi_tiet_thanh_toan/${hoaDon!!.id}")
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Text(
+                                            text = "Xem chi tiết thanh toán",
+                                            color = Color.White,
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -146,5 +274,37 @@ fun ChiTietHoaDonScreen(
                 }
             }
         }
+    }
+}
+
+// Composable phụ trợ để render từng dòng thông tin sạch sẽ hơn
+@Composable
+fun InfoRow(
+    label: String,
+    value: String,
+    valueColor: Color = TextDark,
+    isBoldValue: Boolean = false
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = label,
+            color = TextGray,
+            fontSize = 14.sp,
+            modifier = Modifier.weight(1f)
+        )
+        Text(
+            text = value,
+            color = valueColor,
+            fontSize = 14.sp,
+            fontWeight = if (isBoldValue) FontWeight.Bold else FontWeight.Medium,
+            textAlign = TextAlign.End,
+            modifier = Modifier.weight(1.5f)
+        )
     }
 }

@@ -12,8 +12,8 @@ public class HoaDonResponseDTO {
     private String noiDungXuLy;
     private BigDecimal thanhTien;
     private LocalDateTime createdAt;
-
     private String trangThai;
+    
     public Long getId() {
         return id;
     }
