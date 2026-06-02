@@ -11,7 +11,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.canhbao.data.network.BaoCaoSuCoRetrofit // Đảm bảo đúng path tới Retrofit của bạn
 import com.example.canhbao.ui.screens.*
 import com.example.canhbao.viewmodel.*
 
@@ -163,7 +162,7 @@ fun NavGraph(authViewModel: AuthViewModel) {
             TuiScreen(
                 viewModel = quaViewModel,
                 uid = currentUser?.uid ?: "",
-                onBack = { navController.popBackStack() } // Thêm dòng này để xử lý nút quay lại
+                onBack = { navController.popBackStack() }
             )
         }
         composable("lich_su") {
