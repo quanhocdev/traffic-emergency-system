@@ -9,7 +9,7 @@ import com.example.suco.repository.vanhanh.TruSoRepository;
 import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
 import com.google.firebase.auth.FirebaseAuthException;
-
+import com.example.suco.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Map;
@@ -38,42 +38,41 @@ private UserRepository userRepository;
     // =========================
     public List<HoaDonUserResponseDTO> getHoaDonUser(String authHeader) {
 
-        String uid;
-try {
-    uid = firebaseService.extractUid(authHeader);
-} catch (FirebaseAuthException e) {
-    throw new RuntimeException("Token không hợp lệ");
-}
-
-        List<HoaDon> list = hoaDonRepository
-                .findByUserIdOrderByIdDesc(uid);
-
-        List<Long> truSoIds = list.stream()
-        .map(HoaDon::getTrusoId)
-        .toList();
-
-List<String> userIds = list.stream()
-        .map(HoaDon::getUserId)
-        .toList();
-
-Map<Long, TruSo> truSoMap = truSoRepository.findAllById(truSoIds)
-        .stream()
-        .collect(Collectors.toMap(TruSo::getId, t -> t));
-
-Map<String, User> userMap = userRepository.findAllByUid(userIds)
-        .stream()
-        .collect(Collectors.toMap(User::getUid, u -> u));
-
-return list.stream()
-        .map(hd -> hoaDonMapper.toUserDTO(
-                hd,
-                userMap.get(hd.getUserId()),
-                truSoMap.get(hd.getTrusoId())
-        ))
-        .toList();
+    String uid;
+    try {
+        uid = firebaseService.extractUid(authHeader);
+    } catch (FirebaseAuthException e) {
+        throw new RuntimeException("Token không hợp lệ");
     }
-    
 
+    List<HoaDon> list = hoaDonRepository.findByUserIdOrderByIdDesc(uid);
+
+    List<Long> truSoIds = list.stream()
+            .map(HoaDon::getTrusoId)
+            .distinct()
+            .toList();
+
+    List<String> userIds = list.stream()
+            .map(HoaDon::getUserId)
+            .distinct()
+            .toList();
+
+    Map<Long, TruSo> truSoMap = truSoRepository.findAllById(truSoIds)
+            .stream()
+            .collect(Collectors.toMap(TruSo::getId, t -> t));
+
+    Map<String, User> userMap = userRepository.findByUidIn(userIds)
+            .stream()
+            .collect(Collectors.toMap(User::getUid, u -> u));
+
+    return list.stream()
+            .map(hd -> hoaDonMapper.toUserDTO(
+                    hd,
+                    userMap.get(hd.getUserId()),
+                    truSoMap.get(hd.getTrusoId())
+            ))
+            .toList();
+}
     // =========================
     // CHI TIẾT HÓA ĐƠN USER
     // =========================
@@ -96,6 +95,9 @@ try {
             throw new RuntimeException("Không có quyền truy cập hóa đơn này");
         }
 
-        return hoaDonMapper.toUserDTO(hd);
+       User user = userRepository.findByUid(hd.getUserId()).orElse(null);
+TruSo truSo = truSoRepository.findById(hd.getTrusoId()).orElse(null);
+
+return hoaDonMapper.toUserDTO(hd, user, truSo);
     }
 }

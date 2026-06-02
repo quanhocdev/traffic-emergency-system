@@ -3,7 +3,6 @@ package com.example.suco.dto.sos.hoadon.quanly;
 public class TruSoMiniDTO {
     private Long id;
     private String tenTruSo;
-    private String diaChi;
 
     // getter/setter
     public Long getId() {
@@ -17,11 +16,5 @@ public class TruSoMiniDTO {
     }
     public void setTenTruSo(String tenTruSo) {
         this.tenTruSo = tenTruSo;
-    }
-    public String getDiaChi() {
-        return diaChi;
-    }
-    public void setDiaChi(String diaChi) {
-        this.diaChi = diaChi;
     }
 }
