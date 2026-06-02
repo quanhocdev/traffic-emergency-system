@@ -3,9 +3,15 @@ package com.example.suco.dto.sos.hoadon.quanly;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
+
 public class HoaDonUserResponseDTO {
 
     private Long id;
+
+    private TruSoMiniDTO truSo;
+
+    private UserMiniDTO user;
 
     private String noiDungXuLy;
 
@@ -22,6 +28,24 @@ public class HoaDonUserResponseDTO {
     public void setId(Long id) {
         this.id = id;
     }
+    
+    public TruSoMiniDTO getTruSo() {
+        return truSo;
+    }
+    
+    
+public void setTruSo(TruSoMiniDTO truSo) {
+    this.truSo = truSo;
+}
+
+
+    public UserMiniDTO getUser() {
+    return user;
+}
+
+public void setUser(UserMiniDTO user) {
+    this.user = user;
+}
 
     public String getNoiDungXuLy() {
         return noiDungXuLy;

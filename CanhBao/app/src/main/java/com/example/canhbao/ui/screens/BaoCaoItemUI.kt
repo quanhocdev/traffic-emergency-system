@@ -8,7 +8,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,14 +23,19 @@ import coil.compose.AsyncImage
 import com.example.canhbao.data.model.suco.baocao.TheoDoiBaoCaoResponseDTO
 import com.example.canhbao.data.network.AppConfig
 
+// Định nghĩa bảng màu Xanh nước biển chủ đạo cho phần Báo cáo
+private val PrimaryBlue = Color(0xFF1976D2)
+private val LightBlueBg = Color(0xFFE3F2FD)
+private val BorderBlue = Color(0xFF90CAF9)
+private val TextDark = Color(0xFF1F2937)
+private val TextGray = Color(0xFF6B7280)
+private val CancelRed = Color(0xFFDC2626)
+
 @Composable
 fun BaoCaoItemUI(
     item: TheoDoiBaoCaoResponseDTO,
     onCancelClick: () -> Unit
 ) {
-
-    val activeColor = Color(0xFF1976D2)
-
     val displayDate = try {
         item.thoiGianTao
             ?.substringBefore("T")
@@ -43,37 +47,37 @@ fun BaoCaoItemUI(
         ""
     }
 
-    ElevatedCard(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = Color.White
-        )
+    // Sử dụng OutlinedCard kèm viền xanh để phân tách rõ ràng giống trang SOS
+    OutlinedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp, vertical = 8.dp), // Khoảng cách giãn giữa các item
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.outlinedCardColors(containerColor = Color.White),
+        border = BorderStroke(1.5.dp, BorderBlue), // Viền xanh nước biển bo góc
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-
         Column(
-            modifier = Modifier.padding(12.dp)
+            modifier = Modifier.padding(14.dp)
         ) {
-
+            // --- PHẦN 1: NỘI DUNG CHÍNH (ẢNH & THÔNG TIN SƠ BỘ) ---
             Row(
-                modifier = Modifier.fillMaxWidth()
+                verticalAlignment = Alignment.Top
             ) {
-
                 Box(
                     modifier = Modifier
                         .size(85.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFE3F2FD))
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(LightBlueBg)
                 ) {
-
                     if (item.hinhAnhUrl.isNullOrEmpty()) {
                         Icon(
-                            Icons.Default.Build,
-                            null,
+                            imageVector = Icons.Default.Build,
+                            contentDescription = null,
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .size(32.dp),
-                            tint = activeColor
+                            tint = PrimaryBlue
                         )
                     } else {
                         AsyncImage(
@@ -85,122 +89,133 @@ fun BaoCaoItemUI(
                     }
                 }
 
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(14.dp))
 
                 Column(
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-
                     Text(
                         text = item.tenLoai ?: "Sự cố",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp,
-                        color = activeColor
+                        fontSize = 16.sp,
+                        color = PrimaryBlue
                     )
 
                     item.moTa?.let {
                         Text(
                             text = it,
                             fontSize = 13.sp,
-                            color = Color.DarkGray,
+                            color = TextDark,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
 
-                    Spacer(Modifier.height(6.dp))
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Default.LocationOn,
-                            null,
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = activeColor
+                            tint = PrimaryBlue
                         )
-
+                        Spacer(Modifier.width(4.dp))
                         Text(
-                            text = " ${item.diaChi ?: "Không rõ"}",
-                            fontSize = 11.sp,
+                            text = item.diaChi ?: "Không rõ vị trí",
+                            fontSize = 12.sp,
+                            color = TextGray,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
                     }
 
-                    Spacer(Modifier.height(4.dp))
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Default.DateRange,
-                            null,
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = Color.Gray
+                            tint = TextGray
                         )
-
+                        Spacer(Modifier.width(4.dp))
                         Text(
-                            text = " $displayDate",
-                            fontSize = 11.sp,
-                            color = Color.Gray
+                            text = displayDate,
+                            fontSize = 12.sp,
+                            color = TextGray
                         )
                     }
                 }
             }
 
             Spacer(Modifier.height(12.dp))
-
-            AssistChip(
-                onClick = {},
-                label = {
-                    Text("Duyệt: ${item.trangThaiDuyet ?: "---"}")
-                }
-            )
-
-            Spacer(Modifier.height(6.dp))
-
-            AssistChip(
-                onClick = {},
-                label = {
-                    Text("Xử lý: ${item.trangThaiXuLy ?: "---"}")
-                }
-            )
-
-            Spacer(Modifier.height(6.dp))
-
-            Text(
-                text = "Độ tin cậy: ${item.doTinCay ?: 0}%",
-                fontSize = 12.sp
-            )
-
-            Text(
-                text = "Mức độ: ${item.mucDoNghiemTrong ?: "---"}",
-                fontSize = 12.sp
-            )
-
-            Text(
-                text = "Tiếp nhận: ${item.tenTruSoTiepNhan ?: "Chưa có"}",
-                fontSize = 12.sp
-            )
-
+            Divider(color = Color(0xFFF3F4F6), thickness = 1.dp) // Đường phân cách mờ
             Spacer(Modifier.height(12.dp))
 
-            if (
-                item.trangThaiXuLy == "CHO_XU_LY" &&
-                item.trangThaiDuyet == "AI_APPROVED"
+            // --- PHẦN 2: TRẠNG THÁI & CHỈ SỐ (THIẾT KẾ DẠNG BADGE GỌN GÀNG) ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFFF0FDF4), shape = RoundedCornerShape(6.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Độ tin cậy: ${item.doTinCay ?: "---"}",
+                        color = Color(0xFF16A34A),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFFEFF6FF), shape = RoundedCornerShape(6.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "Mức độ: ${item.mucDoNghiemTrong ?: "---"}",
+                        color = PrimaryBlue,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            // Các dòng thông số chi tiết dưới dạng văn bản phối màu nhẹ
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "Tiếp nhận: ${item.tenTruSoTiepNhan ?: "Chưa có"}",
+                    fontSize = 12.sp,
+                    color = TextGray
+                )
+            }
+
+            // --- PHẦN 3: NÚT BẤM HÀNH ĐỘNG (NẾU CÓ) ---
+            if (item.trangThaiXuLy == "CHO_XU_LY" && item.trangThaiDuyet == "AI_APPROVED") {
+                Spacer(Modifier.height(14.dp))
 
                 OutlinedButton(
                     onClick = onCancelClick,
-                    border = BorderStroke(
-                        1.dp,
-                        Color.Red
-                    )
+                    border = BorderStroke(1.2.dp, CancelRed),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = CancelRed),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(38.dp)
                 ) {
                     Text(
-                        "Hủy báo cáo",
-                        color = Color.Red
+                        text = "Hủy báo cáo",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }

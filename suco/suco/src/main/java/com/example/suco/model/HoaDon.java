@@ -11,7 +11,6 @@ public class HoaDon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private Long sosId;
     private Long trusoId;
     private String userId;
