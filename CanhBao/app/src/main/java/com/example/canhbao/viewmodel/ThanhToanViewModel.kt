@@ -45,81 +45,72 @@ class ThanhToanViewModel : ViewModel() {
     }
 
     fun loadVoucher() {
-
         viewModelScope.launch {
-
             try {
-
                 loading = true
 
-                val result =
-                    withContext(Dispatchers.IO) {
+                val result = withContext(Dispatchers.IO) {
 
-                        val token = getToken()
+                    val token = getToken()
+                    Log.d("VOUCHER", "TOKEN = $token")   // 👈 LOG 1
 
-                        api.getMyGifts(token)
-                    }
+                    val res = api.getMyGifts(token)
+
+                    Log.d("VOUCHER", "RAW RESULT = $res") // 👈 LOG 2
+
+                    res
+                }
 
                 listVoucher = result
+
+                Log.d("VOUCHER", "LIST SIZE = ${listVoucher.size}") // 👈 LOG 3
 
             } catch (e: Exception) {
 
                 errorMessage = e.message
 
-                Log.e(
-                    "ThanhToanVM",
-                    e.message ?: ""
-                )
+                Log.e("VOUCHER", "ERROR LOAD VOUCHER", e) // 👈 LOG 4
 
             } finally {
-
                 loading = false
             }
         }
     }
-
     fun thanhToan(
         hoaDonId: Long,
         quaId: Long?,
         phuongThuc: String
     ) {
-
         viewModelScope.launch {
-
             try {
-
                 loading = true
+                paymentSuccess = false
+                errorMessage = null
 
-                val success =
-                    withContext(Dispatchers.IO) {
+                val success = withContext(Dispatchers.IO) {
+                    val token = getToken()
 
-                        val token = getToken()
-
-                        api.confirmPayment(
-                            token,
-                            ThanhToanRequestDTO(
-                                hoaDonId = hoaDonId,
-                                quaId = quaId,
-                                phuongThucThanhToan = phuongThuc
-                            )
-                        ).isSuccessful
-                    }
+                    api.confirmPayment(
+                        token,
+                        ThanhToanRequestDTO(
+                            hoaDonId = hoaDonId,
+                            quaId = quaId,
+                            phuongThucThanhToan = phuongThuc
+                        )
+                    ).isSuccessful
+                }
 
                 paymentSuccess = success
 
             } catch (e: Exception) {
-
                 errorMessage = e.message
-
-                Log.e(
-                    "ThanhToanVM",
-                    e.message ?: ""
-                )
-
+                Log.e("ThanhToanVM", e.message ?: "")
             } finally {
-
                 loading = false
             }
         }
+    }
+    fun resetPayment() {
+        paymentSuccess = false
     }
 }

@@ -12,7 +12,6 @@ import com.example.suco.dto.sos.hoadon.quanly.HoaDonDetailDTO;
 import com.example.suco.mapper.HoaDonCuuHoMapper;
 import com.example.suco.mapper.ThanhToanCuuHoMapper;
 import com.example.suco.model.HoaDon;
-import com.example.suco.model.ThanhToanHoaDon;
 import com.example.suco.repository.tienich.tien.DoanhThuRepository;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
 import com.example.suco.repository.sos.hoadon.ThanhToanHoaDonRepository;
@@ -25,9 +24,6 @@ public class DoanhThuService {
 
     @Autowired
     private HoaDonCuuHoRepository hoaDonRepository;
-
-    @Autowired
-    private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
 
     @Autowired
     private HoaDonCuuHoMapper hoaDonCuuHoMapper;
