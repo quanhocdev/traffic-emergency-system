@@ -6,10 +6,13 @@ data class UserMiniDTO(
     val name: String? = null,
     val email: String? = null,
 )
+data class TruSoMiniDTO(
+    val id: Long? = null,
+    val tenTruSo: String? = null,
+)
 data class HoaDonUserResponseDTO(
     val id: Long? = null,
-    val trusoId: Long? = null,
-    val tenTruSo: String? = null,
+    val truSo: TruSoMiniDTO? = null,
     val user: UserMiniDTO? = null,
     val noiDungXuLy: String? = null,
     val thanhTien: BigDecimal? = null,

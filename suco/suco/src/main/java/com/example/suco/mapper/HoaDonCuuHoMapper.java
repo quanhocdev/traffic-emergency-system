@@ -69,7 +69,6 @@ public class HoaDonCuuHoMapper {
         truSo = new TruSoMiniDTO();
         truSo.setId(truSoEntity.getId());
         truSo.setTenTruSo(truSoEntity.getTenTruSo());
-        truSo.setDiaChi(truSoEntity.getDiaChi());
     }
     dto.setTruSo(truSo);
 

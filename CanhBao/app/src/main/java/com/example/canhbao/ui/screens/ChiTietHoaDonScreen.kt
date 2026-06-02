@@ -170,8 +170,8 @@ fun ChiTietHoaDonScreen(
 
                                 // Danh sách các dòng thông tin dạng Key - Value
                                 InfoRow(label = "Mã hóa đơn", value = "#${hoaDon!!.id}")
-                                InfoRow(label = "Mã trụ sở cứu hộ", value = "${hoaDon!!.trusoId}")
-                                InfoRow(label = "Tên trụ sở cứu hộ", value = "${hoaDon!!.tenTruSo}")
+                                InfoRow(label = "Mã trụ sở cứu hộ", value = "${hoaDon!!.truSo?.id}")
+                                InfoRow(label = "Tên trụ sở cứu hộ", value = "${hoaDon!!.truSo?.tenTruSo}")
                                 InfoRow(label = "Tên người dùng", value = hoaDon!!.user?.name ?: "N/A")
                                 InfoRow(label = "Email", value = hoaDon!!.user?.email ?: "N/A")
                                 InfoRow(label = "Nội dung xử lý", value = hoaDon!!.noiDungXuLy ?: "Không có")
