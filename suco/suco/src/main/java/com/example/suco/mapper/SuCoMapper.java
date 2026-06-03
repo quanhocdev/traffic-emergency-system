@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SuCoMapper {
 
+
     public SuCoResponseDTO toDto(BaoCaoSuCo b) {
         String tenLoai =
                 (b.getLoaiSuCo() != null)
