@@ -1,13 +1,10 @@
 package com.example.suco.controller.suco.baocao.truso;
 
-import com.example.suco.dto.suco.baocao.AdminSuCoDetailResponseDTO;
-import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
+import com.example.suco.dto.suco.baocao.TruSoSuCoDetailResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
-import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.service.suco.baocao.truso.TrangThaiSuCoService;
-
 import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,18 +28,21 @@ private SuCoMapper suCoMapper;
     private TrangThaiSuCoService trangThaiServiceService;
 
 @GetMapping("/danh-sach-hien-tai")
-public List<SuCoMapResponseDTO> getSuCoHienTai(
+public List<TruSoSuCoDetailResponseDTO> getSuCoHienTai(
         @RequestParam(required = false) String status,
         HttpSession session) {
 
     TruSo current = (TruSo) session.getAttribute("currentTruSo");
-    if (current == null) return List.of();
 
-    List<BaoCaoSuCo> entities = repo.findAll();
+    if (current == null) {
+        return List.of();
+    }
 
-    List<SuCoMapResponseDTO> allActive = entities.stream()
-        .map(suCoMapper::toMapDto)
-        .toList();
+    List<TruSoSuCoDetailResponseDTO> allActive =
+            repo.findAll()
+                    .stream()
+                    .map(suCoMapper::toTruSoDetailDto)
+                    .toList();
 
     if (status != null && !status.isEmpty()) {
         return allActive.stream()
@@ -55,7 +55,7 @@ public List<SuCoMapResponseDTO> getSuCoHienTai(
 }
   
     @GetMapping("/lich-su")
-public List<AdminSuCoDetailResponseDTO> getSuCoHistory(
+public List<TruSoSuCoDetailResponseDTO> getSuCoHistory(
         HttpSession session
 ) {
     TruSo current = (TruSo) session.getAttribute("currentTruSo");
@@ -66,7 +66,7 @@ public List<AdminSuCoDetailResponseDTO> getSuCoHistory(
 
     return repo.findHistoryByTruSo(current.getId())
             .stream()
-            .map(suCoMapper::toAdminDetailDto)
+            .map(suCoMapper::toTruSoDetailDto)
             .toList();
 }
 

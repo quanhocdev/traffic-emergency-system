@@ -5,8 +5,10 @@ import com.example.suco.model.TruSo;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
 import com.example.suco.dto.suco.baocao.TheoDoiBaoCaoResponseDTO;
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonTruSoResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
 import com.example.suco.dto.suco.baocao.AdminSuCoDetailResponseDTO;
+import com.example.suco.dto.suco.baocao.TruSoSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.UserSuCoDetailResponseDTO;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
@@ -23,7 +25,7 @@ public class SuCoMapper {
                 entity.setViDo(dto.getViDo());
                 entity.setKinhDo(dto.getKinhDo());
                 entity.setMoTa(dto.getMoTa());
-                
+
                 LoaiSuCo loaiSuCo = new LoaiSuCo();
                 loaiSuCo.setId(dto.getLoaiSuCoId());
                 entity.setLoaiSuCo(loaiSuCo);
@@ -111,6 +113,119 @@ if (b.getTruSoTiepNhan() != null) {
     dto.setDiaChi(b.getDiaChi());
     dto.setThoiGianTao(b.getThoiGianTao());
 
+    return dto;
+}
+public TruSoSuCoDetailResponseDTO toTruSoDetailDto(BaoCaoSuCo b) {
+
+    TruSoSuCoDetailResponseDTO dto =
+            new TruSoSuCoDetailResponseDTO();
+
+            
+    dto.setId(b.getId());
+    dto.setViDo(b.getViDo());
+    dto.setKinhDo(b.getKinhDo());
+    dto.setMoTa(b.getMoTa());
+
+    dto.setTenLoai(
+            b.getLoaiSuCo() != null
+                    ? b.getLoaiSuCo().getTen()
+                    : null
+    );
+
+    dto.setIconUrl(
+            b.getLoaiSuCo() != null
+                    ? b.getLoaiSuCo().getIconUrl()
+                    : null
+    );
+    dto.setTenNguoiBao(
+            b.getReporter() != null
+                    ? b.getReporter().getName()
+                    : "Người dân báo"
+    );
+
+if (b.getTruSoTiepNhan() != null) {
+    TruSoMiniDTO truSoTiepNhan = new TruSoMiniDTO();
+    truSoTiepNhan.setId(b.getTruSoTiepNhan().getId());
+    truSoTiepNhan.setTenTruSo(b.getTruSoTiepNhan().getTenTruSo());
+
+    dto.setTruSoTiepNhan(truSoTiepNhan);
+}
+
+    dto.setTrangThaiDuyet(b.getTrangThaiDuyet());
+    dto.setTrangThaiXuLy(b.getTrangThaiXuLy());
+
+    dto.setMucDoNghiemTrong(b.getMucDoNghiemTrong());
+    dto.setHinhAnhUrl(b.getHinhAnhUrl());
+
+    dto.setDoTinCay(b.getDoTinCay());
+
+    dto.setTenNguoiBao(
+            b.getReporter() != null
+                    ? b.getReporter().getName()
+                    : "Người dân báo"
+    );
+
+    dto.setDiaChi(b.getDiaChi());
+    dto.setThoiGianTao(b.getThoiGianTao());
+
+
+    if (b.getHoaDon() != null) {
+
+    HoaDonTruSoResponseDTO hoaDonDto =
+            new HoaDonTruSoResponseDTO();
+
+    hoaDonDto.setId(
+            b.getHoaDon().getId()
+    );
+
+    hoaDonDto.setNoiDungXuLy(
+            b.getHoaDon().getNoiDungXuLy()
+    );
+
+    hoaDonDto.setThanhTien(
+            b.getHoaDon().getThanhTien()
+    );
+
+    hoaDonDto.setTrangThai(
+            b.getHoaDon().getTrangThai()
+    );
+
+    hoaDonDto.setCreatedAt(
+            b.getHoaDon().getCreatedAt()
+    );
+
+    dto.setHoaDon(hoaDonDto);
+}
+dto.setVip(
+        b.getReporter() != null
+        && b.getReporter().getVip() != null
+);
+if (b.getHoaDon() != null
+        && b.getHoaDon().getThanhToan() != null) {
+
+    ThanhToanTruSoResponseDTO tt =
+            new ThanhToanTruSoResponseDTO();
+
+    tt.setTrangThai(
+            b.getHoaDon()
+             .getThanhToan()
+             .getTrangThai()
+    );
+
+    tt.setTongThanhToan(
+            b.getHoaDon()
+             .getThanhToan()
+             .getTongThanhToan()
+    );
+
+    tt.setCreatedAt(
+            b.getHoaDon()
+             .getThanhToan()
+             .getCreatedAt()
+    );
+
+    dto.setThanhToan(tt);
+}
     return dto;
 }
 
