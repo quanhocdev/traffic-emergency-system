@@ -11,6 +11,7 @@ private Long id;
     private String ten;
     private String iconUrl;   // icon của loại sự cố
 
+    public LoaiSuCo() {}
     // getters và setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
