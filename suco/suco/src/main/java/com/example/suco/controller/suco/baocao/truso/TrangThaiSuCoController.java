@@ -1,10 +1,11 @@
 package com.example.suco.controller.suco.baocao.truso;
 
-import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
+import com.example.suco.dto.suco.baocao.AdminSuCoDetailResponseDTO;
+import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
+import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
-import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.truso.TrangThaiSuCoService;
 
 import jakarta.servlet.http.HttpSession;
@@ -23,15 +24,14 @@ public class TrangThaiSuCoController {
     @Autowired
     private BaoCaoSuCoRepository repo;
 
-
-
 @Autowired
-private SuCoResponseBuilder suCoResponseBuilder;
+private SuCoMapper suCoMapper;
 
     @Autowired
     private TrangThaiSuCoService trangThaiServiceService;
+
 @GetMapping("/danh-sach-hien-tai")
-public List<SuCoResponseDTO> getSuCoHienTai(
+public List<SuCoMapResponseDTO> getSuCoHienTai(
         @RequestParam(required = false) String status,
         HttpSession session) {
 
@@ -40,9 +40,9 @@ public List<SuCoResponseDTO> getSuCoHienTai(
 
     List<BaoCaoSuCo> entities = repo.findAll();
 
-    List<SuCoResponseDTO> allActive = entities.stream()
-            .map(suCoResponseBuilder::buildSuCoDto)
-            .toList();
+    List<SuCoMapResponseDTO> allActive = entities.stream()
+        .map(suCoMapper::toMapDto)
+        .toList();
 
     if (status != null && !status.isEmpty()) {
         return allActive.stream()
@@ -55,16 +55,21 @@ public List<SuCoResponseDTO> getSuCoHienTai(
 }
   
     @GetMapping("/lich-su")
-public List<SuCoResponseDTO> getSuCoHistory(HttpSession session) {
-
+public List<AdminSuCoDetailResponseDTO> getSuCoHistory(
+        HttpSession session
+) {
     TruSo current = (TruSo) session.getAttribute("currentTruSo");
-    if (current == null) return List.of();
+
+    if (current == null) {
+        return List.of();
+    }
 
     return repo.findHistoryByTruSo(current.getId())
             .stream()
-            .map(suCoResponseBuilder::buildSuCoDto)
+            .map(suCoMapper::toAdminDetailDto)
             .toList();
 }
+
 
     @PatchMapping("/cap-nhat-trang-thai/{id}")
     public ResponseEntity<?> updateSuCoStatus(

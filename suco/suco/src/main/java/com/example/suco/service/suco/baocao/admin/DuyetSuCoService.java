@@ -1,6 +1,5 @@
 package com.example.suco.service.suco.baocao.admin;
 
-import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
 import com.example.suco.model.TruSo;
@@ -9,7 +8,8 @@ import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.repository.suco.baocao.SpamRepository;
 import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.service.dieuphoi.decision.TruSoSelectorService;
-import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
+import com.example.suco.dto.suco.baocao.AdminSuCoDetailResponseDTO;
+import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.reward.UserRewardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,19 +47,19 @@ public class DuyetSuCoService {
     private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
-        private SuCoResponseBuilder suCoResponseBuilder;
+        private SuCoMapper suCoMapper;
 
     private static final Logger log =
         LoggerFactory.getLogger(DuyetSuCoService.class);
 
-    public List<SuCoResponseDTO> getPendingReportsForAdmin() {
+    public List<AdminSuCoDetailResponseDTO> getPendingReportsForAdmin() {
 
     List<BaoCaoSuCo> reports = reportRepository.findPendingReportsForAdmin();
 
     log.info("Đang tải {} báo cáo chờ duyệt", reports.size());
 
     return reports.stream()
-            .map(suCoResponseBuilder::buildSuCoDto)
+            .map(suCoMapper::toAdminDetailDto)
             .toList();
 }
 
@@ -105,22 +105,22 @@ public class DuyetSuCoService {
             BaoCaoSuCo updatedReport = reportRepository.save(report);
 
             realtimeService.broadcastReport(
-                    suCoResponseBuilder.buildSuCoDto(updatedReport));
+        suCoMapper.toMapDto(updatedReport));
 
             if (updatedReport.getTruSoDeXuat() != null) {
 
                 realtimeService.broadcastTruSo(
-                        updatedReport.getTruSoDeXuat().getId(),
-                        suCoResponseBuilder.buildSuCoDto(updatedReport)
-                );
+        updatedReport.getTruSoDeXuat().getId(),
+        suCoMapper.toMapDto(updatedReport)
+);
             }
 
             if (updatedReport.getTruSoTiepNhan() != null) {
 
                 realtimeService.broadcastTruSo(
-                        updatedReport.getTruSoTiepNhan().getId(),
-                        suCoResponseBuilder.buildSuCoDto(updatedReport)
-                );
+        updatedReport.getTruSoDeXuat().getId(),
+        suCoMapper.toMapDto(updatedReport)
+);
             }
 
         } else {
@@ -145,7 +145,7 @@ public class DuyetSuCoService {
             report.setTrangThaiXuLy("REJECTED");
 
             realtimeService.broadcastReport(
-                    suCoResponseBuilder.buildSuCoDto(report));
+                    suCoMapper.toMapDto(report));
 
             reportRepository.delete(report);
 

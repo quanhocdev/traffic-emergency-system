@@ -1,11 +1,11 @@
 package com.example.suco.service.suco.baocao.truso;
 
-import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
+import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
+import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.repository.vanhanh.TruSoRepository;
-import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class TrangThaiSuCoService {
 private TruSoRepository truSoRepository;
 
 @Autowired
-private SuCoResponseBuilder suCoResponseBuilder;
+private SuCoMapper suCoMapper;
 
     private static final Logger log =
         LoggerFactory.getLogger(TrangThaiSuCoService.class);
@@ -155,8 +155,7 @@ log.info("Reporter: {}",
         BaoCaoSuCo saved =
                 reportRepository.save(suCo);
 
-        SuCoResponseDTO dto =
-                suCoResponseBuilder.buildSuCoDto(saved);
+        SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
 
         if (saved.getTruSoTiepNhan() != null) {
 
@@ -212,14 +211,14 @@ log.info("Reporter: {}",
                 reportRepository.save(report);
 
         realtimeService.broadcastReport(
-                suCoResponseBuilder.buildSuCoDto(saved)
+                suCoMapper.toMapDto(saved)
         );
 
         if (saved.getTruSoTiepNhan() != null) {
 
             realtimeService.broadcastTruSo(
                     saved.getTruSoTiepNhan().getId(),
-                    suCoResponseBuilder.buildSuCoDto(saved)
+                    suCoMapper.toMapDto(saved)
             );
         }
     }

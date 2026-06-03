@@ -1,12 +1,10 @@
 package com.example.suco.service.suco.baocao.user;
 
 import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
-import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
 import com.example.suco.dto.suco.baocao.ai.AiResponse;
 import com.example.suco.dto.suco.baocao.ai.AiVerifyResult;
 import com.example.suco.model.BaoCaoSuCo;
-import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
-
+import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.service.suco.baocao.user.workflow.gui.ai.BaoCaoAiService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.create.CreateBaoCaoService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.duplicate.DuplicateBaoCaoService;
@@ -47,7 +45,7 @@ public class GuiBaoCaoService {
     private BaoCaoSuCoRepository reportRepository;
 
     @Autowired
-    private SuCoResponseBuilder suCoResponseBuilder;
+    private SuCoMapper suCoMapper;
 
     @Transactional
     public AiResponse submitReport(
@@ -93,21 +91,5 @@ public class GuiBaoCaoService {
         return baoCaoResponseFactory.success(
                 savedReport
         );
-    }
-
-    public List<SuCoResponseDTO> getMyReports(String uid) {
-
-        return reportRepository.findByReporterUid(uid)
-                .stream()
-                .map(suCoResponseBuilder::buildSuCoDto)
-                .toList();
-    }
-
-    public List<SuCoResponseDTO> getPendingReportsForAdmin() {
-
-        return reportRepository.findPendingReportsForAdmin()
-                .stream()
-                .map(suCoResponseBuilder::buildSuCoDto)
-                .toList();
     }
 }

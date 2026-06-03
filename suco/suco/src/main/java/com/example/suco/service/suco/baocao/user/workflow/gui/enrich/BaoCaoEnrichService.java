@@ -1,16 +1,12 @@
 package com.example.suco.service.suco.baocao.user.workflow.gui.enrich;
 
 import com.example.suco.model.BaoCaoSuCo;
-
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
-
+import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.service.location.GeocodingService;
-
-import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.system.file.ImageStorageService;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.validation.TrungLapBaoCaoService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +29,7 @@ public class BaoCaoEnrichService {
     private BaoCaoRealtimeService realtimeService;
 
     @Autowired
-    private SuCoResponseBuilder suCoResponseBuilder;
+    private SuCoMapper suCoMapper;
 
     public BaoCaoSuCo enrichAndSave(
             BaoCaoSuCo report,
@@ -73,8 +69,8 @@ public class BaoCaoEnrichService {
                 reportRepository.save(saved);
 
         realtimeService.broadcastReport(
-                suCoResponseBuilder
-                        .buildSuCoDto(saved)
+                suCoMapper
+                        .toMapDto(saved)
         );
 
         realtimeService.broadcastAdminNotification(

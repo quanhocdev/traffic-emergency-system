@@ -3,11 +3,11 @@ package com.example.suco.service.suco.baocao.user;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
-import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
 import com.example.suco.model.BaoCaoSuCo;
+import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
+import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.service.suco.baocao.system.validation.QuyenHanService;
-import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class HuyBaoCaoService {
     @Autowired
     private QuyenHanService quyenHanService;
     @Autowired
-    private SuCoResponseBuilder suCoResponseBuilder;
+    private SuCoMapper suCoMapper;
     @Autowired
     private BaoCaoRealtimeService realtimeService;
 
@@ -113,10 +113,8 @@ public class HuyBaoCaoService {
         BaoCaoSuCo saved =
                 reportRepository.save(report);
 
-        SuCoResponseDTO dto =
-                suCoResponseBuilder.buildSuCoDto(saved);
-
-        dto.setDiaChi(saved.getDiaChi());
+        SuCoMapResponseDTO dto =
+                suCoMapper.toMapDto(saved);
 
         realtimeService.broadcastReport(dto);
 
