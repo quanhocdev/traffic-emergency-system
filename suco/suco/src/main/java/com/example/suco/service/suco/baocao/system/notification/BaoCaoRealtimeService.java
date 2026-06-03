@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
+import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 
 @Service
 public class BaoCaoRealtimeService {
@@ -12,7 +12,7 @@ public class BaoCaoRealtimeService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    public void broadcastReport(SuCoResponseDTO dto) {
+    public void broadcastReport(SuCoMapResponseDTO dto) {
         messagingTemplate.convertAndSend(
                 "/topic/su-co",
                 dto
@@ -26,7 +26,7 @@ public class BaoCaoRealtimeService {
         );
     }
 
-    public void broadcastTruSo(Long truSoId, SuCoResponseDTO dto) {
+    public void broadcastTruSo(Long truSoId, SuCoMapResponseDTO dto) {
         messagingTemplate.convertAndSend(
                 "/topic/tru-so/" + truSoId + "/su-co",
                 dto
