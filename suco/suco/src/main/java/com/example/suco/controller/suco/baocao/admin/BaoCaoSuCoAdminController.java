@@ -17,9 +17,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.suco.dto.suco.baocao.AdminSuCoDetailResponseDTO;
+import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.service.suco.baocao.admin.AdminBaoCaoService;
 import com.example.suco.service.suco.baocao.admin.DuyetSuCoService;
-import com.example.suco.dto.suco.baocao.SuCoResponseDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
@@ -42,6 +43,9 @@ public class BaoCaoSuCoAdminController {
     @Autowired
     private DuyetSuCoService duyetSuCoService;
 
+
+    @Autowired
+    private SuCoMapper suCoMapper;
 
     @GetMapping
 public String page(Model model) {
@@ -100,21 +104,12 @@ public String page(Model model) {
         return ResponseEntity.ok("Xác thực thành công!");
     }
 
-    
-
-    // @GetMapping("/all-markers")
-    // @ResponseBody
-    // public ResponseEntity<List<BaoCaoSuCo>> getAllMarkers() {
-    //     // Sử dụng hàm thứ hai (In) để lấy đồng thời nhiều trạng thái
-    //     List<BaoCaoSuCo> list = reportRepository.findByTrangThaiDuyetIn(
-    //     List.of("VERIFIED", "AI_APPROVED", "PENDING")
-    // );
-    // return ResponseEntity.ok(list);
-    // }
 
     @GetMapping("/pending")
-    @ResponseBody
-    public ResponseEntity<List<SuCoResponseDTO>> getPendingReports() {
-        return ResponseEntity.ok(duyetSuCoService.getPendingReportsForAdmin());
-    }
+@ResponseBody
+public ResponseEntity<List<AdminSuCoDetailResponseDTO>> getPendingReports() {
+    return ResponseEntity.ok(
+            duyetSuCoService.getPendingReportsForAdmin()
+    );
+}
 }

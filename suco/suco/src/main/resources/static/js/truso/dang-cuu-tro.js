@@ -265,7 +265,7 @@ function formatItem(s, type) {
     trangThaiXuLy: String(statusRaw).toUpperCase().trim(),
     itemType: type,
     isVip: Boolean(s.isVip || s.vip),
-    createdAt: s.createdAt || new Date().toISOString(),
+    createdAt: s.createdAt || s.thoiGianTao || new Date().toISOString(),
     userPoints: s.user ? s.user.totalPoints : 0,
     // Quan trọng: Phải lấy được hoaDon từ object gốc s
     hoaDon: s.hoaDon || null,

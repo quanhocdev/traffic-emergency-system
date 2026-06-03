@@ -3,9 +3,9 @@ package com.example.suco.service.suco.baocao.user.workflow.gui.duplicate;
 import com.example.suco.dto.suco.baocao.ai.AiResponse;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.User;
+import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.repository.vanhanh.UserRepository;
-import com.example.suco.service.suco.baocao.system.builder.SuCoResponseBuilder;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.reward.UserRewardService;
 import com.example.suco.service.suco.baocao.system.validation.TrungLapBaoCaoService;
@@ -34,7 +34,7 @@ public class DuplicateBaoCaoService {
     private BaoCaoRealtimeService realtimeService;
 
     @Autowired
-    private SuCoResponseBuilder suCoResponseBuilder;
+    private SuCoMapper suCoMapper;
 
     @Autowired
     private BaoCaoResponseFactory responseFactory;
@@ -102,8 +102,8 @@ public class DuplicateBaoCaoService {
         }
 
         realtimeService.broadcastReport(
-                suCoResponseBuilder
-                        .buildSuCoDto(existingReport)
+                suCoMapper
+                        .toMapDto(existingReport)
         );
 
         return responseFactory.duplicate(
