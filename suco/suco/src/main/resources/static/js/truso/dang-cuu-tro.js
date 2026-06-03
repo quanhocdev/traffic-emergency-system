@@ -253,23 +253,28 @@ async function loadActiveRescues() {
 }
 // Hàm phụ để chuẩn hóa dữ liệu cho sạch code
 function formatItem(s, type) {
-  // Ưu tiên lấy trangThai (của SOS) hoặc trangThaiXuLy (của Sự cố)
   let statusRaw = type === "SOS" ? s.trangThai : s.trangThaiXuLy;
 
   return {
     id: s.id,
     viDo: s.viDo,
     kinhDo: s.kinhDo,
+
     ghiChu: type === "SOS" ? s.ghiChu || "SOS" : s.moTa || "Sự cố",
-    // Ép kiểu chuẩn xác để hàm filter không bị lỗi
+
     trangThaiXuLy: String(statusRaw).toUpperCase().trim(),
+
     itemType: type,
-    isVip: Boolean(s.isVip || s.vip),
+
     createdAt: s.createdAt || s.thoiGianTao || new Date().toISOString(),
-    userPoints: s.user ? s.user.totalPoints : 0,
-    // Quan trọng: Phải lấy được hoaDon từ object gốc s
-    hoaDon: s.hoaDon || null,
-    reporterUid: s.userId || s._raw?.userId,
+
+    // Chỉ SOS mới có
+    isVip: type === "SOS" ? Boolean(s.isVip || s.vip || s.daMuaGoi) : false,
+
+    hoaDon: type === "SOS" ? s.hoaDon || null : null,
+
+    thanhToan: type === "SOS" ? s.thanhToan || null : null,
+
     _raw: s,
   };
 }

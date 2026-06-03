@@ -1,7 +1,5 @@
 package com.example.suco.dto.suco.baocao;
 
-import com.example.suco.dto.sos.hoadon.payment.ThanhToanResponseDTO;
-import com.example.suco.dto.sos.hoadon.quanly.HoaDonTruSoResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
 import java.time.LocalDateTime;
 
@@ -30,12 +28,6 @@ public class TruSoSuCoDetailResponseDTO {
     private String diaChi;
     private LocalDateTime thoiGianTao;
 
-        private Boolean vip;
-
-    private HoaDonTruSoResponseDTO hoaDon;
-
-    private ThanhToanResponseDTO thanhToan;
-
     public TruSoSuCoDetailResponseDTO() {}
 
     // GETTERS
@@ -53,10 +45,7 @@ public class TruSoSuCoDetailResponseDTO {
     public String getTenNguoiBao() { return tenNguoiBao; }
     public TruSoMiniDTO getTruSoTiepNhan() { return truSoTiepNhan; }
     public String getDiaChi() { return diaChi; }
-    public LocalDateTime getThoiGianTao() { return thoiGianTao; }
-    public Boolean getVip() { return vip; }
-    public HoaDonTruSoResponseDTO getHoaDon() { return hoaDon; }
-    public ThanhToanResponseDTO getThanhToan() { return thanhToan; }
+    public LocalDateTime getThoiGianTao() { return thoiGianTao; } 
 
     // SETTERS
     public void setId(Long id) { this.id = id; }
@@ -74,7 +63,4 @@ public class TruSoSuCoDetailResponseDTO {
     public void setTruSoTiepNhan(TruSoMiniDTO truSoTiepNhan) { this.truSoTiepNhan = truSoTiepNhan; }
     public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
     public void setThoiGianTao(LocalDateTime thoiGianTao) { this.thoiGianTao = thoiGianTao; }
-    public void setVip(Boolean vip) { this.vip = vip; }
-    public void setHoaDon(HoaDonTruSoResponseDTO hoaDon) { this.hoaDon = hoaDon; }
-    public void setThanhToan(ThanhToanResponseDTO thanhToan) { this.thanhToan = thanhToan; }
 }

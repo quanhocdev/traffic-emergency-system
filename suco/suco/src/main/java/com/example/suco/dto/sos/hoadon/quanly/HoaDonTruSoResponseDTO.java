@@ -44,5 +44,5 @@ public class HoaDonTruSoResponseDTO {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-
+    
 }

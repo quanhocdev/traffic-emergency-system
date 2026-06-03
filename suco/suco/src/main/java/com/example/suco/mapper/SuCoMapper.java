@@ -5,7 +5,6 @@ import com.example.suco.model.TruSo;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
 import com.example.suco.dto.suco.baocao.TheoDoiBaoCaoResponseDTO;
-import com.example.suco.dto.sos.hoadon.quanly.HoaDonTruSoResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
 import com.example.suco.dto.suco.baocao.AdminSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.TruSoSuCoDetailResponseDTO;
@@ -169,63 +168,7 @@ if (b.getTruSoTiepNhan() != null) {
     dto.setThoiGianTao(b.getThoiGianTao());
 
 
-    if (b.getHoaDon() != null) {
-
-    HoaDonTruSoResponseDTO hoaDonDto =
-            new HoaDonTruSoResponseDTO();
-
-    hoaDonDto.setId(
-            b.getHoaDon().getId()
-    );
-
-    hoaDonDto.setNoiDungXuLy(
-            b.getHoaDon().getNoiDungXuLy()
-    );
-
-    hoaDonDto.setThanhTien(
-            b.getHoaDon().getThanhTien()
-    );
-
-    hoaDonDto.setTrangThai(
-            b.getHoaDon().getTrangThai()
-    );
-
-    hoaDonDto.setCreatedAt(
-            b.getHoaDon().getCreatedAt()
-    );
-
-    dto.setHoaDon(hoaDonDto);
-}
-dto.setVip(
-        b.getReporter() != null
-        && b.getReporter().getVip() != null
-);
-if (b.getHoaDon() != null
-        && b.getHoaDon().getThanhToan() != null) {
-
-    ThanhToanTruSoResponseDTO tt =
-            new ThanhToanTruSoResponseDTO();
-
-    tt.setTrangThai(
-            b.getHoaDon()
-             .getThanhToan()
-             .getTrangThai()
-    );
-
-    tt.setTongThanhToan(
-            b.getHoaDon()
-             .getThanhToan()
-             .getTongThanhToan()
-    );
-
-    tt.setCreatedAt(
-            b.getHoaDon()
-             .getThanhToan()
-             .getCreatedAt()
-    );
-
-    dto.setThanhToan(tt);
-}
+    
     return dto;
 }
 
