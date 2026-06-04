@@ -35,6 +35,17 @@
 
       <div id="map-wrapper">
         <div id="adminMap"></div>
+        <div id="incident-detail-panel" class="incident-detail-panel">
+          <div class="panel-header">
+            <h3>Chi tiết sự cố</h3>
+
+            <button onclick="closeIncidentPanel()">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div id="incident-detail-content">Chọn một sự cố trên bản đồ...</div>
+        </div>
         <div id="notification-bell">
           <i class="fa-solid fa-bell"></i>
           <span class="badge" style="display: none">0</span>

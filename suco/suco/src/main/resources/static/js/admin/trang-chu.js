@@ -269,14 +269,6 @@ async function handleSosSubmit() {
     }
     return;
   }
-  // Kiểm tra dữ liệu hợp lệ
-  // if (
-  //   select.value === "" &&
-  //   !form.querySelector('input[name="tenTruSo"]').value
-  // ) {
-  //   alert("Vui lòng nhập tên trụ sở mới!");
-  //   return;
-  // }
 
   try {
     console.log("===== TẠO TRỤ SỞ MỚI =====");
@@ -588,8 +580,6 @@ function renderSingleIncident(suCo) {
     return; // Kết thúc hàm
   }
 
-  // 2. CẬP NHẬT: Nếu Marker đã tồn tại nhưng chưa ẩn, xóa cái cũ để vẽ lại cái mới
-  // (Phòng trường hợp đổi màu sắc hoặc icon khi dữ liệu thay đổi)
   if (incidentMarkersMap[id]) {
     incidentMarkersMap[id].remove();
   }
@@ -626,9 +616,8 @@ function renderSingleIncident(suCo) {
 
   const popup = new mapboxgl.Popup({ offset: 35 }).setHTML(`
         <div style="width:200px">
-            <img src="${suCo.hinhAnhUrl || "/images/default-incident.jpg"}"
-                 style="width:100%; border-radius:8px; height:100px; object-fit: cover;"
-                 onerror="this.src='/images/default-incident.jpg'"/>
+            <img src="${suCo.hinhAnhUrl}"
+     style="width:100%; border-radius:8px; height:100px; object-fit:cover;">
             <h4 style="margin:5px 0;">${tenHienThi}</h4>
             <p style="font-size:12px; margin:0; color:#666;">${
               suCo.moTa || "Không có mô tả"
@@ -642,15 +631,63 @@ function renderSingleIncident(suCo) {
         </div>`);
 
   // 3. TẠO MARKER MỚI VÀ LƯU VÀO MAP THEO ID
-  const marker = new mapboxgl.Marker({ element: el, anchor: "bottom" })
+  const marker = new mapboxgl.Marker({
+    element: el,
+    anchor: "bottom",
+  })
     .setLngLat([lng, lat])
-    .setPopup(popup)
     .addTo(map);
+
+  el.addEventListener("click", () => {
+    loadIncidentDetail(suCo.id);
+  });
 
   // Lưu lại để quản lý theo ID
   incidentMarkersMap[id] = marker;
 }
+async function loadIncidentDetail(id) {
+  try {
+    const response = await fetch(`/api/su-co/${id}`);
 
+    if (!response.ok) {
+      throw new Error("Không lấy được chi tiết sự cố");
+    }
+
+    const detail = await response.json();
+
+    showIncidentPanel(detail);
+  } catch (e) {
+    console.error("Lỗi load chi tiết:", e);
+  }
+}
+function showIncidentPanel(data) {
+  const panel = document.getElementById("incident-detail-panel");
+  const content = document.getElementById("incident-detail-content");
+
+  panel.classList.add("open");
+
+  content.innerHTML = `
+      <img src="${data.hinhAnhUrl || ""}"
+     style="
+       width:100%;
+       height:220px;
+       object-fit:cover;
+       border-radius:12px;
+       margin-bottom:16px;
+     ">
+
+      <p><b>ID:</b> ${data.id}</p>
+      <p><b>Loại:</b> ${data.tenLoai}</p>
+      <p><b>Mô tả:</b> ${data.moTa || ""}</p>
+      <p><b>Địa chỉ:</b> ${data.diaChi || ""}</p>
+      <p><b>Trạng thái:</b> ${data.trangThaiXuLy}</p>
+      <p><b>Mức độ:</b> ${data.mucDoNghiemTrong}</p>
+  `;
+}
+
+function closeIncidentPanel() {
+  document.getElementById("incident-detail-panel").classList.remove("open");
+}
 function updateNotificationList(message) {
   notificationCount++;
   const bell = document.getElementById("notification-bell");

@@ -450,6 +450,101 @@ function addSOSMarker(item, type = "SOS") {
     type === "SU_CO" ? showSuCoDetail(latestData) : showSOSDetail(latestData);
   });
 }
+async function loadIncidentDetail(id) {
+  try {
+    const res = await fetch(`/api/su-co/${id}`);
+
+    if (!res.ok) {
+      alert("Không tải được chi tiết");
+      return;
+    }
+
+    const detail = await res.json();
+
+    renderIncidentPanel(detail);
+  } catch (e) {
+    console.error(e);
+  }
+}
+function renderIncidentPanel(item) {
+  const panel = document.getElementById("incident-detail-panel");
+  const content = document.getElementById("incident-panel-content");
+
+  panel.classList.add("open");
+
+  content.innerHTML = `
+      <img
+        src="${item.hinhAnhUrl || "/images/no-image.png"}"
+        style="
+          width:100%;
+          height:220px;
+          object-fit:cover;
+          border-radius:10px;
+          margin-bottom:15px;
+        "
+      >
+
+      <table class="detail-table">
+        <tr>
+          <td>ID</td>
+          <td>${item.id}</td>
+        </tr>
+
+        <tr>
+          <td>Loại sự cố</td>
+          <td>${item.tenLoai}</td>
+        </tr>
+
+        <tr>
+          <td>Mô tả</td>
+          <td>${item.moTa || ""}</td>
+        </tr>
+
+        <tr>
+          <td>Địa chỉ</td>
+          <td>${item.diaChi || ""}</td>
+        </tr>
+
+        <tr>
+          <td>Độ tin cậy</td>
+          <td>${item.doTinCay}</td>
+        </tr>
+
+        <tr>
+          <td>Trạng thái duyệt</td>
+          <td>${item.trangThaiDuyet}</td>
+        </tr>
+
+        <tr>
+          <td>Trạng thái xử lý</td>
+          <td>${item.trangThaiXuLy}</td>
+        </tr>
+
+        <tr>
+          <td>Mức độ</td>
+          <td>${item.mucDoNghiemTrong}</td>
+        </tr>
+
+        <tr>
+          <td>Người báo</td>
+          <td>${item.reporterName}</td>
+        </tr>
+
+        <tr>
+          <td>Email</td>
+          <td>${item.reporterEmail}</td>
+        </tr>
+
+        <tr>
+          <td>Trụ sở tiếp nhận</td>
+          <td>${item.truSoTiepNhanTen || "Chưa có"}</td>
+        </tr>
+      </table>
+  `;
+}
+function closeIncidentPanel() {
+  document.getElementById("incident-detail-panel").classList.remove("open");
+}
 function doiTrangThai(id, status) {
   const url = `/sos/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${idTruSo}`;
   fetch(url, { method: "PATCH" }).then((res) => {
