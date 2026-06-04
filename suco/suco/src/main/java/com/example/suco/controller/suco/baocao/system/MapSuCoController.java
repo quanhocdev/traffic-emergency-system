@@ -7,9 +7,11 @@ import com.example.suco.model.TruSo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 
 import jakarta.servlet.http.HttpSession;
-
+import com.example.suco.service.suco.baocao.system.validation.RoleDetailService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.util.List;
 
 @RestController
@@ -22,29 +24,29 @@ public class MapSuCoController {
     @Autowired
 private SuCoMapper suCoMapper;
 
+@Autowired
+private RoleDetailService  service;
 
-    @GetMapping("/map")
-public List<SuCoMapResponseDTO> getMapData(
-        HttpSession session,
-        @RequestHeader(value = "Role", defaultValue = "USER") String role
-) {
+@GetMapping("/map")
+public List<SuCoMapResponseDTO> getMapData() {
 
-    List<BaoCaoSuCo> list;
+    return repo.findAllForMapEntity()
+            .stream()
+            .map(suCoMapper::toMapDto)
+            .toList();
+}
+@GetMapping("/{id}")
+public Object getDetail(@PathVariable Long id) {
 
-    if ("TRU_SO".equals(role)) {
+    String role = SecurityContextHolder.getContext()
+            .getAuthentication()
+            .getAuthorities()
+            .iterator()
+            .next()
+            .getAuthority();
 
-        TruSo current =
-                (TruSo) session.getAttribute("currentTruSo");
+    role = role.replace("ROLE_", "");
 
-        list = repo.findActiveByTruSo(current.getId());
-
-    } else {
-
-        list = repo.findAllForMapEntity();
-    }
-
-    return list.stream()
-        .map(suCoMapper::toMapDto)
-        .toList();
+    return service.getDetail(id, role);
 }
 }

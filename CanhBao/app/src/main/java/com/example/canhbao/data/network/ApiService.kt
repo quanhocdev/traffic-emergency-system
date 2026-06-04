@@ -1,7 +1,7 @@
     package com.example.canhbao.data.network
 
-    import com.example.canhbao.data.model.suco.baocao.response.BaoCaoResponse
-    import com.example.canhbao.data.model.suco.baocao.request.BaoCaoSuCoRequest
+    import com.example.canhbao.data.model.suco.baocao.AiResponse
+    import com.example.canhbao.data.model.suco.baocao.BaoCaoSuCoRequest
     import com.example.canhbao.data.model.CameraMapDto
     import com.example.canhbao.data.model.DoiTienDto
     import com.example.canhbao.data.model.GoiDto
@@ -22,7 +22,9 @@
     import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
     import com.example.canhbao.data.model.sos.tinhieu.TheoDoiTinHieuResponseDTO
     import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSResponse
+    import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
     import com.example.canhbao.data.model.suco.baocao.TheoDoiBaoCaoResponseDTO
+    import com.example.canhbao.data.model.suco.baocao.UserSuCoDetailResponseDTO
     import retrofit2.Response
     import retrofit2.http.Body
     import retrofit2.http.GET
@@ -40,7 +42,7 @@
         suspend fun submitReport(
             @Header("Authorization") token: String,
             @Body request: BaoCaoSuCoRequest
-        ): Response<BaoCaoResponse>
+        ): Response<AiResponse>
 
         @GET("/api/sos/theo-doi")
         suspend fun getTheoDoiSOS(
@@ -59,7 +61,12 @@
         ): Response<Map<String, Any>>
 
         @GET("/api/su-co/map")
-        suspend fun getSuCoForMap(): List<SuCoMapDto>
+        suspend fun getSuCoForMap(): List<SuCoMapResponseDTO>
+
+        @GET("/api/su-co/{id}")
+        suspend fun getSuCoDetail(
+            @Path("id") id: Long
+        ): UserSuCoDetailResponseDTO
 
         @GET("/api/tru-so/all")
         suspend fun getAllTruSo(): List<TruSoMapDto>
