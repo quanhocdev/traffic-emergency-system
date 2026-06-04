@@ -5,7 +5,7 @@ import android.util.Base64
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.suco.baocao.BaoCaoSuCoRequest
+import com.example.canhbao.data.model.suco.baocao.SuCoRequestDTO
 import com.example.canhbao.data.model.suco.loai.LoaiSuCo
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.google.firebase.auth.FirebaseAuth
@@ -75,7 +75,7 @@ class BaoCaoSuCoViewModel : ViewModel() {
                 }
 
 
-                val request = BaoCaoSuCoRequest(
+                val request = SuCoRequestDTO(
                     loaiSuCoId = selectedLoaiSuCo!!.id,
                     kinhDo = lng,
                     viDo = lat,

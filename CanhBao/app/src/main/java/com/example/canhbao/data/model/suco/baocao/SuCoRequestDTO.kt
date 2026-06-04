@@ -2,7 +2,7 @@ package com.example.canhbao.data.model.suco.baocao
 
 data class LoaiSuCoIdRequest(val id: Long)
 
-data class BaoCaoSuCoRequest(
+data class SuCoRequestDTO(
     val loaiSuCoId: Long,
     val kinhDo: Double,
     val viDo: Double,
