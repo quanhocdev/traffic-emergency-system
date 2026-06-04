@@ -32,7 +32,6 @@ import ua.naiksoftware.stomp.StompClient
 
 class MapViewModel : ViewModel() {
     // Thêm vào phía trên cùng của class MapViewModel
-    private var mStompClient: StompClient? = null
     private val client = OkHttpClient()
     private val suCoApi: BaoCaoSuCoApi = BaoCaoSuCoRetrofit.api
 
@@ -79,17 +78,11 @@ class MapViewModel : ViewModel() {
     private val _cameraWithIcons = MutableStateFlow<List<Pair<CameraMapDto, Bitmap>>>(emptyList())
     val cameraWithIcons = _cameraWithIcons.asStateFlow()
 
-    private val _sosResponse = MutableStateFlow<String?>(null)
-    val sosResponse = _sosResponse.asStateFlow()
-
-    // Hàm để xóa thông báo sau khi người dùng đã đọc
-    fun clearSosResponse() {
-        _sosResponse.value = null
-    }
     // Thêm các list này để hỗ trợ tìm kiếm khi click
     private val _suCoList = MutableStateFlow<List<SuCoMapDto>>(emptyList())
     val suCoList = _suCoList.asStateFlow()
 
+    
     // Cập nhật lại loadSuCoForMap để lưu cả list DTO
     fun loadSuCoForMap(context: Context) {
         viewModelScope.launch {
@@ -150,164 +143,6 @@ class MapViewModel : ViewModel() {
         }
     }
 
-    fun startListeningRealtime(context: Context) {
-        // 1. Chỉ ngắt kết nối nếu đang thực sự kết nối
-
-        try {
-            if (mStompClient != null && mStompClient!!.isConnected) {
-                mStompClient?.disconnect()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
-        // 2. Khởi tạo Client
-        mStompClient =
-            Stomp.over(Stomp.ConnectionProvider.OKHTTP, "${AppConfig.WS_BASE_URL}/ws-suco/websocket")
-        subscribeToSosStatus(context)
-        // 3. Đăng ký nhận tin nhắn (Thêm phần xử lý lỗi)
-        mStompClient?.topic("/topic/su-co")?.subscribe({ topicMessage ->
-            val jsonStr = topicMessage.payload
-            try {
-                val jsonObject = JSONObject(jsonStr)
-                val trangThaiXuLy = jsonObject.optString("trangThaiXuLy", "")
-                val id = jsonObject.optLong("id")
-
-                // --- BƯỚC 1: NẾU HOÀN THÀNH THÌ XÓA KHỎI BẢN ĐỒ ---
-                if (trangThaiXuLy == "HOAN_THANH") {
-                    viewModelScope.launch(Dispatchers.Main) {
-                        val currentList = _suCoWithIcons.value.toMutableList()
-                        val removed = currentList.removeAll { it.first.id == id }
-                        if (removed) {
-                            _suCoWithIcons.value = currentList.toList()
-                            println("🗑️ Realtime: Sự cố $id đã hoàn thành, tự động ẩn.")
-                        }
-                    }
-                    return@subscribe // Thoát sớm, không chạy tiếp phần vẽ marker
-                }
-
-                // --- BƯỚC 2: XỬ LÝ CẬP NHẬT HOẶC THÊM MỚI ---
-                val severity = jsonObject.optString("mucDoNghiemTrong").ifEmpty {
-                    jsonObject.optString("severity", "LOW")
-                }
-
-                val newSuCo = SuCoMapDto(
-                    id = id,
-                    kinhDo = jsonObject.optDouble("kinhDo"),
-                    viDo = jsonObject.optDouble("viDo"),
-                    iconUrl = jsonObject.optString("iconUrl").ifEmpty {
-                        jsonObject.optJSONObject("loaiSuCo")?.optString("iconUrl") ?: ""
-                    },
-                    mucDoNghiemTrong = severity,
-                    moTa = jsonObject.optString("moTa", ""),
-                    trangThaiDuyet = jsonObject.optString("trangThaiDuyet", ""),
-                    trangThaiXuLy = trangThaiXuLy, // Lưu trạng thái để đồng bộ
-                    hinhAnhUrl = jsonObject.optString("hinhAnhUrl", null)
-                )
-
-                if (newSuCo.kinhDo != 0.0 && newSuCo.viDo != 0.0) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        val safeIconUrl = newSuCo.iconUrl ?: ""
-                        val fullUrl = if (safeIconUrl.startsWith("http")) safeIconUrl
-                        else "${AppConfig.HTTP_BASE_URL}$safeIconUrl"
-
-                        // Vẽ lại icon (màu viền sẽ thay đổi theo mức độ nghiêm trọng mới)
-                        loadMarkerIcon(context, fullUrl, newSuCo.mucDoNghiemTrong)?.let { bmp ->
-                            withContext(Dispatchers.Main) {
-                                val currentList = _suCoWithIcons.value.toMutableList()
-                                // Xóa cái cũ dựa trên ID và thêm cái mới (với icon/màu mới)
-                                currentList.removeAll { it.first.id == newSuCo.id }
-                                currentList.add(newSuCo to bmp)
-                                _suCoWithIcons.value = currentList.toList()
-                                println("🎨 Realtime: Đã cập nhật mức độ/vị trí cho sự cố ${newSuCo.id}")
-                            }
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }, { error ->
-            println("❌ Lỗi Socket Sự cố: ${error.message}")
-        })
-
-
-
-        mStompClient?.topic("/topic/tru-so-delete")?.subscribe({ topicMessage ->
-            val deletedId = topicMessage.payload.toLongOrNull()
-            if (deletedId != null) {
-                viewModelScope.launch(Dispatchers.Main) {
-                    val currentList = _truSoWithIcons.value.toMutableList()
-                    currentList.removeAll { it.first.id == deletedId }
-                    _truSoWithIcons.value = currentList.toList()
-                }
-            }
-        }, { it.printStackTrace() })
-
-        // Thêm đoạn này vào bên trong startListeningRealtime, trước dòng mStompClient?.connect()
-
-// --- 1. SOCKET CẬP NHẬT/THÊM CAMERA ---
-        mStompClient?.topic("/topic/camera")?.subscribe({ topicMessage ->
-            try {
-                val jsonObject = JSONObject(topicMessage.payload)
-                val newCam = CameraMapDto(
-                    id = jsonObject.getLong("id"),
-                    tenCamera = jsonObject.getString("tenCamera"),
-                    kinhDo = jsonObject.getDouble("kinhDo"),
-                    viDo = jsonObject.getDouble("viDo"),
-                    moTa = jsonObject.optString("moTa", null),
-                    anhCamera = jsonObject.optString("anhCamera", null),
-                    videoUrl = jsonObject.optString("videoUrl", null)
-                )
-                viewModelScope.launch(Dispatchers.Main) {
-                    val icon = createCameraIcon(context)
-                    val currentList = _cameraWithIcons.value.toMutableList()
-                    currentList.removeAll { it.first.id == newCam.id } // Xóa cũ nếu trùng ID
-                    currentList.add(newCam to icon) // Thêm mới/cập nhật
-                    _cameraWithIcons.value = currentList.toList()
-                    println("🛰️ Realtime: Đã cập nhật Camera ${newCam.tenCamera} - Video: ${newCam.videoUrl}")
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }, { it.printStackTrace() })
-
-// --- 2. SOCKET XÓA CAMERA (Phần bạn yêu cầu) ---
-        mStompClient?.topic("/topic/camera-delete")?.subscribe({ topicMessage ->
-            // Backend gửi payload là ID (kiểu Long)
-            val deletedId = topicMessage.payload.toLongOrNull()
-            if (deletedId != null) {
-                viewModelScope.launch(Dispatchers.Main) {
-                    val currentList = _cameraWithIcons.value.toMutableList()
-
-                    // Tìm và xóa Camera có ID khớp với ID server gửi về
-                    val removed = currentList.removeAll { it.first.id == deletedId }
-
-                    if (removed) {
-                        _cameraWithIcons.value = currentList.toList()
-                        println("🗑️ Realtime: Đã xóa Camera ID $deletedId khỏi bản đồ")
-                    }
-                }
-            }
-        }, { it.printStackTrace() })
-
-        mStompClient?.lifecycle()?.subscribe({ lifecycleEvent ->
-            when (lifecycleEvent.type) {
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> println("✅ Stomp opened")
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
-                    println("❌ Stomp error: ${lifecycleEvent.exception?.message}")
-                }
-
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.CLOSED -> println("🔌 Stomp closed")
-                else -> {}
-            }
-        }, { error ->
-            // 🔥 DÒNG NÀY NGĂN CRASH KHI MẤT KẾT NỐI
-            println("❌ Lỗi Lifecycle: ${error.message}")
-        })
-
-        mStompClient?.connect()
-    }
 
     override fun onCleared() {
         super.onCleared()
@@ -543,185 +378,13 @@ class MapViewModel : ViewModel() {
         _startPoint.value = point
         _startName.value = name
     }
-    private val _currentHandlingTruSoId = MutableStateFlow<String?>(null)
-    val currentHandlingTruSoId = _currentHandlingTruSoId.asStateFlow()
- fun startListeningWebRTC(userId: String, webrtcViewModel: WebRTCViewModel) {
-     mStompClient?.topic("/topic/user/$userId/call")?.subscribe({ topicMessage ->
-         val json = JSONObject(topicMessage.payload)
 
-         // Phải truyền đủ 3 tham số như đã định nghĩa trong WebRTCViewModel
-         mStompClient?.let { client ->
-             webrtcViewModel.handleSignal(json, client, userId)
-         }
 
-     }, { it.printStackTrace() })
- }
-    fun handleSosResponse(jsonRaw: String) {
-        try {
-            val json = JSONObject(jsonRaw)
-            val message = json.optString("message")
 
-            // Nếu Server trả về truSoId thì lấy, không thì mặc định hoặc lấy từ nguồn khác
-            // Giả sử logic là: Nếu có idSOS mà chưa có truSoId, ta có thể tạm lưu để biết ca này đang active
-            val truSoId = if (json.has("truSoId")) json.getString("truSoId") else "PENDING"
 
-            _sosResponse.value = message
-            _currentHandlingTruSoId.value = truSoId
 
-            Log.d("MapViewModel", "Đã nhận phản hồi cứu hộ: $message từ Trụ sở: $truSoId")
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-    // Trong MapViewModel.kt
-// Thêm hàm này để MapScreen lấy được client gửi đi
-    val stompClient get() = mStompClient
 
-    fun setupWebRTCSubscription(context: Context, webrtcViewModel: WebRTCViewModel) {
-        val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-        val userId = currentUser?.uid ?: android.provider.Settings.Secure.getString(
-            context.contentResolver,
-            android.provider.Settings.Secure.ANDROID_ID
-        )
 
-        // DÒNG NÀY RẤT QUAN TRỌNG ĐỂ DEBUG
-        Log.i("WebRTC_Debug", "Android is listening for calls at: /topic/user/$userId/call")
-
-        startListeningWebRTC(userId, webrtcViewModel)
-    }
-    private fun subscribeToSosStatus(context: Context) {
-        // 1. Lấy đúng UID của người dùng hiện tại (Ví dụ dùng Firebase)
-        // Nếu bạn không dùng Firebase, hãy lấy từ SharedPreferences nơi bạn lưu ID lúc đăng nhập
-        val currentUser = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-        val userId = currentUser?.uid ?: android.provider.Settings.Secure.getString(
-            context.contentResolver,
-            android.provider.Settings.Secure.ANDROID_ID
-        )
-
-        // 2. Địa chỉ phải khớp tuyệt đối với Logcat bạn đã thấy
-        val topic = "/topic/user/$userId/sos-status"
-
-        println("DEBUG_SOCKET: Đang lắng nghe tại $topic")
-
-        mStompClient?.topic(topic)?.subscribe({ topicMessage ->
-            val payload = topicMessage.payload
-            println("DEBUG_SOCKET: ĐÃ NHẬN TIN: $payload")
-
-            try {
-                val jsonObject = JSONObject(payload)
-                val message = jsonObject.optString("message")
-                val status = jsonObject.optString("trangThai")
-
-                viewModelScope.launch(Dispatchers.Main) {
-                    // Cập nhật StateFlow để UI (MapScreen) tự hiển thị ElevatedCard
-                    _sosResponse.value = message
-
-                    // Tự ẩn sau 8 giây nếu hoàn thành
-                    if (status == "HOAN_THANH" || status == "HUY_BO") {
-                        kotlinx.coroutines.delay(8000)
-                        _sosResponse.value = null
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }, {
-            println("❌ Lỗi kết nối Socket: ${it.message}")
-        })
-    }
-    // --- THÊM VÀO ĐẦU CLASS MAPVIEWMODEL ---
-
-    // Trạng thái Bật/Tắt
-    private val _isSoundEnabled = MutableStateFlow(true)
-    val isSoundEnabled = _isSoundEnabled.asStateFlow()
-
-    private val _showRangeCircle = MutableStateFlow(true)
-    val showRangeCircle = _showRangeCircle.asStateFlow()
-
-    // Quản lý cấp độ cảnh báo để không đọc lặp lại (ID -> Level)
-    private val alertLevels = mutableMapOf<Long, Int>()
-
-    // Kênh truyền lệnh đọc giọng nói sang View
-    private val _ttsCommand = MutableSharedFlow<String>()
-    val ttsCommand = _ttsCommand.asSharedFlow()
-
-    fun toggleSound() { _isSoundEnabled.value = !_isSoundEnabled.value }
-    fun toggleRangeCircle() { _showRangeCircle.value = !_showRangeCircle.value }
-
-    // Hàm kiểm tra khoảng cách (Sẽ gọi từ View mỗi khi GPS đổi)
-    fun checkProximityAndAlert(userPoint: Point) {
-        val currentSuCoList = _suCoWithIcons.value
-        if (currentSuCoList.isEmpty()) return
-
-        viewModelScope.launch {
-            currentSuCoList.forEach { (suCo, _) ->
-                val results = FloatArray(2)
-                android.location.Location.distanceBetween(
-                    userPoint.latitude(), userPoint.longitude(),
-                    suCo.viDo, suCo.kinhDo,
-                    results
-                )
-                val distance = results[0]
-                val bearing = results[1]
-                val huongDi = getDirectionName(bearing)
-                val currentLevel = alertLevels[suCo.id] ?: 0
-
-                // Làm tròn khoảng cách để đọc cho tự nhiên (ví dụ: 82.4m -> 82m)
-                val roundedDistance = Math.round(distance)
-
-                // Xử lý Tên loại và Mức độ như cũ
-                val tenSuCo = if (suCo.tenLoai.isNullOrBlank() || suCo.tenLoai == "null") "sự cố" else suCo.tenLoai
-                val mucDoRaw = suCo.mucDoNghiemTrong?.trim()?.uppercase()
-                val mucDoText = when (mucDoRaw) {
-                    "HIGH" -> "mức độ cao"
-                    "MEDIUM" -> "mức độ trung bình"
-                    "LOW" -> "mức độ thấp"
-                    else -> ""
-                }
-
-                val warningMessage = if (mucDoText.isEmpty()) "có $tenSuCo" else "có $tenSuCo $mucDoText"
-
-                when {
-                    // Cảnh báo động: Đọc khoảng cách chính xác khi trong phạm vi 100m
-                    // currentLevel < 1 đảm bảo nó chỉ nhắc 1 lần khi bắt đầu vào vùng cảnh báo
-                    distance <= 100f && currentLevel < 1 -> {
-                        if (_isSoundEnabled.value) {
-                            // CÂU LỆNH MỚI: Đọc chính xác số mét
-                            _ttsCommand.emit("Chú ý! Cách $roundedDistance mét $huongDi $warningMessage")
-                        }
-                        alertLevels[suCo.id] = 1
-                    }
-
-                    // Cảnh báo nhắc lại: Nếu cực gần (ví dụ 30m) thì nhắc lại 1 lần nữa
-                    distance <= 30f && currentLevel < 2 -> {
-                        if (_isSoundEnabled.value) {
-                            _ttsCommand.emit("Cảnh báo! Chỉ còn $roundedDistance mét, $warningMessage")
-                        }
-                        alertLevels[suCo.id] = 2
-                    }
-
-                    // Reset khi đã đi xa
-                    distance > 150f && currentLevel > 0 -> {
-                        alertLevels.remove(suCo.id)
-                    }
-                }
-            }
-        }
-    }
-    // State lưu đối tượng cụ thể (DTO) để Screen hiển thị thông tin chi tiết
-    private val _selectedObject = MutableStateFlow<Any?>(null)
-    val selectedObject = _selectedObject.asStateFlow()
-
-    // Hàm để Screen gọi khi người dùng click vào Marker trên bản đồ
-    fun selectObject(obj: Any?) {
-        _selectedObject.value = obj
-    }
-
-    // Hàm xóa đối tượng (khi đóng BottomSheet)
-    fun clearSelectedObject() {
-        _selectedObject.value = null
-    }
-    // Thêm vào MapViewModel.kt
     fun navigateToDestination(destPoint: Point, destName: String, userLocation: Point?) {
         if (userLocation == null) return
 
@@ -734,8 +397,6 @@ class MapViewModel : ViewModel() {
         // 3. Gọi hàm tìm đường OSRM đã viết
         getFreeDirections()
 
-        // 4. Xóa đối tượng đang chọn để đóng BottomSheet, tập trung vào bản đồ dẫn đường
-        clearSelectedObject()
     }
     private fun getDirectionName(bearing: Float): String {
         return when {
