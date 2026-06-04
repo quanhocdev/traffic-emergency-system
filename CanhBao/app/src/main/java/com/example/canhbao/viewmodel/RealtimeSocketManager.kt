@@ -1,15 +1,10 @@
 package com.example.canhbao.viewmodel
 
 import android.content.Context
-import android.provider.Settings
 import android.util.Log
 import com.example.canhbao.data.model.CameraMapDto
-import com.example.canhbao.data.model.SuCoMapDto
-import com.example.canhbao.data.model.TruSoMapDto
-import com.example.canhbao.data.network.AppConfig
-import com.example.canhbao.ui.screens.createCameraIcon
+import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
 import org.json.JSONObject
-import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
 
 class RealtimeSocketManager(
@@ -18,7 +13,7 @@ class RealtimeSocketManager(
 ) {
 
     interface Callback {
-        fun onSuCoUpdate(suCo: SuCoMapDto)
+        fun onSuCoUpdate(suCo: SuCoMapResponseDTO)
         fun onSuCoRemove(id: Long)
 
         fun onTruSoRemove(id: Long)
@@ -42,16 +37,14 @@ class RealtimeSocketManager(
                     return@subscribe
                 }
 
-                val suCo = SuCoMapDto(
+                val suCo = SuCoMapResponseDTO(
                     id = id,
                     kinhDo = json.optDouble("kinhDo"),
                     viDo = json.optDouble("viDo"),
                     iconUrl = json.optString("iconUrl"),
                     mucDoNghiemTrong = json.optString("mucDoNghiemTrong"),
-                    moTa = json.optString("moTa"),
-                    trangThaiDuyet = json.optString("trangThaiDuyet"),
                     trangThaiXuLy = status,
-                    hinhAnhUrl = json.optString("hinhAnhUrl", null)
+                    truSoId = if (json.has("truSoId")) json.optLong("truSoId") else null
                 )
 
                 callback.onSuCoUpdate(suCo)

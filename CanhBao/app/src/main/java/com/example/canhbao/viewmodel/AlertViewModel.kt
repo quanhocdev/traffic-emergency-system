@@ -4,7 +4,7 @@ import android.location.Location
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.SuCoMapDto
+import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
 import com.mapbox.geojson.Point
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +30,7 @@ class AlertViewModel : ViewModel() {
 
     fun checkProximityAndAlert(
         userPoint: Point,
-        suCoList: List<SuCoMapDto>
+        suCoList: List<SuCoMapResponseDTO> // Đã đổi sang DTO mới ở đây
     ) {
         if (suCoList.isEmpty()) return
 
@@ -51,7 +51,8 @@ class AlertViewModel : ViewModel() {
 
                 val roundedDistance = distance.toInt()
 
-                val tenSuCo = suCo.tenLoai ?: "sự cố"
+                // Vì SuCoMapResponseDTO không có tên cụ thể, ta dùng định danh chung là "sự cố"
+                val tenSuCo = "sự cố"
 
                 val mucDoText = when (suCo.mucDoNghiemTrong?.uppercase()) {
                     "HIGH" -> "mức độ cao"

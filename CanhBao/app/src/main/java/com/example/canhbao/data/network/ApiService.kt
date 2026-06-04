@@ -1,173 +1,175 @@
-    package com.example.canhbao.data.network
+package com.example.canhbao.data.network
 
-    import com.example.canhbao.data.model.suco.baocao.AiResponse
-    import com.example.canhbao.data.model.suco.baocao.BaoCaoSuCoRequest
-    import com.example.canhbao.data.model.CameraMapDto
-    import com.example.canhbao.data.model.DoiTienDto
-    import com.example.canhbao.data.model.GoiDto
-    import com.example.canhbao.data.model.LichSuDto
-    import com.example.canhbao.data.model.suco.loai.LoaiSuCo
-    import com.example.canhbao.data.model.MuaGoiDto
-    import com.example.canhbao.data.model.MuaGoiRequest
-    import com.example.canhbao.data.model.SuCoMapDto
-    import com.example.canhbao.data.model.SuCoUserDto
-    import com.example.canhbao.data.model.ThongKeQuyDto
-    import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequest
-    import com.example.canhbao.data.model.TruSoMapDto
-    import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
-    import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
-    import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
-    import com.example.canhbao.data.model.qua.QuaResponseDTO
-    import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
-    import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
-    import com.example.canhbao.data.model.sos.tinhieu.TheoDoiTinHieuResponseDTO
-    import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSResponse
-    import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
-    import com.example.canhbao.data.model.suco.baocao.TheoDoiBaoCaoResponseDTO
-    import com.example.canhbao.data.model.suco.baocao.UserSuCoDetailResponseDTO
-    import retrofit2.Response
-    import retrofit2.http.Body
-    import retrofit2.http.GET
-    import retrofit2.http.Header
-    import retrofit2.http.PATCH
-    import retrofit2.http.POST
-    import retrofit2.http.Path
-    import retrofit2.http.Query
+import com.example.canhbao.data.model.*
+import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
+import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
+import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
+import com.example.canhbao.data.model.qua.QuaResponseDTO
+import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
+import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
+import com.example.canhbao.data.model.sos.tinhieu.TheoDoiTinHieuResponseDTO
+import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequest
+import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSResponse
+import com.example.canhbao.data.model.suco.baocao.*
+import com.example.canhbao.data.model.suco.loai.LoaiSuCo
+import retrofit2.Response
+import retrofit2.http.*
 
-    interface BaoCaoSuCoApi {
-        @GET("/api/loai-su-co")
-        suspend fun getAllLoaiSuCo(): List<LoaiSuCo>
+interface BaoCaoSuCoApi {
 
-        @POST("/api/su-co")
-        suspend fun submitReport(
-            @Header("Authorization") token: String,
-            @Body request: BaoCaoSuCoRequest
-        ): Response<AiResponse>
+    // BÁO CÁO SỰ CỐ & BẢN ĐỒ REALTIME
 
-        @GET("/api/sos/theo-doi")
-        suspend fun getTheoDoiSOS(
-            @Header("Authorization") token: String
-        ): List<TheoDoiTinHieuResponseDTO>
+    @GET("/api/loai-su-co")
+    suspend fun getAllLoaiSuCo(): List<LoaiSuCo>
 
-        @GET("/api/su-co/theo-doi")
-        suspend fun getTheoDoiSuCo(
-            @Header("Authorization") token: String
-        ): List<TheoDoiBaoCaoResponseDTO>
+    @POST("/api/su-co")
+    suspend fun submitReport(
+        @Header("Authorization") token: String,
+        @Body request: SuCoRequestDTO
+    ): Response<AiResponse>
 
-        @PATCH("/api/su-co/{id}")
-        suspend fun cancelSuCo(
-            @Header("Authorization") token: String,
-            @Path("id") id: Long
-        ): Response<Map<String, Any>>
+    @GET("/api/su-co/map")
+    suspend fun getSuCoForMap(): List<SuCoMapResponseDTO>
 
-        @GET("/api/su-co/map")
-        suspend fun getSuCoForMap(): List<SuCoMapResponseDTO>
+    @GET("/api/su-co/{id}")
+    suspend fun getSuCoDetail(
+        @Path("id") id: Long
+    ): UserSuCoDetailResponseDTO
 
-        @GET("/api/su-co/{id}")
-        suspend fun getSuCoDetail(
-            @Path("id") id: Long
-        ): UserSuCoDetailResponseDTO
+    @PATCH("/api/su-co/{id}")
+    suspend fun cancelSuCo(
+        @Header("Authorization") token: String,
+        @Path("id") id: Long
+    ): Response<Map<String, Any>>
 
-        @GET("/api/tru-so/all")
-        suspend fun getAllTruSo(): List<TruSoMapDto>
+    @GET("/api/su-co/theo-doi")
+    suspend fun getTheoDoiSuCo(
+        @Header("Authorization") token: String
+    ): List<TheoDoiBaoCaoResponseDTO>
 
-        @GET("/api/camera/all")
-        suspend fun getAllCamera(): List<CameraMapDto>
+    @GET("/api/tru-so/all")
+    suspend fun getAllTruSo(): List<TruSoMapDto>
 
-        // URL: BASE_URL + /api/tin-hieu-sos + /submit
-        @POST("/api/tin-hieu-sos/submit")
-        suspend fun submitSOS(
-            @Header("Authorization") token: String,
-            @Body request: TinHieuSOSRequest
-        ): Response<TinHieuSOSResponse>
+    @GET("/api/camera/all")
+    suspend fun getAllCamera(): List<CameraMapDto>
 
 
-        @GET("/api/auth/me")
-        suspend fun getUserInfo(
-            @Header("Authorization") token: String
-        ): SuCoUserDto
+    // TÍN HIỆU SOS KHẨN CẤP
 
 
-        @GET("/api/lich-su/all")
-        suspend fun getAllHistory(
-            @Header("Authorization") token: String,
-            @Query("type") type: String? = null
-        ): List<LichSuDto>
+    @POST("/api/tin-hieu-sos/submit")
+    suspend fun submitSOS(
+        @Header("Authorization") token: String,
+        @Body request: TinHieuSOSRequest
+    ): Response<TinHieuSOSResponse>
+
+    @POST("/api/tin-hieu-sos/cancel/{id}")
+    suspend fun cancelSOS(
+        @Header("Authorization") token: String,
+        @Path("id") id: Long
+    ): Response<Map<String, Any>>
+
+    @GET("/api/sos/theo-doi")
+    suspend fun getTheoDoiSOS(
+        @Header("Authorization") token: String
+    ): List<TheoDoiTinHieuResponseDTO>
 
 
-        @POST("/api/tin-hieu-sos/cancel/{id}")
-        suspend fun cancelSOS(
-            @Header("Authorization") token: String,
-            @Path("id") id: Long
-        ): Response<Map<String, Any>>
-        // Lấy danh sách gói về
-        @GET("/api/mua-goi/danh-sach")
-        suspend fun getDanhSachGoi(): List<GoiDto>
+    // MUA GÓI CỨU TRỢ (RESCUE PACKAGES)
 
-        // Gửi yêu cầu mua gói
-        @POST("/api/mua-goi/dang-ky")
-        suspend fun dangKyMuaGoi(
-            @Header("Authorization") token: String,
-            @Body request: MuaGoiRequest
-        ): Response<Map<String, Any>>
+    @GET("/api/mua-goi/danh-sach")
+    suspend fun getDanhSachGoi(): List<GoiDto>
 
-        @GET("/api/mua-goi/my-packages")
-        suspend fun getGoiCuaToi(
-            @Header("Authorization") token: String
-        ): List<MuaGoiDto>
+    @POST("/api/mua-goi/dang-ky")
+    suspend fun dangKyMuaGoi(
+        @Header("Authorization") token: String,
+        @Body request: MuaGoiRequest
+    ): Response<Map<String, Any>>
 
-        @POST("/api/mua-goi/cancel/{id}")
-        suspend fun cancelMuaGoi(
-            @Header("Authorization") token: String,
-            @Path("id") id: Long
-        ): Response<Map<String, Any>>
+    @GET("/api/mua-goi/my-packages")
+    suspend fun getGoiCuaToi(
+        @Header("Authorization") token: String
+    ): List<MuaGoiDto>
 
-        @GET("/api/qua/all")
-        suspend fun getAllQua(): List<QuaResponseDTO>
-        @POST("/api/qua/exchange")
-        suspend fun exchangeQua(
-            @Header("Authorization") token: String,
-            @Body request: DoiQuaRequestDTO
-        ): Response<Map<String, Any>>
+    @POST("/api/mua-goi/cancel/{id}")
+    suspend fun cancelMuaGoi(
+        @Header("Authorization") token: String,
+        @Path("id") id: Long
+    ): Response<Map<String, Any>>
 
-        @GET("/api/qua/my-gifts")
-        suspend fun getMyGifts(
-            @Header("Authorization") token: String
-        ): List<TuiQuaResponseDTO>
 
-        @GET("/api/hoa-don/user/danh-sach")
-        suspend fun getHoaDonUser(
-            @Header("Authorization") token: String
-        ): List<HoaDonUserResponseDTO>
+    // ĐỔI QUÀ THƯỞNG
 
-        @GET("/api/hoa-don/user/{id}")
-        suspend fun getHoaDonDetail(
-            @Header("Authorization") token: String,
-            @Path("id") id: Long
-        ): HoaDonUserResponseDTO
+    @GET("/api/qua/all")
+    suspend fun getAllQua(): List<QuaResponseDTO>
 
-        @GET("/api/hoa-don/user/{hoaDonId}/thanh-toan")
-        suspend fun getChiTietThanhToan(
-            @Header("Authorization") token: String,
-            @Path("hoaDonId") hoaDonId: Long
-        ): ThanhToanResponseDTO
+    @POST("/api/qua/exchange")
+    suspend fun exchangeQua(
+        @Header("Authorization") token: String,
+        @Body request: DoiQuaRequestDTO
+    ): Response<Map<String, Any>>
 
-        @POST("/api/hoa-don/xac-nhan")
-        suspend fun confirmPayment(
-            @Header("Authorization") token: String,
-            @Body request: ThanhToanRequestDTO
-        ): Response<ThanhToanResponseDTO>
+    @GET("/api/qua/my-gifts")
+    suspend fun getMyGifts(
+        @Header("Authorization") token: String
+    ): List<TuiQuaResponseDTO>
 
-        @POST("/api/doi-tien/thuc-hien")
-        suspend fun thucHienDoiTien(
-            @Body request: DoiTienDto
-        ): Response<Boolean>
 
-        @GET("/api/doi-tien/lich-su/{userId}")
-        suspend fun getHistory(
-            @Path("userId") userId: String,
-            @Query("loai") loai: String? = null
-        ): List<DoiTienDto>
-        @GET("/api/doi-tien/thong-ke-quy")
-        suspend fun getThongKeQuy(): ThongKeQuyDto
-    }
+    // HÓA ĐƠN & THANH TOÁN
+
+
+    @GET("/api/hoa-don/user/danh-sach")
+    suspend fun getHoaDonUser(
+        @Header("Authorization") token: String
+    ): List<HoaDonUserResponseDTO>
+
+    @GET("/api/hoa-don/user/{id}")
+    suspend fun getHoaDonDetail(
+        @Header("Authorization") token: String,
+        @Path("id") id: Long
+    ): HoaDonUserResponseDTO
+
+    @GET("/api/hoa-don/user/{hoaDonId}/thanh-toan")
+    suspend fun getChiTietThanhToan(
+        @Header("Authorization") token: String,
+        @Path("hoaDonId") hoaDonId: Long
+    ): ThanhToanResponseDTO
+
+    @POST("/api/hoa-don/xac-nhan")
+    suspend fun confirmPayment(
+        @Header("Authorization") token: String,
+        @Body request: ThanhToanRequestDTO
+    ): Response<ThanhToanResponseDTO>
+
+
+    // QUẢN LÝ QUỸ & ĐỔI TIỀN
+
+
+    @POST("/api/doi-tien/thuc-hien")
+    suspend fun thucHienDoiTien(
+        @Body request: DoiTienDto
+    ): Response<Boolean>
+
+    @GET("/api/doi-tien/lich-su/{userId}")
+    suspend fun getHistory(
+        @Path("userId") userId: String,
+        @Query("loai") loai: String? = null
+    ): List<DoiTienDto>
+
+    @GET("/api/doi-tien/thong-ke-quy")
+    suspend fun getThongKeQuy(): ThongKeQuyDto
+
+
+    // THÔNG TIN USER & LỊCH SỬ CHUNG
+
+    @GET("/api/auth/me")
+    suspend fun getUserInfo(
+        @Header("Authorization") token: String
+    ): SuCoUserDto
+
+    @GET("/api/lich-su/all")
+    suspend fun getAllHistory(
+        @Header("Authorization") token: String,
+        @Query("type") type: String? = null
+    ): List<LichSuDto>
+}

@@ -24,9 +24,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.canhbao.ui.components.PlaceAutocompleteTextField
 import com.example.canhbao.viewmodel.MapViewModel
+import com.example.canhbao.viewmodel.SearchViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.mapbox.geojson.Point
@@ -37,6 +39,7 @@ import kotlinx.coroutines.tasks.await
 @Composable
 fun DiChuyenScreen(
     mapViewModel: MapViewModel,
+    searchViewModel: SearchViewModel = viewModel(), // <-- BỔ SUNG: Dùng chung SearchViewModel để fetch địa điểm
     navController: NavController
 ) {
     val context = LocalContext.current
@@ -79,7 +82,6 @@ fun DiChuyenScreen(
         ) {
             Spacer(Modifier.height(8.dp))
 
-            // Card nhập liệu tinh tế hơn
             Card(
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -89,7 +91,6 @@ fun DiChuyenScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Cột vẽ đường kẻ nối 2 điểm
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.width(24.dp)
@@ -102,13 +103,20 @@ fun DiChuyenScreen(
                     Spacer(Modifier.width(12.dp))
 
                     Column(modifier = Modifier.weight(1f)) {
+                        // --- ĐIỂM ĐI ---
                         PlaceAutocompleteTextField(
                             label = "Điểm đi",
                             value = startText,
-                            onValueChange = { startText = it },
+                            onValueChange = {
+                                startText = it
+                                searchViewModel.onSearchQueryChanged(it) // Kích hoạt trigger search trong ViewModel
+                            },
                             onSearch = { query ->
-                                mapViewModel.searchPlaces(query).map { (name, point) ->
-                                    name to LatLng(point.latitude(), point.longitude())
+                                // Đổi từ mapViewModel sang searchViewModel
+                                searchViewModel.onSearchQueryChanged(query)
+                                searchViewModel.placeSuggestions.value.map { name ->
+                                    val pt = searchViewModel.getPointForName(name) ?: Point.fromLngLat(0.0, 0.0)
+                                    name to LatLng(pt.latitude(), pt.longitude())
                                 }
                             },
                             onPlaceSelected = { latLng, name ->
@@ -136,13 +144,19 @@ fun DiChuyenScreen(
 
                         Spacer(Modifier.height(8.dp))
 
+                        // --- ĐIỂM ĐẾN ---
                         PlaceAutocompleteTextField(
                             label = "Điểm đến",
                             value = endText,
-                            onValueChange = { endText = it },
+                            onValueChange = {
+                                endText = it
+                                searchViewModel.onSearchQueryChanged(it)
+                            },
                             onSearch = { query ->
-                                mapViewModel.searchPlaces(query).map { (name, point) ->
-                                    name to LatLng(point.latitude(), point.longitude())
+                                searchViewModel.onSearchQueryChanged(query)
+                                searchViewModel.placeSuggestions.value.map { name ->
+                                    val pt = searchViewModel.getPointForName(name) ?: Point.fromLngLat(0.0, 0.0)
+                                    name to LatLng(pt.latitude(), pt.longitude())
                                 }
                             },
                             onPlaceSelected = { latLng, name ->
@@ -172,7 +186,6 @@ fun DiChuyenScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // Phần Lịch sử Gần đây
             Text("Địa điểm gần đây", style = MaterialTheme.typography.titleSmall, color = Color.Gray)
 
             Card(
@@ -188,18 +201,20 @@ fun DiChuyenScreen(
                             },
                             headlineContent = { Text(loc, fontSize = 15.sp) },
                             modifier = Modifier.clickable {
-                                scope.launch {
-                                    val res = mapViewModel.searchPlaces(loc)
-                                    if (res.isNotEmpty()) {
-                                        val (name, point) = res[0]
-                                        if (activeField == 1) {
-                                            startText = name
-                                            mapViewModel.setStartPoint(point, name)
-                                        } else {
-                                            endText = name
-                                            mapViewModel.setEndPoint(point, name)
-                                        }
+                                // Sử dụng searchViewModel để lấy Point đồng bộ từ Map lịch sử địa điểm
+                                searchViewModel.onSearchQueryChanged(loc)
+                                val pt = searchViewModel.getPointForName(loc)
+                                if (pt != null) {
+                                    if (activeField == 1) {
+                                        startText = loc
+                                        mapViewModel.setStartPoint(pt, loc)
+                                    } else {
+                                        endText = loc
+                                        mapViewModel.setEndPoint(pt, loc)
                                     }
+                                } else {
+                                    // Fallback nếu chưa lưu cache địa điểm này trong SearchViewModel
+                                    if (activeField == 1) startText = loc else endText = loc
                                 }
                             }
                         )
@@ -208,7 +223,7 @@ fun DiChuyenScreen(
                 }
             }
 
-            // Nút Bắt đầu - làm to và nổi bật
+            // Nút Bắt đầu
             Button(
                 onClick = {
                     scope.launch {
@@ -231,12 +246,12 @@ fun DiChuyenScreen(
             }
         }
     }
-}
 
+}
 @Composable
 fun VehicleItem(
     name: String,
-    icon: ImageVector,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
     isSelected: Boolean,
     activeColor: Color,
     onClick: () -> Unit
