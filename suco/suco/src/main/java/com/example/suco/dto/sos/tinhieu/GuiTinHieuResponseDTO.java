@@ -1,15 +1,16 @@
 package com.example.suco.dto.sos.tinhieu;
+import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
 import com.example.suco.model.TruSo;
 
 public class GuiTinHieuResponseDTO {
 
     private TinHieuSOSResponseDTO sosData;
 
-    private TruSo truSoGanNhat;
+    private TruSoMiniDTO truSoGanNhat;
 
     public GuiTinHieuResponseDTO() {}
 
-    public GuiTinHieuResponseDTO(TinHieuSOSResponseDTO sosData, TruSo truSoGanNhat) {
+    public GuiTinHieuResponseDTO(TinHieuSOSResponseDTO sosData, TruSoMiniDTO truSoGanNhat) {
         this.sosData = sosData;
         this.truSoGanNhat = truSoGanNhat;
     }
@@ -21,10 +22,10 @@ public class GuiTinHieuResponseDTO {
     public void setSosData(TinHieuSOSResponseDTO sosData) {
         this.sosData = sosData;
     }
-    public TruSo getTruSoGanNhat() {
+    public TruSoMiniDTO getTruSoGanNhat() {
         return truSoGanNhat;
     }
-    public void setTruSoGanNhat(TruSo truSoGanNhat) {
+    public void setTruSoGanNhat(TruSoMiniDTO truSoGanNhat) {
         this.truSoGanNhat = truSoGanNhat;
     }
 
