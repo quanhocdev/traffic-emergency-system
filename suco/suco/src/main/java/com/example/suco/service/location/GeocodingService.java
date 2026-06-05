@@ -13,14 +13,21 @@ public class GeocodingService {
 
     public String getAddress(Double viDo, Double kinhDo) {
 
-        try {
-            var addrMap = geocodingUtil.getAddressFromCoordinates(
-                    viDo,
-                    kinhDo
-            );
-            return geocodingUtil.formatAddress(addrMap);
-        } catch (Exception e) {
-            return "Tọa độ: " + viDo + ", " + kinhDo;
-        }
+    if (viDo == null || kinhDo == null) {
+        return "Không xác định vị trí";
     }
+
+    try {
+        var addrMap = geocodingUtil.getAddressFromCoordinates(viDo, kinhDo);
+
+        String formatted = geocodingUtil.formatAddress(addrMap);
+
+        return (formatted == null || formatted.isBlank())
+                ? "Tọa độ: " + viDo + ", " + kinhDo
+                : formatted;
+
+    } catch (Exception e) {
+        return "Tọa độ: " + viDo + ", " + kinhDo;
+    }
+}
 }
