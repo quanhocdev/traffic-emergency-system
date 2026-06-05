@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import com.example.suco.service.location.GeocodingService;
+
 
 @Service
 public class AdminBaoCaoService {
@@ -41,6 +43,9 @@ public class AdminBaoCaoService {
 
     @Autowired
     private SuCoMapper suCoMapper;
+
+    @Autowired
+    private GeocodingService geocodingService;
 
 
     @Transactional
@@ -85,7 +90,7 @@ if (ganNhat != null) {
 
     report.setTrangThaiXuLy("CHO_ADMIN");
 }
-    
+
 // Lưu báo cáo vào database
         BaoCaoSuCo savedReport = reportRepository.save(report);
 
@@ -97,6 +102,14 @@ if (ganNhat != null) {
                     ganNhat.getId(),
                     suCoMapper.toMapDto(savedReport));
         }
+        if (report.getDiaChi() == null || report.getDiaChi().isBlank()) {
+    report.setDiaChi(
+        geocodingService.getAddress(
+            report.getViDo(),
+            report.getKinhDo()
+        )
+    );
+}
 
         return savedReport;
     }

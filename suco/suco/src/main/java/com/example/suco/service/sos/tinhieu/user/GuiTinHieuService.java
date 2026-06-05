@@ -13,8 +13,8 @@ import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.dieuphoi.engine.DispatchEngineService;
 import com.example.suco.service.location.GeocodingService;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.file.StorageSOSService;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.vip.VipService;
+import com.example.suco.service.sos.tinhieu.user.workflow.gui.StorageSOSService;
+import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
 import com.example.suco.model.User;
 
 @Service

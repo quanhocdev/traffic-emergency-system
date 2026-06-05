@@ -2,7 +2,6 @@ package com.example.suco.service.sos.tinhieu.truso.validation;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
-import com.example.suco.service.sos.tinhieu.truso.validation.rules.RulesTrangThaiService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

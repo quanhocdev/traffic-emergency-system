@@ -1,4 +1,4 @@
-package com.example.suco.service.sos.tinhieu.truso.validation.rules;
+package com.example.suco.service.sos.tinhieu.truso.validation;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;

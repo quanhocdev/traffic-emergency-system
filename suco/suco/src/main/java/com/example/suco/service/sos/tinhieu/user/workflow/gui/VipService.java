@@ -1,4 +1,4 @@
-package com.example.suco.service.sos.tinhieu.user.workflow.gui.vip;
+package com.example.suco.service.sos.tinhieu.user.workflow.gui;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;

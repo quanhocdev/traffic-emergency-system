@@ -1,4 +1,4 @@
-package com.example.suco.service.sos.tinhieu.user.workflow.gui.file;
+package com.example.suco.service.sos.tinhieu.user.workflow.gui;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
