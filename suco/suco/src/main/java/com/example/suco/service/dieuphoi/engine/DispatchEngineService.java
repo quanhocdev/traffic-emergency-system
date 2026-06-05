@@ -33,59 +33,43 @@ public class DispatchEngineService {
     // =====================================================
     public void startDispatch(TinHieuSOS event) {
 
-        double lat = event.getViDo();
-        double lng = event.getKinhDo();
+    double lat = event.getViDo();
+    double lng = event.getKinhDo();
 
-        List<TruSo> candidates =
-                geoHashService.findTruSoInArea(lat, lng);
+    List<TruSo> candidates =
+            geoHashService.findTruSoInArea(lat, lng);
 
-        TruSo best = candidates.stream()
+    TruSo best = candidates.stream()
+            .filter(this::isAvailable)
+            .min((a, b) -> Double.compare(
+                    distanceService.distance(lat, lng, a.getViDo(), a.getKinhDo()),
+                    distanceService.distance(lat, lng, b.getViDo(), b.getKinhDo())
+            ))
+            .orElse(null);
 
-                .filter(this::isAvailable)
+    // ❌ KHÔNG TRỤ SỞ
+    if (best == null) {
 
-                .min((a, b) -> Double.compare(
-
-                        distanceService.distance(
-                                lat, lng,
-                                a.getViDo(), a.getKinhDo()
-                        ),
-
-                        distanceService.distance(
-                                lat, lng,
-                                b.getViDo(), b.getKinhDo()
-                        )
-                ))
-
-                .orElse(null);
-
-        // =========================================
-        // KHÔNG CÓ TRỤ SỞ ONLINE
-        // =========================================
-        if (best == null) {
-
-            event.setTrangThai("CHO_ADMIN");
-
-            tinHieuSOSRepository.save(event);
-
-            messagingTemplate.convertAndSend(
-                    "/topic/admin",
-                    event
-            );
-
-            return;
-        }
-
-        // =========================================
-        // TÌM THẤY TRỤ SỞ
-        // =========================================
-        event.setTrangThai("DANG_XU_LY");
-
-        event.setIdTruSoTiepNhan(best.getId());
+        event.setTrangThai("CHO_ADMIN");
 
         tinHieuSOSRepository.save(event);
 
-        send(event, best.getId());
+        messagingTemplate.convertAndSend("/topic/admin", event);
+        return;
     }
+
+    // ✅ CHỈ 1 TRỤ SỞ DUY NHẤT
+    event.setTrangThai("DANG_XU_LY");
+
+    event.setIdTruSoTiepNhan(best.getId());
+
+    // ❌ XÓA HOÀN TOÀN dòng này nếu còn:
+    // event.setIdTruSoDeXuat(...)
+
+    tinHieuSOSRepository.save(event);
+
+    send(event, best.getId());
+}
 
     private boolean isAvailable(TruSo truSo) {
 

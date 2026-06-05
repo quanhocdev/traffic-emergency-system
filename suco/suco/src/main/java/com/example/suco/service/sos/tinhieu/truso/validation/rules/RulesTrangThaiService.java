@@ -29,12 +29,15 @@ public class RulesTrangThaiService {
     }
 
     public void checkQuyenXuLy(TinHieuSOS sos, TruSo current) {
-        if (sos.getIdTruSoDeXuat() == null ||
-            !sos.getIdTruSoDeXuat().equals(current.getId())) {
+    if (sos.getIdTruSoTiepNhan() == null ||
+        !sos.getIdTruSoTiepNhan().equals(current.getId())) {
 
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "SOS không thuộc về trụ sở của bạn");
-        }
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "Chỉ trụ sở tiếp nhận mới được xử lý"
+        );
     }
+}
 
     public void checkQuyenHoanThanh(TinHieuSOS sos, TruSo current) {
         if (sos.getIdTruSoTiepNhan() == null ||

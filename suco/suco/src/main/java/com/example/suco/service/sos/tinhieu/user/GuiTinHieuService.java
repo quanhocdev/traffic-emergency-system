@@ -1,8 +1,10 @@
 package com.example.suco.service.sos.tinhieu.user;
 
+import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
 import com.example.suco.dto.sos.tinhieu.GuiTinHieuResponseDTO;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
 import com.example.suco.mapper.TinHieuMapper;
+import com.example.suco.repository.vanhanh.TruSoRepository;
 import com.example.suco.repository.vanhanh.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -12,7 +14,6 @@ import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.dieuphoi.engine.DispatchEngineService;
 import com.example.suco.service.location.GeocodingService;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.file.StorageSOSService;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.resolver.TruSoResolver;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.vip.VipService;
 import com.example.suco.model.User;
 
@@ -35,59 +36,60 @@ public class GuiTinHieuService {
     private DispatchEngineService dispatchEngineService;
 
     @Autowired
-    private TruSoResolver truSoResolver;
-
-    @Autowired
 private TinHieuMapper tinHieuMapper;
 
 @Autowired
 private UserRepository userRepository;
 
+@Autowired
+private TruSoRepository truSoRepository;
 
-    public GuiTinHieuResponseDTO submitSOS(String uid, TinHieuSOSRequestDTO dto) {
 
+public GuiTinHieuResponseDTO submitSOS(String uid, TinHieuSOSRequestDTO dto) {
 
-        // Nhận request, tạo entity từ DTO
     User user = userRepository.findByUid(uid).orElse(null);
     TinHieuSOS sos = tinHieuMapper.toEntity(dto, uid, user);
 
-
-    // Nếu người dùng đã cung cấp địa chỉ, ưu tiên sử dụng địa chỉ đó
+    // 1. địa chỉ
     if (dto.getDiaChi() != null && !dto.getDiaChi().isBlank()) {
         sos.setDiaChi(dto.getDiaChi());
     } else {
-    sos.setDiaChi(
-            // Nếu không có địa chỉ, sử dụng geocoding để lấy địa chỉ từ tọa độ
-            geocodingService.getAddress(
-                    sos.getViDo(),
-                    sos.getKinhDo()
-            )
-    );
+        sos.setDiaChi(
+                geocodingService.getAddress(sos.getViDo(), sos.getKinhDo())
+        );
     }
 
-    // Lưu SOS để có ID trước khi xử lý file
+    // 2. file
     fileStorageService.handleFiles(sos, dto);
 
-    sos = tinHieuSOSRepository.save(sos);
-
+    // 3. VIP flag (chỉ metadata)
     boolean laVip = vipService.checkVip(uid);
     sos.setIsVip(laVip);
 
-    sos = tinHieuSOSRepository.save(sos);
-
+    // 4. DISPATCH (QUAN TRỌNG)
     dispatchEngineService.startDispatch(sos);
 
+    // 5. SAVE DUY NHẤT
     sos = tinHieuSOSRepository.save(sos);
 
-    TruSo truSo = truSoResolver.resolve(sos);
+    TruSoMiniDTO truSoDTO = null;
 
-    vipService.handleVipFlow(laVip, sos, truSo, uid);
+if (sos.getIdTruSoTiepNhan() != null) {
 
-    sos = tinHieuSOSRepository.save(sos);
+    TruSo truSo = truSoRepository.findById(sos.getIdTruSoTiepNhan())
+            .orElse(null);
 
-    return new GuiTinHieuResponseDTO(
+    if (truSo != null) {
+        truSoDTO = new TruSoMiniDTO();
+        truSoDTO.setId(truSo.getId());
+        truSoDTO.setTenTruSo(truSo.getTenTruSo());
+    }
+}
+
+
+   return new GuiTinHieuResponseDTO(
         tinHieuMapper.mapToDTO(sos),
-        truSo
+        truSoDTO
 );
 }
 }
