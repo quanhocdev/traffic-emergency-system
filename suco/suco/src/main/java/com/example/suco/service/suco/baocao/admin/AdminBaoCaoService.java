@@ -70,15 +70,23 @@ public class AdminBaoCaoService {
                     imageStorageService.saveMultipartImage(image));
         }
 
+        // Tìm trụ sở gần nhất để tiếp nhận
         TruSo ganNhat = truSoSelectorService.selectNearest(
-                report.getViDo(),
-                report.getKinhDo());
+        report.getViDo(),
+        report.getKinhDo());
 
-        if (ganNhat != null) {
-            report.setTruSoDeXuat(ganNhat);
-            report.setTrangThaiXuLy("CHO_XU_LY");
-        }
+if (ganNhat != null) {
 
+    report.setTruSoTiepNhan(ganNhat);
+
+    report.setTrangThaiXuLy("DANG_XU_LY");
+
+} else {
+
+    report.setTrangThaiXuLy("CHO_ADMIN");
+}
+    
+// Lưu báo cáo vào database
         BaoCaoSuCo savedReport = reportRepository.save(report);
 
         realtimeService.broadcastReport(

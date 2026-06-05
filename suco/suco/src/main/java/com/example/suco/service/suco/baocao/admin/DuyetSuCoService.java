@@ -93,14 +93,21 @@ public class DuyetSuCoService {
                         reporter
                 );
             }
+// Tìm trụ sở gần nhất để tiếp nhận
+            TruSo truSo = truSoSelectorService.selectNearest(
+        report.getViDo(),
+        report.getKinhDo());
 
-            TruSo ganNhat = truSoSelectorService.selectNearest(
-                    report.getViDo(),
-                    report.getKinhDo());
+if (truSo != null) {
 
-            if (ganNhat != null) {
-                report.setTruSoDeXuat(ganNhat);
-            }
+    report.setTruSoTiepNhan(truSo);
+    report.setTrangThaiXuLy("DANG_XU_LY");
+
+} else {
+
+    report.setTrangThaiXuLy("CHO_ADMIN");
+}
+// Cập nhật báo cáo với trụ sở tiếp nhận và trạng thái xử lý mới
 
             BaoCaoSuCo updatedReport = reportRepository.save(report);
 
@@ -117,11 +124,11 @@ public class DuyetSuCoService {
 
             if (updatedReport.getTruSoTiepNhan() != null) {
 
-                realtimeService.broadcastTruSo(
-        updatedReport.getTruSoDeXuat().getId(),
+    realtimeService.broadcastTruSo(
+        updatedReport.getTruSoTiepNhan().getId(),
         suCoMapper.toMapDto(updatedReport)
 );
-            }
+}
 
         } else {
 
