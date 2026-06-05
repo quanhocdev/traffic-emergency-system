@@ -114,13 +114,7 @@ if (truSo != null) {
             realtimeService.broadcastReport(
         suCoMapper.toMapDto(updatedReport));
 
-            if (updatedReport.getTruSoDeXuat() != null) {
-
-                realtimeService.broadcastTruSo(
-        updatedReport.getTruSoDeXuat().getId(),
-        suCoMapper.toMapDto(updatedReport)
-);
-            }
+        
 
             if (updatedReport.getTruSoTiepNhan() != null) {
 

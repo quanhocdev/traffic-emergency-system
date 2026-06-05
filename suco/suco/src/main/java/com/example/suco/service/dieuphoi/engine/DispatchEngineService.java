@@ -82,8 +82,6 @@ public class DispatchEngineService {
 
         event.setIdTruSoTiepNhan(best.getId());
 
-        event.setIdTruSoDeXuat(best.getId());
-
         tinHieuSOSRepository.save(event);
 
         send(event, best.getId());

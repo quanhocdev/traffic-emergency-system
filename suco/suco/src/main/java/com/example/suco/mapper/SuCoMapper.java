@@ -79,13 +79,6 @@ public class SuCoMapper {
                     : "Người dân báo"
     );
 
-    if (b.getTruSoDeXuat() != null) {
-    TruSoMiniDTO truSoDeXuat = new TruSoMiniDTO();
-    truSoDeXuat.setId(b.getTruSoDeXuat().getId());
-    truSoDeXuat.setTenTruSo(b.getTruSoDeXuat().getTenTruSo());
-
-    dto.setTruSoDeXuat(truSoDeXuat);
-}
 
 if (b.getTruSoTiepNhan() != null) {
     TruSoMiniDTO truSoTiepNhan = new TruSoMiniDTO();

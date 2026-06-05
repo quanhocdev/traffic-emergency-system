@@ -54,10 +54,8 @@ public class BaoCaoEnrichService {
 
         report.setTrangThaiDuyet("AI_APPROVED");
         report.setTrangThaiXuLy("CHO_XU_LY");
-        report.setDoTinCay(0);
+        report.setDoTinCay(1);
 
-        report.setTruSoDeXuat(null);
-        report.setTruSoTiepNhan(null);
 
         BaoCaoSuCo saved =
                 reportRepository.save(report);

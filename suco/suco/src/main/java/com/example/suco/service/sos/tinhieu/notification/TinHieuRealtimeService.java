@@ -37,13 +37,6 @@ public class TinHieuRealtimeService {
 
         TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
 
-        if (sos.getIdTruSoDeXuat() != null) {
-            messagingTemplate.convertAndSend(
-                    "/topic/tru-so/" + sos.getIdTruSoDeXuat(),
-                    dto
-            );
-        }
-
         if (sos.getIdTruSoTiepNhan() != null) {
             messagingTemplate.convertAndSend(
                     "/topic/tru-so/" + sos.getIdTruSoTiepNhan(),

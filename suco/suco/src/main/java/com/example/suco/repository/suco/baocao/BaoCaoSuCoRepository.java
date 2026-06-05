@@ -16,7 +16,6 @@ public interface BaoCaoSuCoRepository extends JpaRepository<BaoCaoSuCo, Long> {
         SELECT DISTINCT b FROM BaoCaoSuCo b
         LEFT JOIN FETCH b.loaiSuCo
         LEFT JOIN FETCH b.reporter
-        LEFT JOIN FETCH b.truSoDeXuat
         LEFT JOIN FETCH b.truSoTiepNhan
         WHERE b.trangThaiDuyet IN ('AI_APPROVED', 'VERIFIED')
         AND b.trangThaiXuLy NOT IN ('HOAN_THANH', 'HUY_BO')
@@ -37,20 +36,16 @@ List<BaoCaoSuCo> findPendingReportsForAdmin();
     // 2. TRỤ SỞ MAP
     // =========================
     @Query("""
-        SELECT DISTINCT b FROM BaoCaoSuCo b
-        LEFT JOIN FETCH b.loaiSuCo
-        LEFT JOIN FETCH b.reporter
-        LEFT JOIN FETCH b.truSoDeXuat
-        LEFT JOIN FETCH b.truSoTiepNhan
-        WHERE (
-            (b.trangThaiXuLy = 'CHO_XU_LY' AND b.truSoDeXuat.id = :idTruSo)
-            OR
-            (b.trangThaiXuLy = 'DANG_XU_LY' AND b.truSoTiepNhan.id = :idTruSo)
-        )
-        AND b.trangThaiDuyet != 'REJECTED'
-        AND b.trangThaiXuLy != 'HUY_BO'
-    """)
-    List<BaoCaoSuCo> findActiveByTruSo(@Param("idTruSo") Long idTruSo);
+    SELECT DISTINCT b FROM BaoCaoSuCo b
+    LEFT JOIN FETCH b.loaiSuCo
+    LEFT JOIN FETCH b.reporter
+    LEFT JOIN FETCH b.truSoTiepNhan
+    WHERE b.trangThaiXuLy = 'DANG_XU_LY'
+    AND b.truSoTiepNhan.id = :idTruSo
+    AND b.trangThaiDuyet != 'REJECTED'
+    AND b.trangThaiXuLy != 'HUY_BO'
+""")
+List<BaoCaoSuCo> findActiveByTruSo(@Param("idTruSo") Long idTruSo);
 
 
     // =========================
