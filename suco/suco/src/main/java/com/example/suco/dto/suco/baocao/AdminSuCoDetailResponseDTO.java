@@ -24,7 +24,6 @@ public class AdminSuCoDetailResponseDTO {
     private String tenNguoiBao;
     private String reporterUid;
 
-    private TruSoMiniDTO truSoDeXuat;
     private TruSoMiniDTO truSoTiepNhan;
 
     private String diaChi;
@@ -46,7 +45,6 @@ public class AdminSuCoDetailResponseDTO {
     public Integer getDoTinCay() { return doTinCay; }
     public String getTenNguoiBao() { return tenNguoiBao; }
     public String getReporterUid() { return reporterUid; }
-    public TruSoMiniDTO getTruSoDeXuat() { return truSoDeXuat; }
     public TruSoMiniDTO getTruSoTiepNhan() { return truSoTiepNhan; }
     public String getDiaChi() { return diaChi; }
     public LocalDateTime getThoiGianTao() { return thoiGianTao; }
@@ -65,7 +63,6 @@ public class AdminSuCoDetailResponseDTO {
     public void setDoTinCay(Integer doTinCay) { this.doTinCay = doTinCay; }
     public void setTenNguoiBao(String tenNguoiBao) { this.tenNguoiBao = tenNguoiBao; }
     public void setReporterUid(String reporterUid) { this.reporterUid = reporterUid; }
-    public void setTruSoDeXuat(TruSoMiniDTO truSoDeXuat) { this.truSoDeXuat = truSoDeXuat; }
     public void setTruSoTiepNhan(TruSoMiniDTO truSoTiepNhan) { this.truSoTiepNhan = truSoTiepNhan; }
     public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
     public void setThoiGianTao(LocalDateTime thoiGianTao) { this.thoiGianTao = thoiGianTao; }

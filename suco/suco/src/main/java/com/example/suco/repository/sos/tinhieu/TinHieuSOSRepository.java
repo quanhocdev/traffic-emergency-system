@@ -16,7 +16,7 @@ List<TinHieuSOS> findByUserUid(String uid);
     SELECT s FROM TinHieuSOS s 
     LEFT JOIN FETCH s.user u 
     WHERE s.trangThai NOT IN ('HOAN_THANH', 'HUY_BO') 
-    AND (s.idTruSoDeXuat = :idTruSo OR s.idTruSoTiepNhan = :idTruSo)
+    AND s.idTruSoTiepNhan = :idTruSo
     ORDER BY u.totalPoints DESC, s.createdAt ASC
 """)
 List<TinHieuSOS> findActiveByTruSo(@Param("idTruSo") Long idTruSo);

@@ -32,7 +32,6 @@ public class DieuPhoiController {
 
         res.put("idSos", sos.getId());
         res.put("status", sos.getTrangThai());
-        res.put("truSoDeXuat", sos.getIdTruSoDeXuat());
         res.put("truSoTiepNhan", sos.getIdTruSoTiepNhan());
 
         return ResponseEntity.ok(res);

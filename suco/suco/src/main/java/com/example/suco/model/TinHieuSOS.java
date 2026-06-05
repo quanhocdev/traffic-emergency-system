@@ -34,23 +34,18 @@
 
         @Column(name = "ghi_chu", columnDefinition = "TEXT")
         private String ghiChu;
-    @Column(name = "id_tru_so_de_xuat")
-    private Long idTruSoDeXuat;
 
-        // --- THÊM 2 CỘT NÀY ---
         @Column(name = "id_tru_so_tiep_nhan")
         private Long idTruSoTiepNhan;
 
         @Column(name = "trang_thai")
-        private String trangThai = "CHO_XU_LY"; // CHO_XU_LY, DANG_XU_LY,HOAN_THANH
+        private String trangThai = "DANG_XU_LY"; 
         // ----------------------
 
         @Column(name = "created_at")
         private LocalDateTime createdAt;
-    // Thêm trường này vào sau trangThai
     @Column(name = "dia_chi", columnDefinition = "TEXT")
     private String diaChi;
-    // Trong file TinHieuSOS.java
     @Transient
     private boolean isVip; // Trường này không lưu DB, chỉ dùng để gửi ra Web
     
@@ -92,8 +87,6 @@ public void setHoaDon(HoaDon hoaDon) { this.hoaDon = hoaDon; }
         public void setHinhAnh(String hinhAnh) { this.hinhAnh = hinhAnh; }
         public String getGhiChu() { return ghiChu; }
         public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
-        public Long getIdTruSoDeXuat() { return idTruSoDeXuat; }
-        public void setIdTruSoDeXuat(Long idTruSoDeXuat) { this.idTruSoDeXuat = idTruSoDeXuat; }
         public Long getIdTruSoTiepNhan() { return idTruSoTiepNhan; }
         public void setIdTruSoTiepNhan(Long idTruSoTiepNhan) { this.idTruSoTiepNhan = idTruSoTiepNhan; }
         public String getTrangThai() { return trangThai; }

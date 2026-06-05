@@ -61,9 +61,6 @@ public class BaoCaoSuCo {
     @Column(name = "trang_thai_xu_ly")
 private String trangThaiXuLy = "CHO_XU_LY";
 
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "id_tru_so_de_xuat")
-private TruSo truSoDeXuat;
 
 
 @ManyToOne(fetch = FetchType.LAZY)
@@ -116,13 +113,6 @@ private String diaChi;
     public LocalDateTime getThoiGianTao() { return thoiGianTao; }
     public void setThoiGianTao(LocalDateTime thoiGianTao) { this.thoiGianTao = thoiGianTao; }
 
-    public TruSo getTruSoDeXuat() {
-    return truSoDeXuat;
-}
-
-public void setTruSoDeXuat(TruSo truSoDeXuat) {
-    this.truSoDeXuat = truSoDeXuat;
-}
 
 public TruSo getTruSoTiepNhan() {
     return truSoTiepNhan;

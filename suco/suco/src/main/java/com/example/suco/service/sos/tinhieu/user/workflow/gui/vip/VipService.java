@@ -24,7 +24,6 @@ public class VipService {
         if (!laVip || truSo == null) return;
 
         sos.setIdTruSoTiepNhan(truSo.getId());
-        sos.setIdTruSoDeXuat(truSo.getId());
         sos.setTrangThai("DANG_XU_LY");
 
     }
