@@ -1,13 +1,13 @@
 package com.example.suco.dto.sos.tinhieu;
 
-public class TinHieuMapResponseDTO {
+public class SOSMapResponseDTO {
 
     private Long id;
     private Double viDo;
     private Double kinhDo;
     private Long truSoId;
-    public TinHieuMapResponseDTO() {}
-    public TinHieuMapResponseDTO(Long id, Double viDo, Double kinhDo, Long truSoId) {
+    public SOSMapResponseDTO() {}
+    public SOSMapResponseDTO(Long id, Double viDo, Double kinhDo, Long truSoId) {
         this.id = id;
         this.viDo = viDo;
         this.kinhDo = kinhDo;

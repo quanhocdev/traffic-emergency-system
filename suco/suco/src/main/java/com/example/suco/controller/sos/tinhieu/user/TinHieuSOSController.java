@@ -26,10 +26,10 @@ public class TinHieuSOSController {
     @Autowired
     private HuyTinHieuService tinHieuHuyService;
 
-    @PostMapping("/submit")
+@PostMapping("/submit")
 public ResponseEntity<?> submitSOS(
-    @RequestHeader("Authorization") String authHeader,
-    @RequestBody TinHieuSOSRequestDTO dto
+        @RequestHeader("Authorization") String authHeader,
+        @RequestBody TinHieuSOSRequestDTO dto
 ) {
     try {
 
@@ -40,14 +40,12 @@ public ResponseEntity<?> submitSOS(
 
         String uid = decodedToken.getUid();
 
-        GuiTinHieuResponseDTO result =
-        tinHieuService.submitSOS(uid, dto);
+        Long sosId = tinHieuService.submitSOS(uid, dto);
 
         return ResponseEntity.ok(
                 Map.of(
                         "success", true,
-                        "sosData", result.getSosData(),
-                        "truSoGanNhat", result.getTruSoGanNhat(),
+                        "sosId", sosId,
                         "message", "Gửi SOS thành công"
                 )
         );
@@ -57,7 +55,7 @@ public ResponseEntity<?> submitSOS(
         e.printStackTrace();
 
         return ResponseEntity
-                .status(500) // QUAN TRỌNG
+                .status(500)
                 .body("Lỗi hệ thống: " + e.getMessage());
     }
 }

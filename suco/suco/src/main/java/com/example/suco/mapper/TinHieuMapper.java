@@ -1,23 +1,36 @@
 package com.example.suco.mapper;
 
+import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
+import com.example.suco.dto.sos.tinhieu.AdminSOSDetailResponseDTO;
+import com.example.suco.dto.sos.tinhieu.SOSMapResponseDTO;
 import com.example.suco.dto.sos.tinhieu.TheoDoiSOSDetailResponseDTO;
+import com.example.suco.dto.sos.tinhieu.TheoDoiSOSItemResponseDTO;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
-import com.example.suco.dto.sos.tinhieu.UserSOSDetailResponseDTO;
+import com.example.suco.dto.sos.tinhieu.TruSoSOSDetailResponseDTO;
 import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 import com.example.suco.model.User;
 import com.example.suco.model.TinHieuSOS;
 
 import org.springframework.stereotype.Component;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Component
 public class TinHieuMapper {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(TinHieuMapper.class);
+private UserMiniDTO toUserMiniDTO(User user) {
+        
+    if (user == null) {
+        return null;
+    }
 
+    UserMiniDTO dto = new UserMiniDTO();
 
+    dto.setId(user.getUid());
+    dto.setName(user.getName());
+    dto.setEmail(user.getEmail());
+    dto.setTotalPoints(user.getTotalPoints());
+
+    return dto;
+}
             // Request DTO → Entity
         public TinHieuSOS toEntity(
         TinHieuSOSRequestDTO dto,
@@ -40,64 +53,94 @@ public class TinHieuMapper {
 
     return sos;
 }
-        // Entity → Response Map DTO
-    public UserSOSDetailResponseDTO mapToDTO(TinHieuSOS sos) {
+public SOSMapResponseDTO toMapDto(TinHieuSOS sos) {
 
-        log.info("=== MAP SOS ID={} userId={} userRelation={} ===",
-                sos.getId(),
-                sos.getUserId(),
-                sos.getUser() != null
-                        ? sos.getUser().getUid()
-                        : null
-        );
+    return new SOSMapResponseDTO(
+            sos.getId(),
+            sos.getViDo(),
+            sos.getKinhDo(),
+            sos.getIdTruSoTiepNhan()
+    );
+}
 
-        UserSOSDetailResponseDTO dto =
-                new UserSOSDetailResponseDTO();
+// Entity → ResponseDTO TruSo
+public TruSoSOSDetailResponseDTO toTruSoDetailDto(
+        TinHieuSOS sos
+) {
 
-        dto.setId(sos.getId());
-        dto.setViDo(sos.getViDo());
-        dto.setKinhDo(sos.getKinhDo());
-        dto.setDiaChi(sos.getDiaChi());
-        dto.setGhiChu(sos.getGhiChu());
-        dto.setHinhAnh(sos.getHinhAnh());
-        dto.setGhiAm(sos.getGhiAm());
-        dto.setTrangThai(sos.getTrangThai());
-        dto.setCreatedAt(sos.getCreatedAt());
+    TruSoSOSDetailResponseDTO dto =
+            new TruSoSOSDetailResponseDTO();
 
-        // ================= USER =================
+    dto.setId(sos.getId());
+    dto.setViDo(sos.getViDo());
+    dto.setKinhDo(sos.getKinhDo());
+    dto.setDiaChi(sos.getDiaChi());
+    dto.setGhiChu(sos.getGhiChu());
+    dto.setHinhAnhUrl(sos.getHinhAnh());
+    dto.setGhiAmUrl(sos.getGhiAm());
+    dto.setTrangThai(sos.getTrangThai());
+    dto.setThoiGianTao(sos.getCreatedAt());
 
-        log.info("DEBUG USER ENTITY = {}", sos.getUser());
+    dto.setNguoiGui(toUserMiniDTO(sos.getUser()));
 
-        if (sos.getUser() != null) {
+    return dto;
+}
 
-            log.info("USER FOUND: uid={}, name={}",
-                    sos.getUser().getUid(),
-                    sos.getUser().getName()
-            );
+// Entity → ResponseDTO Admin
+public AdminSOSDetailResponseDTO toAdminDetailDto(
+        TinHieuSOS sos,
+        TruSoMiniDTO truSoDto
+) {
 
-            UserMiniDTO u = new UserMiniDTO();
+    AdminSOSDetailResponseDTO dto =
+            new AdminSOSDetailResponseDTO();
 
-            u.setId(sos.getUser().getUid());
-            u.setName(sos.getUser().getName());
-            u.setTotalPoints(sos.getUser().getTotalPoints());
-            u.setEmail(sos.getUser().getEmail());
+    dto.setId(sos.getId());
+    dto.setViDo(sos.getViDo());
+    dto.setKinhDo(sos.getKinhDo());
+    dto.setDiaChi(sos.getDiaChi());
+    dto.setGhiChu(sos.getGhiChu());
+    dto.setHinhAnhUrl(sos.getHinhAnh());
+    dto.setGhiAmUrl(sos.getGhiAm());
+    dto.setThoiGianTao(sos.getCreatedAt());
+    dto.setTrangThai(sos.getTrangThai());
+    dto.setUserId(sos.getUserId());
+    dto.setNguoiGui(toUserMiniDTO(sos.getUser()));
 
-            dto.setUser(u);
 
-        } else {
+    dto.setTruSoTiepNhan(truSoDto);
+    return dto;
+}
 
-            log.warn("USER NULL → fallback Khách vãng lai (SOS ID={})",
-                    sos.getId());
-        }
 
-        return dto;
-    }
+// Entity → ItemResponseDTO cá nhân
+
+public TheoDoiSOSItemResponseDTO toTheoDoiItemDto(
+        TinHieuSOS sos,
+        String tenTruSo
+) {
+
+ TheoDoiSOSItemResponseDTO dto =
+            new TheoDoiSOSItemResponseDTO();
+
+    dto.setId(sos.getId());
+
+    dto.setHinhAnh( sos.getHinhAnh() );
+
+    dto.setTrangThai( sos.getTrangThai());
+
+    dto.setTenTruSoTiepNhan(tenTruSo);
+
+    dto.setCreatedAt(sos.getCreatedAt());
+
+    return dto;
+}
+
 
     // Entity → ResponseDTO cá nhân
-    public TheoDoiSOSDetailResponseDTO toTheoDoiDto(TinHieuSOS sos) {
+    public TheoDoiSOSDetailResponseDTO toTheoDoiDto(TinHieuSOS sos, String tenTruSo){
 
-    TheoDoiSOSDetailResponseDTO dto =
-            new TheoDoiSOSDetailResponseDTO();
+    TheoDoiSOSDetailResponseDTO dto = new TheoDoiSOSDetailResponseDTO();
 
     dto.setId(sos.getId());
 
@@ -132,6 +175,7 @@ public class TinHieuMapper {
                 sos.getHoaDon().getTrangThai()
         );
     }
+    dto.setTenTruSoTiepNhan(tenTruSo);
 
     return dto;
 }
