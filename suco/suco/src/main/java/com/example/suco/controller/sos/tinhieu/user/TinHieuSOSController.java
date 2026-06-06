@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
-import com.example.suco.dto.sos.tinhieu.GuiTinHieuResponseDTO;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
 import com.example.suco.service.sos.tinhieu.user.GuiTinHieuService;
 import com.example.suco.service.sos.tinhieu.user.HuyTinHieuService;

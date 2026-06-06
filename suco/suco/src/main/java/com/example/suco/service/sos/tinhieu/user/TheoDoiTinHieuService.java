@@ -18,8 +18,16 @@ public class TheoDoiTinHieuService {
     public List<TheoDoiSOSDetailResponseDTO> layDanhSach(String uid) {
 
         return tinHieuSOSRepository.findByUserUid(uid)
-                .stream()
-                .map(tinHieuMapper::toTheoDoiDto)
-                .toList();
+        .stream()
+        .map(sos -> {
+
+            String tenTruSo = "...";
+
+            return tinHieuMapper.toTheoDoiDto(
+                    sos,
+                    tenTruSo
+            );
+        })
+        .toList();
     }
 }

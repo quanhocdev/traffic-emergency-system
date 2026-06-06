@@ -55,14 +55,26 @@ private UserMiniDTO toUserMiniDTO(User user) {
 }
 public SOSMapResponseDTO toMapDto(TinHieuSOS sos) {
 
-    return new SOSMapResponseDTO(
-            sos.getId(),
-            sos.getViDo(),
-            sos.getKinhDo(),
+    SOSMapResponseDTO dto = new SOSMapResponseDTO();
+
+    dto.setId(sos.getId());
+    dto.setViDo(sos.getViDo());
+    dto.setKinhDo(sos.getKinhDo());
+
+    dto.setTruSoId(
             sos.getIdTruSoTiepNhan()
     );
-}
 
+    dto.setTrangThai(
+            sos.getTrangThai()
+    );
+
+    dto.setDiaChi(
+            sos.getDiaChi()
+    );
+
+    return dto;
+}
 // Entity → ResponseDTO TruSo
 public TruSoSOSDetailResponseDTO toTruSoDetailDto(
         TinHieuSOS sos
