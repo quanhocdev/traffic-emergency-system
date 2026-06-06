@@ -9,8 +9,6 @@ public class TheoDoiSOSItemResponseDTO {
 
     private String trangThai;
 
-    private String tenTruSoTiepNhan;
-
     private LocalDateTime createdAt;
 
     // getter/setter
@@ -31,12 +29,6 @@ public class TheoDoiSOSItemResponseDTO {
     }
     public void setTrangThai(String trangThai) {
         this.trangThai = trangThai;
-    }
-    public String getTenTruSoTiepNhan() {
-        return tenTruSoTiepNhan;
-    }
-    public void setTenTruSoTiepNhan(String tenTruSoTiepNhan) {
-        this.tenTruSoTiepNhan = tenTruSoTiepNhan;
     }
     public LocalDateTime getCreatedAt() {
         return createdAt;

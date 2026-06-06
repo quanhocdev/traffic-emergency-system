@@ -7,8 +7,9 @@ import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import com.example.canhbao.data.model.qua.QuaResponseDTO
 import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
-import com.example.canhbao.data.model.sos.tinhieu.TheoDoiTinHieuResponseDTO
-import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequest
+import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSDetailResponseDTO
+import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSItemResponseDTO
+import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequestDTO
 import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSResponse
 import com.example.canhbao.data.model.suco.baocao.*
 import com.example.canhbao.data.model.suco.loai.LoaiSuCo
@@ -60,7 +61,7 @@ interface BaoCaoSuCoApi {
     @POST("/api/tin-hieu-sos/submit")
     suspend fun submitSOS(
         @Header("Authorization") token: String,
-        @Body request: TinHieuSOSRequest
+        @Body request: TinHieuSOSRequestDTO
     ): Response<TinHieuSOSResponse>
 
     @POST("/api/tin-hieu-sos/cancel/{id}")
@@ -72,7 +73,12 @@ interface BaoCaoSuCoApi {
     @GET("/api/sos/theo-doi")
     suspend fun getTheoDoiSOS(
         @Header("Authorization") token: String
-    ): List<TheoDoiTinHieuResponseDTO>
+    ): List<TheoDoiSOSItemResponseDTO>
+    @GET("/api/sos/theo-doi/{id}")
+    suspend fun getTheoDoiSOSDetail(
+        @Header("Authorization") token: String,
+        @Path("id") id: Long
+    ): TheoDoiSOSDetailResponseDTO
 
 
     // MUA GÓI CỨU TRỢ (RESCUE PACKAGES)

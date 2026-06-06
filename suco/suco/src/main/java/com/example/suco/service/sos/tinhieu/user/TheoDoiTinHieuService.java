@@ -1,5 +1,6 @@
 package com.example.suco.service.sos.tinhieu.user;
 import com.example.suco.dto.sos.tinhieu.TheoDoiSOSDetailResponseDTO;
+import com.example.suco.dto.sos.tinhieu.TheoDoiSOSItemResponseDTO;
 import com.example.suco.mapper.TinHieuMapper;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,19 +16,30 @@ public class TheoDoiTinHieuService {
     @Autowired
     private TinHieuMapper tinHieuMapper;
 
-    public List<TheoDoiSOSDetailResponseDTO> layDanhSach(String uid) {
+    // ===== LIST =====
+    public List<TheoDoiSOSItemResponseDTO> layDanhSachItem(String uid) {
 
         return tinHieuSOSRepository.findByUserUid(uid)
-        .stream()
-        .map(sos -> {
+                .stream()
+                .map(sos -> {
+                    TheoDoiSOSItemResponseDTO dto = new TheoDoiSOSItemResponseDTO();
+                    dto.setId(sos.getId());
+                    dto.setHinhAnh(sos.getHinhAnh());
+                    dto.setTrangThai(sos.getTrangThai());
+                    dto.setCreatedAt(sos.getCreatedAt());
+                    return dto;
+                })
+                .toList();
+    }
 
-            String tenTruSo = "...";
+    // ===== DETAIL =====
+    public TheoDoiSOSDetailResponseDTO layChiTiet(Long id) {
 
-            return tinHieuMapper.toTheoDoiDto(
-                    sos,
-                    tenTruSo
-            );
-        })
-        .toList();
+        var sos = tinHieuSOSRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy SOS"));
+
+        String tenTruSo = "demo"; // sau này join bảng trụ sở
+
+        return tinHieuMapper.toTheoDoiDto(sos, tenTruSo);
     }
 }

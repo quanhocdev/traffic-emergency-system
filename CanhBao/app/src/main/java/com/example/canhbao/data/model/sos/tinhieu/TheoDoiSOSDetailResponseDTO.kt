@@ -1,6 +1,6 @@
 package com.example.canhbao.data.model.sos.tinhieu
 
-data class TheoDoiTinHieuResponseDTO(
+data class TheoDoiSOSDetailResponseDTO(
     val id: Long,
     val viDo: Double?,
     val kinhDo: Double?,

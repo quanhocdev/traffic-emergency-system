@@ -8,6 +8,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.example.suco.dto.sos.tinhieu.SOSMapResponseDTO;
 import com.example.suco.mapper.TinHieuMapper;
 import com.example.suco.model.TinHieuSOS;
+import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
+import java.util.List;
 
 @Service
 public class TinHieuRealtimeService {
@@ -17,6 +19,16 @@ public class TinHieuRealtimeService {
 
     @Autowired
     private TinHieuMapper tinHieuMapper;
+
+    @Autowired
+    private TinHieuSOSRepository tinHieuSOSRepository;
+
+  public List<SOSMapResponseDTO> getMapData() {
+    return tinHieuSOSRepository.findAll()
+            .stream()
+            .map(tinHieuMapper::toMapDto)
+            .toList();
+}
 
     public void realtimeGuiSOS(TinHieuSOS sos) {
 
