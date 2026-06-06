@@ -5,7 +5,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import com.example.suco.dto.sos.tinhieu.UserSOSDetailResponseDTO;
+import com.example.suco.dto.sos.tinhieu.SOSMapResponseDTO;
 import com.example.suco.mapper.TinHieuMapper;
 import com.example.suco.model.TinHieuSOS;
 
@@ -20,49 +20,49 @@ public class TinHieuRealtimeService {
 
     public void realtimeGuiSOS(TinHieuSOS sos) {
 
-        UserSOSDetailResponseDTO dto = tinHieuMapper.mapToDTO(sos);
+    SOSMapResponseDTO dto = tinHieuMapper.toMapDto(sos);
 
-        messagingTemplate.convertAndSend(
-                "/topic/admin",
-                dto
-        );
+    messagingTemplate.convertAndSend(
+            "/topic/admin",
+            dto
+    );
 
-        messagingTemplate.convertAndSend(
-                "/topic/user/" + sos.getUserId() + "/history",
-                "REFRESH"
-        );
-    }
+    messagingTemplate.convertAndSend(
+            "/topic/user/" + sos.getUserId() + "/history",
+            "REFRESH"
+    );
+}
 
     public void realtimeHuySOS(TinHieuSOS sos) {
 
-        UserSOSDetailResponseDTO dto = tinHieuMapper.mapToDTO(sos);
+    SOSMapResponseDTO dto = tinHieuMapper.toMapDto(sos);
 
-        if (sos.getIdTruSoTiepNhan() != null) {
-            messagingTemplate.convertAndSend(
-                    "/topic/tru-so/" + sos.getIdTruSoTiepNhan(),
-                    dto
-            );
-        }
-
+    if (sos.getIdTruSoTiepNhan() != null) {
         messagingTemplate.convertAndSend(
-                "/topic/admin",
+                "/topic/tru-so/" + sos.getIdTruSoTiepNhan(),
                 dto
         );
-
-        messagingTemplate.convertAndSend(
-        "/topic/user/" + sos.getUserId() + "/sos-status",
-        Map.of(
-                "idSOS", sos.getId(),
-                "trangThai", "HUY_BO",
-                "message", layThongDiepTrangThai("HUY_BO")
-        )
-);
-
-        messagingTemplate.convertAndSend(
-                "/topic/user/" + sos.getUserId() + "/history",
-                "REFRESH"
-        );
     }
+
+    messagingTemplate.convertAndSend(
+            "/topic/admin",
+            dto
+    );
+
+    messagingTemplate.convertAndSend(
+            "/topic/user/" + sos.getUserId() + "/sos-status",
+            Map.of(
+                    "idSOS", sos.getId(),
+                    "trangThai", "HUY_BO",
+                    "message", layThongDiepTrangThai("HUY_BO")
+            )
+    );
+
+    messagingTemplate.convertAndSend(
+            "/topic/user/" + sos.getUserId() + "/history",
+            "REFRESH"
+    );
+}
     private String layThongDiepTrangThai(String trangThai) {
     switch (trangThai) {
         case "DANG_XU_LY":

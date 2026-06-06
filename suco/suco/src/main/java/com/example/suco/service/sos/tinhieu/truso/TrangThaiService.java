@@ -1,7 +1,8 @@
 package com.example.suco.service.sos.tinhieu.truso;
 
-import com.example.suco.dto.sos.tinhieu.UserSOSDetailResponseDTO;
 import com.example.suco.mapper.TinHieuMapper;
+import com.example.suco.dto.sos.tinhieu.SOSMapResponseDTO;
+import com.example.suco.dto.sos.tinhieu.TruSoSOSDetailResponseDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
@@ -107,7 +108,7 @@ public class TrangThaiService {
 
         tinHieuRealtimeService.guiThongDiep(sos);
 
-        UserSOSDetailResponseDTO dto = tinHieuMapper.mapToDTO(sos);
+        SOSMapResponseDTO dto = tinHieuMapper.toMapDto(sos);
 
         Long targetTruSo =
                 sos.getIdTruSoTiepNhan() != null
@@ -128,10 +129,10 @@ public class TrangThaiService {
     // =========================================
     // LIST ACTIVE
     // =========================================
-    public List<UserSOSDetailResponseDTO> layDanhSachSOSActive(
-            TruSo current,
-            String status
-    ) {
+    public List<TruSoSOSDetailResponseDTO> layDanhSachSOSActive(
+        TruSo current,
+        String status
+) {
 
         if (current == null) {
             throw new ResponseStatusException(
@@ -147,7 +148,7 @@ public class TrangThaiService {
                         status.isEmpty() ||
                         status.equalsIgnoreCase(sos.getTrangThai())
                 )
-                .map(tinHieuMapper::mapToDTO)
+                .map(tinHieuMapper::toTruSoDetailDto)
                 .toList();
     }
 }
