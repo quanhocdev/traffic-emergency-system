@@ -29,6 +29,7 @@ class TinHieuSOSViewModel : ViewModel() {
     var recordedFile by mutableStateOf<File?>(null)
     var noteText by mutableStateOf("")
 
+
     fun resetState() {
         _currentStep.value = 1
         isSubmitting = false
@@ -143,10 +144,19 @@ class TinHieuSOSViewModel : ViewModel() {
                         }
 
                         if (response.isSuccessful) {
-                            statusSOS = "Gửi thành công!"
+
+                            val body = response.body()
+
+                            val sosId = body?.sosId
+
+                            statusSOS = "Gửi thành công #$sosId"
+
                             onComplete(true)
+
                         } else {
+
                             statusSOS = "Lỗi hệ thống: ${response.code()}"
+
                             onComplete(false)
                         }
 

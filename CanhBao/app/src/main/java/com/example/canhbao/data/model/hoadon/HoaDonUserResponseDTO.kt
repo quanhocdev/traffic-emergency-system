@@ -1,14 +1,11 @@
 package com.example.canhbao.data.model.hoadon
 
+import com.example.canhbao.data.model.TruSoMiniDTO
 import java.math.BigDecimal
 
 data class UserMiniDTO(
     val name: String? = null,
     val email: String? = null,
-)
-data class TruSoMiniDTO(
-    val id: Long? = null,
-    val tenTruSo: String? = null,
 )
 data class HoaDonUserResponseDTO(
     val id: Long? = null,

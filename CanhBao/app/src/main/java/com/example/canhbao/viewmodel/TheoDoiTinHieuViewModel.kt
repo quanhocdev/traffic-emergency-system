@@ -12,6 +12,7 @@ import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSDetailResponseDTO
+import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSItemResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
 import com.google.android.gms.tasks.Tasks
@@ -28,7 +29,7 @@ sealed class TheoDoiTinHieuUiState {
     object Loading : TheoDoiTinHieuUiState()
 
     data class Success(
-        val data: List<TheoDoiSOSDetailResponseDTO>
+        val data: List<TheoDoiSOSItemResponseDTO>
     ) : TheoDoiTinHieuUiState()
 
     data class Error(
@@ -217,71 +218,70 @@ class TheoDoiTinHieuViewModel : ViewModel() {
         if (mStompClient?.isConnected == true)
             return
 
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+
         mStompClient = Stomp.over(
             Stomp.ConnectionProvider.OKHTTP,
             "${AppConfig.WS_BASE_URL}/ws-suco/websocket"
         )
 
-        listOf(
-            "/topic/user/sos-status",
-            "/topic/user/history"
-        ).forEach { topic ->
+        // SOS status user-specific
+        uid?.let {
 
-            mStompClient
-                ?.topic(topic)
+            mStompClient?.topic("/topic/user/$it/sos-status")
                 ?.subscribe({
 
                     loadDataFromApi()
 
                 }, {
-
-                    Log.e(
-                        "WebSocket",
-                        "Error: ${it.message}"
-                    )
+                    Log.e("WebSocket", "SOS error: ${it.message}")
                 })
         }
 
-        mStompClient?.topic(
-            "/topic/user/invoice"
-        )?.subscribe({ topicMessage ->
+        // history
+        uid?.let {
 
-            val thanhToan =
-                Gson().fromJson(
-                    topicMessage.payload,
-                    ThanhToanResponseDTO::class.java
-                )
+            mStompClient?.topic("/topic/user/$it/history")
+                ?.subscribe({
 
-            viewModelScope.launch {
+                    loadDataFromApi()
 
-                val hoaDonId =
-                    thanhToan.hoaDonId
-                        ?: return@launch
+                }, {
+                    Log.e("WebSocket", "History error: ${it.message}")
+                })
+        }
 
-                val currentMap =
-                    pendingInvoicesMap.toMutableMap()
+        // invoice
+        mStompClient?.topic("/topic/user/invoice")
+            ?.subscribe({ topicMessage ->
 
-                if (thanhToan.trangThai == "SUCCESS") {
-                    currentMap.remove(hoaDonId)
-                } else {
-                    currentMap[hoaDonId] =
-                        thanhToan
+                val thanhToan =
+                    Gson().fromJson(
+                        topicMessage.payload,
+                        ThanhToanResponseDTO::class.java
+                    )
+
+                viewModelScope.launch {
+
+                    val hoaDonId = thanhToan.hoaDonId ?: return@launch
+
+                    val currentMap = pendingInvoicesMap.toMutableMap()
+
+                    if (thanhToan.trangThai == "SUCCESS") {
+                        currentMap.remove(hoaDonId)
+                    } else {
+                        currentMap[hoaDonId] = thanhToan
+                    }
+
+                    pendingInvoicesMap = currentMap
+
+                    loadDataFromApi()
+                    loadTuiQua()
                 }
 
-                pendingInvoicesMap =
-                    currentMap
-
-                loadDataFromApi()
-                loadTuiQua()
-            }
-
-        }, {
-
-            Log.e(
-                "WebSocket",
-                "Invoice error: ${it.message}"
-            )
-        })
+            }, {
+                Log.e("WebSocket", "Invoice error: ${it.message}")
+            })
 
         mStompClient?.connect()
     }

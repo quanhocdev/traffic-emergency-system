@@ -19,12 +19,12 @@ class SOSViewModel : ViewModel() {
             val json = JSONObject(jsonRaw)
 
             val message = json.optString("message")
-            val truSoId = json.optString("truSoId", "PENDING")
+            val sosId = json.optString("sosId")
 
             _sosResponse.value = message
-            _currentHandlingTruSoId.value = truSoId
+            _currentHandlingTruSoId.value = sosId
 
-            Log.d("SOS", "message=$message truSo=$truSoId")
+            Log.d("SOS", "message=$message sosId=$sosId")
 
         } catch (e: Exception) {
             e.printStackTrace()
