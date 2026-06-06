@@ -1,9 +1,11 @@
 package com.example.canhbao.data.model.sos.tinhieu
 
-data class SOSMapResponseDTO (
+import com.example.canhbao.data.model.TruSoMiniDTO
+
+data class SOSMapResponseDTO(
     val id: Long?,
     val viDo: Double?,
     val kinhDo: Double?,
-    val truSoId: Long?,
-    val trangThai: String
+    val trangThai: String,
+    val truSo: TruSoMiniDTO?   // ✅ thay vì truSoId
 )

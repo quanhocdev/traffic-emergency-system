@@ -7,6 +7,7 @@ import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import com.example.canhbao.data.model.qua.QuaResponseDTO
 import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
+import com.example.canhbao.data.model.sos.tinhieu.SOSMapResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSDetailResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSItemResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequestDTO
@@ -70,6 +71,8 @@ interface BaoCaoSuCoApi {
         @Path("id") id: Long
     ): Response<Map<String, Any>>
 
+    @GET("/api/sos/map")
+    suspend fun getSOSMap(): List<SOSMapResponseDTO>
     @GET("/api/sos/theo-doi")
     suspend fun getTheoDoiSOS(
         @Header("Authorization") token: String
