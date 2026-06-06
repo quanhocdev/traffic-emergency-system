@@ -1,6 +1,6 @@
 package com.example.suco.service.sos.tinhieu.truso;
 
-import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
+import com.example.suco.dto.sos.tinhieu.UserSOSDetailResponseDTO;
 import com.example.suco.mapper.TinHieuMapper;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
@@ -107,7 +107,7 @@ public class TrangThaiService {
 
         tinHieuRealtimeService.guiThongDiep(sos);
 
-        TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
+        UserSOSDetailResponseDTO dto = tinHieuMapper.mapToDTO(sos);
 
         Long targetTruSo =
                 sos.getIdTruSoTiepNhan() != null
@@ -128,7 +128,7 @@ public class TrangThaiService {
     // =========================================
     // LIST ACTIVE
     // =========================================
-    public List<TinHieuSOSResponseDTO> layDanhSachSOSActive(
+    public List<UserSOSDetailResponseDTO> layDanhSachSOSActive(
             TruSo current,
             String status
     ) {

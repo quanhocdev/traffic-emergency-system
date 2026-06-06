@@ -3,7 +3,7 @@ package com.example.suco.dto.sos.tinhieu;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class TheoDoiTinHieuResponseDTO {
+public class TheoDoiSOSDetailResponseDTO {
 
     private Long id;
 

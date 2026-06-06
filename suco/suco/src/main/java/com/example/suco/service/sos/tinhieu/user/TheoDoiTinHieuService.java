@@ -1,5 +1,5 @@
 package com.example.suco.service.sos.tinhieu.user;
-import com.example.suco.dto.sos.tinhieu.TheoDoiTinHieuResponseDTO;
+import com.example.suco.dto.sos.tinhieu.TheoDoiSOSDetailResponseDTO;
 import com.example.suco.mapper.TinHieuMapper;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ public class TheoDoiTinHieuService {
     @Autowired
     private TinHieuMapper tinHieuMapper;
 
-    public List<TheoDoiTinHieuResponseDTO> layDanhSach(String uid) {
+    public List<TheoDoiSOSDetailResponseDTO> layDanhSach(String uid) {
 
         return tinHieuSOSRepository.findByUserUid(uid)
                 .stream()

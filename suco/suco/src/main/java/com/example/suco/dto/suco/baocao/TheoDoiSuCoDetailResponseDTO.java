@@ -2,7 +2,7 @@ package com.example.suco.dto.suco.baocao;
 
 import java.time.LocalDateTime;
 
-public class TheoDoiBaoCaoResponseDTO {
+public class TheoDoiSuCoDetailResponseDTO {
 
   
 

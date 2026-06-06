@@ -1,8 +1,8 @@
 package com.example.suco.mapper;
 
-import com.example.suco.dto.sos.tinhieu.TheoDoiTinHieuResponseDTO;
+import com.example.suco.dto.sos.tinhieu.TheoDoiSOSDetailResponseDTO;
 import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
-import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
+import com.example.suco.dto.sos.tinhieu.UserSOSDetailResponseDTO;
 import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 import com.example.suco.model.User;
 import com.example.suco.model.TinHieuSOS;
@@ -41,7 +41,7 @@ public class TinHieuMapper {
     return sos;
 }
         // Entity → Response Map DTO
-    public TinHieuSOSResponseDTO mapToDTO(TinHieuSOS sos) {
+    public UserSOSDetailResponseDTO mapToDTO(TinHieuSOS sos) {
 
         log.info("=== MAP SOS ID={} userId={} userRelation={} ===",
                 sos.getId(),
@@ -51,8 +51,8 @@ public class TinHieuMapper {
                         : null
         );
 
-        TinHieuSOSResponseDTO dto =
-                new TinHieuSOSResponseDTO();
+        UserSOSDetailResponseDTO dto =
+                new UserSOSDetailResponseDTO();
 
         dto.setId(sos.getId());
         dto.setViDo(sos.getViDo());
@@ -94,10 +94,10 @@ public class TinHieuMapper {
     }
 
     // Entity → ResponseDTO cá nhân
-    public TheoDoiTinHieuResponseDTO toTheoDoiDto(TinHieuSOS sos) {
+    public TheoDoiSOSDetailResponseDTO toTheoDoiDto(TinHieuSOS sos) {
 
-    TheoDoiTinHieuResponseDTO dto =
-            new TheoDoiTinHieuResponseDTO();
+    TheoDoiSOSDetailResponseDTO dto =
+            new TheoDoiSOSDetailResponseDTO();
 
     dto.setId(sos.getId());
 

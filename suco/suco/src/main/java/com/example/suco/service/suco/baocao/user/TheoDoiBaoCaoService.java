@@ -1,5 +1,5 @@
 package com.example.suco.service.suco.baocao.user;
-import com.example.suco.dto.suco.baocao.TheoDoiBaoCaoResponseDTO;
+import com.example.suco.dto.suco.baocao.TheoDoiSuCoDetailResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ public class TheoDoiBaoCaoService {
     @Autowired
     private SuCoMapper suCoMapper;
 
-    public List<TheoDoiBaoCaoResponseDTO> layDanhSach(String uid) {
+    public List<TheoDoiSuCoDetailResponseDTO> layDanhSach(String uid) {
 
         return baoCaoSuCoRepository.findByReporterUid(uid)
                 .stream()
