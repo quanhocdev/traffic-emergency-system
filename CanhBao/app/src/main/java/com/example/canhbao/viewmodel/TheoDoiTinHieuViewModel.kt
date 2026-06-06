@@ -11,7 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
-import com.example.canhbao.data.model.sos.tinhieu.TheoDoiTinHieuResponseDTO
+import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSDetailResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
 import com.google.android.gms.tasks.Tasks
@@ -28,7 +28,7 @@ sealed class TheoDoiTinHieuUiState {
     object Loading : TheoDoiTinHieuUiState()
 
     data class Success(
-        val data: List<TheoDoiTinHieuResponseDTO>
+        val data: List<TheoDoiSOSDetailResponseDTO>
     ) : TheoDoiTinHieuUiState()
 
     data class Error(

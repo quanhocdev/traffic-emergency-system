@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequest
+import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequestDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -105,14 +105,12 @@ class TinHieuSOSViewModel : ViewModel() {
                         if (it.exists()) fileToBase64(it) else null
                     }
 
-                    TinHieuSOSRequest(
+                    TinHieuSOSRequestDTO(
                         viDo = lat,
                         kinhDo = lng,
-                        diaChi = diaChi,
                         ghiAmBase64 = base64Audio,
                         hinhAnhBase64 = base64Image,
                         ghiChu = noteText,
-                        thoiGianTao = java.time.LocalDateTime.now().toString()
                     )
                 }
 

@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.canhbao.data.model.sos.tinhieu.TheoDoiTinHieuResponseDTO
+import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSDetailResponseDTO
 import com.example.canhbao.data.network.AppConfig
 
 // Thống nhất bảng màu Đỏ - Trắng chủ đạo của hệ thống CanhBao
@@ -34,7 +34,7 @@ private val SuccessGreen = Color(0xFF10B981)
 
 @Composable
 fun TinHieuItemUI(
-    item: TheoDoiTinHieuResponseDTO,
+    item: TheoDoiSOSDetailResponseDTO,
     isPlaying: Boolean,
     onPlayAudio: (String) -> Unit,
     onCancelClick: () -> Unit,

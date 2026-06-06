@@ -1,6 +1,7 @@
 package com.example.suco.controller.sos.tinhieu.user;
 
 import com.example.suco.dto.sos.tinhieu.TheoDoiSOSDetailResponseDTO;
+import com.example.suco.dto.sos.tinhieu.TheoDoiSOSItemResponseDTO;
 import com.example.suco.service.sos.tinhieu.user.TheoDoiTinHieuService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,13 +20,24 @@ public class TheoDoiTinHieuController {
     @Autowired
     private FirebaseService firebaseService;
 
-    @GetMapping("/theo-doi")
-    public List<TheoDoiSOSDetailResponseDTO> layDanhSach(
-            @RequestHeader("Authorization") String authHeader
-    ) throws Exception {
+   @GetMapping("/theo-doi")
+public List<TheoDoiSOSItemResponseDTO> layDanhSach(
+        @RequestHeader("Authorization") String authHeader
+) throws Exception {
 
-        String uid = firebaseService.extractUid(authHeader);
+    String uid = firebaseService.extractUid(authHeader);
 
-        return theoDoiTinHieuService.layDanhSach(uid);
-    }
+    return theoDoiTinHieuService.layDanhSachItem(uid);
+}
+
+@GetMapping("/theo-doi/{id}")
+public TheoDoiSOSDetailResponseDTO layChiTiet(
+        @PathVariable Long id,
+        @RequestHeader("Authorization") String authHeader
+) throws Exception {
+
+    firebaseService.extractUid(authHeader);
+
+    return theoDoiTinHieuService.layChiTiet(id);
+}
 }

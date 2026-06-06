@@ -53,6 +53,7 @@ private UserMiniDTO toUserMiniDTO(User user) {
 
     return sos;
 }
+
 public SOSMapResponseDTO toMapDto(TinHieuSOS sos) {
 
     SOSMapResponseDTO dto = new SOSMapResponseDTO();
@@ -60,18 +61,13 @@ public SOSMapResponseDTO toMapDto(TinHieuSOS sos) {
     dto.setId(sos.getId());
     dto.setViDo(sos.getViDo());
     dto.setKinhDo(sos.getKinhDo());
+    dto.setTrangThai(sos.getTrangThai());
 
-    dto.setTruSoId(
-            sos.getIdTruSoTiepNhan()
-    );
+    TruSoMiniDTO mini = new TruSoMiniDTO();
+    mini.setId(sos.getIdTruSoTiepNhan()); 
+    mini.setTenTruSo(null);
 
-    dto.setTrangThai(
-            sos.getTrangThai()
-    );
-
-    dto.setDiaChi(
-            sos.getDiaChi()
-    );
+    dto.setTruSo(mini);
 
     return dto;
 }
@@ -128,8 +124,7 @@ public AdminSOSDetailResponseDTO toAdminDetailDto(
 // Entity → ItemResponseDTO cá nhân
 
 public TheoDoiSOSItemResponseDTO toTheoDoiItemDto(
-        TinHieuSOS sos,
-        String tenTruSo
+        TinHieuSOS sos
 ) {
 
  TheoDoiSOSItemResponseDTO dto =
@@ -140,8 +135,6 @@ public TheoDoiSOSItemResponseDTO toTheoDoiItemDto(
     dto.setHinhAnh( sos.getHinhAnh() );
 
     dto.setTrangThai( sos.getTrangThai());
-
-    dto.setTenTruSoTiepNhan(tenTruSo);
 
     dto.setCreatedAt(sos.getCreatedAt());
 
