@@ -1,32 +1,31 @@
-package com.example.suco.dto.sos.tinhieu;
-import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
-import com.example.suco.model.TruSo;
+// package com.example.suco.dto.sos.tinhieu;
+// import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
 
-public class GuiTinHieuResponseDTO {
+// public class GuiTinHieuResponseDTO {
 
-    private TinHieuSOSResponseDTO sosData;
+//     private UserSOSDetailResponseDTO sosData;
 
-    private TruSoMiniDTO truSoGanNhat;
+//     private TruSoMiniDTO truSoGanNhat;
 
-    public GuiTinHieuResponseDTO() {}
+//     public GuiTinHieuResponseDTO() {}
 
-    public GuiTinHieuResponseDTO(TinHieuSOSResponseDTO sosData, TruSoMiniDTO truSoGanNhat) {
-        this.sosData = sosData;
-        this.truSoGanNhat = truSoGanNhat;
-    }
+//     public GuiTinHieuResponseDTO(UserSOSDetailResponseDTO sosData, TruSoMiniDTO truSoGanNhat) {
+//         this.sosData = sosData;
+//         this.truSoGanNhat = truSoGanNhat;
+//     }
 
-    // getter/setter
-    public TinHieuSOSResponseDTO getSosData() {
-        return sosData;
-    }
-    public void setSosData(TinHieuSOSResponseDTO sosData) {
-        this.sosData = sosData;
-    }
-    public TruSoMiniDTO getTruSoGanNhat() {
-        return truSoGanNhat;
-    }
-    public void setTruSoGanNhat(TruSoMiniDTO truSoGanNhat) {
-        this.truSoGanNhat = truSoGanNhat;
-    }
+//     // getter/setter
+//     public UserSOSDetailResponseDTO getSosData() {
+//         return sosData;
+//     }
+//     public void setSosData(UserSOSDetailResponseDTO sosData) {
+//         this.sosData = sosData;
+//     }
+//     public TruSoMiniDTO getTruSoGanNhat() {
+//         return truSoGanNhat;
+//     }
+//     public void setTruSoGanNhat(TruSoMiniDTO truSoGanNhat) {
+//         this.truSoGanNhat = truSoGanNhat;
+//     }
 
-}
+// }

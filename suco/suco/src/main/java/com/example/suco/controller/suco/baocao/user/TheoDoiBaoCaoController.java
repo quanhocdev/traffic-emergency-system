@@ -1,6 +1,6 @@
 package com.example.suco.controller.suco.baocao.user;
 
-import com.example.suco.dto.suco.baocao.TheoDoiBaoCaoResponseDTO;
+import com.example.suco.dto.suco.baocao.TheoDoiSuCoDetailResponseDTO;
 import com.example.suco.service.suco.baocao.user.TheoDoiBaoCaoService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class TheoDoiBaoCaoController {
     private FirebaseService firebaseService;
 
     @GetMapping("/theo-doi")
-    public List<TheoDoiBaoCaoResponseDTO> layDanhSach(
+    public List<TheoDoiSuCoDetailResponseDTO> layDanhSach(
             @RequestHeader("Authorization") String authHeader
     ) throws Exception {
 

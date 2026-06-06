@@ -51,13 +51,9 @@ public GuiTinHieuResponseDTO submitSOS(String uid, TinHieuSOSRequestDTO dto) {
     TinHieuSOS sos = tinHieuMapper.toEntity(dto, uid, user);
 
     // 1. địa chỉ
-    if (dto.getDiaChi() != null && !dto.getDiaChi().isBlank()) {
-        sos.setDiaChi(dto.getDiaChi());
-    } else {
         sos.setDiaChi(
                 geocodingService.getAddress(sos.getViDo(), sos.getKinhDo())
         );
-    }
 
     // 2. file
     fileStorageService.handleFiles(sos, dto);

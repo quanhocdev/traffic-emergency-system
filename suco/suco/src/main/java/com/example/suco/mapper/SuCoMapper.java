@@ -4,7 +4,7 @@ import com.example.suco.model.LoaiSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
-import com.example.suco.dto.suco.baocao.TheoDoiBaoCaoResponseDTO;
+import com.example.suco.dto.suco.baocao.TheoDoiSuCoDetailResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
 import com.example.suco.dto.suco.baocao.AdminSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.TruSoSuCoDetailResponseDTO;
@@ -207,9 +207,9 @@ if (b.getTruSoTiepNhan() != null) {
     return dto;
 }
 
-    public TheoDoiBaoCaoResponseDTO toTheoDoiDto(BaoCaoSuCo b) {
-    TheoDoiBaoCaoResponseDTO dto =
-            new TheoDoiBaoCaoResponseDTO();
+    public TheoDoiSuCoDetailResponseDTO toTheoDoiDto(BaoCaoSuCo b) {
+    TheoDoiSuCoDetailResponseDTO dto =
+            new TheoDoiSuCoDetailResponseDTO();
 
     dto.setId(b.getId());
 

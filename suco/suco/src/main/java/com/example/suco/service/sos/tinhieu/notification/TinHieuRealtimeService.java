@@ -5,7 +5,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import com.example.suco.dto.sos.tinhieu.TinHieuSOSResponseDTO;
+import com.example.suco.dto.sos.tinhieu.UserSOSDetailResponseDTO;
 import com.example.suco.mapper.TinHieuMapper;
 import com.example.suco.model.TinHieuSOS;
 
@@ -20,7 +20,7 @@ public class TinHieuRealtimeService {
 
     public void realtimeGuiSOS(TinHieuSOS sos) {
 
-        TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
+        UserSOSDetailResponseDTO dto = tinHieuMapper.mapToDTO(sos);
 
         messagingTemplate.convertAndSend(
                 "/topic/admin",
@@ -35,7 +35,7 @@ public class TinHieuRealtimeService {
 
     public void realtimeHuySOS(TinHieuSOS sos) {
 
-        TinHieuSOSResponseDTO dto = tinHieuMapper.mapToDTO(sos);
+        UserSOSDetailResponseDTO dto = tinHieuMapper.mapToDTO(sos);
 
         if (sos.getIdTruSoTiepNhan() != null) {
             messagingTemplate.convertAndSend(

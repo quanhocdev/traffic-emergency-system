@@ -6,10 +6,7 @@ public class TinHieuSOSRequestDTO {
     private String ghiAmBase64;
     private String hinhAnhBase64;
     private String ghiChu;
-    private String thoiGianTao;
-    private String diaChi; 
-
-    // Constructor mặc định (Bắt buộc để Jackson map JSON)
+    
     public TinHieuSOSRequestDTO() {}
 
     public double getViDo() { return viDo; }
@@ -27,9 +24,4 @@ public class TinHieuSOSRequestDTO {
     public String getGhiChu() { return ghiChu; }
     public void setGhiChu(String ghiChu) { this.ghiChu = ghiChu; }
 
-    public String getThoiGianTao() { return thoiGianTao; }
-    public void setThoiGianTao(String thoiGianTao) { this.thoiGianTao = thoiGianTao; }
-
-public String getDiaChi() { return diaChi; } // Thêm Getter
-public void setDiaChi(String diaChi) { this.diaChi = diaChi; } // Thêm Setter
 }
