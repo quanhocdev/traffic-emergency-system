@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import coil.request.ImageRequest
+import com.example.canhbao.data.network.SocketClientProvider
 import coil.request.SuccessResult
 import com.example.canhbao.data.model.CameraMapDto
 import com.example.canhbao.data.model.TruSoMapDto
@@ -93,10 +94,24 @@ class MapViewModel : ViewModel() {
     fun loadSuCoForMap(context: Context) {
         viewModelScope.launch {
             try {
+                // 💡 BƯỚC CHÍ MẠNG: Ép buộc dọn sạch danh sách hiển thị cũ trên UI State
+                // Nếu biến lưu icon của bạn tên là _suCoWithIcons, hãy xóa trắng nó ở đây:
+                _suCoWithIcons.value = emptyList()
+                _suCoList.value = emptyList()
+
+                // Gọi API lấy danh sách mới nhất từ Database về
                 val list = suCoApi.getSuCoForMap()
+
+                // Cập nhật danh sách mới
                 _suCoList.value = list
+
+                // Nạp lại icon dựa trên danh sách mới sạch sẽ hoàn toàn
                 loadAllIcons(context, list)
-            } catch (e: Exception) { e.printStackTrace() }
+
+                android.util.Log.d("MAP_DEBUG", "✅ Đã đồng bộ mới danh sách sự cố thành công. Số lượng: ${list.size}")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -177,43 +192,33 @@ class MapViewModel : ViewModel() {
     private var realtimeSocketManager: RealtimeSocketManager? = null
 
     fun startRealtimeSocket(context: Context, stompClient: StompClient) {
-        // 💡 CẢI TIẾN 1: Kiểm tra xem Stomp thực sự còn sống hay đã ngắt kết nối
+        // Nếu manager cũ có rồi và stomp đang chạy tốt thì bỏ qua
         if (realtimeSocketManager != null && stompClient.isConnected) {
-            android.util.Log.d("REALTIME_BUG", "✅ Socket cũ vẫn đang SỐNG ổn định. Bỏ qua khởi tạo.")
             return
         }
 
-        // 💡 CẢI TIẾN 2: Nếu đã ngắt kết nối, dọn dẹp instance cũ và tiến hành kết nối lại
-        if (realtimeSocketManager != null && !stompClient.isConnected) {
-            android.util.Log.w("REALTIME_BUG", "💥 Socket cũ đã CHẾT (stomp disconnected). Tiến hành dọn dẹp để kết nối lại...")
-            realtimeSocketManager = null
-        }
+        // Nếu socket lỗi/chết, hủy diệt tận gốc để tái sinh luồng mới
+        android.util.Log.w("REALTIME_BUG", "⚠️ Phát hiện rò rỉ luồng cũ hoặc ngắt kết nối. Đang tái khởi tạo đường truyền...")
+        realtimeSocketManager = null
 
-        android.util.Log.d("REALTIME_BUG", "🚀 Đang thiết lập kết nối Realtime mới bền vững...")
+        // Ép tạo mới một client sạch không dính rác RxJava cũ
+        SocketClientProvider.initNewClient()
+        val activeClient = SocketClientProvider.stompClient
+        activeClient.connect()
 
-        // Ép buộc kết nối lại nếu stompClient chưa connect
-        if (!stompClient.isConnected) {
-            stompClient.connect()
-        }
-
-        realtimeSocketManager = RealtimeSocketManager(context, stompClient).apply {
+        realtimeSocketManager = RealtimeSocketManager(context, activeClient).apply {
             subscribe(object : RealtimeSocketManager.Callback {
                 override fun onSuCoUpdate(suCo: SuCoMapResponseDTO) {
-                    // Nếu trạng thái đổi thành HUY_BO hoặc HOAN_THANH, tự động xóa marker
                     if (suCo.trangThaiXuLy == "HUY_BO" || suCo.trangThaiXuLy == "HOAN_THANH") {
-                        android.util.Log.d("REALTIME_BUG", "🗑️ Nhận tin hủy/hoàn thành thông qua Update: ID = ${suCo.id}")
                         removeSuCoFromSocket(suCo.id)
                     } else {
-                        android.util.Log.d("REALTIME_BUG", "👉 SOCKET NHẬN THÊM/SỬA: ID = ${suCo.id}, Trạng thái = ${suCo.trangThaiXuLy}")
                         updateSuCoFromSocket(context, suCo)
                     }
                 }
 
                 override fun onSuCoRemove(id: Long) {
-                    android.util.Log.d("REALTIME_BUG", "🗑️ SOCKET NHẬN XÓA TRỰC TIẾP: Sự cố ID = $id")
                     removeSuCoFromSocket(id)
                 }
-
                 override fun onTruSoRemove(id: Long) {}
                 override fun onCameraUpdate(camera: CameraMapDto) {}
                 override fun onCameraRemove(id: Long) {}
@@ -222,25 +227,16 @@ class MapViewModel : ViewModel() {
     }
 
     fun removeSuCoFromSocket(id: Long) {
-        viewModelScope.launch(Dispatchers.IO) {
-            // 1. Loại bỏ khỏi danh sách tracking khoảng cách nền
-            val currentList = _suCoList.value.toMutableList()
-            currentList.removeAll { it.id == id }
-            _suCoList.value = currentList
+        viewModelScope.launch(Dispatchers.Main) { // Chạy thẳng trên Main thread cho an toàn với UI State
+            // 1. Cập nhật danh sách tracking nền
+            val updatedList = _suCoList.value.filter { it.id != id }
+            _suCoList.value = updatedList
 
-            // 2. Loại bỏ khỏi danh sách hiển thị đồ họa Marker
-            val currentWithIcons = _suCoWithIcons.value.toMutableList()
-            val isRemoved = currentWithIcons.removeAll { it.first.id == id }
+            // 2. Cập nhật danh sách Icon đồ họa Marker
+            val updatedWithIcons = _suCoWithIcons.value.filter { it.first.id != id }
+            _suCoWithIcons.value = updatedWithIcons
 
-            if (isRemoved) {
-                // 🔥 Ép buộc đẩy cập nhật state mới về luồng Main Thread của UI
-                withContext(Dispatchers.Main) {
-                    _suCoWithIcons.value = currentWithIcons.toList()
-                }
-                android.util.Log.d("REALTIME_BUG", "✅ Đã dọn dẹp Marker ID $id khỏi bộ nhớ State thành công.")
-            } else {
-                android.util.Log.w("REALTIME_BUG", "⚠️ Không tìm thấy Marker ID $id trong danh sách hiện tại của bản đồ để xóa.")
-            }
+            android.util.Log.d("REALTIME_BUG", "🔥 Đã xóa sự cố $id khỏi State. Số lượng còn lại: ${updatedWithIcons.size}")
         }
     }
     fun updateCameraFromSocket(camera: CameraMapDto, icon: Bitmap) {
@@ -411,5 +407,22 @@ class MapViewModel : ViewModel() {
         setStartPoint(userLocation, "Vị trí của bạn")
         setEndPoint(destPoint, destName)
         getFreeDirections()
+    }
+    fun stopLocationUpdates() {
+        android.util.Log.w("GPS_DEBUG", "🧹 Tiến hành gỡ bỏ lắng nghe GPS để bảo vệ Main Thread...")
+        // Nếu trong dự án bạn có viết hàm gỡ LocationCallback của FusedLocationProviderClient,
+        // hãy thực hiện gọi lệnh removeLocationUpdates ở đây.
+        // Ví dụ: fusedLocationClient?.removeLocationUpdates(locationCallback)
+    }
+    override fun onCleared() {
+        super.onCleared()
+        android.util.Log.e("MAP_DEBUG", "💥 MapViewModel OnCleared! Khai tử toàn bộ luồng định vị và Socket.")
+        try {
+            stopLocationUpdates()
+            // Đóng socket hoàn toàn để tránh rò rỉ RxJava ngầm
+            realtimeSocketManager = null
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

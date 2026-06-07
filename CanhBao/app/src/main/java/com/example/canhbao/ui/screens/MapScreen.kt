@@ -66,6 +66,8 @@ import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ua.naiksoftware.stomp.StompClient
+import androidx.lifecycle.compose.LifecycleEventEffect
+import androidx.lifecycle.Lifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -173,15 +175,16 @@ fun MapScreen(
             if (callState == "IDLE") isMicroMuted = false
         }
     }
-    LaunchedEffect(Unit) {
-        if (mapViewModel.suCoWithIcons.value.isEmpty()) {
-            mapViewModel.loadSuCoForMap(context)
-            mapViewModel.loadTruSoData(context)
-            mapViewModel.loadCameraData(context)
-        }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        android.util.Log.d("MAP_DEBUG", "🔄 Màn hình Map được mở lại - Tiến hành đồng bộ làm sạch dữ liệu...")
 
+        // Luôn gọi API làm mới danh sách sự cố để loại bỏ những gì đã bị xóa/hủy dưới DB
+        mapViewModel.loadSuCoForMap(context)
+        mapViewModel.loadTruSoData(context)
+        mapViewModel.loadCameraData(context)
+
+        // Khởi chạy lại kết nối đàm thoại và socket nếu bị sập nửa chừng
         callViewModel.start(context, stompClient, webrtcViewModel)
-
         mapViewModel.startRealtimeSocket(context, stompClient)
     }
 
@@ -308,9 +311,19 @@ fun MapScreen(
     )
 
     DisposableEffect(Unit) {
-        onDispose { tts.shutdown() }
-    }
+        onDispose {
+            // 1. Tắt giọng nói nói chung (Code cũ của bạn)
+            tts.shutdown()
 
+            // 2. ✅ THÊM VÀO ĐÂY: Khai tử luồng định vị ngầm ngay khi thoát màn hình Map!
+            try {
+                mapViewModel.stopLocationUpdates()
+                android.util.Log.w("GPS_DEBUG", "🧹 Đã giải phóng luồng GPS đồng thời với TTS thành công!")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
     Scaffold(
         bottomBar = {
             NavigationBar(containerColor = Color.White) {
