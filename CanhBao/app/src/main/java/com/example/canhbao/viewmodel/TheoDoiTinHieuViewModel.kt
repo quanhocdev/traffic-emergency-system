@@ -399,4 +399,31 @@ class TheoDoiTinHieuViewModel : ViewModel() {
     fun clearSelectedPayment() {
         selectedPayment = null
     }
+    // --- Thêm vào bên trong class TheoDoiTinHieuViewModel ---
+
+    var detailUiStateMap by mutableStateOf<Map<Long, TheoDoiSOSDetailResponseDTO>>(emptyMap())
+        private set
+
+    fun fetchDetailSOS(sosId: Long) {
+        viewModelScope.launch {
+            try {
+                // 💡 GIẢI PHÁP: Đẩy toàn bộ tác vụ lấy Token và gọi API sang IO Thread (Luồng nền)
+                val response = withContext(Dispatchers.IO) {
+                    val token = getToken() // Chạy an toàn trên luồng nền, không sợ block Main Thread nữa
+                    api.getTheoDoiSOSDetail(token, sosId)
+                }
+
+                // 🔄 Cập nhật UI State (Phải thực hiện trên Main Thread)
+                withContext(Dispatchers.Main) {
+                    val currentMap = detailUiStateMap.toMutableMap()
+                    currentMap[sosId] = response
+                    detailUiStateMap = currentMap
+                }
+
+            } catch (e: Exception) {
+                android.util.Log.e("TheoDoiTinHieuViewModel", "Lỗi tải chi tiết SOS #$sosId: ${e.message}")
+                // Bạn có thể bổ sung xử lý UI tại đây nếu muốn, ví dụ: gán một trạng thái lỗi để tắt vòng xoay
+            }
+        }
+    }
 }
