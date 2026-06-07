@@ -5,12 +5,14 @@ public class TruSoMapDto {
     private String tenTruSo;
     private double kinhDo;
     private double viDo;
+    private String diaChi;
 
-    public TruSoMapDto(Long id, String tenTruSo, double kinhDo, double viDo) {
+    public TruSoMapDto(Long id, String tenTruSo, double kinhDo, double viDo, String diaChi) {
         this.id = id;
         this.tenTruSo = tenTruSo;
         this.kinhDo = kinhDo;
         this.viDo = viDo;
+        this.diaChi = diaChi;
     }
     // Getters và Setters
     public Long getId() {
@@ -37,5 +39,10 @@ public class TruSoMapDto {
     public void setViDo(double viDo) {
         this.viDo = viDo;
     }
-    
+    public String getDiaChi() {
+        return diaChi;
+    }
+    public void setDiaChi(String diaChi) {
+        this.diaChi = diaChi;
+    }
 }

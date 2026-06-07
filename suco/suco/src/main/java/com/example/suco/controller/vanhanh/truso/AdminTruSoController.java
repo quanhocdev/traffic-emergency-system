@@ -52,18 +52,7 @@ public class AdminTruSoController {
 @ResponseBody
 public ResponseEntity<?> themTruSo(@ModelAttribute TruSo truSo,
                                     HttpServletRequest request) {
-
-    System.out.println("🔥 ===== VÀO CONTROLLER /them TRU SO =====");
-    System.out.println("📌 Content-Type: " + request.getContentType());
-
-    System.out.println("📌 tenDangNhap: " + truSo.getTenDangNhap());
-    System.out.println("📌 tenTruSo: " + truSo.getTenTruSo());
-    System.out.println("📌 kinhDo: " + truSo.getKinhDo());
-    System.out.println("📌 viDo: " + truSo.getViDo());
-
     truSoService.saveTruSo(truSo);
-
-    System.out.println("✅ ĐÃ LƯU TRỤ SỞ ID = " + truSo.getId());
 
     return ResponseEntity.ok(
         java.util.Map.of(
@@ -73,6 +62,7 @@ public ResponseEntity<?> themTruSo(@ModelAttribute TruSo truSo,
             "tenTruSo", truSo.getTenTruSo(),
             "kinhDo", truSo.getKinhDo(),
             "viDo", truSo.getViDo(),
+            "diaChi", truSo.getDiaChi(),
             "geohash", truSo.getGeohash()
         )
     );

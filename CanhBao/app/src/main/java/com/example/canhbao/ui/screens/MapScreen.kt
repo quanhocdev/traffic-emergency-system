@@ -714,7 +714,13 @@ fun MapScreen(
                                     }
                                     Spacer(modifier = Modifier.height(12.dp))
                                     Text(text = truSo.tenTruSo, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
+                                    Spacer(modifier = Modifier.height(4.dp))
 
+                                    Text(
+                                        text = truSo.diaChi ?: "",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray
+                                    )
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                         OutlinedButton(

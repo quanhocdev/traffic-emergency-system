@@ -7,5 +7,5 @@ data class SOSMapResponseDTO(
     val viDo: Double?,
     val kinhDo: Double?,
     val trangThai: String,
-    val truSo: TruSoMiniDTO?   // ✅ thay vì truSoId
+    val truSo: TruSoMiniDTO? 
 )

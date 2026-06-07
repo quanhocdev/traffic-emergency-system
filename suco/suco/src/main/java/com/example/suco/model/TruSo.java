@@ -27,6 +27,8 @@ public class TruSo {
 
     private double viDo;
 
+    private String diaChi;
+
     @Column(length = 12)
     private String geohash;
 
@@ -90,6 +92,13 @@ public class TruSo {
 
     public void setViDo(double viDo) {
         this.viDo = viDo;
+    }
+
+    public String getDiaChi() {
+        return diaChi;
+    }
+    public void setDiaChi(String diaChi) {
+        this.diaChi = diaChi;
     }
 
     public String getGeohash() {
