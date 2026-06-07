@@ -1,5 +1,8 @@
 package com.example.canhbao.data.model.sos.tinhieu
 
+import com.example.canhbao.data.model.TruSoMapDto;
+import com.example.canhbao.data.model.sos.tinhieu.UserInfoResponseDTO;
+
 data class TheoDoiSOSDetailResponseDTO(
     val id: Long,
     val viDo: Double?,
@@ -10,8 +13,8 @@ data class TheoDoiSOSDetailResponseDTO(
     val ghiAm: String?,
     val trangThai: String?,
     val createdAt: String?,
-    val idTruSoTiepNhan: Long?,
-    val tenTruSoTiepNhan: String?,
+    val truSo: TruSoMapDto,
+    val user: UserInfoResponseDTO,
     val hoaDonId: Long?,
     val thanhTien: Double?,
     val trangThaiHoaDon: String?

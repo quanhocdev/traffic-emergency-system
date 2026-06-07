@@ -10,7 +10,8 @@ import com.example.suco.dto.sos.tinhieu.TruSoSOSDetailResponseDTO;
 import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 import com.example.suco.model.User;
 import com.example.suco.model.TinHieuSOS;
-
+import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
+import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -146,7 +147,7 @@ public TheoDoiSOSItemResponseDTO toTheoDoiItemDto(
 
 
     // Entity → ResponseDTO cá nhân
-    public TheoDoiSOSDetailResponseDTO toTheoDoiDto(TinHieuSOS sos, String tenTruSo){
+    public TheoDoiSOSDetailResponseDTO toTheoDoiDto(TinHieuSOS sos, TruSoMapDto truSoDto, UserInfoResponseDTO user) {
 
     TheoDoiSOSDetailResponseDTO dto = new TheoDoiSOSDetailResponseDTO();
 
@@ -165,10 +166,6 @@ public TheoDoiSOSItemResponseDTO toTheoDoiItemDto(
 
     dto.setCreatedAt(sos.getCreatedAt());
 
-    dto.setIdTruSoTiepNhan(
-            sos.getIdTruSoTiepNhan()
-    );
-
     if (sos.getHoaDon() != null) {
 
         dto.setHoaDonId(
@@ -183,7 +180,8 @@ public TheoDoiSOSItemResponseDTO toTheoDoiItemDto(
                 sos.getHoaDon().getTrangThai()
         );
     }
-    dto.setTenTruSoTiepNhan(tenTruSo);
+        dto.setTruSo(truSoDto);
+        dto.setUser(user);
 
     return dto;
 }

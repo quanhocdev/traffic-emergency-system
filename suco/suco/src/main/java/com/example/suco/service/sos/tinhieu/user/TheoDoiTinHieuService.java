@@ -5,7 +5,8 @@ import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.mapper.TinHieuMapper;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.xacthuc.truso.TruSoService;
-
+import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
+import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -21,6 +22,9 @@ public class TheoDoiTinHieuService {
 
     @Autowired
 private TruSoService truSoService;
+
+    @Autowired
+    private VipService vipService;
 
     // ===== LIST =====
    public List<TheoDoiSOSItemResponseDTO> layDanhSachItem(
@@ -53,13 +57,53 @@ private TruSoService truSoService;
             .toList();
 }
     // ===== DETAIL =====
-    public TheoDoiSOSDetailResponseDTO layChiTiet(Long id) {
+   public TheoDoiSOSDetailResponseDTO layChiTiet(Long id) {
 
-        var sos = tinHieuSOSRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy SOS"));
+    var sos = tinHieuSOSRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy SOS"));
 
-        String tenTruSo = "demo"; // sau này join bảng trụ sở
+    TruSoMapDto truSoDto = null;
 
-        return tinHieuMapper.toTheoDoiDto(sos, tenTruSo);
+    if (sos.getIdTruSoTiepNhan() != null) {
+
+        var truSo =
+                truSoService.timTruSoTheoId(
+                        sos.getIdTruSoTiepNhan()
+                );
+
+        if (truSo != null) {
+
+            truSoDto = new TruSoMapDto(
+                    truSo.getId(),
+                    truSo.getTenTruSo(),
+                    truSo.getKinhDo(),
+                    truSo.getViDo(),
+                    truSo.getDiaChi()
+            );
+        }
     }
+
+    UserInfoResponseDTO userInfo =
+            new UserInfoResponseDTO();
+
+    userInfo.setName(
+            sos.getUser().getName()
+    );
+
+    userInfo.setEmail(
+            sos.getUser().getEmail()
+    );
+
+    userInfo.setVip(
+            vipService.checkVip(
+                    sos.getUserId()
+            )
+    );
+
+    return tinHieuMapper.toTheoDoiDto(
+            sos,
+            truSoDto,
+            userInfo
+    );
+}
 }
