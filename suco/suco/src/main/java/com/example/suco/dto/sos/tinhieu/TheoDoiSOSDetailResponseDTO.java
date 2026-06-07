@@ -2,6 +2,8 @@ package com.example.suco.dto.sos.tinhieu;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
+import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
 
 public class TheoDoiSOSDetailResponseDTO {
 
@@ -23,9 +25,9 @@ public class TheoDoiSOSDetailResponseDTO {
 
     private LocalDateTime createdAt;
 
-    private Long idTruSoTiepNhan;
+    private TruSoMapDto truSo;
 
-    private String tenTruSoTiepNhan;
+    private UserInfoResponseDTO user;
 
     private Long hoaDonId;
 
@@ -88,18 +90,17 @@ public class TheoDoiSOSDetailResponseDTO {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-public Long getIdTruSoTiepNhan() {
-    return idTruSoTiepNhan;
-}
-
-public void setIdTruSoTiepNhan(Long idTruSoTiepNhan) {
-    this.idTruSoTiepNhan = idTruSoTiepNhan;
-}
-    public String getTenTruSoTiepNhan() {
-        return tenTruSoTiepNhan;
+    public TruSoMapDto getTruSo() {
+        return truSo;
     }
-    public void setTenTruSoTiepNhan(String tenTruSoTiepNhan) {
-        this.tenTruSoTiepNhan = tenTruSoTiepNhan;
+    public void setTruSo(TruSoMapDto truSo) {
+        this.truSo = truSo;
+    }
+    public UserInfoResponseDTO getUser() {
+        return user;
+    }
+    public void setUser(UserInfoResponseDTO user) {
+        this.user = user;
     }
     public Long getHoaDonId() {
         return hoaDonId;
