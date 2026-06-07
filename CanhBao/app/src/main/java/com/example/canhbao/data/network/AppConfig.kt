@@ -11,4 +11,8 @@ object AppConfig {
 
     val WS_BASE_URL: String
         get() = "ws://${BuildConfig.BASE_IP}:$PORT"
+
+    val WS_PURE_URL: String
+        get() = "ws://${BuildConfig.BASE_IP}:$PORT/ws-suco/websocket"
+
 }
