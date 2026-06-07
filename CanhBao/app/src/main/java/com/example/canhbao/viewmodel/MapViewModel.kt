@@ -25,6 +25,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
+import ua.naiksoftware.stomp.StompClient
 
 class MapViewModel : ViewModel() {
 
@@ -133,27 +134,115 @@ class MapViewModel : ViewModel() {
     // --- 6. XỬ LÝ ĐỒNG BỘ REALTIME TỪ SOCKET MANAGER BẮN QUA (TỐI ƯU LUỒNG) ---
 
     fun updateSuCoFromSocket(context: Context, suCo: SuCoMapResponseDTO) {
-        // Đưa hẳn việc xử lý danh sách và download ảnh vào Dispatchers.IO để tránh block luồng Main UI
         viewModelScope.launch(Dispatchers.IO) {
+            android.util.Log.d("REALTIME_BUG", "🔄 ViewModel bắt đầu xử lý sự cố ID = ${suCo.id}")
+
             val currentList = _suCoList.value.toMutableList()
             currentList.removeAll { it.id == suCo.id }
             currentList.add(suCo)
             _suCoList.value = currentList
 
-            processAndAddSuCo(context, suCo)
+            if (suCo.trangThaiXuLy == "HOAN_THANH") {
+                val currentWithIcons = _suCoWithIcons.value.toMutableList()
+                currentWithIcons.removeAll { it.first.id == suCo.id }
+                withContext(Dispatchers.Main) {
+                    _suCoWithIcons.value = currentWithIcons.toList()
+                }
+                android.util.Log.d("REALTIME_BUG", "❌ Đã xóa sự cố hoàn thành khỏi bản đồ (ID = ${suCo.id})")
+                return@launch
+            }
+
+            val path = suCo.iconUrl ?: ""
+            val fullUrl = if (path.startsWith("http")) path else "${AppConfig.HTTP_BASE_URL}$path"
+            android.util.Log.d("REALTIME_BUG", "📸 Đường dẫn tải Icon: $fullUrl")
+
+            val bmp = loadMarkerIcon(context, fullUrl, suCo.mucDoNghiemTrong)
+            if (bmp != null) {
+                val currentWithIcons = _suCoWithIcons.value.toMutableList()
+                currentWithIcons.removeAll { it.first.id == suCo.id }
+                currentWithIcons.add(suCo to bmp)
+
+                withContext(Dispatchers.Main) {
+                    _suCoWithIcons.value = currentWithIcons.toList()
+                }
+                // 📝 LOG CHÉC 2: Thành công hay không phải thấy dòng này!
+                android.util.Log.d("REALTIME_BUG", "✅ Vẽ đè Icon thành công! Đã đẩy vào StateFlow hiển thị. Tổng số Marker hiện tại: ${currentWithIcons.size}")
+            } else {
+                android.util.Log.e("REALTIME_BUG", "💥 LỖI: Tải hoặc xử lý tạo Bitmap cho Icon thất bại!")
+            }
+        }
+    }
+    // Thêm biến global trong class MapViewModel để giữ kết nối không bị chết yểu
+    // Trong MapViewModel.kt
+    private var realtimeSocketManager: RealtimeSocketManager? = null
+
+    fun startRealtimeSocket(context: Context, stompClient: StompClient) {
+        // 💡 CẢI TIẾN 1: Kiểm tra xem Stomp thực sự còn sống hay đã ngắt kết nối
+        if (realtimeSocketManager != null && stompClient.isConnected) {
+            android.util.Log.d("REALTIME_BUG", "✅ Socket cũ vẫn đang SỐNG ổn định. Bỏ qua khởi tạo.")
+            return
+        }
+
+        // 💡 CẢI TIẾN 2: Nếu đã ngắt kết nối, dọn dẹp instance cũ và tiến hành kết nối lại
+        if (realtimeSocketManager != null && !stompClient.isConnected) {
+            android.util.Log.w("REALTIME_BUG", "💥 Socket cũ đã CHẾT (stomp disconnected). Tiến hành dọn dẹp để kết nối lại...")
+            realtimeSocketManager = null
+        }
+
+        android.util.Log.d("REALTIME_BUG", "🚀 Đang thiết lập kết nối Realtime mới bền vững...")
+
+        // Ép buộc kết nối lại nếu stompClient chưa connect
+        if (!stompClient.isConnected) {
+            stompClient.connect()
+        }
+
+        realtimeSocketManager = RealtimeSocketManager(context, stompClient).apply {
+            subscribe(object : RealtimeSocketManager.Callback {
+                override fun onSuCoUpdate(suCo: SuCoMapResponseDTO) {
+                    // Nếu trạng thái đổi thành HUY_BO hoặc HOAN_THANH, tự động xóa marker
+                    if (suCo.trangThaiXuLy == "HUY_BO" || suCo.trangThaiXuLy == "HOAN_THANH") {
+                        android.util.Log.d("REALTIME_BUG", "🗑️ Nhận tin hủy/hoàn thành thông qua Update: ID = ${suCo.id}")
+                        removeSuCoFromSocket(suCo.id)
+                    } else {
+                        android.util.Log.d("REALTIME_BUG", "👉 SOCKET NHẬN THÊM/SỬA: ID = ${suCo.id}, Trạng thái = ${suCo.trangThaiXuLy}")
+                        updateSuCoFromSocket(context, suCo)
+                    }
+                }
+
+                override fun onSuCoRemove(id: Long) {
+                    android.util.Log.d("REALTIME_BUG", "🗑️ SOCKET NHẬN XÓA TRỰC TIẾP: Sự cố ID = $id")
+                    removeSuCoFromSocket(id)
+                }
+
+                override fun onTruSoRemove(id: Long) {}
+                override fun onCameraUpdate(camera: CameraMapDto) {}
+                override fun onCameraRemove(id: Long) {}
+            })
         }
     }
 
     fun removeSuCoFromSocket(id: Long) {
-        val currentList = _suCoList.value.toMutableList()
-        currentList.removeAll { it.id == id }
-        _suCoList.value = currentList
+        viewModelScope.launch(Dispatchers.IO) {
+            // 1. Loại bỏ khỏi danh sách tracking khoảng cách nền
+            val currentList = _suCoList.value.toMutableList()
+            currentList.removeAll { it.id == id }
+            _suCoList.value = currentList
 
-        val currentWithIcons = _suCoWithIcons.value.toMutableList()
-        currentWithIcons.removeAll { it.first.id == id }
-        _suCoWithIcons.value = currentWithIcons
+            // 2. Loại bỏ khỏi danh sách hiển thị đồ họa Marker
+            val currentWithIcons = _suCoWithIcons.value.toMutableList()
+            val isRemoved = currentWithIcons.removeAll { it.first.id == id }
+
+            if (isRemoved) {
+                // 🔥 Ép buộc đẩy cập nhật state mới về luồng Main Thread của UI
+                withContext(Dispatchers.Main) {
+                    _suCoWithIcons.value = currentWithIcons.toList()
+                }
+                android.util.Log.d("REALTIME_BUG", "✅ Đã dọn dẹp Marker ID $id khỏi bộ nhớ State thành công.")
+            } else {
+                android.util.Log.w("REALTIME_BUG", "⚠️ Không tìm thấy Marker ID $id trong danh sách hiện tại của bản đồ để xóa.")
+            }
+        }
     }
-
     fun updateCameraFromSocket(camera: CameraMapDto, icon: Bitmap) {
         val current = _cameraWithIcons.value.toMutableList()
         current.removeAll { it.first.id == camera.id }

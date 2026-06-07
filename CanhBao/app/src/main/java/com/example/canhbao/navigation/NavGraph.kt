@@ -30,7 +30,6 @@ fun NavGraph(authViewModel: AuthViewModel) {
     val context = LocalContext.current
 
     // 1. Khởi tạo StompClient kết nối đến máy chủ Backend Realtime
-    // (Thay thế bằng URL ws chuẩn của bạn nếu AppConfig.WS_BASE_URL chưa định nghĩa cấu trúc /ws/websocket)
     val stompClient = remember {
         val baseUrl = AppConfig.WS_BASE_URL
         val fullWsUrl = if (baseUrl.endsWith("/")) "${baseUrl}ws/websocket" else "$baseUrl/ws/websocket"
@@ -50,17 +49,22 @@ fun NavGraph(authViewModel: AuthViewModel) {
         }
     }
 
-    // 2. Khởi tạo các ViewModel
+    // 2. Khởi tạo các ViewModel hệ thống
     val mapViewModel: MapViewModel = viewModel()
-    val sosViewModel: SOSViewModel = viewModel()          // Dùng cho MapScreen nhận tín hiệu phản hồi
-    val searchViewModel: SearchViewModel = viewModel()    // Dùng cho thanh tìm kiếm vị trí trên map
-    val callViewModel: CallViewModel = viewModel()        // Dùng quản lý cuộc gọi đàm thoại cứu hộ
+    val sosViewModel: SOSViewModel = viewModel()
+    val searchViewModel: SearchViewModel = viewModel()
+    val callViewModel: CallViewModel = viewModel()
 
-    val tinhHieuSosViewModel: TinHieuSOSViewModel = viewModel() // Giữ nguyên ViewModel cũ của màn hình SOS rời
+    val tinhHieuSosViewModel: TinHieuSOSViewModel = viewModel()
     val lichSuViewModel: LichSuViewModel = viewModel()
+
+    // 💡 KHỞI TẠO CHUNG: Để màn hình Lịch Sử và màn Chi Tiết SOS dùng chung Instance dữ liệu thời gian thực
+    val theoDoiBaoCaoViewModel: TheoDoiBaoCaoViewModel = viewModel()
+    val theoDoiTinHieuViewModel: TheoDoiTinHieuViewModel = viewModel()
+
     val apiService = com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
 
-    // ✅ Khởi tạo GoiViewModel bằng Factory
+    // Khởi tạo GoiViewModel bằng Factory
     val goiViewModel: GoiViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -93,7 +97,6 @@ fun NavGraph(authViewModel: AuthViewModel) {
             }
         }
 
-        // --- ĐÃ SỬA LỖI: Truyền đầy đủ 100% tham số cho MapScreen ---
         composable("map") {
             val alertViewModel: AlertViewModel = viewModel()
             MapScreen(
@@ -104,7 +107,7 @@ fun NavGraph(authViewModel: AuthViewModel) {
                 searchViewModel = searchViewModel,
                 sosViewModel = sosViewModel,
                 callViewModel = callViewModel,
-                stompClient = stompClient, // <--- HẾT LỖI TẠI ĐÂY
+                stompClient = stompClient,
                 isLoggedIn = currentUser != null,
                 onReportClick = { navController.navigate("bao_cao_su_co") }
             )
@@ -116,8 +119,9 @@ fun NavGraph(authViewModel: AuthViewModel) {
                 navController = navController
             )
         }
+
         composable("qua_screen") {
-            Spacer(modifier = Modifier.height(1.dp)) // Bạn có thể giữ nguyên block QuaScreen cũ
+            Spacer(modifier = Modifier.height(1.dp))
             QuaScreen(
                 viewModel = quaViewModel,
                 navController = navController
@@ -197,8 +201,21 @@ fun NavGraph(authViewModel: AuthViewModel) {
         composable("lich_su") {
             LichSuScreen(
                 navController = navController,
-                baoCaoViewModel = viewModel(),
-                tinHieuViewModel = viewModel()
+                baoCaoViewModel = theoDoiBaoCaoViewModel, // Sử dụng VM chung phạm vi định tuyến
+                tinHieuViewModel = theoDoiTinHieuViewModel
+            )
+        }
+
+        // 📝 THÊM ROUTE MỚI: Màn hình hiển thị thông tin chi tiết của Item SOS được chọn
+        composable(
+            route = "chi_tiet_sos/{sosId}",
+            arguments = listOf(navArgument("sosId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val sosId = backStackEntry.arguments?.getLong("sosId") ?: 0L
+            ChiTietSosScreen(
+                sosId = sosId,
+                navController = navController,
+                viewModel = theoDoiTinHieuViewModel // Dùng chung VM để đồng bộ trạng thái phát media/hóa đơn
             )
         }
 

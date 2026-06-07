@@ -173,7 +173,6 @@ fun MapScreen(
             if (callState == "IDLE") isMicroMuted = false
         }
     }
-
     LaunchedEffect(Unit) {
         if (mapViewModel.suCoWithIcons.value.isEmpty()) {
             mapViewModel.loadSuCoForMap(context)
@@ -183,23 +182,7 @@ fun MapScreen(
 
         callViewModel.start(context, stompClient, webrtcViewModel)
 
-        val socketManager = RealtimeSocketManager(context, stompClient)
-        socketManager.subscribe(object : RealtimeSocketManager.Callback {
-            override fun onSuCoUpdate(suCo: SuCoMapResponseDTO) {
-                mapViewModel.updateSuCoFromSocket(context, suCo)
-            }
-            override fun onSuCoRemove(id: Long) {
-                mapViewModel.removeSuCoFromSocket(id)
-            }
-            override fun onTruSoRemove(id: Long) { }
-            override fun onCameraUpdate(camera: CameraMapDto) {
-                val cameraIcon = createCameraIcon(context)
-                mapViewModel.updateCameraFromSocket(camera, cameraIcon)
-            }
-            override fun onCameraRemove(id: Long) {
-                mapViewModel.removeCameraFromSocket(id)
-            }
-        })
+        mapViewModel.startRealtimeSocket(context, stompClient)
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -280,21 +263,28 @@ fun MapScreen(
     LaunchedEffect(suCoWithIcons, pointManager, showSuCo) {
         val manager = pointManager ?: return@LaunchedEffect
         try {
+            // 💡 BƯỚC 1: Xóa sạch bách toàn bộ marker cũ trên bản đồ trước để giải phóng bộ nhớ Native
             manager.deleteAll()
-            if (showSuCo) {
+
+            // Nếu bộ lọc đang bật và danh sách thực sự có phần tử thì mới vẽ mới
+            if (showSuCo && suCoWithIcons.isNotEmpty()) {
                 val optionsList = suCoWithIcons.map { (suCo, bmp) ->
                     PointAnnotationOptions()
                         .withPoint(Point.fromLngLat(suCo.kinhDo, suCo.viDo))
                         .withIconImage(bmp)
                 }
-                if (optionsList.isNotEmpty()) {
-                    manager.create(optionsList)
-                }
-                mapView?.invalidate()
-            }
-        } catch (e: Exception) { e.printStackTrace() }
-    }
 
+                // 💡 BƯỚC 2: Tạo mới hoàn toàn dựa trên danh sách đã được loại bỏ phần tử xóa
+                manager.create(optionsList)
+            }
+
+            // 💡 BƯỚC 3: Ép buộc Mapbox phải vẽ lại view ngay lập tức trong chu kỳ frame này
+            mapView?.invalidate()
+
+        } catch (e: Exception) {
+            android.util.Log.e("MAP_ERROR", "Lỗi khi cập nhật Marker: ${e.message}")
+        }
+    }
     LaunchedEffect(allRoutes, selectedIndex) {
         polylineManager?.deleteAll()
         allRoutes.forEachIndexed { idx, pts ->
