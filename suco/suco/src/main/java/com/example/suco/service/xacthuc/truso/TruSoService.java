@@ -1,18 +1,13 @@
 package com.example.suco.service.xacthuc.truso;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.example.suco.service.location.GeocodingService;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.vanhanh.TruSoRepository;
@@ -21,7 +16,6 @@ import ch.hsr.geohash.GeoHash;
 
 @Service
 public class TruSoService {
-    private static final Logger log = LoggerFactory.getLogger(TruSoService.class);
 
     @Autowired
     private TruSoRepository truSoRepository;
@@ -29,12 +23,22 @@ public class TruSoService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private GeocodingService geocodingService;
+
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Transactional
     public TruSo saveTruSo(TruSo truSo) {
         String gh = GeoHash.withCharacterPrecision(truSo.getViDo(), truSo.getKinhDo(), 6).toBase32();
         truSo.setGeohash(gh);
+        truSo.setDiaChi(
+            geocodingService.getAddress(
+                truSo.getViDo(),
+                truSo.getKinhDo()
+            )
+        );
 
 
         // ================= VALIDATE USERNAME =================
@@ -69,9 +73,6 @@ if (truSo.getId() == null) {
 String password = truSo.getMatKhau();
 String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$";
 
-// 👉 CHỈ validate khi:
-// - tạo mới
-// - hoặc có nhập password mới
 if (truSo.getId() == null || (password != null && !password.isBlank())) {
     if (password == null || !password.matches(regex)) {
         throw new RuntimeException("Mật khẩu phải lớn hơn hoặc bằng 8 ký tự, gồm hoa, thường, số và ký tự đặc biệt");
@@ -100,13 +101,13 @@ if (truSo.getId() == null || (password != null && !password.isBlank())) {
             saved = truSoRepository.save(truSo);
         }
 
-        messagingTemplate.convertAndSend("/topic/tru-so", new TruSoMapDto(saved.getId(), saved.getTenTruSo(), saved.getKinhDo(), saved.getViDo()));
+        messagingTemplate.convertAndSend("/topic/tru-so", new TruSoMapDto(saved.getId(), saved.getTenTruSo(), saved.getKinhDo(), saved.getViDo(), saved.getDiaChi()));
         return saved;
     }
 
     public List<TruSoMapDto> getAllTruSoForMap() {
         return truSoRepository.findAll().stream()
-                .map(ts -> new TruSoMapDto(ts.getId(), ts.getTenTruSo(), ts.getKinhDo(), ts.getViDo()))
+                .map(ts -> new TruSoMapDto(ts.getId(), ts.getTenTruSo(), ts.getKinhDo(), ts.getViDo(), ts.getDiaChi()))
                 .collect(Collectors.toList());
     }
 

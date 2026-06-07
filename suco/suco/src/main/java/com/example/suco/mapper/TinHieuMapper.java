@@ -124,7 +124,7 @@ public AdminSOSDetailResponseDTO toAdminDetailDto(
 // Entity → ItemResponseDTO cá nhân
 
 public TheoDoiSOSItemResponseDTO toTheoDoiItemDto(
-        TinHieuSOS sos
+        TinHieuSOS sos, String tenTruSo
 ) {
 
  TheoDoiSOSItemResponseDTO dto =
@@ -137,6 +137,9 @@ public TheoDoiSOSItemResponseDTO toTheoDoiItemDto(
     dto.setTrangThai( sos.getTrangThai());
 
     dto.setCreatedAt(sos.getCreatedAt());
+
+    dto.setTenTruSo(tenTruSo);
+
 
     return dto;
 }

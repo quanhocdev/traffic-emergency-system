@@ -11,6 +11,8 @@ public class TheoDoiSOSItemResponseDTO {
 
     private LocalDateTime createdAt;
 
+    private String tenTruSo;
+
     // getter/setter
     public Long getId() {
         return id;
@@ -36,4 +38,11 @@ public class TheoDoiSOSItemResponseDTO {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+    public String getTenTruSo() {
+        return tenTruSo;
+    }
+    public void setTenTruSo(String tenTruSo) {
+        this.tenTruSo = tenTruSo;
+    }
+    
 }

@@ -17,8 +17,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         te.setThreadNamePrefix("ws-heartbeat-thread-");
         te.initialize();
 
-        // Kích hoạt broker với nhịp tim giữ kết nối (Ping/Pong)
-        // 20000, 20000: Cứ 20 giây Server và Client sẽ gửi tín hiệu kiểm tra nhau một lần để giữ đường truyền luôn SỐNG
+        // Cứ 20 giây Server và Client sẽ gửi tín hiệu kiểm tra nhau một lần để giữ đường truyền luôn SỐNG
         config.enableSimpleBroker("/topic")
               .setHeartbeatValue(new long[]{20000, 20000})
               .setTaskScheduler(te);
@@ -28,13 +27,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // 💡 GIẢI PHÁP CHÍ MẠNG: Đăng ký 2 Endpoint tách biệt
         
-        // Endpoint 1: Dành riêng cho Android (Không có .withSockJS() để chạy WebSocket thuần siêu ổn định)
+        // Endpoint 1: Dành riêng cho Android
         registry.addEndpoint("/ws-suco")
                 .setAllowedOriginPatterns("*");
 
-        // Endpoint 2: Dành cho Web (Giữ lại .withSockJS() nếu bạn có làm giao diện Web admin)
+        // Endpoint 2: Dành cho Web
         registry.addEndpoint("/ws-suco-web")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
