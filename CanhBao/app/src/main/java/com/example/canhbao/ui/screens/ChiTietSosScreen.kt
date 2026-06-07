@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -31,10 +32,11 @@ import com.example.canhbao.viewmodel.TheoDoiTinHieuViewModel
 
 private val PrimaryRed = Color(0xFFDC2626)
 private val LightRedBg = Color(0xFFFEF2F2)
-private val BorderRed = Color(0xFFFCA5A5)
 private val TextDark = Color(0xFF1F2937)
 private val TextGray = Color(0xFF6B7280)
 private val SuccessGreen = Color(0xFF10B981)
+private val InfoBlue = Color(0xFF2563EB)
+private val LightBlueBg = Color(0xFFEFF6FF)
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +60,17 @@ fun ChiTietSosScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("CHI TIẾT TÍN HIỆU SOS", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
+                title = {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = "CHI TIẾT TÍN HIỆU SOS",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(end = 48.dp) // Cân bằng khoảng trống với nút Back
+                        )
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = null)
@@ -68,7 +80,6 @@ fun ChiTietSosScreen(
             )
         }
     ) { paddingValues ->
-        // Nếu chưa tải xong dữ liệu, hiển thị vòng xoay Loading tinh tế
         if (sosDetailNullable == null) {
             Box(Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = PrimaryRed)
@@ -76,7 +87,6 @@ fun ChiTietSosScreen(
             return@Scaffold
         }
 
-        // 💡 GIẢI PHÁP TRIỆT ĐỂ: Dùng .let để ép scope thành một biến `sosDetail` KHÔNG THỂ NULL (Smart Cast an toàn 100%)
         sosDetailNullable.let { sosDetail ->
             val isPlaying = viewModel.currentlyPlayingId == sosDetail.id
 
@@ -89,39 +99,68 @@ fun ChiTietSosScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Khối Trạng Thái Chính
+
+                // ================= BOX 1: THÔNG TIN NGƯỜI BÁO TÍN HIỆU =================
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
-                    Column(Modifier.padding(16.dp).fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Trạng Thái Cứu Hộ", fontSize = 13.sp, color = TextGray)
-                        Text(
-                            text = sosDetail.trangThai ?: "PENDING",
-                            color = PrimaryRed,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            modifier = Modifier.padding(vertical = 4.dp)
-                        )
-                        Text(text = "Mã số yêu cầu: #$sosId", fontSize = 12.sp, color = TextGray)
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = InfoBlue, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Thông Tin Người Báo Cáo", fontWeight = FontWeight.Bold, color = TextDark, fontSize = 15.sp)
+                        }
+
+                        Divider(color = Color(0xFFF3F4F6))
+
+                        Text(text = "👤 Họ và tên: ${sosDetail.user.name ?: "Không rõ"}", fontSize = 14.sp, color = TextDark)
+                        Text(text = "📧 Email liên hệ: ${sosDetail.user.email ?: "Chưa cập nhật"}", fontSize = 14.sp, color = TextDark)
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "🛡️ Hạng tài khoản: ", fontSize = 14.sp, color = TextDark)
+                            if (sosDetail.user.vip == true) {
+                                Box(Modifier.background(Color(0xFFFFD700), RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 2.dp)) {
+                                    Text("VIP", color = Color.Black, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                }
+                            } else {
+                                Box(Modifier.background(Color(0xFFE5E7EB), RoundedCornerShape(4.dp)).padding(horizontal = 6.dp, vertical = 2.dp)) {
+                                    Text("THƯỜNG", color = TextGray, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
                     }
                 }
 
-                // Khối thông tin chi tiết hiện trạng
+                // ================= BOX 2: CHI TIẾT TÍN HIỆU CỨU HỘ =================
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("Thông Tin Sự Cố", fontWeight = FontWeight.Bold, color = TextDark, fontSize = 15.sp)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Warning, contentDescription = null, tint = PrimaryRed, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Chi Tiết Sự Cố SOS", fontWeight = FontWeight.Bold, color = TextDark, fontSize = 15.sp)
+                        }
 
+                        Divider(color = Color(0xFFF3F4F6))
+
+                        Text(text = "🆔 Mã số yêu cầu: #${sosDetail.id}", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = TextDark)
+                        Text(text = "📅 Thời gian tạo: ${sosDetail.createdAt ?: "Không rõ"}", fontSize = 14.sp, color = TextDark)
+
+                        // Khối hiển thị Hình ảnh hiện trường
                         Box(
                             modifier = Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(8.dp)).background(LightRedBg)
                         ) {
                             if (sosDetail.hinhAnh.isNullOrEmpty()) {
-                                Icon(Icons.Default.Warning, null, tint = PrimaryRed, modifier = Modifier.size(48.dp).align(Alignment.Center))
+                                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                                    Icon(Icons.Default.ImageNotSupported, null, tint = TextGray, modifier = Modifier.size(40.dp))
+                                    Spacer(Modifier.height(4.dp))
+                                    Text("Không có hình ảnh hiện trường", fontSize = 12.sp, color = TextGray)
+                                }
                             } else {
                                 AsyncImage(
                                     model = "${AppConfig.HTTP_BASE_URL}${sosDetail.hinhAnh}",
@@ -132,10 +171,11 @@ fun ChiTietSosScreen(
                             }
                         }
 
-                        Text(text = "📝 Ghi chú: ${sosDetail.ghiChu ?: "Không có ghi chú"}", fontSize = 14.sp, color = TextDark)
-                        Text(text = "📍 Vị trí: ${sosDetail.diaChi ?: "Không rõ vị trí"}", fontSize = 14.sp, color = TextDark)
-                        Text(text = "🏢 Đơn vị xử lý: ${sosDetail.tenTruSoTiepNhan ?: "Đang phân phối..."}", fontSize = 14.sp, color = TextDark)
+                        Text(text = "📝 Ghi chú: ${sosDetail.ghiChu ?: "Không có ghi chú thêm"}", fontSize = 14.sp, color = TextDark)
+                        Text(text = "📍 Vị trí báo cáo: ${sosDetail.diaChi ?: "Không rõ vị trí"}", fontSize = 14.sp, color = TextDark)
+                        Text(text = "🗺️ Tọa độ: (${sosDetail.viDo ?: 0.0}, ${sosDetail.kinhDo ?: 0.0})", fontSize = 13.sp, color = TextGray)
 
+                        // Khối Audio Ghi âm
                         if (!sosDetail.ghiAm.isNullOrEmpty()) {
                             Button(
                                 onClick = { viewModel.playRecording("${AppConfig.HTTP_BASE_URL}${sosDetail.ghiAm}", sosDetail.id) },
@@ -151,16 +191,62 @@ fun ChiTietSosScreen(
                     }
                 }
 
-                // Khối xử lý hóa đơn & các nút thao tác hủy bỏ
+                // ================= BOX 3: ĐƠN VỊ TIẾP NHẬN & TRẠNG THÁI =================
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     shape = RoundedCornerShape(12.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text("Hóa Đơn & Thanh Toán", fontWeight = FontWeight.Bold, color = TextDark, fontSize = 15.sp)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.HomeWork, contentDescription = null, tint = SuccessGreen, modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Đơn Vị Xử Lý & Trạng Thái", fontWeight = FontWeight.Bold, color = TextDark, fontSize = 15.sp)
+                        }
 
-                        sosDetail.trangThaiBaseInvoiceColor() // Gọi xử lý màu sắc hóa đơn ổn định
+                        Divider(color = Color(0xFFF3F4F6))
+
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Text("Trạng thái cứu hộ:", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                            Box(Modifier.background(LightRedBg, RoundedCornerShape(4.dp)).padding(horizontal = 10.dp, vertical = 4.dp)) {
+                                Text(
+                                    text = sosDetail.trangThai ?: "PENDING",
+                                    color = PrimaryRed,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        // Thông tin Trụ sở map trực tiếp từ trường `truSo` của DTO mới
+                        Box(
+                            modifier = Modifier.fillMaxWidth().background(Color(0xFFF3F4F6), RoundedCornerShape(8.dp)).padding(12.dp)
+                        ) {
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text(text = "🏢 Tên trụ sở: ${sosDetail.truSo.tenTruSo}", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextDark)
+                                Text(text = "🆔 Mã trụ sở: #${sosDetail.truSo.id}", fontSize = 13.sp, color = TextGray)
+                                Text(text = "📍 Địa chỉ: ${sosDetail.truSo.diaChi ?: "Không rõ địa chỉ"}", fontSize = 13.sp, color = TextDark)
+                                Text(text = "🌐 Tọa độ đơn vị: ${sosDetail.truSo.viDo}, ${sosDetail.truSo.kinhDo}", fontSize = 12.sp, color = TextGray)
+                            }
+                        }
+                    }
+                }
+
+                // ================= BOX 4: HÓA ĐƠN & THANH TOÁN =================
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(12.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.ReceiptLong, contentDescription = null, tint = Color(0xFFFFB300), modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Hóa Đơn Chi Phí", fontWeight = FontWeight.Bold, color = TextDark, fontSize = 15.sp)
+                        }
+
+                        Divider(color = Color(0xFFF3F4F6))
+
                         sosDetail.trangThaiHoaDon?.let { status ->
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text("Trạng thái hóa đơn:", fontSize = 14.sp)
@@ -169,11 +255,21 @@ fun ChiTietSosScreen(
                                 }
                             }
 
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("Mã số hóa đơn:", fontSize = 14.sp)
+                                Text("#${sosDetail.hoaDonId ?: "---"}", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                            }
+
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("Số tiền cần trả:", fontSize = 14.sp)
+                                Text("${String.format("%,d", (sosDetail.thanhTien ?: 0.0).toLong())} VNĐ", color = PrimaryRed, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            }
+
                             if (status == "PENDING") {
                                 Button(
                                     onClick = { showPayDialog = true },
                                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
                                     Icon(Icons.Default.Payment, null)
@@ -185,14 +281,14 @@ fun ChiTietSosScreen(
                     }
                 }
 
-                // Nút hủy cứu hộ khẩn cấp
+                // ================= NÚT HỦY CỨU HỘ KHẨN CẤP =================
                 if (sosDetail.trangThai == "CHO_XU_LY" || sosDetail.trangThai == "PENDING") {
                     OutlinedButton(
                         onClick = {
                             viewModel.cancelSOS(sosDetail.id)
                             navController.popBackStack()
                         },
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        modifier = Modifier.fillMaxWidth().height(48.dp).padding(top = 8.dp),
                         border = BorderStroke(1.5.dp, PrimaryRed),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryRed),
                         shape = RoundedCornerShape(8.dp)
@@ -206,7 +302,7 @@ fun ChiTietSosScreen(
         }
     }
 
-    // --- DIALOG QUÉT MÃ QR THANH TOÁN ---
+    // --- DIALOG QUÉT MÃ QR THANH TOÁN CHỜ VOUCHER ---
     if (showPayDialog && sosDetailNullable != null) {
         sosDetailNullable.let { sosDetail ->
             val inv = viewModel.pendingInvoicesMap[sosDetail.hoaDonId]
@@ -271,6 +367,3 @@ fun ChiTietSosScreen(
         }
     }
 }
-
-// Hàm hỗ trợ ẩn để tránh lỗi cú pháp không mong muốn
-private fun TheoDoiSOSDetailResponseDTO.trangThaiBaseInvoiceColor() {}
