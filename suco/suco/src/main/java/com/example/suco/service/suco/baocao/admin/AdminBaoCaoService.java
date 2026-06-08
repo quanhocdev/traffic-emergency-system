@@ -4,6 +4,9 @@ import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.LoaiSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.model.User;
+import com.example.suco.model.enums.MucDoSuCo;
+import com.example.suco.model.enums.TrangThaiDuyet;
+import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.repository.suco.loai.LoaiSuCoRepository;
 import com.example.suco.mapper.SuCoMapper;
@@ -49,68 +52,81 @@ public class AdminBaoCaoService {
 
 
     @Transactional
-    public BaoCaoSuCo submitAdminReport(BaoCaoSuCo report, MultipartFile image) {
+public BaoCaoSuCo submitAdminReport(BaoCaoSuCo report, MultipartFile image) {
 
-        LoaiSuCo loaiSuCo = loaiSuCoRepository.findById(report.getLoaiSuCo().getId())
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Loại sự cố không tồn tại"));
+    LoaiSuCo loaiSuCo = loaiSuCoRepository.findById(report.getLoaiSuCo().getId())
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Loại sự cố không tồn tại"));
 
-        report.setLoaiSuCo(loaiSuCo);
+    report.setLoaiSuCo(loaiSuCo);
 
-        User adminUser = userRepository.findById("ADMIN_SYSTEM")
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy ADMIN_SYSTEM"));
+    User adminUser = userRepository.findById("ADMIN_SYSTEM")
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy ADMIN_SYSTEM"));
 
-        report.setReporter(adminUser);
-        report.setNguonBaoCao("ADMIN");
-        report.setAiXacNhan(true);
-        report.setTrangThaiDuyet("VERIFIED");
+    report.setReporter(adminUser);
+    report.setNguonBaoCao("ADMIN");
 
-        if (report.getMucDoNghiemTrong() == null) {
-            report.setMucDoNghiemTrong("PENDING");
-        }
+    report.setAiXacNhan(true);
+    report.setTrangThaiDuyet(TrangThaiDuyet.VERIFIED);
 
-        if (image != null && !image.isEmpty()) {
-            report.setHinhAnhUrl(
-                    imageStorageService.saveMultipartImage(image));
-        }
+    if (report.getMucDoSuCo() == null) {
+        report.setMucDoSuCo(MucDoSuCo.NONE);
+    }
 
-        // Tìm trụ sở gần nhất để tiếp nhận
-        TruSo ganNhat = truSoSelectorService.selectNearest(
-        report.getViDo(),
-        report.getKinhDo());
+    if (image != null && !image.isEmpty()) {
+        report.setHinhAnhUrl(imageStorageService.saveMultipartImage(image));
+    }
 
-if (ganNhat != null) {
-
-    report.setTruSoTiepNhan(ganNhat);
-
-    report.setTrangThaiXuLy("DANG_XU_LY");
-
-} else {
-
-    report.setTrangThaiXuLy("CHO_ADMIN");
-}
-
-// Lưu báo cáo vào database
-        BaoCaoSuCo savedReport = reportRepository.save(report);
-
-        realtimeService.broadcastReport(
-                suCoMapper.toMapDto(savedReport));
-
-        if (ganNhat != null) {
-            realtimeService.broadcastTruSo(
-                    ganNhat.getId(),
-                    suCoMapper.toMapDto(savedReport));
-        }
-        if (report.getDiaChi() == null || report.getDiaChi().isBlank()) {
-    report.setDiaChi(
-        geocodingService.getAddress(
+    // =========================
+    // TRỤ SỞ GẦN NHẤT
+    // =========================
+    TruSo ganNhat = truSoSelectorService.selectNearest(
             report.getViDo(),
             report.getKinhDo()
-        )
     );
-}
 
-        return savedReport;
+    if (ganNhat != null) {
+
+        report.setTruSoTiepNhan(ganNhat);
+        report.setTrangThaiXuLy(TrangThaiXuLy.DANG_XU_LY);
+
+    } else {
+
+        // KHÔNG có ADMIN string nữa → cần thêm enum option nếu muốn
+        report.setTrangThaiXuLy(TrangThaiXuLy.CHO_XU_LY);
     }
+
+    // =========================
+    // SAVE FIRST
+    // =========================
+    BaoCaoSuCo savedReport = reportRepository.save(report);
+
+    // =========================
+    // GEO CODING (FIX ORDER BUG)
+    // =========================
+    if (savedReport.getDiaChi() == null || savedReport.getDiaChi().isBlank()) {
+        String address = geocodingService.getAddress(
+                savedReport.getViDo(),
+                savedReport.getKinhDo()
+        );
+
+        savedReport.setDiaChi(address);
+        savedReport = reportRepository.save(savedReport);
+    }
+
+    // =========================
+    // REALTIME
+    // =========================
+    realtimeService.broadcastReport(
+            suCoMapper.toMapDto(savedReport));
+
+    if (ganNhat != null) {
+        realtimeService.broadcastTruSo(
+                ganNhat.getId(),
+                suCoMapper.toMapDto(savedReport));
+    }
+
+    return savedReport;
+}
 }

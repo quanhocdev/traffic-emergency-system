@@ -4,6 +4,8 @@ import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
 import com.example.suco.model.TruSo;
 import com.example.suco.model.User;
+import com.example.suco.model.enums.TrangThaiDuyet;
+import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.repository.suco.baocao.SpamRepository;
 import com.example.suco.repository.vanhanh.UserRepository;
@@ -64,96 +66,99 @@ public class DuyetSuCoService {
 }
 
     @Transactional
-    public void verifyReport(Long reportId, boolean isCorrect) {
+public void verifyReport(Long reportId, boolean isCorrect) {
 
-        BaoCaoSuCo report = reportRepository.findById(reportId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Không tìm thấy báo cáo"
-                ));
+    BaoCaoSuCo report = reportRepository.findById(reportId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Không tìm thấy báo cáo"
+            ));
 
-        User reporter = report.getReporter();
+    User reporter = report.getReporter();
 
-        if (isCorrect) {
+    // =========================
+    // CASE 1: APPROVE
+    // =========================
+    if (isCorrect) {
 
-            report.setTrangThaiDuyet("VERIFIED");
+        report.setTrangThaiDuyet(TrangThaiDuyet.VERIFIED);
 
-            if (reporter != null && !"ADMIN".equals(report.getNguonBaoCao())) {
+        if (reporter != null && !"ADMIN".equals(report.getNguonBaoCao())) {
 
-                int pointsToAdd =
-                        userRewardService.isUserVip(reporter.getUid()) ? 10 : 5;
+            int pointsToAdd =
+                    userRewardService.isUserVip(reporter.getUid()) ? 10 : 5;
 
-                reporter.setTotalPoints(
-                        reporter.getTotalPoints() + pointsToAdd);
+            reporter.setTotalPoints(
+                    reporter.getTotalPoints() + pointsToAdd
+            );
 
-                userRepository.save(reporter);
+            userRepository.save(reporter);
 
-                messagingTemplate.convertAndSend(
-                        "/topic/user-stats/" + reporter.getUid(),
-                        reporter
-                );
-            }
-// Tìm trụ sở gần nhất để tiếp nhận
-            TruSo truSo = truSoSelectorService.selectNearest(
-        report.getViDo(),
-        report.getKinhDo());
-
-if (truSo != null) {
-
-    report.setTruSoTiepNhan(truSo);
-    report.setTrangThaiXuLy("DANG_XU_LY");
-
-} else {
-
-    report.setTrangThaiXuLy("CHO_ADMIN");
-}
-// Cập nhật báo cáo với trụ sở tiếp nhận và trạng thái xử lý mới
-
-            BaoCaoSuCo updatedReport = reportRepository.save(report);
-
-            realtimeService.broadcastReport(
-        suCoMapper.toMapDto(updatedReport));
-
-        
-
-            if (updatedReport.getTruSoTiepNhan() != null) {
-
-    realtimeService.broadcastTruSo(
-        updatedReport.getTruSoTiepNhan().getId(),
-        suCoMapper.toMapDto(updatedReport)
-);
-}
-
-        } else {
-
-            Spam spam = new Spam(report);
-            spamRepository.save(spam);
-
-            if (reporter != null && !"ADMIN".equals(report.getNguonBaoCao())) {
-
-                reporter.setSpamCount(
-                        reporter.getSpamCount() + 1);
-
-                userRepository.save(reporter);
-
-                messagingTemplate.convertAndSend(
-                        "/topic/user-stats/" + reporter.getUid(),
-                        reporter
-                );
-            }
-
-            report.setTrangThaiDuyet("REJECTED");
-            report.setTrangThaiXuLy("REJECTED");
-
-            realtimeService.broadcastReport(
-                    suCoMapper.toMapDto(report));
-
-            reportRepository.delete(report);
-
-            realtimeService.broadcastDelete(reportId);
-
-            return;
+            messagingTemplate.convertAndSend(
+                    "/topic/user-stats/" + reporter.getUid(),
+                    reporter
+            );
         }
+
+        // =========================
+        // TRỤ SỞ
+        // =========================
+        TruSo truSo = truSoSelectorService.selectNearest(
+                report.getViDo(),
+                report.getKinhDo()
+        );
+
+        if (truSo != null) {
+            report.setTruSoTiepNhan(truSo);
+            report.setTrangThaiXuLy(TrangThaiXuLy.DANG_XU_LY);
+        } else {
+            report.setTrangThaiXuLy(TrangThaiXuLy.CHO_XU_LY);
+        }
+
+        BaoCaoSuCo updatedReport = reportRepository.save(report);
+
+        realtimeService.broadcastReport(
+                suCoMapper.toMapDto(updatedReport)
+        );
+
+        if (updatedReport.getTruSoTiepNhan() != null) {
+            realtimeService.broadcastTruSo(
+                    updatedReport.getTruSoTiepNhan().getId(),
+                    suCoMapper.toMapDto(updatedReport)
+            );
+        }
+
+        return;
     }
-    
+
+    // =========================
+    // CASE 2: REJECT
+    // =========================
+
+    Spam spam = new Spam(report);
+    spamRepository.save(spam);
+
+    if (reporter != null && !"ADMIN".equals(report.getNguonBaoCao())) {
+
+        reporter.setSpamCount(reporter.getSpamCount() + 1);
+
+        userRepository.save(reporter);
+
+        messagingTemplate.convertAndSend(
+                "/topic/user-stats/" + reporter.getUid(),
+                reporter
+        );
+    }
+
+    report.setTrangThaiDuyet(TrangThaiDuyet.REJECTED);
+    report.setTrangThaiXuLy(TrangThaiXuLy.HUY_BO);
+
+    reportRepository.save(report);
+
+    realtimeService.broadcastReport(
+            suCoMapper.toMapDto(report)
+    );
+
+    realtimeService.broadcastDelete(reportId);
+}
 }

@@ -4,17 +4,15 @@ import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
+import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.repository.vanhanh.TruSoRepository;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,99 +36,75 @@ private SuCoMapper suCoMapper;
         LoggerFactory.getLogger(TrangThaiSuCoService.class);
 
     @Transactional
-    public Map<String, Object> updateSuCoStatus(
-            Long id,
-            String status,
-            TruSo current
-    ) {
-        log.info("=== UPDATE STATUS START ===");
-log.info("Report ID: {}", id);
-log.info("Requested status: {}", status);
-log.info("TruSo ID: {}", current != null ? current.getId() : null);
-        BaoCaoSuCo suCo = reportRepository.findById(id)
-        
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Không tìm thấy sự cố"
-                ));
-                log.info("=== DB STATE ===");
-log.info("CurrentStatus: {}", suCo.getTrangThaiXuLy());
-log.info("CurrentTiepNhanId: {}", suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null);
-log.info("Reporter: {}", 
-        suCo.getReporter() != null ? suCo.getReporter().getUid() : null);
-        String currentStatus = suCo.getTrangThaiXuLy();
-        Long currentTiepNhanId = suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null;
+public Map<String, Object> updateSuCoStatus(
+        Long id,
+        TrangThaiXuLy status,
+        TruSo current
+) {
 
-        if (status == null || status.trim().isEmpty()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Status không được để trống"
-            );
-        }
-        
-        List<String> valid = List.of(
-                "CHO_XU_LY",
-                "DANG_XU_LY",
-                "HOAN_THANH",
-                "HUY_BO"
+    BaoCaoSuCo suCo = reportRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Không tìm thấy sự cố"
+            ));
+
+    log.info("Update status report {} → {}", id, status);
+
+    // =========================
+    // BLOCK FINAL STATES
+    // =========================
+    if (suCo.getTrangThaiXuLy() == TrangThaiXuLy.HOAN_THANH
+            || suCo.getTrangThaiXuLy() == TrangThaiXuLy.HUY_BO) {
+
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Sự cố đã kết thúc, không thể thay đổi trạng thái!"
         );
+    }
 
-        if (!valid.contains(status)) {
+    // =========================
+    // NO SAME STATE
+    // =========================
+    if (suCo.getTrangThaiXuLy() == status) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Trạng thái đã là giá trị hiện tại"
+        );
+    }
 
+    // =========================
+    // STATE MACHINE RULES
+    // =========================
+    switch (status) {
+
+        case CHO_XU_LY -> {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Trạng thái không hợp lệ"
-            );
-        }
-        if ("HOAN_THANH".equals(currentStatus)
-                || "HUY_BO".equals(currentStatus)) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Sự cố đã kết thúc, không thể thay đổi trạng thái!"
-            );
-        }
-
-        if (status.equals(currentStatus)) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Trạng thái đã là giá trị hiện tại"
-            );
-        }
-
-        if ("CHO_XU_LY".equals(status)) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Không được quay lại trạng thái CHỜ XỬ LÝ!"
+                    "Không được quay lại CHỜ XỬ LÝ"
             );
         }
 
-        if ("DANG_XU_LY".equals(status)) {
-
-            if (!"CHO_XU_LY".equals(currentStatus)) {
-
+        case DANG_XU_LY -> {
+            if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.CHO_XU_LY) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Chỉ được tiếp nhận từ trạng thái CHỜ XỬ LÝ!"
+                        "Chỉ được tiếp nhận từ CHỜ XỬ LÝ"
                 );
             }
 
             suCo.setTruSoTiepNhan(current);
         }
 
-        else if ("HOAN_THANH".equals(status)) {
-
-            if (!"DANG_XU_LY".equals(currentStatus)) {
-
+        case HOAN_THANH -> {
+            if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.DANG_XU_LY) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Phải đang xử lý mới được hoàn thành."
+                        "Phải đang xử lý mới được hoàn thành"
                 );
             }
 
-            if (!current.getId().equals(currentTiepNhanId)) {
+            if (suCo.getTruSoTiepNhan() == null ||
+                !suCo.getTruSoTiepNhan().getId().equals(current.getId())) {
 
                 throw new ResponseStatusException(
                         HttpStatus.FORBIDDEN,
@@ -139,87 +113,82 @@ log.info("Reporter: {}",
             }
         }
 
-        else if ("HUY_BO".equals(status)) {
-
-            if (!"CHO_XU_LY".equals(currentStatus)) {
-
+        case HUY_BO -> {
+            if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.CHO_XU_LY) {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Chỉ được hủy khi đang CHỜ XỬ LÝ!"
+                        "Chỉ được hủy khi CHỜ XỬ LÝ"
                 );
             }
         }
+    }
 
-        suCo.setTrangThaiXuLy(status);
+    // =========================
+    // APPLY UPDATE
+    // =========================
+    suCo.setTrangThaiXuLy(status);
 
-        BaoCaoSuCo saved =
-                reportRepository.save(suCo);
+    BaoCaoSuCo saved = reportRepository.save(suCo);
 
-        SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
+    SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
 
-        if (saved.getTruSoTiepNhan() != null) {
+    // =========================
+    // REALTIME
+    // =========================
+    realtimeService.broadcastReport(dto);
 
-            realtimeService.broadcastTruSo(
-                    saved.getTruSoTiepNhan().getId(),
-                    dto
-            );
-        }
-
-        realtimeService.broadcastReport(dto);
-
-        if (saved.getReporter() != null) {
-
-            realtimeService.refreshUserHistory(
-                    saved.getReporter().getUid()
-            );
-        }
-
-        return Map.of(
-                "message",
-                "Cập nhật trạng thái thành công",
-
-                "newStatus",
-                status
+    if (saved.getTruSoTiepNhan() != null) {
+        realtimeService.broadcastTruSo(
+                saved.getTruSoTiepNhan().getId(),
+                dto
         );
     }
-    @Transactional
-    public void updateProcessStatus(
-            Long reportId,
-            String status,
-            Long idTruSoThucTe
-    ) {
 
-        BaoCaoSuCo report = reportRepository.findById(reportId)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "Không tìm thấy báo cáo"
-                        ));
+    if (saved.getReporter() != null) {
+        realtimeService.refreshUserHistory(
+                saved.getReporter().getUid()
+        );
+    }
 
-        report.setTrangThaiXuLy(status);
-
-        if ("DANG_XU_LY".equals(status)) {
-
-    TruSo truSo = truSoRepository.findById(idTruSoThucTe)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Không tìm thấy trụ sở"
-            ));
-
-    report.setTruSoTiepNhan(truSo);
+    return Map.of(
+            "message", "Cập nhật trạng thái thành công",
+            "newStatus", status
+    );
 }
-        BaoCaoSuCo saved =
-                reportRepository.save(report);
+    @Transactional
+public void updateProcessStatus(
+        Long reportId,
+        TrangThaiXuLy status,
+        Long idTruSoThucTe
+) {
 
-        realtimeService.broadcastReport(
-                suCoMapper.toMapDto(saved)
-        );
+    BaoCaoSuCo report = reportRepository.findById(reportId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy báo cáo"));
 
-        if (saved.getTruSoTiepNhan() != null) {
+    report.setTrangThaiXuLy(status);
 
-            realtimeService.broadcastTruSo(
-                    saved.getTruSoTiepNhan().getId(),
-                    suCoMapper.toMapDto(saved)
-            );
-        }
+    if (status == TrangThaiXuLy.DANG_XU_LY) {
+
+        TruSo truSo = truSoRepository.findById(idTruSoThucTe)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy trụ sở"
+                ));
+
+        report.setTruSoTiepNhan(truSo);
     }
+
+    BaoCaoSuCo saved = reportRepository.save(report);
+
+    SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
+
+    realtimeService.broadcastReport(dto);
+
+    if (saved.getTruSoTiepNhan() != null) {
+        realtimeService.broadcastTruSo(
+                saved.getTruSoTiepNhan().getId(),
+                dto
+        );
+    }
+}
 }

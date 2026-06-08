@@ -4,6 +4,8 @@ import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
+import com.example.suco.model.enums.MucDoSuCo;
+import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import org.slf4j.Logger;
@@ -31,140 +33,88 @@ public class MucDoSuCoService {
 @Autowired
 private SuCoMapper suCoMapper;
     @Transactional
-    public Map<String, Object> capNhatMucDo(
-            Long id,
-            String mucDo,
-            TruSo current
-    ) {
+public Map<String, Object> capNhatMucDo(
+        Long id,
+        MucDoSuCo mucDo,
+        TruSo current
+) {
 
-        BaoCaoSuCo suCo = reportRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Không tìm thấy sự cố"
-                ));
+    BaoCaoSuCo suCo = reportRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Không tìm thấy sự cố"
+            ));
 
-        log.info(
-                "\nTrụ sở {} cập nhật mức độ {} sự cố: {}"
-                        + "\nTrạng thái xử lý hiện tại: {}"
-                        + "\nMức độ hiện tại: {}"
-                        + "\nTrụ sở tiếp nhận hiện tại: {}",
-                current.getTenTruSo(),
-                mucDo,
-                id,
-                suCo.getTrangThaiXuLy(),
-                suCo.getMucDoNghiemTrong(),
-                suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null
-        );
+    log.info(
+            "\nTrụ sở {} cập nhật mức độ {} sự cố: {}",
+            current.getTenTruSo(),
+            mucDo,
+            id
+    );
 
-        String status = suCo.getTrangThaiXuLy();
+    // =========================
+    // VALIDATE STATUS (ENUM SAFE)
+    // =========================
+    if (suCo.getTrangThaiXuLy() == TrangThaiXuLy.HOAN_THANH
+            || suCo.getTrangThaiXuLy() == TrangThaiXuLy.HUY_BO) {
 
-        if ("HOAN_THANH".equals(status)
-                || "HUY_BO".equals(status)) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Sự cố đã kết thúc, không thể thay đổi mức độ nghiêm trọng!"
-            );
-        }
-
-        if (!"DANG_XU_LY".equals(status)) {
-
-            log.error(
-                    "\nSự cố ID {} đang ở trạng thái '{}', không cho phép cập nhật mức độ!",
-                    id,
-                    status
-            );
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Chỉ được cập nhật mức độ khi sự cố đang xử lý!"
-            );
-        }
-
-        Long idTruSo = suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null;
-
-        if (idTruSo == null) {
-
-            log.error(
-                    "\nSự cố ID {} chưa có trụ sở tiếp nhận, không thể cập nhật mức độ!",
-                    id
-            );
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Sự cố chưa được tiếp nhận!"
-            );
-        }
-
-        if (!current.getId().equals(suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null)) {
-
-            log.error(
-                    "\nSự cố ID {} không thuộc trụ sở {}!",
-                    id,
-                    current.getTenTruSo()
-            );
-
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Bạn không có quyền chỉnh sửa mức độ của sự cố này!"
-            );
-        }
-
-        if (mucDo == null || mucDo.trim().isEmpty()) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Mức độ không được để trống!"
-            );
-        }
-
-        List<String> validLevels =
-                List.of("LOW", "MEDIUM", "HIGH");
-
-        if (!validLevels.contains(mucDo.toUpperCase())) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Mức độ không hợp lệ! (LOW, MEDIUM, HIGH)"
-            );
-        }
-
-        mucDo = mucDo.toUpperCase();
-
-        suCo.setMucDoNghiemTrong(mucDo);
-
-        BaoCaoSuCo saved =
-                reportRepository.save(suCo);
-
-        SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
-
-        log.info(
-                "\nCập nhật mức độ thành công. Mức độ mới: {}"
-                        + "\nID sự cố: {}"
-                        + "\nTrụ sở tiếp nhận: {}"
-                        + "\nTrạng thái xử lý: {}",
-                suCo.getMucDoNghiemTrong(),
-                id,
-                suCo.getTruSoTiepNhan() != null ? suCo.getTruSoTiepNhan().getId() : null,
-                suCo.getTrangThaiXuLy()
-        );
-
-        if (saved.getTruSoTiepNhan() != null) {
-
-            realtimeService.broadcastTruSo(
-                    saved.getTruSoTiepNhan().getId(),
-                    dto
-            );
-        }
-
-        realtimeService.broadcastReport(dto);
-
-        return Map.of(
-                "message",
-                "Cập nhật mức độ thành công",
-
-                "mucDoMoi",
-                mucDo
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Sự cố đã kết thúc, không thể thay đổi mức độ nghiêm trọng!"
         );
     }
+
+    if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.DANG_XU_LY) {
+
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Chỉ được cập nhật mức độ khi sự cố đang xử lý!"
+        );
+    }
+
+    // =========================
+    // CHECK TRỤ SỞ
+    // =========================
+    if (suCo.getTruSoTiepNhan() == null) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Sự cố chưa được tiếp nhận!"
+        );
+    }
+
+    if (!current.getId().equals(suCo.getTruSoTiepNhan().getId())) {
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "Bạn không có quyền chỉnh sửa mức độ của sự cố này!"
+        );
+    }
+
+    // =========================
+    // UPDATE ENUM DIRECTLY
+    // =========================
+    suCo.setMucDoSuCo(mucDo);
+
+    BaoCaoSuCo saved = reportRepository.save(suCo);
+
+    SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
+
+    log.info(
+            "\nCập nhật mức độ thành công: {}",
+            saved.getMucDoSuCo()
+    );
+
+    if (saved.getTruSoTiepNhan() != null) {
+        realtimeService.broadcastTruSo(
+                saved.getTruSoTiepNhan().getId(),
+                dto
+        );
+    }
+
+    realtimeService.broadcastReport(dto);
+
+    return Map.of(
+            "message", "Cập nhật mức độ thành công",
+            "mucDoMoi", saved.getMucDoSuCo()
+    );
+}
 }

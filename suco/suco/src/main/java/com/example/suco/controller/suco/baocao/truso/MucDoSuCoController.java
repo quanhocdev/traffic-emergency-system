@@ -1,4 +1,5 @@
 package com.example.suco.controller.suco.baocao.truso;
+import com.example.suco.dto.suco.baocao.truso.MucDoSuCoRequestDTO;
 import com.example.suco.model.TruSo;
 import com.example.suco.service.suco.baocao.truso.MucDoSuCoService;
 import jakarta.servlet.http.HttpSession;
@@ -15,22 +16,21 @@ public class MucDoSuCoController {
     private MucDoSuCoService mucDoService;
 
     @PatchMapping("/su-co/cap-nhat-muc-do/{id}")
-    public ResponseEntity<?> capNhatMucDo(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> body,
-            HttpSession session) {
+public ResponseEntity<?> capNhatMucDo(
+        @PathVariable Long id,
+        @RequestBody MucDoSuCoRequestDTO body,
+        HttpSession session) {
 
-        String mucDo = body.get("mucDo");
+    TruSo current = (TruSo) session.getAttribute("currentTruSo");
 
-        TruSo current = (TruSo) session.getAttribute("currentTruSo");
-        if (current == null) {
-            return ResponseEntity.status(401)
-                    .body(Map.of("message", "Vui lòng đăng nhập!"));
-        }
-
-        Map<String, Object> result =
-                mucDoService.capNhatMucDo(id, mucDo, current);
-
-        return ResponseEntity.ok(result);
+    if (current == null) {
+        return ResponseEntity.status(401)
+                .body(Map.of("message", "Vui lòng đăng nhập!"));
     }
+
+    Map<String, Object> result =
+            mucDoService.capNhatMucDo(id, body.getMucDo(), current);
+
+    return ResponseEntity.ok(result);
+}
 }

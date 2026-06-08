@@ -2,9 +2,9 @@ package com.example.suco.model.enums;
 
 public enum TrangThaiDuyet {
 
-    PENDING("Chờ duyệt"),
-    AI_APPROVED("AI duyệt"),
-    VERIFIED("Đã duyệt"),
+    PENDING("Chờ AI xử lý"),
+    AI_APPROVED("AI đề xuất duyệt"),
+    VERIFIED("Admin xác nhận"),
     REJECTED("Từ chối");
 
     private final String label;
