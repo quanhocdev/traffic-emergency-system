@@ -336,7 +336,7 @@ var demNguocSOS = {};
 
 function connectRealtime() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
-  const socket = new SockJS("/ws-suco");
+  const socket = new SockJS("/ws-suco-web");
   const stompClient = Stomp.over(socket);
   stompClient.connect(
     {},

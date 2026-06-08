@@ -75,7 +75,7 @@ function renderRescueItem(sos) {
   const totalActions = callBtn + actionBtn;
 
   return `
-      <div class="card-sos" id="rescue-${sos.id}" data-json='${encodeURIComponent(JSON.stringify(sos))}'>
+      <div class="card-sos" id="rescue-${sos.id}" data-item-type="${sos.itemType}">
           <span class="badge bg-warning text-dark me-2">
               <i class="fa-solid fa-star"></i> ${points}
               ${sos.isVip ? '<i class="fa-solid fa-crown text-danger ms-1"></i>' : ""}
@@ -145,9 +145,17 @@ let currentSosId = null;
 
 function openPayment(id) {
   const el = document.getElementById("rescue-" + id);
-  const data = JSON.parse(decodeURIComponent(el.getAttribute("data-json")));
-  currentSosId = id;
+  if (!el) return;
+  const itemType = el.getAttribute("data-item-type");
 
+  // Tìm trực tiếp từ bộ nhớ mảng allData
+  const data = allData.find((it) => it.id === id && it.itemType === itemType);
+  if (!data) {
+    console.error("Không tìm thấy dữ liệu cho ID:", id);
+    return;
+  }
+
+  currentSosId = id;
   const amountInput = document.getElementById("pay-amount");
   const statusArea = document.getElementById("status-area");
   const vipNote = document.getElementById("vip-note");
@@ -167,7 +175,6 @@ function openPayment(id) {
   document.getElementById("overlay").style.display = "block";
   document.getElementById("payment-panel").style.display = "block";
 }
-
 function closePayment() {
   document.getElementById("payment-panel").style.display = "none";
   document.getElementById("overlay").style.display = "none";
@@ -228,7 +235,43 @@ async function loadActiveRescues() {
       throw new Error("Không thể lấy dữ liệu đang cứu trợ");
     }
 
-    const sosData = await sosRes.json();
+    // --- ĐOẠN ĐỂ VẠCH MẶT LỖI API SOS ---
+    let sosData = [];
+    const rawSosText = await sosRes.text(); // Lấy chuỗi thô trước
+
+    try {
+      sosData = JSON.parse(rawSosText); // Ép kiểu thử bằng tay
+    } catch (jsonError) {
+      console.error("❌ PHÁT HIỆN CHÍNH XÁC VỊ TRÍ LỖI JSON:");
+
+      const errorPosition = 111289; // Vị trí lỗi hệ thống báo
+
+      // Cắt một đoạn text khoảng 150 ký tự trước và sau vị trí lỗi để coi
+      const start = Math.max(0, errorPosition - 80);
+      const end = Math.min(rawSosText.length, errorPosition + 80);
+
+      const doanBiLoi = rawSosText.substring(start, end);
+      const muiTen =
+        " ".repeat(errorPosition - start) + "🔺 KHÚC NÀY BỊ GÃY NÈ!";
+
+      console.log(
+        "%c=== ĐOẠN TEXT GỐC XUNG QUANH VỊ TRÍ LỖI ===",
+        "color: red; font-weight: bold;",
+      );
+      console.log(doanBiLoi);
+      console.log(muiTen);
+      console.log(`Tổng độ dài chuỗi nhận được: ${rawSosText.length} ký tự.`);
+      console.log(
+        "%c===========================================",
+        "color: red; font-weight: bold;",
+      );
+
+      alert("Đã bắt được đoạn dữ liệu lỗi trong Console! Hãy nhấn F12 để xem.");
+      return; // Dừng lại không chạy tiếp nữa để tập trung sửa
+    }
+    // ------------------------------------
+
+    // Nếu không lỗi thì chạy tiếp như cũ
     const sucoData = await sucoRes.json();
 
     console.log("RAW SOS API:", sosData);
@@ -244,8 +287,6 @@ async function loadActiveRescues() {
         ) === index,
     );
 
-    console.log("FORMATTED allData:", allData);
-
     renderData();
   } catch (err) {
     console.error("Lỗi khi tải dữ liệu mới:", err);
@@ -253,6 +294,7 @@ async function loadActiveRescues() {
 }
 // Hàm phụ để chuẩn hóa dữ liệu cho sạch code
 function formatItem(s, type) {
+  // 1. Xác định trạng thái xử lý tùy theo loại dữ liệu (SOS hoặc Sự cố)
   let statusRaw = type === "SOS" ? s.trangThai : s.trangThaiXuLy;
 
   return {
@@ -260,21 +302,26 @@ function formatItem(s, type) {
     viDo: s.viDo,
     kinhDo: s.kinhDo,
 
+    // 🌟 SỬA TẠI ĐÂY: SOS thì lấy 'thoiGianTao' từ DTO, Sự cố lấy 'createdAt'
+    createdAt: type === "SOS" ? s.thoiGianTao : s.createdAt,
+
+    // Ghi chú hoặc mô tả sự cố
     ghiChu: type === "SOS" ? s.ghiChu || "SOS" : s.moTa || "Sự cố",
 
+    // Chuẩn hóa chuỗi trạng thái thành chữ IN HOA
     trangThaiXuLy: String(statusRaw).toUpperCase().trim(),
 
     itemType: type,
 
-    createdAt: s.createdAt || s.thoiGianTao || new Date().toISOString(),
+    // 🌟 SỬA TẠI ĐÂY: Check VIP từ DTO nguoiGui.vip
+    isVip: type === "SOS" ? (s.nguoiGui ? s.nguoiGui.vip : false) : false,
 
-    // Chỉ SOS mới có
-    isVip: type === "SOS" ? Boolean(s.isVip || s.vip || s.daMuaGoi) : false,
-
+    // 🌟 SỬA TẠI ĐÂY: Hóa đơn đã an toàn 100% nhờ DTO phẳng
     hoaDon: type === "SOS" ? s.hoaDon || null : null,
 
     thanhToan: type === "SOS" ? s.thanhToan || null : null,
 
+    // Giữ lại object gốc để dùng khi cần hiển thị chi tiết (ví dụ: lấy tên, số điện thoại người gửi)
     _raw: s,
   };
 }
@@ -314,11 +361,9 @@ function renderData() {
       }
     }
 
-    const st = String(item.trangThaiXuLy || "")
-      .toUpperCase()
-      .trim();
-
-    // CHỈ hiện ca đã tiếp nhận
+    const st = String(item.trangThaiXuLy ?? "")
+      .trim()
+      .toUpperCase();
     return st === "DANG_XU_LY";
   });
 
@@ -346,13 +391,10 @@ function renderData() {
 function openDetailFromRow(id) {
   const el = document.getElementById("rescue-" + id);
   if (!el) return;
-  const raw = el.getAttribute("data-json");
-  let obj = null;
-  try {
-    obj = JSON.parse(decodeURIComponent(raw));
-  } catch (e) {
-    console.error(e);
-  }
+  const itemType = el.getAttribute("data-item-type");
+
+  // Lấy thẳng dữ liệu gốc từ bộ nhớ
+  const obj = allData.find((it) => it.id === id && it.itemType === itemType);
 
   const body = document.getElementById("detail-body");
   if (!obj) {
@@ -361,8 +403,6 @@ function openDetailFromRow(id) {
     const realData = obj._raw || {};
     const imgPath = fixUrl(realData.hinhAnh || realData.hinhAnhUrl);
     const audioPath = fixUrl(realData.ghiAm);
-
-    // Lấy địa chỉ hiển thị trong chi tiết
     const fullAddress = realData.diaChi || `${obj.viDo}, ${obj.kinhDo}`;
 
     const imgHtml = imgPath
@@ -402,6 +442,21 @@ function openDetailFromRow(id) {
 function gotoMap(id) {
   const el = document.getElementById("rescue-" + id);
   if (!el) return;
+  const itemType = el.getAttribute("data-item-type");
+
+  const obj = allData.find((it) => it.id === id && it.itemType === itemType);
+  const lat = obj ? obj.viDo : null;
+  const lng = obj ? obj.kinhDo : null;
+
+  if (lat && lng) {
+    window.location.href = `/truso/trang-chu?toLat=${encodeURIComponent(lat)}&toLng=${encodeURIComponent(lng)}&sosId=${id}`;
+  } else {
+    window.location.href = "/truso/trang-chu?sosId=" + id;
+  }
+}
+function gotoMap(id) {
+  const el = document.getElementById("rescue-" + id);
+  if (!el) return;
   const raw = el.getAttribute("data-json");
   let obj = null;
   try {
@@ -435,7 +490,7 @@ setInterval(() => {
 let stompClient = null;
 
 function connectWebSocket() {
-  const socket = new SockJS("/ws-suco"); // Khớp với endpoint config ở Backend
+  const socket = new SockJS("/ws-suco-web"); // Khớp với endpoint config ở Backend
   stompClient = Stomp.over(socket);
 
   // Tắt log debug rác trên console (tùy chọn)

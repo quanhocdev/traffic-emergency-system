@@ -435,7 +435,7 @@ function toggleNewCameraFields() {
 
 // --- WEBSOCKET & THÔNG BÁO ---
 function connectWebSocket() {
-  const socket = new SockJS("/ws-suco");
+  const socket = new SockJS("/ws-suco-web");
   const stompClient = Stomp.over(socket);
   stompClient.connect(
     {},
