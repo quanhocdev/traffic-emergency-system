@@ -86,16 +86,9 @@ public BaoCaoSuCo submitAdminReport(BaoCaoSuCo report, MultipartFile image) {
             report.getKinhDo()
     );
 
-    if (ganNhat != null) {
-
         report.setTruSoTiepNhan(ganNhat);
-        report.setTrangThaiXuLy(TrangThaiXuLy.DANG_XU_LY);
-
-    } else {
-
-        // KHÔNG có ADMIN string nữa → cần thêm enum option nếu muốn
         report.setTrangThaiXuLy(TrangThaiXuLy.CHO_XU_LY);
-    }
+    
 
     // =========================
     // SAVE FIRST

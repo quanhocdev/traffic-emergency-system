@@ -179,18 +179,20 @@ function renderSuCoItem(suCo) {
 function loadPendingSuCo() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
 
-  fetch(`/api/su-co/map?idTruSo=${TRUSO_ID}`)
-    .then((res) => res.json())
+  // Sửa URL cho đúng với Spring Boot Controller và truyền param status
+  fetch(`/su-co/danh-sach-hien-tai?status=CHO_XU_LY`)
+    .then((res) => {
+      if (!res.ok) throw new Error("Mã lỗi: " + res.status);
+      return res.json();
+    })
     .then((data) => {
-      console.log("Dữ liệu nhận được:", data);
+      console.log("Dữ liệu Sự cố nhận được từ Backend:", data);
       const list = document.getElementById("sos-list");
       list.innerHTML = "";
 
-      // LỌC: Chỉ giữ lại những sự cố có trạng thái CHO_XU_LY
-      const pendingData = data.filter((item) => {
-        // Kiểm tra thuộc tính từ SuCoMapDto
-        return item.trangThaiXuLy === "CHO_XU_LY";
-      });
+      // Vì Backend đã lọc sẵn các phần tử "CHO_XU_LY" dựa vào param status,
+      // nên ở đây 'data' chính là danh sách sự cố đang chờ xử lý của trụ sở.
+      const pendingData = data;
 
       const noDataElem = document.getElementById("no-data");
       if (!pendingData || pendingData.length === 0) {
@@ -207,8 +209,16 @@ function loadPendingSuCo() {
         list.innerHTML += renderSuCoItem(suCo);
       });
     })
-    .catch((err) => console.error("Lỗi tải sự cố:", err));
+    .catch((err) => {
+      console.error("Lỗi tải sự cố:", err);
+      const noDataElem = document.getElementById("no-data");
+      if (noDataElem) {
+        noDataElem.style.display = "block";
+        noDataElem.innerHTML = "Lỗi kết nối hệ thống khi tải sự cố!";
+      }
+    });
 }
+
 // Toggle between views: 'sos' or 'suco'
 function setActiveView(view) {
   CURRENT_VIEW = view;

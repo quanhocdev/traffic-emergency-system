@@ -5,11 +5,14 @@ function fixUrl(path) {
   }
   return `/uploads/sos/${path}`;
 }
+
 /*<![CDATA[*/
 var TRUSO_ID = /*[[${session.currentTruSo != null ? session.currentTruSo.id : 0}]]*/ 0;
 /*]]>*/
+
 let currentFilter = "su-co";
 let allData = [];
+
 function formatTime(iso) {
   try {
     const d = new Date(iso);
@@ -18,9 +21,9 @@ function formatTime(iso) {
     return iso;
   }
 }
-// 1. Sửa hàm render để hiện nút Tạo thanh toán
+
+// 1. Sửa hàm render để hiển thị giao diện động chuẩn xác
 function renderRescueItem(sos) {
-  // Debug: Kiểm tra ID
   if (!sos.id) {
     console.error("renderRescueItem: Missing ID!", sos);
   }
@@ -28,11 +31,9 @@ function renderRescueItem(sos) {
   const displayLocation =
     sos._raw?.diaChi || `${sos.viDo || ""}, ${sos.kinhDo || ""}`;
   const points = sos.userPoints || 0;
-
-  // --- SỬA LẠI LOGIC NÚT GỌI TẠI ĐÂY ---
-  // Lấy Firebase UID (chuỗi) thay vì ID số để Android có thể nhận diện hòm thư
   const userUid = sos.reporterUid;
 
+  // --- LOGIC NÚT GỌI ĐIỆN ---
   let callBtn = "";
   if (userUid) {
     callBtn = `
@@ -45,30 +46,37 @@ function renderRescueItem(sos) {
               <i class="fa-solid fa-user-slash"></i> Ẩn danh
           </button>`;
   }
-  // ------------------------------------
 
-  // Logic Hóa đơn & Trạng thái (Giữ nguyên của bạn)
+  // --- LOGIC NÚT HÀNH ĐỘNG (XỬ LÝ / TẠO HÓA ĐƠN) ---
   let actionBtn = "";
-  if (sos.hoaDon) {
-    if (sos.hoaDon.trangThai === "PAID") {
-      actionBtn = `<button class="btn btn-sm btn-primary w-100" onclick="completeRescue(${sos.id || 0}, '${sos.itemType}')">
-                          <i class="fa-solid fa-check-double"></i> Hoàn thành
-                       </button>`;
-    } else {
-      actionBtn = `<button class="btn btn-sm btn-outline-secondary w-100" disabled>
-                          <i class="fa-solid fa-hourglass-half fa-spin"></i> Đang đợi trả tiền
-                       </button>`;
-    }
+  if (sos.itemType === "SUCO") {
+    // Đối với Sự cố: Thêm nút dẫn đường nhanh ra ngoài và nút Hoàn thành ca
+    actionBtn = `
+          <button class="btn btn-sm btn-outline-success mb-2 w-100" onclick="gotoMap(${sos.id || 0})">
+              <i class="fa-solid fa-map-location-dot"></i> Dẫn đường
+          </button>
+          <button class="btn btn-sm btn-primary w-100" onclick="completeRescue(${sos.id || 0}, '${sos.itemType}')">
+              <i class="fa-solid fa-check"></i> Hoàn thành
+          </button>`;
   } else {
-    if (sos.itemType !== "SUCO") {
-      actionBtn = `<button class="btn btn-sm btn-success w-100" onclick="openPayment(${sos.id || 0})">
-                          <i class="fa-solid fa-file-invoice"></i> Tạo hóa đơn
-                      </button>`;
+    // Đối với SOS khẩn cấp: Xử lý theo luồng Hóa đơn
+    if (sos.hoaDon) {
+      if (sos.hoaDon.trangThai === "PAID") {
+        actionBtn = `
+              <button class="btn btn-sm btn-primary w-100" onclick="completeRescue(${sos.id || 0}, '${sos.itemType}')">
+                  <i class="fa-solid fa-check-double"></i> Hoàn thành
+              </button>`;
+      } else {
+        actionBtn = `
+              <button class="btn btn-sm btn-outline-secondary w-100" disabled>
+                  <i class="fa-solid fa-hourglass-half fa-spin"></i> Đang đợi trả tiền
+              </button>`;
+      }
     } else {
-      // Đối với Sự cố, hiện luôn nút Hoàn thành vì không cần thanh toán
-      actionBtn = `<button class="btn btn-sm btn-primary w-100" onclick="completeRescue(${sos.id || 0}, '${sos.itemType}')">
-                          <i class="fa-solid fa-check"></i> Hoàn thành
-                       </button>`;
+      actionBtn = `
+            <button class="btn btn-sm btn-success w-100" onclick="openPayment(${sos.id || 0})">
+                <i class="fa-solid fa-file-invoice"></i> Tạo hóa đơn
+            </button>`;
     }
   }
 
@@ -92,54 +100,46 @@ function renderRescueItem(sos) {
           </div>
       </div>`;
 }
-async function completeRescue(id, type) {
-  console.log("completeRescue called - ID:", id, "Type:", type);
 
+async function completeRescue(id, type) {
   if (!id || id === 0) {
     alert("Lỗi: Không tìm thấy ID của yêu cầu cứu trợ!");
-    console.error("Invalid ID:", id);
     return;
   }
 
   if (!confirm("Xác nhận đã hoàn thành cứu trợ và đóng yêu cầu này?")) return;
 
   try {
-    // Chọn đúng API endpoint tùy theo loại (SOS hoặc Sự cố)
     const url =
       type === "SOS"
         ? `/api/tin-hieu-sos/cap-nhat-trang-thai/${id}`
         : `/su-co/cap-nhat-trang-thai/${id}`;
 
-    console.log("Calling API:", url);
-
     const res = await fetch(url, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        status: "HOAN_THANH", // Trạng thái mới sau khi hoàn thành
-      }),
+      body: JSON.stringify({ status: "HOAN_THANH" }),
     });
 
     if (res.ok) {
-      // Cập nhật mảng local để item biến mất ngay lập tức nhờ hàm filter trong renderData
       const idx = allData.findIndex(
         (it) => it.id === id && it.itemType === type,
       );
       if (idx !== -1) {
-        allData[idx].trangThaiXuLy = "HOAN_THANH"; // Trạng thái này sẽ bị filter loại bỏ
-        renderData(); // Vẽ lại list
+        allData[idx].trangThaiXuLy = "HOAN_THANH";
+        renderData();
       }
       alert("Đã hoàn tất ca cứu trợ!");
     } else {
       const errorText = await res.text();
       alert(`Lỗi khi cập nhật: ${res.status} - ${errorText}`);
-      console.error("API Error:", res.status, errorText);
     }
   } catch (e) {
-    console.error("Lỗi:", e);
+    console.error("Lỗi hoàn thành cứu trợ:", e);
     alert("Đã xảy ra lỗi: " + e.message);
   }
 }
+
 // 2. Các hàm xử lý Form Thanh toán mới
 let currentSosId = null;
 
@@ -148,12 +148,8 @@ function openPayment(id) {
   if (!el) return;
   const itemType = el.getAttribute("data-item-type");
 
-  // Tìm trực tiếp từ bộ nhớ mảng allData
   const data = allData.find((it) => it.id === id && it.itemType === itemType);
-  if (!data) {
-    console.error("Không tìm thấy dữ liệu cho ID:", id);
-    return;
-  }
+  if (!data) return;
 
   currentSosId = id;
   const amountInput = document.getElementById("pay-amount");
@@ -169,12 +165,13 @@ function openPayment(id) {
     statusArea.innerHTML = `<span class="normal-badge"><i class="fa-solid fa-user"></i> Khách hàng vãng lai</span>`;
     amountInput.value = "";
     amountInput.readOnly = false;
-    vipNote.innerText = "Vui lòng nhập giá thỏa thuận với khách.";
+    vipNote.innerText = "Vui lòng nhập giá thỏa thuận with khách.";
   }
 
   document.getElementById("overlay").style.display = "block";
   document.getElementById("payment-panel").style.display = "block";
 }
+
 function closePayment() {
   document.getElementById("payment-panel").style.display = "none";
   document.getElementById("overlay").style.display = "none";
@@ -201,22 +198,13 @@ async function submitPayment(e) {
       alert("Đã tạo hóa đơn thành công!");
       closePayment();
 
-      // SỬA TẠI ĐÂY: Tìm theo ID mà không phân biệt SOS hay SUCO
       const idx = allData.findIndex(
         (it) => it.id === currentSosId && it.itemType === "SOS",
       );
-
       if (idx !== -1) {
-        // Cập nhật dữ liệu để renderData() nhận diện được
         allData[idx].hoaDon = hoaDonMoi;
-        // Ép trạng thái về PENDING để logic hiển thị nút "Đang đợi trả tiền" kích hoạt
-        //allData[idx].trangThaiXuLy = "PENDING";
-
-        console.log("Cập nhật Local thành công cho đơn #" + currentSosId);
-        renderData(); // Vẽ lại giao diện ngay lập tức
+        renderData();
       }
-
-      // Tải lại để đảm bảo đồng bộ với Database
       loadActiveRescues();
     }
   } catch (err) {
@@ -227,105 +215,107 @@ async function submitPayment(e) {
 async function loadActiveRescues() {
   try {
     const [sosRes, sucoRes] = await Promise.all([
-      fetch("/truso/api/sos-cua-toi"),
-      fetch("/su-co/danh-sach-hien-tai"),
+      fetch("/truso/api/sos-cua-toi").catch((e) => {
+        console.error("Lỗi API SOS:", e);
+        return null;
+      }),
+      fetch("/su-co/danh-sach-hien-tai?status=DANG_XU_LY").catch((e) => {
+        console.error("Lỗi API Sự cố:", e);
+        return null;
+      }),
     ]);
 
-    if (!sosRes.ok || !sucoRes.ok) {
-      throw new Error("Không thể lấy dữ liệu đang cứu trợ");
-    }
-
-    // --- ĐOẠN ĐỂ VẠCH MẶT LỖI API SOS ---
     let sosData = [];
-    const rawSosText = await sosRes.text(); // Lấy chuỗi thô trước
+    let sucoData = [];
 
-    try {
-      sosData = JSON.parse(rawSosText); // Ép kiểu thử bằng tay
-    } catch (jsonError) {
-      console.error("❌ PHÁT HIỆN CHÍNH XÁC VỊ TRÍ LỖI JSON:");
-
-      const errorPosition = 111289; // Vị trí lỗi hệ thống báo
-
-      // Cắt một đoạn text khoảng 150 ký tự trước và sau vị trí lỗi để coi
-      const start = Math.max(0, errorPosition - 80);
-      const end = Math.min(rawSosText.length, errorPosition + 80);
-
-      const doanBiLoi = rawSosText.substring(start, end);
-      const muiTen =
-        " ".repeat(errorPosition - start) + "🔺 KHÚC NÀY BỊ GÃY NÈ!";
-
-      console.log(
-        "%c=== ĐOẠN TEXT GỐC XUNG QUANH VỊ TRÍ LỖI ===",
-        "color: red; font-weight: bold;",
-      );
-      console.log(doanBiLoi);
-      console.log(muiTen);
-      console.log(`Tổng độ dài chuỗi nhận được: ${rawSosText.length} ký tự.`);
-      console.log(
-        "%c===========================================",
-        "color: red; font-weight: bold;",
-      );
-
-      alert("Đã bắt được đoạn dữ liệu lỗi trong Console! Hãy nhấn F12 để xem.");
-      return; // Dừng lại không chạy tiếp nữa để tập trung sửa
+    if (sosRes && sosRes.ok) {
+      const rawSosText = await sosRes.text();
+      try {
+        if (rawSosText && rawSosText.trim() !== "")
+          sosData = JSON.parse(rawSosText);
+      } catch (e) {
+        console.error("Lỗi JSON SOS:", e);
+      }
     }
-    // ------------------------------------
 
-    // Nếu không lỗi thì chạy tiếp như cũ
-    const sucoData = await sucoRes.json();
+    if (sucoRes && sucoRes.ok) {
+      try {
+        const rawSuCo = await sucoRes.json();
 
-    console.log("RAW SOS API:", sosData);
-    console.log("RAW SUCO API:", sucoData);
+        // CẬP NHẬT TẠI ĐÂY: Can thiệp trực tiếp vào mảng gốc trả về từ API
+        sucoData = (rawSuCo || []).map((item) => {
+          if (item.trangThaiXuLy === "Đang xử lý") {
+            item.trangThaiXuLy = "DANG_XU_LY"; // Đè hẳn giá trị tiếng Việt thành mã không dấu
+          }
+          return item;
+        });
+      } catch (e) {
+        console.error("Lỗi JSON Sự cố:", e);
+      }
+    }
 
+    // Lúc này log ra chắc chắn sẽ là "DANG_XU_LY", không còn chữ tiếng Việt nữa
+    console.log("Dữ liệu SOS gốc:", sosData);
+    console.log("Dữ liệu Sự cố gốc (Đã ép mã):", sucoData);
+
+    // Chuẩn hóa cấu trúc dữ liệu đẩy vào mảng dùng chung
     const formattedSos = (sosData || []).map((s) => formatItem(s, "SOS"));
     const formattedSuCo = (sucoData || []).map((s) => formatItem(s, "SUCO"));
 
+    // Lọc trùng lặp dữ liệu
     allData = [...formattedSuCo, ...formattedSos].filter(
       (item, index, arr) =>
         arr.findIndex(
-          (other) => other.id === item.id && other.itemType === item.itemType,
+          (other) =>
+            other.id === item.id &&
+            String(other.itemType).toUpperCase() ===
+              String(item.itemType).toUpperCase(),
         ) === index,
     );
 
+    console.log("=== TOÀN BỘ DATA SAU KHI GỘP ===", allData);
     renderData();
   } catch (err) {
-    console.error("Lỗi khi tải dữ liệu mới:", err);
+    console.error("Lỗi nghiêm trọng trong loadActiveRescues:", err);
   }
 }
-// Hàm phụ để chuẩn hóa dữ liệu cho sạch code
+
 function formatItem(s, type) {
-  // 1. Xác định trạng thái xử lý tùy theo loại dữ liệu (SOS hoặc Sự cố)
-  let statusRaw = type === "SOS" ? s.trangThai : s.trangThaiXuLy;
+  const upperType = String(type).toUpperCase().trim();
+
+  const timeRaw = s.thoiGianTao || s.createdAt || s.thoiGian;
+
+  let statusRaw =
+    upperType === "SOS"
+      ? s.trangThai
+      : s.trangThaiXuLy || s.trangThai || "DANG_XU_LY";
+
+  // SỬA TẠI ĐÂY: Thêm replace khoảng trắng thành gạch dưới
+  let statusClean = String(statusRaw)
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/Đ/g, "D")
+    .trim()
+    .replace(/\s+/g, "_"); // <--- Biến "DANG XU LY" thành "DANG_XU_LY"
 
   return {
     id: s.id,
     viDo: s.viDo,
     kinhDo: s.kinhDo,
-
-    // 🌟 SỬA TẠI ĐÂY: SOS thì lấy 'thoiGianTao' từ DTO, Sự cố lấy 'createdAt'
-    createdAt: type === "SOS" ? s.thoiGianTao : s.createdAt,
-
-    // Ghi chú hoặc mô tả sự cố
-    ghiChu: type === "SOS" ? s.ghiChu || "SOS" : s.moTa || "Sự cố",
-
-    // Chuẩn hóa chuỗi trạng thái thành chữ IN HOA
-    trangThaiXuLy: String(statusRaw).toUpperCase().trim(),
-
-    itemType: type,
-
-    isVip: type === "SOS" ? (s.nguoiGui ? s.nguoiGui.vip : false) : false,
-
-    hoaDon: type === "SOS" ? s.hoaDon || null : null,
-
-    thanhToan: type === "SOS" ? s.thanhToan || null : null,
-
-    // Giữ lại object gốc để dùng khi cần hiển thị chi tiết (ví dụ: lấy tên, số điện thoại người gửi)
+    createdAt: timeRaw,
+    ghiChu: upperType === "SOS" ? s.ghiChu || "SOS" : s.moTa || "Sự cố",
+    trangThaiXuLy: statusClean, // Bây giờ sẽ là "DANG_XU_LY" chuẩn đét
+    itemType: upperType,
+    isVip: upperType === "SOS" ? (s.nguoiGui ? s.nguoiGui.vip : false) : false,
+    hoaDon: upperType === "SOS" ? s.hoaDon || null : null,
+    thanhToan: upperType === "SOS" ? s.thanhToan || null : null,
+    reporterUid: upperType === "SOS" ? s.reporterUid : s.userUid || null,
     _raw: s,
   };
 }
 function filterType(type) {
   currentFilter = type;
-
   const bSuCo = document.getElementById("btn-filter-su-co");
   const bSOS = document.getElementById("btn-filter-sos");
 
@@ -337,7 +327,6 @@ function filterType(type) {
   } else {
     bSOS?.classList.add("active");
   }
-
   renderData();
 }
 
@@ -353,12 +342,10 @@ function renderData() {
         sos: "SOS",
         "su-co": "SUCO",
       };
-
       if (item.itemType !== map[currentFilter]) {
         return false;
       }
     }
-
     const st = String(item.trangThaiXuLy ?? "")
       .trim()
       .toUpperCase();
@@ -373,9 +360,8 @@ function renderData() {
   if (filtered.length === 0) {
     list.innerHTML = `
       <div class="alert alert-secondary py-4">
-        Hiện không có cứu trợ đang diễn ra.
-      </div>
-    `;
+        Hiện không có cứu trợ đang diễn ra cho danh mục này.
+      </div>`;
     return;
   }
 
@@ -391,10 +377,9 @@ function openDetailFromRow(id) {
   if (!el) return;
   const itemType = el.getAttribute("data-item-type");
 
-  // Lấy thẳng dữ liệu gốc từ bộ nhớ
   const obj = allData.find((it) => it.id === id && it.itemType === itemType);
-
   const body = document.getElementById("detail-body");
+
   if (!obj) {
     body.innerHTML = '<div class="text-muted">Không có dữ liệu</div>';
   } else {
@@ -452,24 +437,6 @@ function gotoMap(id) {
     window.location.href = "/truso/trang-chu?sosId=" + id;
   }
 }
-function gotoMap(id) {
-  const el = document.getElementById("rescue-" + id);
-  if (!el) return;
-  const raw = el.getAttribute("data-json");
-  let obj = null;
-  try {
-    obj = JSON.parse(decodeURIComponent(raw));
-  } catch (e) {}
-  const lat = obj ? obj.viDo : null;
-  const lng = obj ? obj.kinhDo : null;
-  if (lat && lng) {
-    window.location.href = `/truso/trang-chu?toLat=${encodeURIComponent(
-      lat,
-    )}&toLng=${encodeURIComponent(lng)}&sosId=${id}`;
-  } else {
-    window.location.href = "/truso/trang-chu?sosId=" + id;
-  }
-}
 
 document.getElementById &&
   document.addEventListener("click", function (e) {
@@ -484,28 +451,22 @@ setInterval(() => {
   if (c) c.innerText = new Date().toLocaleTimeString();
 }, 1000);
 
-// --- THÊM BIẾN VÀ HÀM KẾT NỐI SOCKET ---
+// --- CẤU HÌNH SOCKET & WEBRTC (GIỮ NGUYÊN HOẠT ĐỘNG CHUẨN) ---
 let stompClient = null;
 
 function connectWebSocket() {
-  const socket = new SockJS("/ws-suco-web"); // Khớp với endpoint config ở Backend
+  const socket = new SockJS("/ws-suco-web");
   stompClient = Stomp.over(socket);
-
-  // Tắt log debug rác trên console (tùy chọn)
   stompClient.debug = null;
 
   stompClient.connect(
     {},
     function (frame) {
       console.log("Connected to WebSocket: " + frame);
-
       stompClient.subscribe(
         "/topic/truso/" + TRUSO_ID,
         function (messageOutput) {
           const data = JSON.parse(messageOutput.body);
-          console.log("📩 Nhận tín hiệu từ Socket:", data);
-
-          // Nếu nhận được gói tin có trạng thái PAID (thanh toán thành công)
           if (data.trangThai === "PAID") {
             updateLocalDataAfterPaid(data);
           }
@@ -515,47 +476,33 @@ function connectWebSocket() {
     },
     function (error) {
       console.error("Socket Error, retrying in 5s...", error);
-      setTimeout(connectWebSocket, 5000); // Tự kết nối lại nếu rớt mạng
+      setTimeout(connectWebSocket, 5000);
     },
   );
 }
 
-// Hàm cập nhật nhanh giao diện mà không cần load lại toàn bộ API
 function updateLocalDataAfterPaid(paymentInfo) {
-  // Tìm trong toàn bộ data, không phân biệt SOS hay SUCO, miễn là trùng ID
   const idx = allData.findIndex((it) => it.id === paymentInfo.sosId);
-
   if (idx !== -1) {
-    // Cập nhật object hoaDon
     if (!allData[idx].hoaDon) allData[idx].hoaDon = {};
     allData[idx].hoaDon.trangThai = "PAID";
     allData[idx].hoaDon.tongThanhToan = paymentInfo.tongThanhToan;
-
-    // Vẽ lại giao diện ngay lập tức
     renderData();
-    console.log("🔔 Đã cập nhật trạng thái PAID cho đơn #" + paymentInfo.sosId);
   } else {
-    // Nếu không tìm thấy trong cache, tốt nhất là load lại toàn bộ cho chắc
     loadActiveRescues();
   }
 }
 
 window.addEventListener("load", () => {
-  // 1. Gán sự kiện cho nút bấm
   const bSuCo = document.getElementById("btn-filter-su-co");
   const bSOS = document.getElementById("btn-filter-sos");
   if (bSuCo) bSuCo.addEventListener("click", () => filterType("su-co"));
   if (bSOS) bSOS.addEventListener("click", () => filterType("sos"));
 
-  // 2. Tải dữ liệu từ API (Hàm này sẽ tự gọi renderData sau khi xong)
   loadActiveRescues();
   connectWebSocket();
-  // 3. Set trạng thái active cho nút ban đầu
-  const initialBtn = currentFilter === "sos" ? bSOS : bSuCo;
-  if (initialBtn) initialBtn.classList.add("active");
 });
 
-// --- CẤU HÌNH WEBRTC ---
 let peerConnection = null;
 let localStream = null;
 let targetUserId = null;
@@ -563,24 +510,17 @@ const configuration = {
   iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
 };
 
-// Hàm khởi tạo cuộc gọi từ phía Web (Trụ sở gọi cho Android)
-// Tìm hàm này và sửa lại tham số truyền vào
 async function startCallWithUser(userUid) {
-  // Đảm bảo userUid này là chuỗi kiểu: "3J9ua8nF4TQo2AE9Wo7ySlZkAuC2"
   targetUserId = userUid;
   showCallPanel("Đang gọi Android...");
-
   try {
     await initLocalStream();
     createPeerConnection();
-
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
-
-    // Gửi signal với key "to" khớp với Backend String toUser = (String) signal.get("to");
     sendSignal({
       type: "OFFER",
-      to: targetUserId, // Đây phải là UID chuỗi dài
+      to: targetUserId,
       from: "TRU_SO_" + TRUSO_ID,
       sdp: offer.sdp,
     });
@@ -590,27 +530,18 @@ async function startCallWithUser(userUid) {
   }
 }
 
-// Hàm gửi tín hiệu qua Socket hiện có của bạn
 function sendSignal(data) {
   if (stompClient && stompClient.connected) {
-    console.log("📤 Sending WebRTC signal:", data.type, "to:", data.to);
     stompClient.send("/app/call-signal", {}, JSON.stringify(data));
-  } else {
-    console.error("❌ Socket chưa kết nối, không thể gửi tín hiệu!");
-    alert("Kết nối máy chủ bị gián đoạn, vui lòng tải lại trang.");
   }
 }
 
-// Cập nhật hàm connectWebSocket hiện tại của bạn:
-// Thêm phần subscribe cho topic cuộc gọi
 function setupCallSubscription() {
   stompClient.subscribe(
     "/topic/tru-so/TRU_SO_" + TRUSO_ID + "/call",
     async (message) => {
       const signal = JSON.parse(message.body);
       const type = signal.type ? signal.type.toUpperCase() : "";
-
-      console.log("📞 Tín hiệu nhận được:", type);
 
       if (type === "OFFER") {
         targetUserId = signal.from;
@@ -626,30 +557,22 @@ function setupCallSubscription() {
             await peerConnection.addIceCandidate(
               new RTCIceCandidate(signal.candidate),
             );
-          } catch (e) {
-            console.error("Lỗi thêm Candidate:", e);
-          }
+          } catch (e) {}
         }
-      }
-      // --- THÊM ĐOẠN NÀY ĐỂ XỬ LÝ KHI ANDROID TẮT ---
-      else if (type === "BYE") {
-        console.log("☎️ Android đã cúp máy.");
-        cleanupCallLocally(); // Gọi hàm dọn dẹp giao diện và đóng kết nối
+      } else if (type === "BYE") {
+        cleanupCallLocally();
       }
     },
   );
 }
 
-// Xử lý khi Android gọi tới
 async function handleOffer(offer) {
   showCallPanel("Cuộc gọi đến...");
   await initLocalStream();
   createPeerConnection();
-
   await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
   const answer = await peerConnection.createAnswer();
   await peerConnection.setLocalDescription(answer);
-
   sendSignal({
     type: "ANSWER",
     to: targetUserId,
@@ -663,35 +586,27 @@ function createPeerConnection() {
   if (peerConnection) peerConnection.close();
   peerConnection = new RTCPeerConnection(configuration);
 
-  // Thêm track âm thanh vào kết nối
   localStream
     .getTracks()
     .forEach((track) => peerConnection.addTrack(track, localStream));
 
-  // Nhận âm thanh từ Android
   peerConnection.ontrack = (event) => {
     const remoteAudio = document.getElementById("remoteAudio");
     if (remoteAudio) {
-      // Đảm bảo remoteAudio không phát lại chính giọng của máy tính (nếu có nhầm lẫn stream)
       remoteAudio.srcObject = event.streams[0];
-
-      // Mẹo: Đặt âm lượng mặc định vừa phải (0.8) để tránh mic máy tính thu lại tiếng loa quá to
       remoteAudio.volume = 0.8;
-
-      remoteAudio.play().catch((err) => {
-        console.error("Trình duyệt chặn phát:", err);
-      });
+      remoteAudio
+        .play()
+        .catch((err) => console.error("Trình duyệt chặn phát m thanh:", err));
     }
   };
 
-  // Gửi ICE Candidate
   peerConnection.onicecandidate = (event) => {
     if (event.candidate) {
       sendSignal({
         type: "CANDIDATE",
         to: targetUserId,
         from: "TRU_SO_" + TRUSO_ID,
-        // Đảm bảo gửi object phẳng để Android dễ parse
         candidate: {
           candidate: event.candidate.candidate,
           sdpMid: event.candidate.sdpMid,
@@ -707,18 +622,14 @@ async function initLocalStream() {
     try {
       localStream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: true, // Quan trọng nhất: Khử tiếng vọng
-          noiseSuppression: true, // Giảm tiếng rè/ồn nền
-          autoGainControl: true, // Tự điều chỉnh âm lượng mic
-          googEchoCancellation: true, // Các thuộc tính riêng cho Chrome/Edge
-          googNoiseSuppression: true,
-          googHighpassFilter: true,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
         },
         video: false,
       });
-      console.log("✅ Local Stream initialized with Echo Cancellation");
     } catch (e) {
-      console.error("❌ Không thể truy cập Mic:", e);
+      console.error("Không thể truy cập Mic:", e);
       throw e;
     }
   }
@@ -730,29 +641,12 @@ function showCallPanel(status) {
 }
 
 function endCall() {
-  // 1. Gửi tín hiệu báo tử cho đối phương
   if (targetUserId) {
-    sendSignal({
-      type: "BYE",
-      to: targetUserId,
-      from: "TRU_SO_" + TRUSO_ID,
-    });
+    sendSignal({ type: "BYE", to: targetUserId, from: "TRU_SO_" + TRUSO_ID });
   }
-
-  // 2. Dọn dẹp tại chỗ
-  if (peerConnection) {
-    peerConnection.close();
-    peerConnection = null;
-  }
-  if (localStream) {
-    localStream.getTracks().forEach((t) => t.stop());
-    localStream = null;
-  }
-  document.getElementById("call-panel").style.display = "none";
-  targetUserId = null;
+  cleanupCallLocally();
 }
 
-// Tạo hàm dọn dẹp riêng để dùng chung
 function cleanupCallLocally() {
   if (peerConnection) peerConnection.close();
   if (localStream) localStream.getTracks().forEach((t) => t.stop());
