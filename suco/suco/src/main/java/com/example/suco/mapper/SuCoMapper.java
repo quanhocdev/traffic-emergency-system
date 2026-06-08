@@ -1,7 +1,5 @@
 package com.example.suco.mapper;
-import com.example.suco.model.User;
 import com.example.suco.model.LoaiSuCo;
-import com.example.suco.model.TruSo;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
 import com.example.suco.dto.suco.baocao.TheoDoiSuCoDetailResponseDTO;
@@ -9,7 +7,6 @@ import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
 import com.example.suco.dto.suco.baocao.AdminSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.TruSoSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.UserSuCoDetailResponseDTO;
-import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import org.springframework.stereotype.Component;
 
@@ -40,8 +37,12 @@ public class SuCoMapper {
                 dto.setViDo(b.getViDo());
                 dto.setKinhDo(b.getKinhDo());
                 dto.setIconUrl( b.getLoaiSuCo() != null ? b.getLoaiSuCo().getIconUrl() : null);
-                dto.setTrangThaiXuLy(b.getTrangThaiXuLy());
-                dto.setMucDoNghiemTrong(b.getMucDoNghiemTrong());
+                dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
+                dto.setMucDoNghiemTrong(
+                        b.getMucDoSuCo() != null
+                ? b.getMucDoSuCo().getLabel()
+                : null
+);
                 dto.setTruSoId(b.getTruSoTiepNhan() != null ? b.getTruSoTiepNhan().getId() : null);
                 return dto;
         }
@@ -88,10 +89,10 @@ if (b.getTruSoTiepNhan() != null) {
     dto.setTruSoTiepNhan(truSoTiepNhan);
 }
 
-    dto.setTrangThaiDuyet(b.getTrangThaiDuyet());
-    dto.setTrangThaiXuLy(b.getTrangThaiXuLy());
+    dto.setTrangThaiDuyet(b.getTrangThaiDuyet() != null ? b.getTrangThaiDuyet().getLabel() : null);
+    dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
 
-    dto.setMucDoNghiemTrong(b.getMucDoNghiemTrong());
+    dto.setMucDoNghiemTrong(b.getMucDoSuCo() != null ? b.getMucDoSuCo().getLabel() : null);
     dto.setHinhAnhUrl(b.getHinhAnhUrl());
 
     dto.setDoTinCay(b.getDoTinCay());
@@ -143,10 +144,10 @@ if (b.getTruSoTiepNhan() != null) {
     dto.setTruSoTiepNhan(truSoTiepNhan);
 }
 
-    dto.setTrangThaiDuyet(b.getTrangThaiDuyet());
-    dto.setTrangThaiXuLy(b.getTrangThaiXuLy());
+    dto.setTrangThaiDuyet(b.getTrangThaiDuyet() != null ? b.getTrangThaiDuyet().getLabel() : null);
+    dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
 
-    dto.setMucDoNghiemTrong(b.getMucDoNghiemTrong());
+    dto.setMucDoNghiemTrong(b.getMucDoSuCo() != null ? b.getMucDoSuCo().getLabel() : null);
     dto.setHinhAnhUrl(b.getHinhAnhUrl());
 
     dto.setDoTinCay(b.getDoTinCay());
@@ -187,10 +188,10 @@ if (b.getTruSoTiepNhan() != null) {
                     : null
     );
 
-    dto.setTrangThaiDuyet(b.getTrangThaiDuyet());
-    dto.setTrangThaiXuLy(b.getTrangThaiXuLy());
+    dto.setTrangThaiDuyet(b.getTrangThaiDuyet() != null ? b.getTrangThaiDuyet().getLabel() : null);
+    dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
 
-    dto.setMucDoNghiemTrong(b.getMucDoNghiemTrong());
+    dto.setMucDoNghiemTrong(b.getMucDoSuCo() != null ? b.getMucDoSuCo().getLabel() : null);
     dto.setHinhAnhUrl(b.getHinhAnhUrl());
 
     dto.setDoTinCay(b.getDoTinCay());
@@ -223,11 +224,22 @@ if (b.getTruSoTiepNhan() != null) {
     dto.setHinhAnhUrl(b.getHinhAnhUrl());
     dto.setDiaChi(b.getDiaChi());
 
-    dto.setTrangThaiDuyet(b.getTrangThaiDuyet());
-    dto.setTrangThaiXuLy(b.getTrangThaiXuLy());
+    dto.setTrangThaiDuyet(
+        b.getTrangThaiDuyet() != null
+                ? b.getTrangThaiDuyet().getLabel()
+                : null
+);
+    dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null
+            ? b.getTrangThaiXuLy().getLabel()
+            : null
+    );
 
     dto.setDoTinCay(b.getDoTinCay());
-    dto.setMucDoNghiemTrong(b.getMucDoNghiemTrong());
+    dto.setMucDoNghiemTrong(
+        b.getMucDoSuCo() != null
+                ? b.getMucDoSuCo().getLabel()
+                : null
+        );
 
     dto.setThoiGianTao(b.getThoiGianTao());
 
