@@ -1,29 +1,39 @@
 package com.example.suco.dto.sos.tinhieu;
+
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO; // 🌟 Import class DTO hóa đơn của bạn
 import java.time.LocalDateTime;
 
 public class TruSoSOSDetailResponseDTO {
 
     private Long id;
-
     private Double viDo;
     private Double kinhDo;
-
     private String diaChi;
-
     private String ghiChu;
-
     private String hinhAnhUrl;
     private String ghiAmUrl;
-
     private LocalDateTime thoiGianTao;
-
     private String trangThai;
-
     private UserMiniDTO nguoiGui;
+    
+    // ==========================================
+    // 🌟 THÊM TRƯỜNG NÀY VÀO ĐỂ CHỨA THÔNG TIN HÓA ĐƠN
+    private HoaDonResponseDTO hoaDon; 
+    // ==========================================
 
     public TruSoSOSDetailResponseDTO() {}
 
+    // --- Thêm Getter và Setter cho hoaDon ---
+    public HoaDonResponseDTO getHoaDon() {
+        return hoaDon;
+    }
+
+    public void setHoaDon(HoaDonResponseDTO hoaDon) {
+        this.hoaDon = hoaDon;
+    }
+
+    // --- Các Getter và Setter cũ giữ nguyên ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Double getViDo() { return viDo; }
@@ -44,5 +54,4 @@ public class TruSoSOSDetailResponseDTO {
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
     public UserMiniDTO getNguoiGui() { return nguoiGui; }
     public void setNguoiGui(UserMiniDTO nguoiGui) { this.nguoiGui = nguoiGui; }
-    
 }

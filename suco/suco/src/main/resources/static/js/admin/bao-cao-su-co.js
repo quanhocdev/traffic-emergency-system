@@ -1,5 +1,5 @@
 // --- KHỞI TẠO WEBSOCKET ---
-const socket = new SockJS("/ws-suco");
+const socket = new SockJS("/ws-suco-web");
 const stompClient = Stomp.over(socket);
 const cameraLoaded = new Set();
 stompClient.connect({}, function (frame) {

@@ -118,6 +118,13 @@ function showSOSDetail(item) {
   const imgUrl = fixUrl(item.hinhAnh);
   const audioUrl = fixUrl(item.ghiAm);
 
+  const statusLabel = {
+    CHO_XU_LY: "Chờ xử lý",
+    DANG_XU_LY: "Đang xử lý",
+    HOAN_THANH: "Hoàn thành",
+    HUY_BO: "Hủy bỏ",
+  };
+
   let actionButton = "";
   if (trangThai === "CHO_XU_LY") {
     actionButton = `<button class="btn-approve" onclick="doiTrangThai(${id}, 'DANG_XU_LY')">
@@ -139,7 +146,7 @@ function showSOSDetail(item) {
         <div class="info-group">
             <div class="info-label">Trạng thái & Thời gian</div>
             <div class="info-value">
-                <span class="badge" style="background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 4px;">${trangThai}</span>
+                <span class="badge" style="background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 4px;">  ${statusLabel[trangThai] || trangThai}</span>
                 <span style="margin-left: 10px; font-size: 0.85rem;"><i class="fa-regular fa-clock"></i> ${thoiGian}</span>
             </div>
         </div>
@@ -761,7 +768,7 @@ const playAlarm = () => {
   });
 };
 function connectWebSocket() {
-  const socket = new SockJS("/ws-suco");
+  const socket = new SockJS("/ws-suco-web");
   const stompClient = Stomp.over(socket);
   stompClient.debug = null;
   stompClient.connect({}, () => {
