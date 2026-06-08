@@ -4,6 +4,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.model.BaoCaoSuCo;
+import com.example.suco.model.enums.TrangThaiDuyet;
+import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
@@ -38,110 +40,75 @@ public class HuyBaoCaoService {
             : uid + "***";
 }
     
-        @Transactional
-    public ResponseEntity<?> cancelReport(
-            Long reportId,
-            String currentUid
-    ) {
+       @Transactional
+public ResponseEntity<?> cancelReport(
+        Long reportId,
+        String currentUid
+) {
 
-        BaoCaoSuCo report =
-                reportRepository.findById(reportId)
-                        .orElseThrow(() ->
-                                new ResponseStatusException(
-                                        HttpStatus.NOT_FOUND,
-                                        "Không tìm thấy báo cáo"
-                                ));
+    BaoCaoSuCo report = reportRepository.findById(reportId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Không tìm thấy báo cáo"
+            ));
 
-        log.info(
-                "\n[HUY BAO CAO - BẮT ĐẦU]"
-                        + "\nUser: {}"
-                        + "\nReport ID: {}"
-                        + "\nTrang thai xu ly: {}"
-                        + "\nTrang thai duyet: {}\n",
+    log.info("\n[HUY BAO CAO] User: {} - Report: {}",
+            maskUid(currentUid),
+            reportId
+    );
 
-                maskUid(currentUid),
-                reportId,
-                report.getTrangThaiXuLy(),
-                report.getTrangThaiDuyet()
-        );
+    // =========================
+    // CHECK OWNER
+    // =========================
+    quyenHanService.checkOwner(report, currentUid);
 
-        quyenHanService.checkOwner(
-                report,
-                currentUid
-        );
+    TrangThaiXuLy xuLy = report.getTrangThaiXuLy();
+    TrangThaiDuyet duyet = report.getTrangThaiDuyet();
 
-        String xuLy =
-                report.getTrangThaiXuLy();
+    // =========================
+    // BLOCK IF VERIFIED
+    // =========================
+    if (duyet == TrangThaiDuyet.VERIFIED) {
 
-        String duyet =
-                report.getTrangThaiDuyet();
+        log.warn("\n[HUY BAO CAO - BLOCKED] Report {} already VERIFIED", reportId);
 
-        if ("VERIFIED".equals(duyet)) {
-
-            log.warn(
-                    "\n[HUY BAO CAO - BỊ CHẶN]"
-                            + "\nUser: {}"
-                            + "\nReport ID: {}"
-                            + "\nLý do: Đã VERIFIED\n",
-
-                    maskUid(currentUid),
-                    reportId
-            );
-
-            return ResponseEntity.badRequest()
-                    .body(
-                            Map.of(
-                                    "message",
-                                    "Báo cáo đã được duyệt, không thể hủy."
-                            )
-                    );
-        }
-
-        if (!"CHO_XU_LY".equals(xuLy)) {
-
-            return ResponseEntity.badRequest()
-                    .body(
-                            Map.of(
-                                    "message",
-                                    "Không thể hủy báo cáo ở trạng thái hiện tại."
-                            )
-                    );
-        }
-
-        report.setTrangThaiXuLy("HUY_BO");
-
-        BaoCaoSuCo saved =
-                reportRepository.save(report);
-
-        SuCoMapResponseDTO dto =
-                suCoMapper.toMapDto(saved);
-
-        realtimeService.broadcastReport(dto);
-
-        realtimeService.refreshUserHistory(
-                currentUid
-        );
-
-        log.info(
-                "\n[HUY BAO CAO - THÀNH CÔNG]"
-                        + "\nUser: {}"
-                        + "\nReport ID: {}"
-                        + "\nXu ly cu: {}"
-                        + "\nDuyet: {}"
-                        + "\nXu ly moi: HUY_BO\n",
-
-                maskUid(currentUid),
-                reportId,
-                xuLy,
-                duyet
-        );
-
-        return ResponseEntity.ok(
-                Map.of(
+        return ResponseEntity.badRequest()
+                .body(Map.of(
                         "message",
-                        "Đã hủy báo cáo thành công"
-                )
-        );
+                        "Báo cáo đã được duyệt, không thể hủy."
+                ));
     }
+
+    // =========================
+    // ONLY ALLOW CANCEL FROM CHO_XU_LY
+    // =========================
+    if (xuLy != TrangThaiXuLy.CHO_XU_LY) {
+
+        return ResponseEntity.badRequest()
+                .body(Map.of(
+                        "message",
+                        "Không thể hủy báo cáo ở trạng thái hiện tại."
+                ));
+    }
+
+    // =========================
+    // UPDATE STATE
+    // =========================
+    report.setTrangThaiXuLy(TrangThaiXuLy.HUY_BO);
+
+    BaoCaoSuCo saved = reportRepository.save(report);
+
+    SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
+
+    realtimeService.broadcastReport(dto);
+
+    realtimeService.refreshUserHistory(currentUid);
+
+    log.info("\n[HUY BAO CAO SUCCESS] Report {}", reportId);
+
+    return ResponseEntity.ok(
+            Map.of("message", "Đã hủy báo cáo thành công")
+    );
+}
 
 }

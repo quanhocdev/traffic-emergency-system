@@ -9,6 +9,8 @@ import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeSe
 import com.example.suco.service.suco.baocao.system.validation.TrungLapBaoCaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.example.suco.model.enums.TrangThaiXuLy;
+import com.example.suco.model.enums.TrangThaiDuyet;
 
 @Service
 public class BaoCaoEnrichService {
@@ -36,44 +38,57 @@ public class BaoCaoEnrichService {
             String base64
     ) {
 
-        report.setDiaChi(
-                geocodingService.getAddress(
-                        report.getViDo(),
-                        report.getKinhDo()
-                )
+        // =========================
+        // GEO ENRICHMENT
+        // =========================
+        String address = geocodingService.getAddress(
+                report.getViDo(),
+                report.getKinhDo()
         );
+        report.setDiaChi(address);
 
-        if (base64 != null
-                && !base64.isBlank()) {
-
+        // =========================
+        // IMAGE ENRICHMENT
+        // =========================
+        if (base64 != null && !base64.isBlank()) {
             report.setHinhAnhUrl(
-                    imageStorageService
-                            .saveBase64Image(base64)
+                    imageStorageService.saveBase64Image(base64)
             );
         }
 
-        report.setTrangThaiDuyet("AI_APPROVED");
-        report.setTrangThaiXuLy("CHO_XU_LY");
+        // =========================
+        // AI INITIAL STATE (TYPE SAFE)
+        // =========================
+        report.setTrangThaiDuyet(TrangThaiDuyet.PENDING);
+        report.setTrangThaiXuLy(TrangThaiXuLy.CHO_XU_LY);
+
+        // =========================
+        // TRUST DEFAULT (before AI)
+        // =========================
         report.setDoTinCay(1);
 
+        // =========================
+        // SAVE FIRST
+        // =========================
+        BaoCaoSuCo saved = reportRepository.save(report);
 
-        BaoCaoSuCo saved =
-                reportRepository.save(report);
+        // =========================
+        // DUPLICATE / AI SCORING
+        // =========================
+        trungLapBaoCaoService.recalculateTrust(saved);
 
-        trungLapBaoCaoService
-                .recalculateTrust(saved);
+        // nếu service có modify entity
+        saved = reportRepository.save(saved);
 
-        saved =
-                reportRepository.save(saved);
-
+        // =========================
+        // REALTIME
+        // =========================
         realtimeService.broadcastReport(
-                suCoMapper
-                        .toMapDto(saved)
+                suCoMapper.toMapDto(saved)
         );
 
         realtimeService.broadcastAdminNotification(
-                "Có báo cáo mới chờ duyệt: "
-                        + saved.getMoTa()
+                "Có báo cáo mới chờ AI xử lý: " + saved.getMoTa()
         );
 
         return saved;

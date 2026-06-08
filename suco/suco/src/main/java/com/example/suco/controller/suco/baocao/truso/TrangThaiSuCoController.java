@@ -1,6 +1,7 @@
 package com.example.suco.controller.suco.baocao.truso;
 
 import com.example.suco.dto.suco.baocao.TruSoSuCoDetailResponseDTO;
+import com.example.suco.dto.suco.baocao.truso.TrangThaiSuCoRequestDTO;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
@@ -72,18 +73,21 @@ public List<TruSoSuCoDetailResponseDTO> getSuCoHistory(
 
 
     @PatchMapping("/cap-nhat-trang-thai/{id}")
-    public ResponseEntity<?> updateSuCoStatus(
-            @PathVariable Long id,
-            @RequestBody Map<String, String> body,
-            HttpSession session) {
-        String status = body.get("status");
-        TruSo current = (TruSo) session.getAttribute("currentTruSo");
-        if (current == null) {
-            return ResponseEntity.status(401)
-                    .body(Map.of("message", "Vui lòng đăng nhập tài khoản trụ sở!"));
-        }
-        Map<String, Object> result =
-                trangThaiServiceService.updateSuCoStatus(id, status, current);
-        return ResponseEntity.ok(result);
+public ResponseEntity<?> updateSuCoStatus(
+        @PathVariable Long id,
+        @RequestBody TrangThaiSuCoRequestDTO body,
+        HttpSession session) {
+
+    TruSo current = (TruSo) session.getAttribute("currentTruSo");
+
+    if (current == null) {
+        return ResponseEntity.status(401)
+                .body(Map.of("message", "Vui lòng đăng nhập tài khoản trụ sở!"));
     }
+
+    Map<String, Object> result =
+            trangThaiServiceService.updateSuCoStatus(id, body.getStatus(), current);
+
+    return ResponseEntity.ok(result);
+}
 }
