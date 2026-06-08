@@ -62,6 +62,8 @@ private TruSoService truSoService;
     var sos = tinHieuSOSRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy SOS"));
 
+
+        // Lấy thông tin trụ sở tiếp nhận (nếu có)
     TruSoMapDto truSoDto = null;
 
     if (sos.getIdTruSoTiepNhan() != null) {
@@ -83,16 +85,12 @@ private TruSoService truSoService;
         }
     }
 
-    UserInfoResponseDTO userInfo =
-            new UserInfoResponseDTO();
+    // Lấy thông tin user
+    UserInfoResponseDTO userInfo = new UserInfoResponseDTO();
 
-    userInfo.setName(
-            sos.getUser().getName()
-    );
+    userInfo.setName(sos.getUser().getName());
 
-    userInfo.setEmail(
-            sos.getUser().getEmail()
-    );
+    userInfo.setEmail(sos.getUser().getEmail());
 
     userInfo.setVip(
             vipService.checkVip(

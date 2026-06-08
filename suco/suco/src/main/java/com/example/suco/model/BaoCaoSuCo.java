@@ -2,8 +2,13 @@ package com.example.suco.model;
 
 import java.time.LocalDateTime;
 
+import com.example.suco.model.enums.MucDoSuCo;
+import com.example.suco.model.enums.TrangThaiDuyet;
+import com.example.suco.model.enums.TrangThaiXuLy;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,6 +19,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.EnumType;
 
 @Entity
 @Table(name = "bao_cao_su_co")
@@ -51,15 +57,20 @@ public class BaoCaoSuCo {
     private boolean aiXacNhan = false;
 
     // PENDING, AI_APPROVED, VERIFIED, REJECTED
-    private String trangThaiDuyet = "PENDING";
+    @Enumerated(EnumType.STRING)
+    @Column(name = "trang_thai_duyet")
+    private TrangThaiDuyet trangThaiDuyet = TrangThaiDuyet.PENDING;
 
     // NONE, LOW, MEDIUM, HIGH
-    private String mucDoNghiemTrong = "NONE";
+    @Enumerated(EnumType.STRING)
+    @Column(name = "muc_do_su_co")
+    private MucDoSuCo mucDoSuCo = MucDoSuCo.NONE;
 
     private LocalDateTime thoiGianTao = LocalDateTime.now();
 
-    @Column(name = "trang_thai_xu_ly")
-private String trangThaiXuLy = "CHO_XU_LY";
+    @Enumerated(EnumType.STRING)
+@Column(name = "trang_thai_xu_ly")
+private TrangThaiXuLy trangThaiXuLy = TrangThaiXuLy.CHO_XU_LY;
 
 
 
@@ -101,11 +112,16 @@ private String diaChi;
     public boolean isAiXacNhan() { return aiXacNhan; }
     public void setAiXacNhan(boolean aiXacNhan) { this.aiXacNhan = aiXacNhan; }
 
-    public String getTrangThaiDuyet() { return trangThaiDuyet; }
-    public void setTrangThaiDuyet(String trangThaiDuyet) { this.trangThaiDuyet = trangThaiDuyet; }
+    public TrangThaiDuyet getTrangThaiDuyet() { return trangThaiDuyet; }
+    public void setTrangThaiDuyet(TrangThaiDuyet trangThaiDuyet) { this.trangThaiDuyet = trangThaiDuyet; }
 
-    public String getMucDoNghiemTrong() { return mucDoNghiemTrong; }
-    public void setMucDoNghiemTrong(String mucDoNghiemTrong) { this.mucDoNghiemTrong = mucDoNghiemTrong; }
+   public MucDoSuCo getMucDoSuCo() {
+        return mucDoSuCo;
+    }
+
+    public void setMucDoSuCo(MucDoSuCo mucDoSuCo) {
+        this.mucDoSuCo = mucDoSuCo;
+    }
 
     public String getNguonBaoCao() { return nguonBaoCao; }
     public void setNguonBaoCao(String nguonBaoCao) { this.nguonBaoCao = nguonBaoCao; }
@@ -122,9 +138,13 @@ public void setTruSoTiepNhan(TruSo truSoTiepNhan) {
     this.truSoTiepNhan = truSoTiepNhan;
 }
     
-    public String getTrangThaiXuLy() { return trangThaiXuLy; }
-    public void setTrangThaiXuLy(String trangThaiXuLy) { this.trangThaiXuLy = trangThaiXuLy; }
-    
+  public TrangThaiXuLy getTrangThaiXuLy() {
+    return trangThaiXuLy;
+}
+
+public void setTrangThaiXuLy(TrangThaiXuLy trangThaiXuLy) {
+    this.trangThaiXuLy = trangThaiXuLy;
+}  
     public Integer getDoTinCay() { return doTinCay; }
     public void setDoTinCay(Integer doTinCay) { this.doTinCay = doTinCay; }
 }
