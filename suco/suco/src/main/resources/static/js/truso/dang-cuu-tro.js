@@ -313,10 +313,8 @@ function formatItem(s, type) {
 
     itemType: type,
 
-    // 🌟 SỬA TẠI ĐÂY: Check VIP từ DTO nguoiGui.vip
     isVip: type === "SOS" ? (s.nguoiGui ? s.nguoiGui.vip : false) : false,
 
-    // 🌟 SỬA TẠI ĐÂY: Hóa đơn đã an toàn 100% nhờ DTO phẳng
     hoaDon: type === "SOS" ? s.hoaDon || null : null,
 
     thanhToan: type === "SOS" ? s.thanhToan || null : null,

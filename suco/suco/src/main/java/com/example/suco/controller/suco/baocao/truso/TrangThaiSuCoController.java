@@ -3,8 +3,9 @@ package com.example.suco.controller.suco.baocao.truso;
 import com.example.suco.dto.suco.baocao.TruSoSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.truso.TrangThaiSuCoRequestDTO;
 import com.example.suco.mapper.SuCoMapper;
+import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoTruSoRepository;
 import com.example.suco.service.suco.baocao.truso.TrangThaiSuCoService;
 import jakarta.servlet.http.HttpSession;
 
@@ -19,7 +20,7 @@ import java.util.Map;
 public class TrangThaiSuCoController {
 
     @Autowired
-    private BaoCaoSuCoRepository repo;
+private SuCoTruSoRepository repo;
 
 @Autowired
 private SuCoMapper suCoMapper;
@@ -39,22 +40,23 @@ public List<TruSoSuCoDetailResponseDTO> getSuCoHienTai(
         return List.of();
     }
 
-    List<TruSoSuCoDetailResponseDTO> allActive =
-            repo.findAll()
-                    .stream()
-                    .map(suCoMapper::toTruSoDetailDto)
-                    .toList();
+    List<BaoCaoSuCo> data;
 
-    if (status != null && !status.isEmpty()) {
-        return allActive.stream()
-                .filter(s -> s.getTrangThaiXuLy() != null
-                        && s.getTrangThaiXuLy().equalsIgnoreCase(status))
-                .toList();
+    if ("CHO_XU_LY".equalsIgnoreCase(status)) {
+        data = repo.findPendingByTruSo(current.getId());
+
+    } else if ("DANG_XU_LY".equalsIgnoreCase(status)) {
+        data = repo.findActiveByTruSo(current.getId());
+
+    } else {
+        data = repo.findActiveByTruSo(current.getId());
     }
 
-    return allActive;
+    return data.stream()
+            .map(suCoMapper::toTruSoDetailDto)
+            .toList();
 }
-  
+
     @GetMapping("/lich-su")
 public List<TruSoSuCoDetailResponseDTO> getSuCoHistory(
         HttpSession session

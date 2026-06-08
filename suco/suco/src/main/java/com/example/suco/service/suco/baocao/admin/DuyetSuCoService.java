@@ -108,10 +108,8 @@ public void verifyReport(Long reportId, boolean isCorrect) {
                 report.getKinhDo()
         );
 
+        report.setTruSoTiepNhan(truSo);
         if (truSo != null) {
-            report.setTruSoTiepNhan(truSo);
-            report.setTrangThaiXuLy(TrangThaiXuLy.DANG_XU_LY);
-        } else {
             report.setTrangThaiXuLy(TrangThaiXuLy.CHO_XU_LY);
         }
 
