@@ -142,31 +142,59 @@ function loadPendingSOS() {
 
 // --- SỰ CỐ VIEW ---
 function renderSuCoItem(suCo) {
-  const time = suCo.createdAt || suCo.thoiGian || "";
+  const id = suCo.id;
+  const tenLoai = suCo.tenLoaiSuCo || suCo.tenLoai || "Sự cố";
   const displayAddress = suCo.diaChi || `${suCo.viDo}, ${suCo.kinhDo}`;
 
+  // Lấy số lượt báo cáo trùng lặp / xác nhận thực tế (mặc định là 0 nếu chưa có ai xác nhận thêm)
+  const doTinCay = suCo.doTinCay !== undefined ? suCo.doTinCay : 0;
+
+  const time =
+    suCo.createdAt || suCo.thoiGianTao || suCo.thoiGian
+      ? new Date(
+          suCo.createdAt || suCo.thoiGianTao || suCo.thoiGian,
+        ).toLocaleString("vi-VN")
+      : "Vừa xong";
+
   return `
-            <div class="col-12 mb-2" id="suco-card-${suCo.id}" data-lat="${suCo.viDo || ""}" data-lng="${suCo.kinhDo || ""}" data-json='${encodeURIComponent(JSON.stringify(suCo))}'>
-              <div class="card card-sos">
-                <div class="d-flex align-items-center w-100">
-                  <span class="badge-pending me-3" style="min-width: 100px; text-align: center;">
-                      ${suCo.tenLoaiSuCo || suCo.tenLoai || "Sự cố"}
+    <div class="col-12 mb-2" id="suco-card-${id}" 
+         data-lat="${suCo.viDo || ""}" 
+         data-lng="${suCo.kinhDo || ""}" 
+         data-json='${encodeURIComponent(JSON.stringify(suCo))}'>
+      <div class="card card-sos" style="padding: 12px;">
+        <div class="d-flex align-items-center w-100">
+          
+          <span class="badge bg-secondary me-3" style="min-width: 110px; text-align: center; padding: 8px; font-size: 0.85rem;">
+              <i class="fa-solid fa-triangle-exclamation"></i> ${tenLoai}
+          </span>
+          
+          <div class="flex-grow-1 d-flex align-items-center flex-wrap" style="gap: 20px;">
+              
+              <span class="text-truncate" style="max-width: 350px;" title="${displayAddress}">
+                  <i class="fa-solid fa-location-dot text-danger"></i>
+                  <strong>Địa chỉ:</strong> ${displayAddress}
+              </span>
+              
+              <div class="d-flex align-items-center" style="gap: 6px;">
+                  <i class="fa-solid fa-shield-halved text-primary"></i>
+                  <strong>Độ tin cậy:</strong> 
+                  <span class="badge bg-light text-primary border border-primary fw-bold" style="font-size: 0.85rem; padding: 3px 8px;">
+                      ${doTinCay} lượt báo cáo
                   </span>
-                  <div class="flex-grow-1 d-flex align-items-center" style="gap:12px;">
-                      <span class="text-truncate" style="max-width: 350px;" title="${displayAddress}">
-                          <i class="fa-solid fa-map-pin text-secondary"></i>
-                          <strong>Địa chỉ:</strong> ${displayAddress}
-                      </span>
-                      <span class="text-truncate" style="max-width: 250px;">
-                          <strong>Mô tả:</strong> ${suCo.moTa || "Không có"}
-                          <i class="fa-solid fa-circle-info info-icon" title="Xem chi tiết" onclick="openSuCoDetail(${suCo.id})"></i>
-                      </span>
-                  </div>
-                  <small class="text-muted ms-auto me-3">${time}</small>
-                  <button class="btn btn-secondary btn-sm" onclick="doiTrangThaiSuCo(${suCo.id}, 'DANG_XU_LY')">Tiếp nhận xử lý</button>
-                </div>
+                  <i class="fa-solid fa-circle-info info-icon text-secondary ms-1" style="cursor:pointer;" title="Xem chi tiết" onclick="openSuCoDetail(${id})"></i>
               </div>
-            </div>`;
+
+          </div>
+          
+          <small class="text-muted ms-auto me-3">${time}</small>
+          
+          <button class="btn btn-warning btn-sm fw-bold px-3 shadow-sm" onclick="doiTrangThaiSuCo(${id}, 'DANG_XU_LY')">
+              <i class="fa-solid fa-truck-fire"></i> XUẤT PHÁT
+          </button>
+          
+        </div>
+      </div>
+    </div>`;
 }
 function loadPendingSuCo() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
@@ -620,50 +648,167 @@ function openSuCoDetail(id) {
   try {
     obj = JSON.parse(decodeURIComponent(raw));
   } catch (e) {
-    console.error(e);
+    console.error("Lỗi parse JSON sự cố:", e);
+    return;
   }
+
   const panel = document.getElementById("detail-panel");
   const body = document.getElementById("detail-body");
   if (!panel || !body) return;
+
   if (!obj) {
-    body.innerHTML = '<div class="text-muted">No data</div>';
-  } else {
-    const img = obj.hinhAnhUrl
-      ? `<img src="${obj.hinhAnhUrl}" style="width:100%;border-radius:6px;margin-bottom:8px"/>`
-      : "";
-    body.innerHTML = `
-                  <div style="font-weight:700;margin-bottom:6px">Sự cố #${
-                    obj.id
-                  }</div>
-                  <div style="margin-bottom:6px"><strong>Loại:</strong> ${
-                    obj.tenLoaiSuCo || obj.tenLoai || "N/A"
-                  }</div>
-                  <div style="margin-bottom:6px"><strong>Địa chỉ:</strong> ${obj.diaChi || obj.viDo + ", " + obj.kinhDo}</div>
-                  <div style="margin-bottom:6px"><strong>Mô tả:</strong> ${
-                    obj.moTa || "Không"
-                  }</div>
-                  <div style="margin-bottom:6px"><strong>Mức độ:</strong> ${
-                    obj.mucDoNghiemTrong || obj.mucDo || "N/A"
-                  }</div>
-                  ${img}
-                  <div style="margin-top:8px"><button class="btn btn-secondary" onclick="doiTrangThaiSuCo(${
-                    obj.id
-                  }, 'DANG_XU_LY')">Tiếp nhận xử lý</button></div>
-                `;
+    body.innerHTML =
+      '<div class="text-muted">Không tìm thấy dữ liệu chi tiết sự cố</div>';
+    return;
   }
+
+  const tenLoai = obj.tenLoaiSuCo || obj.tenLoai || "Sự cố";
+  const moTa = obj.moTa || "Không có mô tả chi tiết";
+  const icon = obj.iconUrl || "https://placehold.co/24x24?text=⚠";
+  const mucDo = obj.mucDoNghiemTrong || obj.mucDo || "LOW";
+  const trangThai = obj.trangThaiXuLy || obj.trangThai || "CHO_XU_LY";
+  const diaChi = obj.diaChi || `${obj.viDo}, ${obj.kinhDo}`;
+  const tenNguoiBao = obj.tenNguoiBao || obj.reporterName || "Khách vãng lai";
+
+  // Số lượt báo cáo trùng lặp thực tế
+  const doTinCay = obj.doTinCay !== undefined ? obj.doTinCay : 0;
+
+  const thoiGian =
+    obj.createdAt || obj.thoiGianTao || obj.thoiGian
+      ? new Date(
+          obj.createdAt || obj.thoiGianTao || obj.thoiGian,
+        ).toLocaleString("vi-VN")
+      : "Vừa xong";
+
+  const fixUrlLocal = (path) => {
+    if (!path) return null;
+    if (path.startsWith("/uploads") || path.startsWith("http")) return path;
+    return `/uploads/suco/${path}`;
+  };
+  const imgUrl = fixUrlLocal(obj.hinhAnhUrl || obj.hinhAnh);
+
+  const badgeColor =
+    mucDo === "HIGH" ? "#ef4444" : mucDo === "MEDIUM" ? "#f59e0b" : "#10b981";
+
+  const statusLabels = {
+    CHO_XU_LY: "Chờ xử lý",
+    DANG_XU_LY: "Đang xử lý",
+    HOAN_THANH: "Hoàn thành",
+    HUY_BO: "Hủy bỏ",
+  };
+
+  let actionButtonHtml = "";
+  if (trangThai === "CHO_XU_LY") {
+    actionButtonHtml = `
+        <button class="btn btn-warning w-100 p-2 fw-bold" onclick="doiTrangThaiSuCo(${obj.id}, 'DANG_XU_LY')">
+            <i class="fa-solid fa-truck-fire"></i> XUẤT PHÁT NGAY
+        </button>`;
+  } else if (trangThai === "DANG_XU_LY") {
+    actionButtonHtml = `
+        <div style="border: 1px dashed #f59e0b; padding: 12px; border-radius: 8px; background: #fffdf5;">
+            <div style="font-weight:bold; margin-bottom:6px; color:#b45309; font-size:0.8rem;">CẬP NHẬT MỨC ĐỘ NGUY HIỂM</div>
+            <select id="select-muc-do-${obj.id}" class="form-select form-select-sm mb-2">
+                <option value="LOW" ${mucDo === "LOW" ? "selected" : ""}>THẤP (LOW)</option>
+                <option value="MEDIUM" ${mucDo === "MEDIUM" ? "selected" : ""}>TRUNG BÌNH (MEDIUM)</option>
+                <option value="HIGH" ${mucDo === "HIGH" ? "selected" : ""}>CAO (HIGH)</option>
+            </select>
+            <button class="btn btn-sm btn-outline-warning w-100 mb-1" style="font-size: 0.8rem;" onclick="updateMucDo(${obj.id})">
+                <i class="fa-solid fa-pen-to-square"></i> Cập nhật mức độ
+            </button>
+            <button class="btn btn-sm btn-success w-100 fw-bold" onclick="doiTrangThaiSuCo(${obj.id}, 'HOAN_THANH')">
+                <i class="fa-solid fa-check-double"></i> XÁC NHẬN HOÀN THÀNH
+            </button>
+        </div>`;
+  } else {
+    actionButtonHtml = `
+        <div class="alert alert-success text-center p-2 fw-bold mb-0" style="font-size:0.85rem;">
+            <i class="fa-solid fa-circle-check"></i> SỰ CỐ ĐÃ XỬ LÝ HOÀN THÀNH
+        </div>`;
+  }
+
+  body.innerHTML = `
+      <div class="info-group mb-2">
+          <div style="font-size: 0.75rem; color: #64748b; font-weight: bold;">NGƯỜI BÁO SỰ CỐ TÀI CHỖ</div>
+          <div style="font-weight: bold; font-size: 1.05rem; color: #1e293b;">${tenNguoiBao}</div>
+      </div>
+
+      <div class="info-group mb-2">
+          <div style="font-size: 0.75rem; color: #64748b; font-weight: bold;">MỨC ĐỘ TIN CẬY THỰC TẾ</div>
+          <div style="font-size: 0.95rem; font-weight: bold; color: #2563eb; margin-top: 3px;">
+              <i class="fa-solid fa-users text-primary"></i> Đã nhận được <span style="font-size:1.1rem; color:#1d4ed8;">${doTinCay}</span> lượt báo cáo trùng lặp
+          </div>
+      </div>
+
+      <div class="info-group mb-2">
+          <div style="font-size: 0.75rem; color: #64748b; font-weight: bold;">LOẠI SỰ CỐ</div>
+          <div style="font-weight: bold; display: flex; align-items: center; gap: 8px; color: #0f172a; margin-top:3px;">
+              <img src="${icon}" width="20" height="20" onerror="this.src='https://placehold.co/24x24?text=⚠'">
+              <span>${tenLoai}</span>
+          </div>
+      </div>
+
+      <div class="info-group mb-2">
+          <div style="font-size: 0.75rem; color: #64748b; font-weight: bold;">MỨC ĐỘ & TRẠNG THÁI</div>
+          <div style="margin-top: 3px;">
+              <span style="background: ${badgeColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">${mucDo}</span>
+              <span style="background: #e2e8f0; color: #475569; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px; font-weight: bold;">${statusLabels[trangThai] || trangThai}</span>
+          </div>
+          <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
+              <i class="fa-regular fa-clock"></i> Thời gian báo cáo: ${thoiGian}
+          </div>
+      </div>
+
+      <div class="info-group mb-2">
+          <div style="font-size: 0.75rem; color: #64748b; font-weight: bold;">ĐỊA CHỈ HIỆN TRƯỜNG</div>
+          <div style="font-size: 0.9rem; color: #334155; margin-top: 2px;"><i class="fa-solid fa-location-dot text-danger"></i> ${diaChi}</div>
+      </div>
+
+      <div class="info-group mb-2">
+          <div style="font-size: 0.75rem; color: #64748b; font-weight: bold;">MÔ TẢ CHI TIẾT</div>
+          <div style="background: #fffbeb; padding: 10px; border-radius: 6px; border-left: 4px solid #f59e0b; font-style: italic; color: #78350f; margin-top: 2px; font-size: 0.9rem;">
+              "${moTa}"
+          </div>
+      </div>
+
+      <div class="info-group mb-3">
+          <div style="font-size: 0.75rem; color: #64748b; font-weight: bold;">HÌNH ẢNH HIỆN TRƯỜNG</div>
+          ${
+            imgUrl
+              ? `<img src="${imgUrl}" style="width:100%; border-radius:8px; margin-top:5px; cursor:pointer;" onerror="this.src='https://placehold.co/400x300?text=Không+tìm+thấy+hình+ảnh'" onclick="window.open(this.src)">`
+              : '<div style="color: #94a3b8; font-style: italic; font-size:0.85rem; margin-top:3px;">Không có ảnh đính kèm</div>'
+          }
+      </div>
+
+      <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+          ${actionButtonHtml}
+      </div>
+  `;
+
   panel.style.display = "block";
-  const overlayElem2 = document.getElementById("overlay");
-  if (overlayElem2) overlayElem2.style.display = "block";
+  const overlayElem = document.getElementById("overlay");
+  if (overlayElem) overlayElem.style.display = "block";
 }
-
 function doiTrangThaiSuCo(id, status) {
-  if (!confirm("Xác nhận tiếp nhận xử lý sự cố này?")) return;
+  // 1. Trích xuất tọa độ từ card sự cố tương tự SOS
+  const card = document.getElementById(`suco-card-${id}`);
+  let lat = "",
+    lng = "";
+  if (card) {
+    lat = card.getAttribute("data-lat");
+    lng = card.getAttribute("data-lng");
+  }
 
-  // Giao diện chờ
-  const btn = event.target; // Lấy nút vừa bấm
-  if (btn) {
+  if (status === "DANG_XU_LY") {
+    if (!confirm("Xác nhận Đội cứu trợ XUẤT PHÁT để xử lý sự cố này?")) return;
+  } else {
+    if (!confirm("Xác nhận sự cố này ĐÃ HOÀN THÀNH xử lý thực tế?")) return;
+  }
+
+  const btn = event?.target;
+  if (btn && btn.tagName === "BUTTON") {
     btn.disabled = true;
-    btn.innerText = "Đang xử lý...";
+    btn.innerHTML =
+      '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
   }
 
   fetch(`/su-co/cap-nhat-trang-thai/${id}`, {
@@ -671,40 +816,74 @@ function doiTrangThaiSuCo(id, status) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      status: status,
-    }),
+    body: JSON.stringify({ status: status }),
   })
     .then((res) => {
       if (!res.ok) throw new Error("Lỗi Server: " + res.status);
       return res.json().catch(() => ({}));
     })
     .then(() => {
-      alert("Tiếp nhận thành công! Đang chuyển đến danh sách cứu trợ.");
-      window.location.href = "/truso/dang-cuu-tro";
+      alert(
+        status === "DANG_XU_LY"
+          ? "Xuất phát thành công! Hệ thống đang thiết lập lộ trình."
+          : "Đã cập nhật trạng thái hoàn thành!",
+      );
+
+      if (status === "DANG_XU_LY") {
+        // TÌM KIẾM BẢN ĐỒ NGAY TẠI TRANG HIỆN TẠI
+        if (typeof map !== "undefined" && map && lat && lng) {
+          const kDo = parseFloat(lng);
+          const vDo = parseFloat(lat);
+
+          map.flyTo({
+            center: [kDo, vDo],
+            zoom: 17,
+            speed: 1.2,
+          });
+
+          if (typeof drawRoute === "function") {
+            drawRoute(kDo, vDo);
+          }
+          if (typeof closeDetail === "function") closeDetail();
+        } else {
+          // CHUYỂN HƯỚNG RA MAP TRANG CHỦ (Sửa từ /truso/dang-cuu-tro thành /truso/trang-chu)
+          // Truyền đúng tham số suCoId để hàm handleRedirectParams() ở trang chủ bắt được và hiển thị panel
+          window.location.href = `/truso/trang-chu?toLat=${lat}&toLng=${lng}&suCoId=${id}`;
+        }
+      } else {
+        window.location.reload();
+      }
     })
     .catch((err) => {
-      console.error("Lỗi:", err);
-      alert("Không thể tiếp nhận. Vui lòng thử lại.");
-      if (btn) {
+      console.error("Lỗi cập nhật trạng thái sự cố:", err);
+      alert("Không thể cập nhật. Vui lòng kiểm tra lại.");
+      if (btn && btn.tagName === "BUTTON") {
         btn.disabled = false;
-        btn.innerText = "Tiếp nhận xử lý";
+        btn.innerHTML =
+          status === "DANG_XU_LY"
+            ? '<i class="fa-solid fa-truck-fire"></i> XUẤT PHÁT'
+            : "Xác nhận hoàn thành";
       }
     });
 }
-
-setInterval(() => {
-  document.getElementById("clock").innerText = new Date().toLocaleTimeString();
-}, 1000);
-
 function confirmRescue(id) {
-  if (!confirm("Xác nhận tiếp nhận cứu trợ cho ca này?")) return;
+  // 1. Lấy tọa độ từ card SOS để truyền sang bản đồ trang chủ
+  const card = document.getElementById("sos-card-" + id);
+  let lat = "",
+    lng = "";
+  if (card) {
+    lat = card.getAttribute("data-lat");
+    lng = card.getAttribute("data-lng");
+  }
+
+  if (!confirm("Xác nhận tiếp nhận cứu trợ và XUẤT PHÁT xử lý ca SOS này?"))
+    return;
 
   const btn = document.getElementById("btn-accept-" + id);
-
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+    btn.innerHTML =
+      '<i class="fa-solid fa-spinner fa-spin"></i> Đang điều phối xe...';
   }
 
   fetch(`/sos/cap-nhat-trang-thai/${id}`, {
@@ -718,18 +897,22 @@ function confirmRescue(id) {
   })
     .then((res) => {
       if (!res.ok) throw new Error("Lỗi server");
-      return res.json();
+      return res.json().catch(() => ({}));
     })
     .then((data) => {
       console.log("ACCEPT RESULT =", data);
+      alert(
+        "Tiếp nhận SOS thành công! Hệ thống đang thiết lập lộ trình di chuyển.",
+      );
 
-      window.location.href = "/truso/trang-chu?focusSos=" + id;
+      // 2. CHUYỂN HƯỚNG VÀ TRUYỀN THAM SỐ CHUẨN ĐỂ TRANG CHỦ TỰ VẼ ĐƯỜNG
+      // Đổi sang '/truso/trang-chu' hoặc '/truso/dang-cuu-tro' tùy thuộc vào trang nào chứa Mapbox của bạn
+      const targetUrl = "/truso/trang-chu";
+      window.location.href = `${targetUrl}?toLat=${lat}&toLng=${lng}&sosId=${id}`;
     })
     .catch((err) => {
       console.error(err);
-
       alert("Có lỗi kết nối hệ thống.");
-
       if (btn) {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-check"></i> Tiếp nhận';
