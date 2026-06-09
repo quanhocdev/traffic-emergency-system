@@ -92,4 +92,29 @@ public ResponseEntity<?> updateSuCoStatus(
 
     return ResponseEntity.ok(result);
 }
+@GetMapping("/chi-tiet/{id}")
+public ResponseEntity<?> getChiTietSuCoChoTruSo(
+        @PathVariable Long id,
+        HttpSession session) {
+
+    // 1. Kiểm tra Trụ sở đã đăng nhập chưa
+    TruSo current = (TruSo) session.getAttribute("currentTruSo");
+    if (current == null) {
+        return ResponseEntity.status(401)
+                .body(Map.of("message", "Vui lòng đăng nhập tài khoản trụ sở!"));
+    }
+
+    // 2. Tìm kiếm thực thể sự cố từ Repository của Trụ sở
+    // Sử dụng repo (SuCoTruSoRepository) có sẵn trong Controller của bạn
+    BaoCaoSuCo suCo = repo.findById(id).orElse(null);
+    if (suCo == null) {
+        return ResponseEntity.status(404)
+                .body(Map.of("message", "Không tìm thấy sự cố này!"));
+    }
+
+    // 3. Map thành DTO chuẩn hiển thị đầy đủ chi tiết mà bạn đã gửi ở câu trước
+    TruSoSuCoDetailResponseDTO dto = suCoMapper.toTruSoDetailDto(suCo);
+
+    return ResponseEntity.ok(dto);
+}
 }

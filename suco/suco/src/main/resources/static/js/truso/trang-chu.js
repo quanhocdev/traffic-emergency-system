@@ -89,34 +89,34 @@ function showSOSDetail(item) {
   const content = document.getElementById("panel-content");
   panel.style.display = "flex";
 
-  const user = item.user || {};
+  const user = item.nguoiGui || {};
   const userName = user.name || "Khách vãng lai";
   const userEmail = user.email || "Không có email";
-  const userPoints = user.totalPoints || 0;
-  const isPriority = userPoints >= 500;
+
+  // 2. SỬA TẠI ĐÂY: Ăn theo thuộc tính vip (boolean) từ backend trả về
+  const isPriority = user.vip === true;
 
   const id = item.id;
   const kinhDo = (item.kinhDo || 0).toFixed(6);
   const viDo = (item.viDo || 0).toFixed(6);
   const ghiChu = item.ghiChu || "Không có ghi chú";
-  const thoiGian = item.createdAt
-    ? new Date(item.createdAt).toLocaleString("vi-VN")
+  const thoiGian = item.thoiGianTao
+    ? new Date(item.thoiGianTao).toLocaleString("vi-VN")
     : "Vừa xong";
+
   const trangThai = item.trangThai || "CHO_XU_LY";
 
   // SỬA TẠI ĐÂY: Logic fix URL chuẩn
   const fixUrl = (path) => {
     if (!path) return null;
-    // Nếu path đã bắt đầu bằng /uploads thì trả về luôn, không nối thêm gì cả
     if (path.startsWith("/uploads") || path.startsWith("http")) {
       return path;
     }
-    // Chỉ nối thêm folder nếu path chỉ là tên file đơn thuần
     return `/uploads/sos/${path}`;
   };
 
-  const imgUrl = fixUrl(item.hinhAnh);
-  const audioUrl = fixUrl(item.ghiAm);
+  const imgUrl = fixUrl(item.hinhAnhUrl);
+  const audioUrl = fixUrl(item.ghiAmUrl);
 
   const statusLabel = {
     CHO_XU_LY: "Chờ xử lý",
@@ -188,120 +188,165 @@ function showSOSDetail(item) {
 }
 
 function showSuCoDetail(item) {
+  console.log("Dữ liệu sự cố từ TruSoSuCoDetailResponseDTO:", item);
+
   const panel = document.getElementById("sos-detail-panel");
   const content = document.getElementById("panel-content");
   panel.style.display = "flex";
 
+  // --- 1. MAPPING ĐÚNG 100% THUỘC TÍNH TỪ DTO MỚI ---
+  const id = item.id;
   const tenLoai = item.tenLoai || "Sự cố";
   const moTa = item.moTa || "Không có mô tả";
-  const icon = item.iconUrl || "https://placehold.co/30x30?text=";
-  const mucDo = item.mucDoNghiemTrong || "NORMAL";
+  const icon = item.iconUrl || "https://placehold.co/24x24?text=⚠";
+  const mucDo = item.mucDoNghiemTrong || "LOW";
+  const trangThai = item.trangThaiXuLy || "CHO_XU_LY"; // Đảm bảo Backend trả về đúng: CHO_XU_LY, DANG_XU_LY, HOAN_THANH
+  const diaChi = item.diaChi || "Không có địa chỉ";
+  const tenNguoiBao = item.tenNguoiBao || "Khách vãng lai";
+  const doTinCay = item.doTinCay !== undefined ? item.doTinCay : 0; // Số từ 0 - 100 hoặc số lượt vote
 
-  // Lưu ý: Dùng trangThaiXuLy để điều khiển nút bấm
-  const trangThai = item.trangThaiXuLy || "CHO_XU_LY";
-  const imgUrl = item.hinhAnhUrl;
+  // Xử lý hiển thị ngày tháng
+  const thoiGian = item.thoiGianTao
+    ? new Date(item.thoiGianTao).toLocaleString("vi-VN")
+    : "Vừa xong";
 
+  // Logic sửa ảnh chuẩn chỉnh
+  const fixUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith("/uploads") || path.startsWith("http")) {
+      return path;
+    }
+    return `/uploads/suco/${path}`;
+  };
+  const imgUrl = fixUrl(item.hinhAnhUrl);
+
+  // Gán màu sắc badge mức độ
   const badgeColor =
     mucDo === "HIGH" ? "#ef4444" : mucDo === "MEDIUM" ? "#f59e0b" : "#10b981";
 
-  // --- BƯỚC 1: XỬ LÝ LOGIC NÚT BẤM (CẬP NHẬT) ---
+  // Map text trạng thái hiển thị tiếng Việt
+  const statusLabels = {
+    CHO_XU_LY: "Chờ xử lý",
+    DANG_XU_LY: "Đang xử lý",
+    HOAN_THANH: "Hoàn thành",
+    HUY_BO: "Hủy bỏ",
+  };
+
+  // --- 2. LOGIC NÚT BẤM (FIX LỖI LUÔN BỊ NHẢY VÀO HOÀN THÀNH) ---
   let actionButton = "";
+
   if (trangThai === "CHO_XU_LY") {
     actionButton = `
-            <button class="btn-approve" style="background:#1f2937" onclick="doiTrangThaiSuCo(${item.id}, 'DANG_XU_LY')">
-                <i class="fa-solid fa-person-digging"></i> TIẾP NHẬN XỬ LÝ
-            </button>`;
+        <button class="btn-approve" style="background:#1f2937; width:100%; padding:12px; color:white; font-weight:bold; border:none; border-radius:6px; cursor:pointer;" 
+                onclick="doiTrangThaiSuCo(${id}, 'DANG_XU_LY')">
+            <i class="fa-solid fa-person-digging"></i> TIẾP NHẬN XỬ LÝ
+        </button>`;
   } else if (trangThai === "DANG_XU_LY") {
     actionButton = `
-            <div class="info-group" style="margin-top: 15px; border: 1px dashed #f59e0b; padding: 10px; border-radius: 8px;">
-                <div class="info-label">CẬP NHẬT MỨC ĐỘ NGUY HIỂM</div>
-                <select id="select-muc-do-${
-                  item.id
-                }" class="form-control" style="width: 100%; padding: 8px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #ddd;">
-                    <option value="LOW" ${
-                      mucDo === "LOW" ? "selected" : ""
-                    }>THẤP (LOW)</option>
-                    <option value="MEDIUM" ${
-                      mucDo === "MEDIUM" ? "selected" : ""
-                    }>TRUNG BÌNH (MEDIUM)</option>
-                    <option value="HIGH" ${
-                      mucDo === "HIGH" ? "selected" : ""
-                    }>CAO (HIGH)</option>
-                </select>
-                <button class="btn-approve" style="background:#f59e0b; margin-bottom: 8px; font-size: 0.8rem;" onclick="updateMucDo(${
-                  item.id
-                })">
-                    <i class="fa-solid fa-pen-to-square"></i> CẬP NHẬT MỨC ĐỘ
-                </button>
-                <button class="btn-approve" style="background:#10b981" onclick="doiTrangThaiSuCo(${
-                  item.id
-                }, 'HOAN_THANH')">
-                    <i class="fa-solid fa-check-double"></i> XÁC NHẬN HOÀN THÀNH
-                </button>
-            </div>`;
+        <div style="border: 1px dashed #f59e0b; padding: 12px; border-radius: 8px; background: #fffdf5;">
+            <div class="info-label" style="font-weight:bold; margin-bottom:8px; color:#b45309;">CẬP NHẬT MỨC ĐỘ NGUY HIỂM</div>
+            <select id="select-muc-do-${id}" class="form-control" style="width: 100%; padding: 8px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #ddd;">
+                <option value="LOW" ${mucDo === "LOW" ? "selected" : ""}>THẤP (LOW)</option>
+                <option value="MEDIUM" ${mucDo === "MEDIUM" ? "selected" : ""}>TRUNG BÌNH (MEDIUM)</option>
+                <option value="HIGH" ${mucDo === "HIGH" ? "selected" : ""}>CAO (HIGH)</option>
+            </select>
+            
+            <button class="btn-approve" style="background:#f59e0b; color:white; width:100%; padding:8px; margin-bottom: 8px; border:none; border-radius:5px; cursor:pointer; font-size: 0.85rem;" 
+                    onclick="updateMucDo(${id})">
+                <i class="fa-solid fa-pen-to-square"></i> CẬP NHẬT MỨC ĐỘ
+            </button>
+            
+            <button class="btn-approve" style="background:#10b981; color:white; width:100%; padding:10px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;" 
+                    onclick="doiTrangThaiSuCo(${id}, 'HOAN_THANH')">
+                <i class="fa-solid fa-check-double"></i> XÁC NHẬN HOÀN THÀNH
+            </button>
+        </div>`;
   } else {
-    // Trạng thái HOAN_THANH hoặc bất kỳ trạng thái nào khác
-    actionButton = `<div class="info-value" style="text-align:center; color: #10b981; font-weight: bold; padding: 10px; border: 1px solid #10b981; border-radius: 8px;">
-                            <i class="fa-solid fa-circle-check"></i> SỰ CỐ ĐÃ HOÀN THÀNH
-                        </div>`;
+    // Khi trangThai là 'HOAN_THANH' hoặc trạng thái đóng khác
+    actionButton = `
+        <div style="text-align:center; color: #10b981; font-weight: bold; padding: 12px; border: 1px solid #10b981; border-radius: 8px; background: #f0fdf4;">
+            <i class="fa-solid fa-circle-check"></i> SỰ CỐ ĐÃ ĐƯỢC XỬ LÝ HOÀN THÀNH
+        </div>`;
   }
 
-  // --- BƯỚC 2: GÁN VÀO INNERHTML ---
+  // --- 3. ĐỔ DỮ LIỆU VÀO HTML ---
   content.innerHTML = `
-          <div class="info-group">
-              <div class="info-label">LOẠI SỰ CỐ</div>
-              <div class="info-value" style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                  <img src="${icon}" width="24" height="24">
-                  <span>${tenLoai}</span>
+      <div class="info-group">
+          <div class="info-label">NGƯỜI BÁO SỰ CỐ</div>
+          <div class="info-value" style="font-weight: bold; font-size: 1.05rem; color: #1e293b;">${tenNguoiBao}</div>
+      </div>
+
+      <div class="info-group">
+          <div class="info-label">ĐỘ TIN CẬY (ĐÁNH GIÁ THỰC TẾ)</div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
+              <div style="flex: 1; background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden;">
+                  <div style="background: linear-gradient(90deg, #3b82f6, #10b981); width: ${Math.min(doTinCay, 100)}%; height: 100%;"></div>
               </div>
+              <span style="font-weight: bold; font-size: 0.85rem; color: #3b82f6;">${doTinCay}%</span>
           </div>
+      </div>
 
-          <div class="info-group">
-              <div class="info-label">Mức độ & Trạng thái</div>
-              <div class="info-value">
-                  <span id="badge-muc-do" style="background: ${badgeColor}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">${mucDo}</span>
-                  <span style="background: #e5e7eb; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 5px;">${trangThai}</span>
-              </div>
+      <div class="info-group">
+          <div class="info-label">LOẠI SỰ CỐ</div>
+          <div class="info-value" style="font-weight: bold; display: flex; align-items: center; gap: 8px; color: #0f172a;">
+              <img src="${icon}" width="24" height="24" onerror="this.src='https://placehold.co/24x24?text=⚠'">
+              <span>${tenLoai}</span>
           </div>
+      </div>
 
-          <div style="display: flex; gap: 15px; margin-bottom: 16px;">
-              <div style="flex: 1;">
-                  <div class="info-label">Kinh độ</div>
-                  <div class="info-value">${item.kinhDo}</div>
-              </div>
-              <div style="flex: 1;">
-                  <div class="info-label">Vĩ độ</div>
-                  <div class="info-value">${item.viDo}</div>
-              </div>
+      <div class="info-group">
+          <div class="info-label">Mức độ & Trạng thái</div>
+          <div style="margin-top: 5px;">
+              <span id="badge-muc-do" style="background: ${badgeColor}; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: bold;">${mucDo}</span>
+              <span style="background: #e2e8f0; color: #475569; padding: 3px 10px; border-radius: 4px; font-size: 11px; margin-left: 5px; font-weight: bold;">${statusLabels[trangThai] || trangThai}</span>
           </div>
-
-          <div class="info-group">
-              <div class="info-label">Mô tả chi tiết</div>
-              <div class="info-value" style="background: #fffbeb; padding: 12px; border-radius: 8px; border-left: 4px solid #f59e0b; font-style: italic;">
-                  "${moTa}"
-              </div>
+          <div style="font-size: 0.8rem; color: #64748b; margin-top: 6px;">
+              <i class="fa-regular fa-clock"></i> Thời gian: ${thoiGian}
           </div>
+      </div>
 
-          <div class="info-group">
-              <div class="info-label">Hình ảnh hiện trường</div>
-              ${
-                imgUrl
-                  ? `<img src="${imgUrl}" class="sos-image" onerror="this.src='https://placehold.co/400x300?text=Lỗi+ảnh'" onclick="window.open(this.src)">`
-                  : '<div class="info-value">Không có ảnh</div>'
-              }
+      <div class="info-group">
+          <div class="info-label">Địa chỉ hiện trường</div>
+          <div class="info-value" style="font-size: 0.9rem; color: #334155;"><i class="fa-solid fa-location-dot" style="color:#ef4444;"></i> ${diaChi}</div>
+      </div>
+
+      <div class="info-group">
+          <div class="info-label">Mô tả chi tiết</div>
+          <div class="info-value" style="background: #fffbeb; padding: 12px; border-radius: 8px; border-left: 4px solid #f59e0b; font-style: italic; color: #78350f;">
+              "${moTa}"
           </div>
+      </div>
 
-          <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
-              ${actionButton}
-          </div>
-      `;
+      <div class="info-group">
+          <div class="info-label">Hình ảnh hiện trường</div>
+          ${
+            imgUrl
+              ? `<img src="${imgUrl}" class="sos-image" style="width:100%; border-radius:8px; margin-top:5px; cursor:pointer;" onerror="this.src='https://placehold.co/400x300?text=Không+tìm+thấy+hình+ảnh'" onclick="window.open(this.src)">`
+              : '<div class="info-value" style="color: #94a3b8; font-style: italic;">Không có ảnh đính kèm</div>'
+          }
+      </div>
 
-  map.flyTo({
-    center: [parseFloat(item.kinhDo), parseFloat(item.viDo)],
-    zoom: 17,
-    speed: 1.2,
-  });
-  drawRoute(parseFloat(item.kinhDo), parseFloat(item.viDo));
+      <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+          ${actionButton}
+      </div>
+  `;
+
+  // --- 4. DI CHUYỂN BẢN ĐỒ MAPBOX ---
+  if (item.kinhDo && item.viDo) {
+    const kDo = parseFloat(item.kinhDo);
+    const vDo = parseFloat(item.viDo);
+
+    map.flyTo({
+      center: [kDo, vDo],
+      zoom: 17,
+      speed: 1.2,
+    });
+    if (typeof drawRoute === "function") {
+      drawRoute(kDo, vDo);
+    }
+  } else {
+    console.warn("Sự cố này thiếu tọa độ kinhDo hoặc viDo.");
+  }
 }
 function updateMucDo(id) {
   const mucDoSelect = document.getElementById(`select-muc-do-${id}`);
@@ -449,12 +494,41 @@ function addSOSMarker(item, type = "SOS") {
 
   activeMarkers[markerKey] = { marker, data: item, type };
 
-  el.addEventListener("click", (e) => {
+  el.addEventListener("click", async (e) => {
     e.stopPropagation();
 
     const latestData = activeMarkers[markerKey].data;
 
-    type === "SU_CO" ? showSuCoDetail(latestData) : showSOSDetail(latestData);
+    if (type === "SU_CO") {
+      try {
+        // GỌI ĐÚNG API DÀNH RIÊNG CHO TRỤ SỞ (ĐÃ VƯỢT QUA SPRING SECURITY BẰNG SESSION)
+        const res = await fetch(`/su-co/chi-tiet/${latestData.id}`);
+
+        if (res.ok) {
+          const fullDetailData = await res.json();
+          console.log(
+            "Dữ liệu chi tiết nhận được từ Session Trụ sở:",
+            fullDetailData,
+          );
+
+          // Cập nhật bộ nhớ cục bộ
+          activeMarkers[markerKey].data = fullDetailData;
+
+          // Hiển thị giao diện lên Panel với đầy đủ 100% chi tiết!
+          showSuCoDetail(fullDetailData);
+        } else {
+          const errData = await res.json();
+          console.error("Lỗi từ server:", errData.message);
+          showSuCoDetail(latestData); // Fallback data cũ nếu lỗi
+        }
+      } catch (err) {
+        console.error("Lỗi kết nối API chi tiết:", err);
+        showSuCoDetail(latestData);
+      }
+    } else {
+      // Logic xử lý dữ liệu cho SOS (Giữ nguyên của bạn)
+      showSOSDetail(latestData);
+    }
   });
 }
 async function loadIncidentDetail(id) {
