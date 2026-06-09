@@ -19,68 +19,60 @@ function formatTime(iso) {
 const handledSOS = new Set();
 
 function renderSOSItem(sos) {
-  console.log("========== SOS DEBUG ==========");
-  console.log("RAW SOS =", sos);
-  console.log("USER OBJECT =", sos.user);
-  console.log("USER JSON =", JSON.stringify(sos.user));
-  console.log("USER NAME =", sos.user?.name);
-  console.log("TOTAL POINTS =", sos.user?.totalPoints);
-  console.log("KEYS =", Object.keys(sos));
+  // Đồng bộ thông tin người gửi để tránh null lỗi
+  const user = sos.user || sos.nguoiGui || {};
+  const userName = user.name || "Khách vãng lai";
+  const userEmail = user.email || "Không có email";
+  const userPoints = user.totalPoints ?? 0;
 
-  if (!sos.user) {
-    console.warn("⚠️ SOS KHÔNG CÓ USER:", sos.id, sos);
-  }
-
-  const time = sos.createdAt
-    ? new Date(sos.createdAt).toLocaleString("vi-VN")
-    : "";
-  const userPoints = sos.user?.totalPoints ?? 0;
-  const userName = sos.user?.name ?? "NULL USER !!!";
-
-  // Logic địa chỉ: Nếu có diaChi thì dùng, không thì dùng tọa độ
+  // Trích xuất thời gian và địa chỉ
+  const time =
+    sos.createdAt || sos.thoiGianTao
+      ? new Date(sos.createdAt || sos.thoiGianTao).toLocaleString("vi-VN")
+      : "";
   const displayAddress = sos.diaChi || `${sos.viDo}, ${sos.kinhDo}`;
 
   return `
-          <div class="col-12 mb-2" id="sos-card-${sos.id}"
-               data-lat="${sos.viDo || ""}"
-               data-lng="${sos.kinhDo || ""}"
-               data-points="${userPoints}"
-               data-json='${encodeURIComponent(JSON.stringify(sos))}'>
-            <div class="card card-sos ${userPoints > 100 ? "border-primary" : ""}">
-              <div class="d-flex align-items-center w-100">
-                <span class="badge bg-warning text-dark me-2" style="min-width: 70px;">
-                  <i class="fa-solid fa-star"></i> ${userPoints} pts
-                </span>
+    <div class="col-12 mb-2" id="sos-card-${sos.id}"
+         data-lat="${sos.viDo || ""}"
+         data-lng="${sos.kinhDo || ""}"
+         data-points="${userPoints}"
+         data-json='${encodeURIComponent(JSON.stringify(sos))}'>
+      <div class="card card-sos ${userPoints > 100 ? "border-primary" : ""}" style="padding: 15px;">
+        <div class="d-flex align-items-start w-100">
+          
+          <span class="badge bg-warning text-dark me-3 mt-1" style="min-width: 70px;">
+            <i class="fa-solid fa-star"></i> ${userPoints} pts
+          </span>
 
-                <div class="flex-grow-1 d-flex flex-column">
-                    <div class="d-flex align-items-center" style="gap:12px;">
-                      <span><strong>Người gửi:</strong> ${userName}</span>
-                      <span class="text-truncate" style="max-width: 350px;" title="${displayAddress}">
-                          <i class="fa-solid fa-location-dot text-danger"></i>
-                          <strong>Địa chỉ:</strong> ${displayAddress}
-                      </span>
-                      <i class="fa-solid fa-circle-info info-icon text-primary" title="Xem chi tiết" onclick="openSOSDetail(${sos.id})"></i>
-                    </div>
-                    <div class="text-muted small">
-                      <strong>Ghi chú:</strong> ${sos.ghiChu || "Không có"}
-                    </div>
-                </div>
-
-                <small class="text-muted ms-auto me-3">${time}</small>
-
-                <div class="btn-group-action d-flex">
-                  <button id="btn-accept-${sos.id}" onclick="confirmRescue(${sos.id})" class="btn btn-primary btn-sm shadow-sm">
-                    <i class="fa-solid fa-check"></i> Tiếp nhận
-                  </button>
-                  <button id="btn-decline-${sos.id}" onclick="tuChoiTiepNhan(${sos.id})" class="btn btn-outline-secondary btn-sm">
-                    <i class="fa-solid fa-xmark"></i> Không tiếp nhận
-                  </button>
-                </div>
+          <div class="flex-grow-1 d-flex flex-column">
+              <div class="d-flex align-items-center flex-wrap mb-1" style="gap: 15px;">
+                <span style="font-size: 1.05rem;"><strong>Người gửi:</strong> ${userName}</span>
+                <span class="text-muted" style="font-size: 0.9rem;"><i class="fa-regular fa-envelope"></i> ${userEmail}</span>
+                <i class="fa-solid fa-circle-info info-icon text-primary ms-2" style="cursor:pointer;" title="Xem chi tiết" onclick="openSOSDetail(${sos.id})"></i>
               </div>
-            </div>
-          </div>`;
-}
+              
+              <div class="text-truncate mb-1" style="max-width: 100%;" title="${displayAddress}">
+                <i class="fa-solid fa-location-dot text-danger"></i>
+                <strong>Địa chỉ:</strong> ${displayAddress}
+              </div>
+          </div>
 
+          <small class="text-muted ms-auto me-3 mt-1">${time}</small>
+
+          <div class="btn-group-action d-flex mt-1">
+            <button id="btn-accept-${sos.id}" onclick="confirmRescue(${sos.id})" class="btn btn-primary btn-sm shadow-sm me-1">
+              <i class="fa-solid fa-check"></i> Tiếp nhận
+            </button>
+            <button id="btn-decline-${sos.id}" onclick="tuChoiTiepNhan(${sos.id})" class="btn btn-outline-secondary btn-sm">
+              <i class="fa-solid fa-xmark"></i> Không tiếp nhận
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>`;
+}
 // Lưu trữ interval đếm ngược cho từng SOS (để có thể clear khi cần)
 var demNguocIntervals = {};
 
@@ -507,48 +499,119 @@ function openSOSDetail(id) {
   try {
     obj = JSON.parse(decodeURIComponent(raw));
   } catch (e) {
-    console.error(e);
+    console.error("Lỗi giải mã JSON:", e);
+    return;
   }
+
   const panel = document.getElementById("detail-panel");
   const body = document.getElementById("detail-body");
   if (!panel || !body) return;
+
   if (!obj) {
-    body.innerHTML = '<div class="text-muted">No data</div>';
-  } else {
-    const imgPath = fixUrl(obj.hinhAnh);
-    const audioPath = fixUrl(obj.ghiAm);
-
-    const img = imgPath
-      ? `<img src="${imgPath}" style="width:100%;border-radius:6px;margin-bottom:8px;cursor:pointer" onclick="window.open(this.src)"/>`
-      : '<p class="text-muted small">Không có ảnh hiện trường</p>';
-
-    const audio = audioPath
-      ? `<div class="mt-2">
-                      <label class="small text-muted">Ghi âm khẩn cấp:</label>
-                      <audio controls style="width:100%"><source src="${audioPath}" type="audio/mp4"></audio>
-                     </div>`
-      : '<p class="text-muted small">Không có ghi âm</p>';
-
-    body.innerHTML = `
-                  <div style="font-weight:700;margin-bottom:6px;color:#dc3545">TÍN HIỆU SOS #${obj.id}</div>
-                  <div style="margin-bottom:6px"><strong>Người gửi:</strong> ${obj.user ? obj.user.name : "Ẩn danh"}</div>
-      <div style="margin-bottom:6px"><strong>Địa chỉ:</strong> ${obj.diaChi || obj.viDo + ", " + obj.kinhDo}</div>            <div style="margin-bottom:6px"><strong>Ghi chú:</strong> ${obj.ghiChu || "Không có"}</div>
-                  <div style="margin-bottom:12px"><strong>Thời gian:</strong> ${obj.createdAt ? new Date(obj.createdAt).toLocaleString("vi-VN") : ""}</div>
-                  <hr>
-                  ${img}
-                  ${audio}
-                  <div style="margin-top:15px">
-                      <button class="btn btn-primary w-100" onclick="confirmRescue(${obj.id})">
-                          <i class="fa-solid fa-truck-fast"></i> XÁC NHẬN CỨU TRỢ
-                      </button>
-                  </div>
-              `;
+    body.innerHTML = '<div class="text-muted">Không có dữ liệu chi tiết</div>';
+    return;
   }
+
+  // --- HÀM FIXED URL ĐỒNG BỘ TỪ TRANG CHỦ ---
+  const fixUrlLocal = (path) => {
+    if (!path) return null;
+    if (path.startsWith("/uploads") || path.startsWith("http")) {
+      return path;
+    }
+    return `/uploads/sos/${path}`;
+  };
+
+  // --- LOGIC MAPPING THÔNG MINH (Chống lỗi lệch tên trường giữa các trang) ---
+  const user = obj.user || obj.nguoiGui || {};
+  const userName = user.name || "Khách vãng lai";
+  const userEmail = user.email || "Không có email";
+  const isPriority = user.vip === true || obj.isVip === true;
+
+  // Hỗ trợ cả trường hinhAnh (Trang quản lý) và hinhAnhUrl (Trang chủ)
+  const rawImg = obj.hinhAnhUrl || obj.hinhAnh;
+  const rawAudio = obj.ghiAmUrl || obj.ghiAm;
+  const imgUrl = fixUrlLocal(rawImg);
+  const audioUrl = fixUrlLocal(rawAudio);
+
+  const ghiChu = obj.ghiChu || "Không có ghi chú hiện trường";
+  const trangThai = obj.trangThai || obj.status || "CHO_XU_LY";
+  const displayAddress = obj.diaChi || `${obj.viDo}, ${obj.kinhDo}`;
+  const thoiGian =
+    obj.createdAt || obj.thoiGianTao
+      ? new Date(obj.createdAt || obj.thoiGianTao).toLocaleString("vi-VN")
+      : "Vừa xong";
+
+  const statusLabel = {
+    CHO_XU_LY: "Chờ xử lý",
+    DANG_XU_LY: "Đang xử lý",
+    HOAN_THANH: "Hoàn thành",
+    HUY_BO: "Hủy bỏ",
+  };
+
+  // --- ĐỔ DỮ LIỆU CHUẨN VÀO HTML PANEL CHI TIẾT ---
+  body.innerHTML = `
+    ${isPriority ? `<div style="background: linear-gradient(90deg, #FFD700, #FFA500); color: #000; padding: 6px; border-radius: 5px; font-weight: bold; margin-bottom: 15px; text-align: center; font-size: 0.8rem;"><i class="fa-solid fa-gem"></i> NGƯỜI DÙNG ƯU TIÊN (KIM CƯƠNG)</div>` : ""}
+
+    <div class="info-group" style="margin-bottom: 12px;">
+        <div class="info-label" style="font-size: 0.75rem; color: #64748b; font-weight: bold;">NGƯỜI GỬI TÍN HIỆU</div>
+        <div class="info-value" style="font-weight: bold; font-size: 1.1rem; color: #1e293b;">${userName}</div>
+        <div class="info-value" style="font-size: 0.85rem; color: #64748b;">${userEmail}</div>
+    </div>
+
+    <div class="info-group" style="margin-bottom: 12px;">
+        <div class="info-label" style="font-size: 0.75rem; color: #64748b; font-weight: bold;">TRẠNG THÁI & THỜI GIAN</div>
+        <div class="info-value">
+            <span class="badge bg-danger text-white" style="padding: 3px 8px; border-radius: 4px; font-size: 0.8rem;">${statusLabel[trangThai] || trangThai}</span>
+            <span style="margin-left: 10px; font-size: 0.85rem; color: #475569;"><i class="fa-regular fa-clock"></i> ${thoiGian}</span>
+        </div>
+    </div>
+
+    <div class="info-group" style="margin-bottom: 12px;">
+        <div class="info-label" style="font-size: 0.75rem; color: #64748b; font-weight: bold;">ĐỊA CHỈ HIỆN TRƯỜNG</div>
+        <div class="info-value" style="font-size: 0.95rem; color: #334155;"><i class="fa-solid fa-location-dot text-danger"></i> ${displayAddress}</div>
+    </div>
+
+    <div class="info-group" style="margin-bottom: 12px;">
+        <div class="info-label" style="font-size: 0.75rem; color: #64748b; font-weight: bold;">GHI CHÚ HIỆN TRƯỜNG</div>
+        <div class="info-value" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; font-style: italic; color: #334155;">"${ghiChu}"</div>
+    </div>
+
+    <div class="info-group" style="margin-bottom: 12px;">
+        <div class="info-label" style="font-size: 0.75rem; color: #64748b; font-weight: bold;">HÌNH ẢNH HIỆN TRƯỜNG</div>
+        ${
+          imgUrl
+            ? `<img src="${imgUrl}" style="width:100%; border-radius:8px; margin-top:5px; cursor:pointer;" onerror="this.src='https://placehold.co/400x300?text=Không+tìm+thấy+ảnh'" onclick="window.open(this.src)">`
+            : '<div class="text-muted small italic">Không có ảnh hiện trường</div>'
+        }
+    </div>
+
+    <div class="info-group" style="margin-bottom: 15px;">
+        <div class="info-label" style="font-size: 0.75rem; color: #64748b; font-weight: bold;">GHI ÂM KHẨN CẤP</div>
+        ${
+          audioUrl
+            ? `<audio controls style="width: 100%; margin-top:5px;"><source src="${audioUrl}" type="audio/mpeg">Trình duyệt không hỗ trợ nghe audio.</audio>`
+            : '<div class="text-muted small italic">Không có ghi âm từ hiện trường</div>'
+        }
+    </div>
+
+    ${
+      trangThai === "CHO_XU_LY"
+        ? `
+      <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+          <button class="btn btn-primary w-100" onclick="confirmRescue(${obj.id})">
+              <i class="fa-solid fa-truck-fast"></i> TIẾP NHẬN CỨU TRỢ
+          </button>
+      </div>
+    `
+        : ""
+    }
+  `;
+
+  // Hiển thị Panel và Overlay nền mờ
   panel.style.display = "block";
   const overlayElem = document.getElementById("overlay");
   if (overlayElem) overlayElem.style.display = "block";
 }
-
 function openSuCoDetail(id) {
   const el = document.getElementById("suco-card-" + id);
   if (!el) return;
