@@ -89,34 +89,34 @@ function showSOSDetail(item) {
   const content = document.getElementById("panel-content");
   panel.style.display = "flex";
 
-  const user = item.user || {};
+  const user = item.nguoiGui || {};
   const userName = user.name || "Khách vãng lai";
   const userEmail = user.email || "Không có email";
-  const userPoints = user.totalPoints || 0;
-  const isPriority = userPoints >= 500;
+
+  // 2. SỬA TẠI ĐÂY: Ăn theo thuộc tính vip (boolean) từ backend trả về
+  const isPriority = user.vip === true;
 
   const id = item.id;
   const kinhDo = (item.kinhDo || 0).toFixed(6);
   const viDo = (item.viDo || 0).toFixed(6);
   const ghiChu = item.ghiChu || "Không có ghi chú";
-  const thoiGian = item.createdAt
-    ? new Date(item.createdAt).toLocaleString("vi-VN")
+  const thoiGian = item.thoiGianTao
+    ? new Date(item.thoiGianTao).toLocaleString("vi-VN")
     : "Vừa xong";
+
   const trangThai = item.trangThai || "CHO_XU_LY";
 
   // SỬA TẠI ĐÂY: Logic fix URL chuẩn
   const fixUrl = (path) => {
     if (!path) return null;
-    // Nếu path đã bắt đầu bằng /uploads thì trả về luôn, không nối thêm gì cả
     if (path.startsWith("/uploads") || path.startsWith("http")) {
       return path;
     }
-    // Chỉ nối thêm folder nếu path chỉ là tên file đơn thuần
     return `/uploads/sos/${path}`;
   };
 
-  const imgUrl = fixUrl(item.hinhAnh);
-  const audioUrl = fixUrl(item.ghiAm);
+  const imgUrl = fixUrl(item.hinhAnhUrl);
+  const audioUrl = fixUrl(item.ghiAmUrl);
 
   const statusLabel = {
     CHO_XU_LY: "Chờ xử lý",
