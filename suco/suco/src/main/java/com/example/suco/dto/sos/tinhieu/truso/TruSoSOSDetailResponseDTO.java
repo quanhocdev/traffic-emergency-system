@@ -1,35 +1,35 @@
-package com.example.suco.dto.sos.tinhieu;
-import java.time.LocalDateTime;
-import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
+package com.example.suco.dto.sos.tinhieu.truso;
 
-public class AdminSOSDetailResponseDTO {
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
+import java.time.LocalDateTime;
+import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
+
+public class TruSoSOSDetailResponseDTO {
 
     private Long id;
-
     private Double viDo;
-    
     private Double kinhDo;
-
     private String diaChi;
-
     private String ghiChu;
-
     private String hinhAnhUrl;
-
     private String ghiAmUrl;
-
     private LocalDateTime thoiGianTao;
-
     private String trangThai;
-
-    private String userId;
-
     private UserMiniDTO nguoiGui;
+    
+    private HoaDonResponseDTO hoaDon; 
 
-    private TruSoMiniDTO truSoTiepNhan;
+    public TruSoSOSDetailResponseDTO() {}
 
-    public AdminSOSDetailResponseDTO() {}
+    public HoaDonResponseDTO getHoaDon() {
+        return hoaDon;
+    }
 
+    public void setHoaDon(HoaDonResponseDTO hoaDon) {
+        this.hoaDon = hoaDon;
+    }
+
+    // --- Các Getter và Setter cũ giữ nguyên ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Double getViDo() { return viDo; }
@@ -48,11 +48,6 @@ public class AdminSOSDetailResponseDTO {
     public void setThoiGianTao(LocalDateTime thoiGianTao) { this.thoiGianTao = thoiGianTao; }
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
     public UserMiniDTO getNguoiGui() { return nguoiGui; }
     public void setNguoiGui(UserMiniDTO nguoiGui) { this.nguoiGui = nguoiGui; }
-    public TruSoMiniDTO getTruSoTiepNhan() { return truSoTiepNhan; }
-    public void setTruSoTiepNhan(TruSoMiniDTO truSoTiepNhan) { this.truSoTiepNhan = truSoTiepNhan; }
-
 }

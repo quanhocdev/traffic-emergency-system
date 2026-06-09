@@ -47,7 +47,6 @@ public class DispatchEngineService {
             ))
             .orElse(null);
 
-    // ❌ KHÔNG TRỤ SỞ
     if (best == null) {
 
         event.setTrangThai("CHO_ADMIN");
@@ -58,13 +57,9 @@ public class DispatchEngineService {
         return;
     }
 
-    // ✅ CHỈ 1 TRỤ SỞ DUY NHẤT
-    event.setTrangThai("DANG_XU_LY");
+    event.setTrangThai("CHO_XU_LY");
 
     event.setIdTruSoTiepNhan(best.getId());
-
-    // ❌ XÓA HOÀN TOÀN dòng này nếu còn:
-    // event.setIdTruSoDeXuat(...)
 
     tinHieuSOSRepository.save(event);
 
@@ -76,9 +71,7 @@ public class DispatchEngineService {
         return truSo.getTrangThaiHoatDong()
                 == TrangThaiHoatDongTruSo.SAN_SANG;
     }
-    // =====================================================
     // SOCKET
-    // =====================================================
     private void send(TinHieuSOS event, Long truSoId) {
 
         messagingTemplate.convertAndSend(

@@ -392,39 +392,53 @@ function tuChoiTiepNhan(idSos, tuDong = false) {
 
   const btnDecline = document.getElementById("btn-decline-" + idSos);
   const btnAccept = document.getElementById("btn-accept-" + idSos);
+
   if (btnDecline) {
     btnDecline.disabled = true;
     btnDecline.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
   }
+
   if (btnAccept) {
     btnAccept.disabled = true;
   }
 
-  fetch(`/sos/cap-nhat-trang-thai/${idSos}?status=TU_CHOI`, {
+  fetch(`/sos/cap-nhat-trang-thai/${idSos}`, {
     method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      status: "TU_CHOI",
+    }),
   })
-    .then((res) => res.json())
+    .then((res) => {
+      if (!res.ok) throw new Error("Lỗi server");
+      return res.json();
+    })
     .then((data) => {
       console.log("[TỪ CHỐI] Kết quả:", data);
 
-      // Xóa card khỏi danh sách với hiệu ứng
       const card = document.getElementById("sos-card-" + idSos);
+
       if (card) {
         card.style.transition = "opacity 0.3s, transform 0.3s";
         card.style.opacity = "0";
         card.style.transform = "translateX(100%)";
+
+        setTimeout(() => card.remove(), 300);
       }
     })
     .catch((err) => {
       console.error("[LỖI] Không thể từ chối:", err);
+
       alert("Có lỗi xảy ra. Vui lòng thử lại.");
 
-      // Khôi phục nút
       if (btnDecline) {
         btnDecline.disabled = false;
         btnDecline.innerHTML =
           '<i class="fa-solid fa-xmark"></i> Không tiếp nhận';
       }
+
       if (btnAccept) {
         btnAccept.disabled = false;
       }
@@ -630,10 +644,19 @@ function confirmRescue(id) {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
   }
 
-  fetch(`/sos/cap-nhat-trang-thai/${id}?status=TIEP_NHAN`, {
+  fetch(`/sos/cap-nhat-trang-thai/${id}`, {
     method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      status: "DANG_XU_LY",
+    }),
   })
-    .then((res) => res.json())
+    .then((res) => {
+      if (!res.ok) throw new Error("Lỗi server");
+      return res.json();
+    })
     .then((data) => {
       console.log("ACCEPT RESULT =", data);
 
