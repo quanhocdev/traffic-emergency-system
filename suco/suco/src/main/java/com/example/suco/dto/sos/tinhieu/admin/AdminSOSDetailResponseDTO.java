@@ -1,39 +1,36 @@
-package com.example.suco.dto.sos.tinhieu;
-
-import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
-import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO; // 🌟 Import class DTO hóa đơn của bạn
+package com.example.suco.dto.sos.tinhieu.admin;
 import java.time.LocalDateTime;
+import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
+import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 
-public class TruSoSOSDetailResponseDTO {
+public class AdminSOSDetailResponseDTO {
 
     private Long id;
+
     private Double viDo;
-    private Double kinhDo;
-    private String diaChi;
-    private String ghiChu;
-    private String hinhAnhUrl;
-    private String ghiAmUrl;
-    private LocalDateTime thoiGianTao;
-    private String trangThai;
-    private UserMiniDTO nguoiGui;
     
-    // ==========================================
-    // 🌟 THÊM TRƯỜNG NÀY VÀO ĐỂ CHỨA THÔNG TIN HÓA ĐƠN
-    private HoaDonResponseDTO hoaDon; 
-    // ==========================================
+    private Double kinhDo;
 
-    public TruSoSOSDetailResponseDTO() {}
+    private String diaChi;
 
-    // --- Thêm Getter và Setter cho hoaDon ---
-    public HoaDonResponseDTO getHoaDon() {
-        return hoaDon;
-    }
+    private String ghiChu;
 
-    public void setHoaDon(HoaDonResponseDTO hoaDon) {
-        this.hoaDon = hoaDon;
-    }
+    private String hinhAnhUrl;
 
-    // --- Các Getter và Setter cũ giữ nguyên ---
+    private String ghiAmUrl;
+
+    private LocalDateTime thoiGianTao;
+
+    private String trangThai;
+
+    private String userId;
+
+    private UserMiniDTO nguoiGui;
+
+    private TruSoMiniDTO truSoTiepNhan;
+
+    public AdminSOSDetailResponseDTO() {}
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Double getViDo() { return viDo; }
@@ -52,6 +49,11 @@ public class TruSoSOSDetailResponseDTO {
     public void setThoiGianTao(LocalDateTime thoiGianTao) { this.thoiGianTao = thoiGianTao; }
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
     public UserMiniDTO getNguoiGui() { return nguoiGui; }
     public void setNguoiGui(UserMiniDTO nguoiGui) { this.nguoiGui = nguoiGui; }
+    public TruSoMiniDTO getTruSoTiepNhan() { return truSoTiepNhan; }
+    public void setTruSoTiepNhan(TruSoMiniDTO truSoTiepNhan) { this.truSoTiepNhan = truSoTiepNhan; }
+
 }

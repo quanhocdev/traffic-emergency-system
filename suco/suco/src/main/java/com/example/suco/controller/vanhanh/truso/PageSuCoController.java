@@ -10,9 +10,11 @@ import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 
 import org.springframework.ui.Model;
-import com.example.suco.dto.sos.tinhieu.TruSoSOSDetailResponseDTO;
+
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 import com.example.suco.dto.sos.tinhieu.UserMiniDTO; // Nhớ import cả UserMiniDTO nếu nằm ở package khác
+import com.example.suco.dto.sos.tinhieu.truso.TruSoSOSDetailResponseDTO;
+
 import java.util.stream.Collectors;
 import java.util.List;
 import jakarta.servlet.http.HttpSession;

@@ -4,13 +4,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
-
-import com.example.suco.model.HoaDon;
 import com.example.suco.model.ThanhToanHoaDon;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
 
 @Repository
 public class DoanhThuRepository {

@@ -2,7 +2,7 @@ package com.example.suco.service.sos.tinhieu.truso;
 
 import com.example.suco.mapper.TinHieuMapper;
 import com.example.suco.dto.sos.tinhieu.SOSMapResponseDTO;
-import com.example.suco.dto.sos.tinhieu.TruSoSOSDetailResponseDTO;
+import com.example.suco.dto.sos.tinhieu.truso.TruSoSOSDetailResponseDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
