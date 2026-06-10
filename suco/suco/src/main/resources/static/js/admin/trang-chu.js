@@ -142,6 +142,11 @@ async function loadTruSoMarkers() {
       const lat = parseFloat(ts.viDo);
       if (isNaN(lng) || isNaN(lat) || (lng === 0 && lat === 0)) return;
 
+      console.log("===== MARKER DATA =====");
+      console.log("id =", ts.id);
+      console.log("iconUrl =", ts.iconUrl);
+      console.log("tenLoai =", ts.tenLoai);
+      console.log("FULL =", ts);
       const el = document.createElement("div");
       el.className = "tru-so-marker";
       el.innerHTML = `<i class="fa-solid fa-house-chimney-medical" style="color: #27ae60; font-size: 30px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>`;
@@ -498,6 +503,9 @@ async function loadPendingReports() {
     const response = await fetch("/api/su-co/map");
     const reports = await response.json();
 
+    console.log("REPORTS =", reports);
+    console.log("FIRST REPORT =", reports[0]);
+
     // Lọc chỉ lấy những bản ghi có trạng thái PENDING hoặc chưa duyệt
     const pendingReports = reports.filter(
       (r) =>
@@ -525,6 +533,7 @@ async function loadPendingReports() {
     pendingReports.sort((a, b) => b.id - a.id);
 
     pendingReports.forEach((report) => {
+      console.log("REPORT ITEM =", report);
       const item = document.createElement("div");
       item.className = "notification-item";
 
@@ -591,16 +600,19 @@ function renderSingleIncident(suCo) {
 
   const isWaitingAdmin =
     suCo.trangThaiDuyet === "AI_APPROVED" || suCo.trangThaiDuyet === "PENDING";
+    console.log("Mức độ:", suCo.mucDoSuCo);
+console.log("Duyệt:", suCo.trangThaiDuyet);
   let borderColor = "#ffffff";
   if (suCo.trangThaiDuyet === "VERIFIED") {
-    if (suCo.mucDoNghiemTrong === "HIGH") borderColor = "#e74c3c";
-    else if (suCo.mucDoNghiemTrong === "MEDIUM") borderColor = "#f1c40f";
-    else if (suCo.mucDoNghiemTrong === "LOW") borderColor = "#2ecc71";
+    if (suCo.mucDoSuCo === "HIGH") borderColor = "#e74c3c";
+    else if (suCo.mucDoSuCo === "MEDIUM") borderColor = "#f1c40f";
+    else if (suCo.mucDoSuCo === "LOW") borderColor = "#2ecc71";
   }
 
   const tenHienThi =
     suCo.tenLoai || (suCo.loaiSuCo ? suCo.loaiSuCo.ten : "Sự cố");
   const iconPath = suCo.iconUrl || (suCo.loaiSuCo ? suCo.loaiSuCo.iconUrl : "");
+  console.log("iconPath =", iconPath);
 
   const el = document.createElement("div");
   el.className = "custom-marker" + (isWaitingAdmin ? " pending-marker" : "");
@@ -681,7 +693,7 @@ function showIncidentPanel(data) {
       <p><b>Mô tả:</b> ${data.moTa || ""}</p>
       <p><b>Địa chỉ:</b> ${data.diaChi || ""}</p>
       <p><b>Trạng thái:</b> ${data.trangThaiXuLy}</p>
-      <p><b>Mức độ:</b> ${data.mucDoNghiemTrong}</p>
+      <p><b>Mức độ:</b> ${data.mucDoSuCo}</p>
   `;
 }
 
@@ -747,4 +759,11 @@ document.addEventListener("DOMContentLoaded", () => {
       dropdown.classList.remove("show");
     }
   });
+});
+document.querySelectorAll("*").forEach((el) => {
+  for (const attr of el.attributes || []) {
+    if (String(attr.value).includes("undefined")) {
+      console.log("FOUND", el, attr.name, attr.value);
+    }
+  }
 });

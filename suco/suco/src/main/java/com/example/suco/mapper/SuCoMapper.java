@@ -37,7 +37,13 @@ public class SuCoMapper {
                 dto.setViDo(b.getViDo());
                 dto.setKinhDo(b.getKinhDo());
                 dto.setIconUrl( b.getLoaiSuCo() != null ? b.getLoaiSuCo().getIconUrl() : null);
+                dto.setTrangThaiDuyet(
+    b.getTrangThaiDuyet() != null
+        ? b.getTrangThaiDuyet().name()
+        : null
+);
                 dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
+                
                 dto.setMucDoSuCo(
     b.getMucDoSuCo() != null ? b.getMucDoSuCo().name() : null
 );
@@ -90,7 +96,9 @@ if (b.getTruSoTiepNhan() != null) {
     dto.setTrangThaiDuyet(b.getTrangThaiDuyet() != null ? b.getTrangThaiDuyet().getLabel() : null);
     dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
 
-    dto.setMucDoNghiemTrong(b.getMucDoSuCo() != null ? b.getMucDoSuCo().getLabel() : null);
+    dto.setMucDoSuCo(
+    b.getMucDoSuCo() != null ? b.getMucDoSuCo().name() : null
+);
     dto.setHinhAnhUrl(b.getHinhAnhUrl());
 
     dto.setDoTinCay(b.getDoTinCay());
@@ -106,6 +114,7 @@ if (b.getTruSoTiepNhan() != null) {
 
     return dto;
 }
+
 public TruSoSuCoDetailResponseDTO toTruSoDetailDto(BaoCaoSuCo b) {
 
     TruSoSuCoDetailResponseDTO dto =
