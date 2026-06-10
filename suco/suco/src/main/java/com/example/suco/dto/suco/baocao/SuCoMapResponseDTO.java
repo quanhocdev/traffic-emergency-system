@@ -6,7 +6,7 @@ public class SuCoMapResponseDTO {
     private Double kinhDo;
     private String iconUrl;
     private String trangThaiXuLy;
-    private String mucDoNghiemTrong;
+    private String mucDoSuCo;
     private Long truSoId;
 
     public SuCoMapResponseDTO() {}
@@ -21,7 +21,7 @@ public class SuCoMapResponseDTO {
         this.kinhDo = kinhDo;
         this.iconUrl = iconUrl;
         this.trangThaiXuLy = trangThaiXuLy;
-        this.mucDoNghiemTrong = mucDoNghiemTrong;
+        this.mucDoSuCo = mucDoSuCo;
         this.truSoId = truSoId;
     }
 
@@ -30,7 +30,7 @@ public class SuCoMapResponseDTO {
     public Double getKinhDo() { return kinhDo; }
     public String getIconUrl() { return iconUrl; }
     public String getTrangThaiXuLy() { return trangThaiXuLy; }
-    public String getMucDoNghiemTrong() { return mucDoNghiemTrong; }
+    public String getMucDoSuCo() { return mucDoSuCo; }
     public Long getTruSoId() { return truSoId; }
 
     public void setId(Long id) { this.id = id; }
@@ -38,6 +38,6 @@ public class SuCoMapResponseDTO {
     public void setKinhDo(Double kinhDo) { this.kinhDo = kinhDo; }
     public void setIconUrl(String iconUrl) { this.iconUrl = iconUrl; }
     public void setTrangThaiXuLy(String trangThaiXuLy) { this.trangThaiXuLy = trangThaiXuLy; }
-    public void setMucDoNghiemTrong(String mucDoNghiemTrong) { this.mucDoNghiemTrong = mucDoNghiemTrong; }
+    public void setMucDoSuCo(String mucDoSuCo) { this.mucDoSuCo = mucDoSuCo; }
     public void setTruSoId(Long truSoId) { this.truSoId = truSoId; }
 }

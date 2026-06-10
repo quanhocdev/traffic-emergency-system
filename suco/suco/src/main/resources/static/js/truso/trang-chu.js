@@ -8,16 +8,16 @@ window.map = new mapboxgl.Map({
 });
 
 const activeMarkers = {};
+let bellCount = 0;
 
 map.on("load", () => {
-  // 1. Vẽ vị trí trụ sở (Cái này phải hiện ngay lập tức)
+  // 1. Vẽ vị trí trụ sở (Hiện ngay lập tức)
   new mapboxgl.Marker({ color: "#10b981" })
     .setLngLat([tsLng, tsLat])
     .setPopup(new mapboxgl.Popup().setHTML("<b>Vị trí trụ sở</b>"))
     .addTo(map);
 
   // 2. Nạp dữ liệu song song (Parallel Loading)
-  // Dùng Promise.all để trình duyệt gửi cả 2 yêu cầu cùng lúc
   Promise.all([loadExistingSOS(), loadExistingSuCo()]).then(() => {
     console.log("Tất cả icon đã nạp xong");
     connectWebSocket();
@@ -30,70 +30,86 @@ map.on("click", () => {
 });
 
 function closeDetail() {
-  document.getElementById("sos-detail-panel").style.display = "none";
+  const panel = document.getElementById("sos-detail-panel");
+  if (panel) panel.style.display = "none";
   removeRoute();
 }
 
 function removeRoute() {
-  if (map.getLayer("route")) {
-    map.removeLayer("route");
-  }
-
-  if (map.getSource("route")) {
-    map.removeSource("route");
-  }
+  // Phải xóa Layer trước khi xóa Source
+  if (map.getLayer("route")) map.removeLayer("route");
+  if (map.getSource("route")) map.removeSource("route");
 }
+
 async function drawRoute(targetLng, targetLat) {
   try {
-    removeRoute();
-
     const query = await fetch(
       `https://api.mapbox.com/directions/v5/mapbox/driving/${tsLng},${tsLat};${targetLng},${targetLat}?geometries=geojson&access_token=${mapboxgl.accessToken}`,
     );
 
     const json = await query.json();
+    if (!json.routes || !json.routes[0]) {
+      // Nếu không tìm thấy đường đi, hãy xóa route cũ đang hiển thị (nếu có)
+      removeRoute();
+      return;
+    }
 
-    if (!json.routes || !json.routes[0]) return;
+    const geojsonData = {
+      type: "Feature",
+      geometry: json.routes[0].geometry,
+    };
 
-    const data = json.routes[0].geometry;
+    // KIỂM TRA: Nếu đã có Source "route" trên bản đồ rồi
+    if (map.getSource("route")) {
+      // Chỉ cần cập nhật lại dữ liệu tọa độ mới, không tạo lại nữa
+      map.getSource("route").setData(geojsonData);
 
-    map.addSource("route", {
-      type: "geojson",
-      data: {
-        type: "Feature",
-        geometry: data,
-      },
-    });
+      // Nếu Layer bị mất (do hàm khác xóa nhầm), tạo lại Layer
+      if (!map.getLayer("route")) {
+        map.addLayer({
+          id: "route",
+          type: "line",
+          source: "route",
+          layout: { "line-join": "round", "line-cap": "round" },
+          paint: {
+            "line-color": "#3b82f6",
+            "line-width": 6,
+            "line-opacity": 0.8,
+          },
+        });
+      }
+    } else {
+      // TRƯỜNG HỢP CHƯA CÓ: Tạo mới hoàn toàn cả Source và Layer
+      map.addSource("route", {
+        type: "geojson",
+        data: geojsonData,
+      });
 
-    map.addLayer({
-      id: "route",
-      type: "line",
-      source: "route",
-      layout: {
-        "line-join": "round",
-        "line-cap": "round",
-      },
-      paint: {
-        "line-color": "#3b82f6",
-        "line-width": 6,
-        "line-opacity": 0.8,
-      },
-    });
+      map.addLayer({
+        id: "route",
+        type: "line",
+        source: "route",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: {
+          "line-color": "#3b82f6",
+          "line-width": 6,
+          "line-opacity": 0.8,
+        },
+      });
+    }
   } catch (err) {
     console.error("Lỗi vẽ route:", err);
   }
 }
-
 function showSOSDetail(item) {
   const panel = document.getElementById("sos-detail-panel");
   const content = document.getElementById("panel-content");
+  if (!panel || !content) return;
   panel.style.display = "flex";
 
   const user = item.nguoiGui || {};
   const userName = user.name || "Khách vãng lai";
   const userEmail = user.email || "Không có email";
-
-  // 2. SỬA TẠI ĐÂY: Ăn theo thuộc tính vip (boolean) từ backend trả về
   const isPriority = user.vip === true;
 
   const id = item.id;
@@ -106,12 +122,9 @@ function showSOSDetail(item) {
 
   const trangThai = item.trangThai || "CHO_XU_LY";
 
-  // SỬA TẠI ĐÂY: Logic fix URL chuẩn
   const fixUrl = (path) => {
     if (!path) return null;
-    if (path.startsWith("/uploads") || path.startsWith("http")) {
-      return path;
-    }
+    if (path.startsWith("/uploads") || path.startsWith("http")) return path;
     return `/uploads/sos/${path}`;
   };
 
@@ -146,7 +159,7 @@ function showSOSDetail(item) {
         <div class="info-group">
             <div class="info-label">Trạng thái & Thời gian</div>
             <div class="info-value">
-                <span class="badge" style="background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 4px;">  ${statusLabel[trangThai] || trangThai}</span>
+                <span class="badge" style="background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 4px;"> ${statusLabel[trangThai] || trangThai}</span>
                 <span style="margin-left: 10px; font-size: 0.85rem;"><i class="fa-regular fa-clock"></i> ${thoiGian}</span>
             </div>
         </div>
@@ -186,90 +199,122 @@ function showSOSDetail(item) {
   });
   drawRoute(parseFloat(kinhDo), parseFloat(viDo));
 }
-
 function showSuCoDetail(item) {
-  console.log("Dữ liệu sự cố từ TruSoSuCoDetailResponseDTO:", item);
+  console.log("Dữ liệu sự cố xử lý:", item);
 
   const panel = document.getElementById("sos-detail-panel");
   const content = document.getElementById("panel-content");
+  if (!panel || !content) return;
   panel.style.display = "flex";
 
-  // --- 1. MAPPING ĐÚNG 100% THUỘC TÍNH TỪ DTO MỚI ---
   const id = item.id;
   const tenLoai = item.tenLoai || "Sự cố";
   const moTa = item.moTa || "Không có mô tả";
   const icon = item.iconUrl || "https://placehold.co/24x24?text=⚠";
-  const mucDo = item.mucDoNghiemTrong || "LOW";
-  const trangThai = item.trangThaiXuLy || "CHO_XU_LY"; // Đảm bảo Backend trả về đúng: CHO_XU_LY, DANG_XU_LY, HOAN_THANH
+
+  // =========================================================================
+  // XỬ LÝ ĐỒNG BỘ MỨC ĐỘ (Chấp nhận cả trường tiếng Anh từ WebSocket lẫn tiếng Việt từ DTO)
+  // =========================================================================
+  const rawMucDo = item.mucDoSuCo;
+
+  let mucDoKey = "LOW";
+  let mucDoHienThi = "Thấp";
+
+  if (rawMucDo === "HIGH") {
+    mucDoKey = "HIGH";
+    mucDoHienThi = "Cao";
+  } else if (rawMucDo === "MEDIUM") {
+    mucDoKey = "MEDIUM";
+    mucDoHienThi = "Trung bình";
+  } else if (rawMucDo === "NONE") {
+    mucDoKey = "NONE";
+    mucDoHienThi = "Không có";
+  } else if (rawMucDo === "LOW") {
+    mucDoKey = "LOW";
+    mucDoHienThi = "Thấp";
+  }
+
+  const badgeColor =
+    mucDoKey === "HIGH"
+      ? "#ef4444"
+      : mucDoKey === "MEDIUM"
+        ? "#f59e0b"
+        : "#10b981";
+
+  // =========================================================================
+  // XỬ LÝ TRẠNG THÁI XỬ LÝ
+  // =========================================================================
+  let trangThai = item.trangThaiXuLy || item.trangThai || "CHO_XU_LY";
+  if (typeof trangThai === "string") {
+    trangThai = trangThai.toUpperCase();
+  }
+
+  console.log("Trạng thái thực tế khi vẽ giao diện:", trangThai);
   const diaChi = item.diaChi || "Không có địa chỉ";
   const tenNguoiBao = item.tenNguoiBao || "Khách vãng lai";
-  const doTinCay = item.doTinCay !== undefined ? item.doTinCay : 0; // Số từ 0 - 100 hoặc số lượt vote
+  const doTinCay = item.doTinCay !== undefined ? item.doTinCay : 0;
 
-  // Xử lý hiển thị ngày tháng
   const thoiGian = item.thoiGianTao
     ? new Date(item.thoiGianTao).toLocaleString("vi-VN")
     : "Vừa xong";
 
-  // Logic sửa ảnh chuẩn chỉnh
   const fixUrl = (path) => {
     if (!path) return null;
-    if (path.startsWith("/uploads") || path.startsWith("http")) {
-      return path;
-    }
+    if (path.startsWith("/uploads") || path.startsWith("http")) return path;
     return `/uploads/suco/${path}`;
   };
   const imgUrl = fixUrl(item.hinhAnhUrl);
 
-  // Gán màu sắc badge mức độ
-  const badgeColor =
-    mucDo === "HIGH" ? "#ef4444" : mucDo === "MEDIUM" ? "#f59e0b" : "#10b981";
-
-  // Map text trạng thái hiển thị tiếng Việt
   const statusLabels = {
     CHO_XU_LY: "Chờ xử lý",
+    "CHỜ XỬ LÝ": "Chờ xử lý",
     DANG_XU_LY: "Đang xử lý",
+    "ĐANG XỬ LÝ": "Đang xử lý",
     HOAN_THANH: "Hoàn thành",
+    "HOÀN THÀNH": "Hoàn thành",
     HUY_BO: "Hủy bỏ",
+    "HỦY BỎ": "Hủy bỏ",
   };
 
-  // --- 2. LOGIC NÚT BẤM (FIX LỖI LUÔN BỊ NHẢY VÀO HOÀN THÀNH) ---
   let actionButton = "";
 
-  if (trangThai === "CHO_XU_LY") {
+  const laChoXuLy = trangThai === "CHO_XU_LY" || trangThai === "CHỜ XỬ LÝ";
+  const laDangXuLy = trangThai === "DANG_XU_LY" || trangThai === "ĐANG XỬ LÝ";
+  const laHoanThanh = trangThai === "HOAN_THANH" || trangThai === "HOÀN THÀNH";
+
+  if (laChoXuLy) {
     actionButton = `
-        <button class="btn-approve" style="background:#1f2937; width:100%; padding:12px; color:white; font-weight:bold; border:none; border-radius:6px; cursor:pointer;" 
-                onclick="doiTrangThaiSuCo(${id}, 'DANG_XU_LY')">
-            <i class="fa-solid fa-person-digging"></i> TIẾP NHẬN XỬ LÝ
-        </button>`;
-  } else if (trangThai === "DANG_XU_LY") {
+      <button class="btn-approve" style="background:#1f2937; width:100%; padding:12px; color:white; font-weight:bold; border:none; border-radius:6px; cursor:pointer;" 
+              onclick="doiTrangThaiSuCo(${id}, 'DANG_XU_LY')">
+          <i class="fa-solid fa-person-digging"></i> TIẾP NHẬN XỬ LÝ
+      </button>`;
+  } else if (laDangXuLy) {
     actionButton = `
-        <div style="border: 1px dashed #f59e0b; padding: 12px; border-radius: 8px; background: #fffdf5;">
-            <div class="info-label" style="font-weight:bold; margin-bottom:8px; color:#b45309;">CẬP NHẬT MỨC ĐỘ NGUY HIỂM</div>
-            <select id="select-muc-do-${id}" class="form-control" style="width: 100%; padding: 8px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #ddd;">
-                <option value="LOW" ${mucDo === "LOW" ? "selected" : ""}>THẤP (LOW)</option>
-                <option value="MEDIUM" ${mucDo === "MEDIUM" ? "selected" : ""}>TRUNG BÌNH (MEDIUM)</option>
-                <option value="HIGH" ${mucDo === "HIGH" ? "selected" : ""}>CAO (HIGH)</option>
-            </select>
-            
-            <button class="btn-approve" style="background:#f59e0b; color:white; width:100%; padding:8px; margin-bottom: 8px; border:none; border-radius:5px; cursor:pointer; font-size: 0.85rem;" 
-                    onclick="updateMucDo(${id})">
-                <i class="fa-solid fa-pen-to-square"></i> CẬP NHẬT MỨC ĐỘ
-            </button>
-            
-            <button class="btn-approve" style="background:#10b981; color:white; width:100%; padding:10px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;" 
-                    onclick="doiTrangThaiSuCo(${id}, 'HOAN_THANH')">
-                <i class="fa-solid fa-check-double"></i> XÁC NHẬN HOÀN THÀNH
-            </button>
-        </div>`;
-  } else {
-    // Khi trangThai là 'HOAN_THANH' hoặc trạng thái đóng khác
+      <div style="border: 1px dashed #f59e0b; padding: 12px; border-radius: 8px; background: #fffdf5;">
+          <div class="info-label" style="font-weight:bold; margin-bottom:8px; color:#b45309;">CẬP NHẬT MỨC ĐỘ NGUY HIỂM</div>
+          <select id="select-muc-do-${id}" class="form-control" style="width: 100%; padding: 8px; border-radius: 5px; margin-bottom: 10px; border: 1px solid #ddd; color: #000;">
+              <option value="LOW" ${mucDoKey === "LOW" ? "selected" : ""}>THẤP (LOW)</option>
+              <option value="MEDIUM" ${mucDoKey === "MEDIUM" ? "selected" : ""}>TRUNG BÌNH (MEDIUM)</option>
+              <option value="HIGH" ${mucDoKey === "HIGH" ? "selected" : ""}>CAO (HIGH)</option>
+          </select>
+          
+          <button class="btn-approve" style="background:#f59e0b; color:white; width:100%; padding:8px; margin-bottom: 8px; border:none; border-radius:5px; cursor:pointer; font-size: 0.85rem;" 
+                  onclick="updateMucDo(${id})">
+              <i class="fa-solid fa-pen-to-square"></i> CẬP NHẬT MỨC ĐỘ
+          </button>
+          
+          <button class="btn-approve" style="background:#10b981; color:white; width:100%; padding:10px; border:none; border-radius:5px; cursor:pointer; font-weight:bold;" 
+                  onclick="doiTrangThaiSuCo(${id}, 'HOAN_THANH')">
+              <i class="fa-solid fa-check-double"></i> XÁC NHẬN HOÀN THÀNH
+          </button>
+      </div>`;
+  } else if (laHoanThanh) {
     actionButton = `
-        <div style="text-align:center; color: #10b981; font-weight: bold; padding: 12px; border: 1px solid #10b981; border-radius: 8px; background: #f0fdf4;">
-            <i class="fa-solid fa-circle-check"></i> SỰ CỐ ĐÃ ĐƯỢC XỬ LÝ HOÀN THÀNH
-        </div>`;
+      <div style="text-align:center; color: #10b981; font-weight: bold; padding: 12px; border: 1px solid #10b981; border-radius: 8px; background: #f0fdf4;">
+          <i class="fa-solid fa-circle-check"></i> SỰ CỐ ĐÃ ĐƯỢC XỬ LÝ HOÀN THÀNH
+      </div>`;
   }
 
-  // --- 3. ĐỔ DỮ LIỆU VÀO HTML ---
   content.innerHTML = `
       <div class="info-group">
           <div class="info-label">NGƯỜI BÁO SỰ CỐ</div>
@@ -297,7 +342,7 @@ function showSuCoDetail(item) {
       <div class="info-group">
           <div class="info-label">Mức độ & Trạng thái</div>
           <div style="margin-top: 5px;">
-              <span id="badge-muc-do" style="background: ${badgeColor}; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: bold;">${mucDo}</span>
+              <span id="badge-muc-do" style="background: ${badgeColor}; color: white; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: bold;">${mucDoHienThi}</span>
               <span style="background: #e2e8f0; color: #475569; padding: 3px 10px; border-radius: 4px; font-size: 11px; margin-left: 5px; font-weight: bold;">${statusLabels[trangThai] || trangThai}</span>
           </div>
           <div style="font-size: 0.8rem; color: #64748b; margin-top: 6px;">
@@ -331,7 +376,6 @@ function showSuCoDetail(item) {
       </div>
   `;
 
-  // --- 4. DI CHUYỂN BẢN ĐỒ MAPBOX ---
   if (item.kinhDo && item.viDo) {
     const kDo = parseFloat(item.kinhDo);
     const vDo = parseFloat(item.viDo);
@@ -341,54 +385,48 @@ function showSuCoDetail(item) {
       zoom: 17,
       speed: 1.2,
     });
-    if (typeof drawRoute === "function") {
-      drawRoute(kDo, vDo);
-    }
-  } else {
-    console.warn("Sự cố này thiếu tọa độ kinhDo hoặc viDo.");
+    drawRoute(kDo, vDo);
   }
 }
 function updateMucDo(id) {
   const mucDoSelect = document.getElementById(`select-muc-do-${id}`);
-  const mucDo = mucDoSelect.value;
+  if (!mucDoSelect) return;
+  const mucDo = mucDoSelect.value; // Lấy ra "LOW", "MEDIUM", hoặc "HIGH"
 
-  fetch(`/su-co/cap-nhat-muc-do/${id}?mucDo=${mucDo}`, {
+  console.log("Dữ liệu chuẩn bị gửi lên Backend:", { mucDo: mucDo });
+
+  fetch(`/su-co/cap-nhat-muc-do/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ mucDo }),
-  }).then((res) => {
+    // BẮT BUỘC: Key phải viết đúng là "mucDo" để trùng khớp với MucDoSuCoRequestDTO ở Backend
+    body: JSON.stringify({ mucDo: mucDo }),
+  }).then(async (res) => {
     if (res.ok) {
-      alert("Đã cập nhật mức độ nghiêm trọng!");
+      alert("Đã cập nhật mức độ nghiêm trọng thành công!");
 
-      // Cập nhật lại dữ liệu trong bộ nhớ cục bộ
       const markerKey = "SU_CO_" + id;
       if (activeMarkers[markerKey]) {
-        activeMarkers[markerKey].data.mucDoNghiemTrong = mucDo;
-
-        // 1. Vẽ lại Marker trên bản đồ để đổi màu viền ngay lập tức
-        addSOSMarker(activeMarkers[markerKey].data, "SU_CO");
-
-        // 2. Vẽ lại nội dung Panel để cập nhật Badge màu
-        showSuCoDetail(activeMarkers[markerKey].data);
+        // Tải lại chi tiết mới nhất từ DB về render lại giao diện
+        const detailRes = await fetch(`/su-co/chi-tiet/${id}`);
+        if (detailRes.ok) {
+          const fullData = await detailRes.json();
+          activeMarkers[markerKey].data = fullData;
+          showSuCoDetail(fullData); // Hàm hiển thị (đã đồng bộ trường ở câu trả lời trước)
+          addSOSMarker(fullData, "SU_CO"); // Vẽ lại marker đổi màu
+        }
       }
     } else {
-      alert("Lỗi cập nhật!");
+      res.text().then((text) => alert("Lỗi từ hệ thống: " + text));
     }
   });
 }
-function getMarkerClass(status) {
-  if (status === "DANG_XU_LY") return "marker-dang-xu-ly";
-  if (status === "HOAN_THANH") return "marker-hoan-thanh";
-  return "marker-cho-xu-ly";
-}
-
 function addSOSMarker(item, type = "SOS") {
   const markerKey = type + "_" + item.id;
-  const trangThai = type === "SOS" ? item.trangThai : item.trangThaiXuLy;
+  const trangThai =
+    type === "SOS" ? item.trangThai : item.trangThaiXuLy || item.trangThai;
 
-  // --- 1. XÓA NẾU TRẠNG THÁI KHÔNG HỢP LỆ ---
   const forceDeleteStatus = ["HUY_BO", "DA_AN", "SPAM"];
   if (forceDeleteStatus.includes(trangThai)) {
     if (activeMarkers[markerKey]) {
@@ -399,48 +437,30 @@ function addSOSMarker(item, type = "SOS") {
     return;
   }
 
-  // --- 2. XÁC ĐỊNH MÀU SẮC THEO MỨC ĐỘ (Dành cho Sự cố) ---
-  // --- 2. XÁC ĐỊNH MÀU SẮC THEO MỨC ĐỘ ---
-  let themeColor = "#94a3b8"; // Mặc định luôn là màu XÁM
+  let themeColor = "#94a3b8"; // Xám mặc định
 
   if (type === "SU_CO") {
-    // Chỉ đổi màu khi "Mức độ" KHÔNG PHẢI là null và KHÔNG PHẢI là "NONE" (hoặc giá trị mặc định chưa phân loại)
-    // Giả sử khi chưa chọn mức độ, server trả về item.mucDoNghiemTrong là null hoặc ""
-    if (item.mucDoNghiemTrong && item.mucDoNghiemTrong !== "NONE") {
-      if (item.mucDoNghiemTrong === "HIGH") {
-        themeColor = "#ef4444"; // Đỏ
-      } else if (item.mucDoNghiemTrong === "MEDIUM") {
-        themeColor = "#f59e0b"; // Vàng/Cam
-      } else if (item.mucDoNghiemTrong === "LOW") {
-        themeColor = "#10b981"; // Xanh lá
-      }
-    } else {
-      // Nếu chưa có mức độ, giữ nguyên màu xám
-      themeColor = "#94a3b8";
+    const mDo = item.mucDoSuCo || item.mucDo;
+    if (mDo && mDo !== "NONE") {
+      if (mDo === "HIGH") themeColor = "#ef4444";
+      else if (mDo === "MEDIUM") themeColor = "#f59e0b";
+      else if (mDo === "LOW") themeColor = "#10b981";
     }
   } else {
-    // Logic màu cho SOS (giữ nguyên hoặc tùy chỉnh)
     if (trangThai === "CHO_XU_LY") themeColor = "#ff0000";
     else if (trangThai === "DANG_XU_LY") themeColor = "#f59e0b";
     else themeColor = "#10b981";
   }
 
-  // --- 3. CẬP NHẬT NẾU ĐÃ TỒN TẠI (Đổi màu khung/hiệu ứng) ---
+  // Nếu Marker tồn tại, chỉ cần update màu và data
   if (activeMarkers[markerKey]) {
     activeMarkers[markerKey].data = item;
     const el = activeMarkers[markerKey].marker.getElement();
-    const currentStatus = type === "SOS" ? item.trangThai : item.trangThaiXuLy;
     if (type === "SU_CO") {
       const pin = el.querySelector(".marker-pin-main");
-      if (pin) {
-        pin.style.borderColor = themeColor;
-        // Nếu đã HOAN_THANH thì ẩn hoặc đổi hiệu ứng
-        if (currentStatus === "HOAN_THANH") {
-          pin.classList.remove("marker-pulse");
-          // Tùy chọn: Ẩn marker sau 2 giây nếu muốn
-          // setTimeout(() => activeMarkers[markerKey].marker.remove(), 2000);
-        }
-      }
+      const tail = el.querySelector(".marker-tail-fix");
+      if (pin) pin.style.borderColor = themeColor;
+      if (tail) tail.style.borderTopColor = themeColor;
     } else {
       const dot = el.querySelector(".simple-dot");
       if (dot) {
@@ -451,12 +471,10 @@ function addSOSMarker(item, type = "SOS") {
     return;
   }
 
-  // --- 4. TẠO MỚI MARKER ---
   const el = document.createElement("div");
   el.className = "custom-marker-wrapper";
 
   if (type === "SU_CO") {
-    // HIỂN THỊ KIỂU GHIM CÓ ICON CHO SỰ CỐ
     const isPulse = trangThai === "CHO_XU_LY" ? "marker-pulse" : "";
     const iconUrl =
       item.iconUrl || "https://cdn-icons-png.flaticon.com/512/564/564619.png";
@@ -468,9 +486,8 @@ function addSOSMarker(item, type = "SOS") {
             <div class="marker-tail-fix" style="border-top-color: ${themeColor}"></div>
         `;
   } else {
-    // HIỂN THỊ KIỂU CHẤM TRÒN CHO SOS
     const isPulse = trangThai === "CHO_XU_LY" ? "marker-pulse" : "";
-    const isVip = item.isVip;
+    const isVip = item.isVip || item.vip;
     const crownHtml = isVip
       ? `<div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); color: #FFD700; font-size: 18px; text-shadow: 1px 1px 3px rgba(0,0,0,0.6); z-index: 10;">
                 <i class="fa-solid fa-crown"></i>
@@ -496,227 +513,40 @@ function addSOSMarker(item, type = "SOS") {
 
   el.addEventListener("click", async (e) => {
     e.stopPropagation();
+    kíchHoạtChiTiếtTừMarker(markerKey, type);
+  });
+}
 
-    const latestData = activeMarkers[markerKey].data;
-
-    if (type === "SU_CO") {
-      try {
-        // GỌI ĐÚNG API DÀNH RIÊNG CHO TRỤ SỞ (ĐÃ VƯỢT QUA SPRING SECURITY BẰNG SESSION)
-        const res = await fetch(`/su-co/chi-tiet/${latestData.id}`);
-
-        if (res.ok) {
-          const fullDetailData = await res.json();
-          console.log(
-            "Dữ liệu chi tiết nhận được từ Session Trụ sở:",
-            fullDetailData,
-          );
-
-          // Cập nhật bộ nhớ cục bộ
-          activeMarkers[markerKey].data = fullDetailData;
-
-          // Hiển thị giao diện lên Panel với đầy đủ 100% chi tiết!
-          showSuCoDetail(fullDetailData);
-        } else {
-          const errData = await res.json();
-          console.error("Lỗi từ server:", errData.message);
-          showSuCoDetail(latestData); // Fallback data cũ nếu lỗi
-        }
-      } catch (err) {
-        console.error("Lỗi kết nối API chi tiết:", err);
+// Hàm bổ trợ gọi API đồng bộ tránh lỗi cache dữ liệu panel
+async function kíchHoạtChiTiếtTừMarker(markerKey, type) {
+  const latestData = activeMarkers[markerKey].data;
+  if (type === "SU_CO") {
+    try {
+      const res = await fetch(`/su-co/chi-tiet/${latestData.id}`);
+      if (res.ok) {
+        const fullDetailData = await res.json();
+        activeMarkers[markerKey].data = fullDetailData;
+        showSuCoDetail(fullDetailData);
+      } else {
         showSuCoDetail(latestData);
       }
-    } else {
-      // Logic xử lý dữ liệu cho SOS (Giữ nguyên của bạn)
-      showSOSDetail(latestData);
+    } catch (err) {
+      console.error("Lỗi kết nối API chi tiết:", err);
+      showSuCoDetail(latestData);
     }
-  });
-}
-async function loadIncidentDetail(id) {
-  try {
-    const res = await fetch(`/api/su-co/${id}`);
-
-    if (!res.ok) {
-      alert("Không tải được chi tiết");
-      return;
-    }
-
-    const detail = await res.json();
-
-    renderIncidentPanel(detail);
-  } catch (e) {
-    console.error(e);
+  } else {
+    showSOSDetail(latestData);
   }
-}
-function renderIncidentPanel(item) {
-  const panel = document.getElementById("incident-detail-panel");
-  const content = document.getElementById("incident-panel-content");
-
-  panel.classList.add("open");
-
-  content.innerHTML = `
-      <img
-        src="${item.hinhAnhUrl || "/images/no-image.png"}"
-        style="
-          width:100%;
-          height:220px;
-          object-fit:cover;
-          border-radius:10px;
-          margin-bottom:15px;
-        "
-      >
-
-      <table class="detail-table">
-        <tr>
-          <td>ID</td>
-          <td>${item.id}</td>
-        </tr>
-
-        <tr>
-          <td>Loại sự cố</td>
-          <td>${item.tenLoai}</td>
-        </tr>
-
-        <tr>
-          <td>Mô tả</td>
-          <td>${item.moTa || ""}</td>
-        </tr>
-
-        <tr>
-          <td>Địa chỉ</td>
-          <td>${item.diaChi || ""}</td>
-        </tr>
-
-        <tr>
-          <td>Độ tin cậy</td>
-          <td>${item.doTinCay}</td>
-        </tr>
-
-        <tr>
-          <td>Trạng thái duyệt</td>
-          <td>${item.trangThaiDuyet}</td>
-        </tr>
-
-        <tr>
-          <td>Trạng thái xử lý</td>
-          <td>${item.trangThaiXuLy}</td>
-        </tr>
-
-        <tr>
-          <td>Mức độ</td>
-          <td>${item.mucDoNghiemTrong}</td>
-        </tr>
-
-        <tr>
-          <td>Người báo</td>
-          <td>${item.reporterName}</td>
-        </tr>
-
-        <tr>
-          <td>Email</td>
-          <td>${item.reporterEmail}</td>
-        </tr>
-
-        <tr>
-          <td>Trụ sở tiếp nhận</td>
-          <td>${item.truSoTiepNhanTen || "Chưa có"}</td>
-        </tr>
-      </table>
-  `;
-}
-function closeIncidentPanel() {
-  document.getElementById("incident-detail-panel").classList.remove("open");
-}
-function doiTrangThai(id, status) {
-  const url = `/sos/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${idTruSo}`;
-  fetch(url, { method: "PATCH" }).then((res) => {
-    if (res.ok) {
-      const markerKey = "SOS_" + id;
-      if (activeMarkers[markerKey]) {
-        // Cập nhật dữ liệu cục bộ
-        activeMarkers[markerKey].data.trangThai = status;
-
-        if (status === "HOAN_THANH") {
-          // Xóa marker nếu hoàn thành
-          activeMarkers[markerKey].marker.remove();
-          delete activeMarkers[markerKey];
-          closeDetail();
-        } else {
-          // Vẽ lại panel để nút đổi từ "Tiếp nhận" sang "Hoàn thành"
-          showSOSDetail(activeMarkers[markerKey].data);
-          addSOSMarker(activeMarkers[markerKey].data, "SOS");
-        }
-      }
-    }
-  });
-}
-function loadExistingSuCo() {
-  return fetch(`/api/su-co/map`)
-    .then((res) => res.json())
-    .then((data) => {
-      data.forEach((item) => {
-        addSOSMarker(item, "SU_CO");
-        addNotiItem(item, "SU_CO", true);
-      });
-    });
-}
-function loadExistingSOS() {
-  return fetch("/sos/hoat-dong")
-    .then((res) => res.json())
-    .then((data) => {
-      data.forEach((item) => {
-        addSOSMarker(item);
-        addNotiItem(item, "SOS", true);
-      });
-      return data;
-    });
-}
-
-function doiTrangThaiSuCo(id, status) {
-  fetch(`/su-co/cap-nhat-trang-thai/${id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      status: status,
-    }),
-  }).then((res) => {
-    if (res.ok) {
-      if (status === "HOAN_THANH") {
-        const markerKey = "SU_CO_" + id;
-
-        if (activeMarkers[markerKey]) {
-          activeMarkers[markerKey].marker.remove();
-          delete activeMarkers[markerKey];
-        }
-
-        closeDetail();
-        alert("Đã hoàn thành và gỡ bỏ sự cố!");
-      } else {
-        const markerKey = "SU_CO_" + id;
-
-        if (activeMarkers[markerKey]) {
-          activeMarkers[markerKey].data.trangThaiXuLy = status; // Cập nhật trạng thái xử lý trong dữ liệu cục bộ
-          addSOSMarker(activeMarkers[markerKey].data, "SU_CO"); // Cập nhật lại marker để đổi màu hoặc hiệu ứng
-          showSuCoDetail(activeMarkers[markerKey].data); // Cập nhật lại panel nếu đang mở
-        }
-
-        alert("Đã tiếp nhận sự cố!");
-      }
-    }
-  });
 }
 
 function handleRedirectParams() {
   const params = new URLSearchParams(window.location.search);
-
   const toLat = params.get("toLat");
   const toLng = params.get("toLng");
   const sosId = params.get("sosId");
 
   if (toLat && toLng) {
     drawRoute(parseFloat(toLng), parseFloat(toLat));
-
     map.flyTo({
       center: [parseFloat(toLng), parseFloat(toLat)],
       zoom: 17,
@@ -726,73 +556,52 @@ function handleRedirectParams() {
 
   if (sosId) {
     const markerKey = "SOS_" + sosId;
-
     const showIfReady = () => {
       const entry = activeMarkers[markerKey];
-
       if (entry) {
         showSOSDetail(entry.data);
       } else {
         setTimeout(() => {
           const e2 = activeMarkers[markerKey];
-
-          if (e2) {
-            showSOSDetail(e2.data);
-          }
+          if (e2) showSOSDetail(e2.data);
         }, 500);
       }
     };
-
     showIfReady();
   }
 }
-let bellCount = 0;
 
-// 1. Hàm bật/tắt danh sách thông báo
 function toggleNotiList() {
   const list = document.getElementById("noti-list");
-  list.style.display = list.style.display === "none" ? "block" : "none";
+  if (list)
+    list.style.display = list.style.display === "none" ? "block" : "none";
 }
 
-// 2. Hàm thêm thông báo mới vào danh sách
-// Thêm tham số isInitialLoad
 function addNotiItem(data, type, isInitialLoad = false) {
   const container = document.getElementById("noti-items-container");
   const emptyMsg = document.getElementById("empty-noti");
+  if (!container) return;
 
-  // Tạo một ID duy nhất cho mỗi dòng thông báo để check trùng
   const notiId = `noti-item-${type}-${data.id}`;
-  if (document.getElementById(notiId)) {
-    return; // Nếu thông báo này đã có trong danh sách rồi thì bỏ qua không đếm nữa
-  }
+  if (document.getElementById(notiId)) return;
 
   if (emptyMsg) emptyMsg.remove();
 
-  bellCount++;
-  const countEl = document.getElementById("noti-count");
-  if (countEl) {
-    countEl.style.display = "flex";
-    countEl.innerText = bellCount;
-  }
-
-  // Chỉ rung chuông nếu KHÔNG PHẢI nạp dữ liệu cũ lúc load trang
   if (!isInitialLoad) {
     bellCount++;
-
     const countEl = document.getElementById("noti-count");
-
     if (countEl) {
       countEl.style.display = "flex";
       countEl.innerText = bellCount;
     }
   }
 
-  const time = data.thoiGian
-    ? new Date(data.thoiGian).toLocaleTimeString("vi-VN")
+  const time = data.thoiGianTao
+    ? new Date(data.thoiGianTao).toLocaleTimeString("vi-VN")
     : "Vừa xong";
-  const isVip = data.isVip || (data.user && data.user.totalPoints >= 500);
+  const isVip =
+    data.isVip || data.vip || (data.user && data.user.totalPoints >= 500);
 
-  // Thêm id="${notiId}" vào thẻ div bọc ngoài cùng
   const itemHtml = `
   <div class="noti-item" id="${notiId}" onclick="focusOnMarker('${type}_${data.id}')" 
        style="padding: 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; border-left: 4px solid ${type === "SOS" ? "#ef4444" : "#f59e0b"};">
@@ -806,62 +615,51 @@ function addNotiItem(data, type, isInitialLoad = false) {
 
   container.insertAdjacentHTML("afterbegin", itemHtml);
 }
-// 3. Hàm xóa thông báo
+
 function clearNoti(e) {
   e.stopPropagation();
   bellCount = 0;
-  document.getElementById("noti-count").style.display = "none";
+  const countEl = document.getElementById("noti-count");
+  if (countEl) countEl.style.display = "none";
   document.getElementById("noti-items-container").innerHTML =
     '<div id="empty-noti" style="padding: 20px; text-align: center; color: #94a3b8; font-size: 13px;">Không có thông báo mới</div>';
 }
 
-// 4. Hàm hỗ trợ click vào thông báo để bay tới marker
 function focusOnMarker(markerKey) {
   const entry = activeMarkers[markerKey];
   if (entry) {
-    entry.type === "SU_CO"
-      ? showSuCoDetail(entry.data)
-      : showSOSDetail(entry.data);
+    kíchHoạtChiTiếtTừMarker(markerKey, entry.type);
   }
 }
 
-// 5. Cập nhật trong connectWebSocket (Ví dụ kênh SOS)
-// Thay đoạn xử lý âm thanh trong kênh SOS bằng:
 const playAlarm = () => {
-  // Tiếng bíp dồn dập báo động từ thư viện chuẩn
   const audio = new Audio(
     "https://actions.google.com/sounds/v1/alarms/beep_short.ogg",
   );
   audio.volume = 1.0;
-
-  // Phát âm thanh
   audio.play().catch((e) => {
-    console.warn(
-      "Trình duyệt chặn tự động phát. Hãy tương tác với bản đồ trước.",
-    );
+    console.warn("Trình duyệt chặn tự động phát âm thanh.");
   });
 };
+
 function connectWebSocket() {
   const socket = new SockJS("/ws-suco-web");
   const stompClient = Stomp.over(socket);
   stompClient.debug = null;
   stompClient.connect({}, () => {
     // --- 1. KÊNH SOS ---
-    // --- 1. KÊNH SOS ---
     stompClient.subscribe("/topic/truso/" + idTruSo, (msg) => {
       const sosData = JSON.parse(msg.body);
       const markerKey = "SOS_" + sosData.id;
 
-      // Nếu là tín hiệu mới tinh (chưa từng được vẽ và chưa có thông báo tương ứng)
       if (
         !activeMarkers[markerKey] &&
         !document.getElementById(`noti-item-SOS-${sosData.id}`)
       ) {
         playAlarm();
-        addNotiItem(sosData, "SOS", false); // Chỉ tăng số và phát âm thanh khi là hàng mới thật sự
+        addNotiItem(sosData, "SOS", false);
       }
 
-      // Logic ẩn/hiện dựa trên trạng thái (Giữ nguyên của bạn)
       if (sosData.trangThai === "HOAN_THANH") {
         if (activeMarkers[markerKey]) {
           activeMarkers[markerKey].marker.remove();
@@ -874,7 +672,7 @@ function connectWebSocket() {
       }
 
       const panel = document.getElementById("sos-detail-panel");
-      if (panel.style.display === "flex" && activeMarkers[markerKey]) {
+      if (panel && panel.style.display === "flex" && activeMarkers[markerKey]) {
         showSOSDetail(sosData);
       }
     });
@@ -896,31 +694,28 @@ function connectWebSocket() {
       if (activeMarkers[markerKey]) {
         activeMarkers[markerKey].marker.remove();
         delete activeMarkers[markerKey];
-        console.log("🚫 Đã xóa Marker Spam:", markerKey);
         closeDetail();
       }
     });
 
-    // --- 4. KÊNH SỰ CỐ (Chỉnh lại để rung chuông) ---
-    // --- 4. KÊNH SỰ CỐ ---
+    // --- 4. KÊNH SỰ CỐ TỔNG ---
     stompClient.subscribe("/topic/su-co", (msg) => {
       const updatedSuCo = JSON.parse(msg.body);
-      if (updatedSuCo.trangThaiDuyet !== "VERIFIED") {
-        return;
-      }
+      if (updatedSuCo.trangThaiDuyet !== "VERIFIED") return;
       const markerKey = "SU_CO_" + updatedSuCo.id;
 
-      // Kiểm tra chặt chẽ xem có trùng lặp với dữ liệu nạp ban đầu không
+      const tThai = updatedSuCo.trangThaiXuLy || updatedSuCo.trangThai;
+
       if (
         !activeMarkers[markerKey] &&
-        updatedSuCo.trangThaiXuLy !== "HOAN_THANH" &&
+        tThai !== "HOAN_THANH" &&
         !document.getElementById(`noti-item-SU_CO-${updatedSuCo.id}`)
       ) {
         playAlarm();
         addNotiItem(updatedSuCo, "SU_CO", false);
       }
 
-      if (updatedSuCo.trangThaiXuLy === "HOAN_THANH") {
+      if (tThai === "HOAN_THANH") {
         if (activeMarkers[markerKey]) {
           activeMarkers[markerKey].marker.remove();
           delete activeMarkers[markerKey];
@@ -937,9 +732,9 @@ function connectWebSocket() {
     stompClient.subscribe("/topic/tru-so/" + idTruSo + "/su-co", (msg) => {
       const data = JSON.parse(msg.body);
       const markerKey = "SU_CO_" + data.id;
+      const tThai = data.trangThaiXuLy || data.trangThai;
 
-      // LOGIC XÓA KHI HOÀN THÀNH
-      if (data.trangThaiXuLy === "HOAN_THANH") {
+      if (tThai === "HOAN_THANH") {
         if (activeMarkers[markerKey]) {
           activeMarkers[markerKey].marker.remove();
           delete activeMarkers[markerKey];
@@ -949,109 +744,138 @@ function connectWebSocket() {
       }
 
       addSOSMarker(data, "SU_CO");
-
-      if (activeMarkers[markerKey]) {
-        activeMarkers[markerKey].data = data;
-      }
+      if (activeMarkers[markerKey]) activeMarkers[markerKey].data = data;
 
       const panel = document.getElementById("sos-detail-panel");
-      if (panel.style.display === "flex" && activeMarkers[markerKey]) {
+      if (panel && panel.style.display === "flex" && activeMarkers[markerKey]) {
         showSuCoDetail(data);
       }
     });
   });
 }
-// Xử lý thông báo điều phối trên bản đồ
-function xuLyThongBaoDieuPhoiBanDo(thongBao) {
-  const markerKey = "SOS_" + thongBao.idSos; // Thêm tiền tố SOS_
 
-  if (thongBao.loaiThongBao === "XOA_SOS") {
-    if (activeMarkers[markerKey]) {
-      activeMarkers[markerKey].marker.remove();
-      delete activeMarkers[markerKey];
-      console.log(`[BẢN ĐỒ] Đã xóa SOS #${thongBao.idSos}`);
-      closeDetail();
-    }
+function xuLyThongBaoDieuPhoiBanDo(thongBao) {
+  const markerKey = "SOS_" + thongBao.idSos;
+  if (thongBao.loaiThongBao === "XOA_SOS" && activeMarkers[markerKey]) {
+    activeMarkers[markerKey].marker.remove();
+    delete activeMarkers[markerKey];
+    closeDetail();
   }
 }
 
-function tiepNhanSOS(idTinHieu, maThietBi) {
-  fetch(`/api/tin-hieu-sos/tiep-nhan/${idTinHieu}`, {
-    method: "POST",
+function doiTrangThaiSuCo(id, status) {
+  fetch(`/su-co/cap-nhat-trang-thai/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: status }),
   }).then((res) => {
     if (res.ok) {
-      alert("Đã tiếp nhận thành công!");
-      if (activeMarkers[idTinHieu]) {
-        activeMarkers[idTinHieu].remove();
-        delete activeMarkers[idTinHieu];
+      const markerKey = "SU_CO_" + id;
+      if (status === "HOAN_THANH") {
+        if (activeMarkers[markerKey]) {
+          activeMarkers[markerKey].marker.remove();
+          delete activeMarkers[markerKey];
+        }
+        closeDetail();
+        alert("Đã hoàn thành và gỡ bỏ sự cố!");
+      } else {
+        if (activeMarkers[markerKey]) {
+          // Gán cả 2 kiểu để chắc chắn hàm vẽ lại nhận diện được trạng thái mới
+          activeMarkers[markerKey].data.trangThaiXuLy = status;
+          activeMarkers[markerKey].data.trangThai = status;
+
+          // Vẽ lại Marker & vẽ lại Panel chi tiết ngay lập tức
+          addSOSMarker(activeMarkers[markerKey].data, "SU_CO");
+          showSuCoDetail(activeMarkers[markerKey].data);
+        }
+        alert("Đã tiếp nhận sự cố thành công!");
       }
-      closeDetail();
     }
   });
+}
+
+function doiTrangThai(id, status) {
+  fetch(`/sos/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${idTruSo}`, {
+    method: "PATCH",
+  }).then((res) => {
+    if (res.ok) {
+      const markerKey = "SOS_" + id;
+      if (activeMarkers[markerKey]) {
+        activeMarkers[markerKey].data.trangThai = status;
+        if (status === "HOAN_THANH") {
+          activeMarkers[markerKey].marker.remove();
+          delete activeMarkers[markerKey];
+          closeDetail();
+        } else {
+          showSOSDetail(activeMarkers[markerKey].data);
+          addSOSMarker(activeMarkers[markerKey].data, "SOS");
+        }
+      }
+    }
+  });
+}
+
+function loadExistingSuCo() {
+  return fetch(`/api/su-co/map`)
+    .then((res) => res.json())
+    .then((data) => {
+      data.forEach((item) => {
+        addSOSMarker(item, "SU_CO");
+        addNotiItem(item, "SU_CO", true);
+      });
+    });
+}
+
+function loadExistingSOS() {
+  return fetch("/sos/hoat-dong")
+    .then((res) => res.json())
+    .then((data) => {
+      data.forEach((item) => {
+        addSOSMarker(item, "SOS");
+        addNotiItem(item, "SOS", true);
+      });
+    });
 }
 
 async function saveStationConfig() {
   const payload = {
     trangThaiHoatDong: document.getElementById("trangThaiHoatDong").value,
   };
-
   const response = await fetch("/truso/config", {
     method: "PATCH",
-
-    headers: {
-      "Content-Type": "application/json",
-    },
-
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-
   if (!response.ok) {
     alert("Cập nhật thất bại");
     return;
   }
-
   alert("Đã cập nhật trạng thái");
 }
 
-// Bật/Tắt ẩn hiện dropdown
 function toggleScpDropdown(event) {
-  event.stopPropagation(); // Tránh lan truyền sự kiện
+  event.stopPropagation();
   const panel = document.getElementById("station-control-panel");
-  panel.classList.toggle("show");
+  if (panel) panel.classList.toggle("show");
 }
 
-// Cập nhật text và màu chấm preview ngay khi thay đổi trên Select (chưa bấm lưu)
 function updatePreviewDot() {
   const select = document.getElementById("trangThaiHoatDong");
+  if (!select) return;
   const selectedText = select.options[select.selectedIndex].text;
-
-  // Cập nhật text cho preview hiển thị ra ngoài
   document.getElementById("station-status-text").innerText = selectedText;
 }
 
-// Xử lý sự kiện lưu trạng thái
 function handleSaveStationConfig(event) {
   event.stopPropagation();
-
-  // Gọi tới hàm lưu logic nghiệp vụ sẵn có của bạn
-  if (typeof saveStationConfig === "function") {
-    saveStationConfig();
-  } else {
-    console.log(
-      "Đã lưu trạng thái: " +
-        document.getElementById("trangThaiHoatDong").value,
-    );
-  }
-
-  // Lưu xong tự động thu gọn bảng lại cho đẹp
+  saveStationConfig();
   const panel = document.getElementById("station-control-panel");
-  panel.classList.remove("show");
+  if (panel) panel.classList.remove("show");
 }
 
-// Click ra ngoài map hoặc bất kỳ đâu thì tự động đóng bảng điều khiển lại
 document.addEventListener("click", function (event) {
   const panel = document.getElementById("station-control-panel");
-  if (!panel.contains(event.target)) {
+  if (panel && !panel.contains(event.target)) {
     panel.classList.remove("show");
   }
 });
