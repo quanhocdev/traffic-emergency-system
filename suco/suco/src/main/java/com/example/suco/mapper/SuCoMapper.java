@@ -38,10 +38,8 @@ public class SuCoMapper {
                 dto.setKinhDo(b.getKinhDo());
                 dto.setIconUrl( b.getLoaiSuCo() != null ? b.getLoaiSuCo().getIconUrl() : null);
                 dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
-                dto.setMucDoNghiemTrong(
-                        b.getMucDoSuCo() != null
-                ? b.getMucDoSuCo().getLabel()
-                : null
+                dto.setMucDoSuCo(
+    b.getMucDoSuCo() != null ? b.getMucDoSuCo().name() : null
 );
                 dto.setTruSoId(b.getTruSoTiepNhan() != null ? b.getTruSoTiepNhan().getId() : null);
                 return dto;
@@ -147,7 +145,9 @@ if (b.getTruSoTiepNhan() != null) {
     dto.setTrangThaiDuyet(b.getTrangThaiDuyet() != null ? b.getTrangThaiDuyet().getLabel() : null);
     dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
 
-    dto.setMucDoNghiemTrong(b.getMucDoSuCo() != null ? b.getMucDoSuCo().getLabel() : null);
+    dto.setMucDoSuCo(
+    b.getMucDoSuCo() != null ? b.getMucDoSuCo().name() : null
+);
     dto.setHinhAnhUrl(b.getHinhAnhUrl());
 
     dto.setDoTinCay(b.getDoTinCay());

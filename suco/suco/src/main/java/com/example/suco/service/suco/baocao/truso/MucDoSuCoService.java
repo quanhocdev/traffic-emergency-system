@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -39,11 +38,13 @@ public Map<String, Object> capNhatMucDo(
         TruSo current
 ) {
 
+
     BaoCaoSuCo suCo = reportRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
                     "Không tìm thấy sự cố"
             ));
+
 
     log.info(
             "\nTrụ sở {} cập nhật mức độ {} sự cố: {}",
@@ -52,6 +53,12 @@ public Map<String, Object> capNhatMucDo(
             id
     );
 
+    if (mucDo == null) {
+    throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        "Mức độ không hợp lệ"
+    );
+}
     // =========================
     // VALIDATE STATUS (ENUM SAFE)
     // =========================
@@ -94,10 +101,13 @@ public Map<String, Object> capNhatMucDo(
     // =========================
     suCo.setMucDoSuCo(mucDo);
 
+
     BaoCaoSuCo saved = reportRepository.save(suCo);
+
 
     SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
 
+    
     log.info(
             "\nCập nhật mức độ thành công: {}",
             saved.getMucDoSuCo()

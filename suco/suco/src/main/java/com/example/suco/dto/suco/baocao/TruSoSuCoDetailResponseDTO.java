@@ -16,7 +16,7 @@ public class TruSoSuCoDetailResponseDTO {
     private String trangThaiDuyet;
     private String trangThaiXuLy;
 
-    private String mucDoNghiemTrong;
+    private String mucDoSuCo;
     private String hinhAnhUrl;
 
     private Integer doTinCay;
@@ -39,7 +39,7 @@ public class TruSoSuCoDetailResponseDTO {
     public String getIconUrl() { return iconUrl; }
     public String getTrangThaiDuyet() { return trangThaiDuyet; }
     public String getTrangThaiXuLy() { return trangThaiXuLy; }
-    public String getMucDoNghiemTrong() { return mucDoNghiemTrong; }
+    public String getMucDoSuCo() { return mucDoSuCo; }
     public String getHinhAnhUrl() { return hinhAnhUrl; }
     public Integer getDoTinCay() { return doTinCay; }
     public String getTenNguoiBao() { return tenNguoiBao; }
@@ -56,7 +56,7 @@ public class TruSoSuCoDetailResponseDTO {
     public void setIconUrl(String iconUrl) { this.iconUrl = iconUrl; }
     public void setTrangThaiDuyet(String trangThaiDuyet) { this.trangThaiDuyet = trangThaiDuyet; }
     public void setTrangThaiXuLy(String trangThaiXuLy) { this.trangThaiXuLy = trangThaiXuLy; }
-    public void setMucDoNghiemTrong(String mucDoNghiemTrong) { this.mucDoNghiemTrong = mucDoNghiemTrong; }
+    public void setMucDoSuCo(String mucDoSuCo) { this.mucDoSuCo = mucDoSuCo; }
     public void setHinhAnhUrl(String hinhAnhUrl) { this.hinhAnhUrl = hinhAnhUrl; }
     public void setDoTinCay(Integer doTinCay) { this.doTinCay = doTinCay; }
     public void setTenNguoiBao(String tenNguoiBao) { this.tenNguoiBao = tenNguoiBao; }
