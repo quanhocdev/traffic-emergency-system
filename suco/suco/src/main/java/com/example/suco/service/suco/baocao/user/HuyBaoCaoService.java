@@ -40,7 +40,7 @@ public class HuyBaoCaoService {
             : uid + "***";
 }
     
-       @Transactional
+    @Transactional
 public ResponseEntity<?> cancelReport(
         Long reportId,
         String currentUid
@@ -62,27 +62,22 @@ public ResponseEntity<?> cancelReport(
     // =========================
     quyenHanService.checkOwner(report, currentUid);
 
-    TrangThaiXuLy xuLy = report.getTrangThaiXuLy();
-    TrangThaiDuyet duyet = report.getTrangThaiDuyet();
-
     // =========================
-    // BLOCK IF VERIFIED
+    // BLOCK IF FINAL STATE
     // =========================
-    if (duyet == TrangThaiDuyet.VERIFIED) {
-
-        log.warn("\n[HUY BAO CAO - BLOCKED] Report {} already VERIFIED", reportId);
+    if (report.getTrangThaiXuLy().isFinalState()) {
 
         return ResponseEntity.badRequest()
                 .body(Map.of(
                         "message",
-                        "Báo cáo đã được duyệt, không thể hủy."
+                        "Báo cáo đã kết thúc, không thể hủy."
                 ));
     }
 
     // =========================
-    // ONLY ALLOW CANCEL FROM CHO_XU_LY
+    // ONLY USER CANCEL RULE
     // =========================
-    if (xuLy != TrangThaiXuLy.CHO_XU_LY) {
+    if (!report.getTrangThaiXuLy().canBeCancelledByUser()) {
 
         return ResponseEntity.badRequest()
                 .body(Map.of(

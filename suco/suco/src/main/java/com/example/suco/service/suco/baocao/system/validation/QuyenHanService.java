@@ -2,6 +2,7 @@ package com.example.suco.service.suco.baocao.system.validation;
 
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
+import com.example.suco.model.enums.TrangThaiXuLy;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,10 +45,10 @@ public class QuyenHanService {
         }
     }
 
-    public void checkNotFinished(String status) {
+     public void checkNotFinished(TrangThaiXuLy status) {
 
-        if ("HOAN_THANH".equals(status)
-                || "HUY_BO".equals(status)) {
+        if (status == TrangThaiXuLy.HOAN_THANH
+                || status == TrangThaiXuLy.HUY_BO) {
 
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
