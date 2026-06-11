@@ -2,6 +2,7 @@ package com.example.suco.service.suco.baocao.system.validation;
 
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.BaoCaoTrungLap;
+import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.repository.suco.baocao.BaoCaoTrungLapRepository;
 
@@ -27,7 +28,10 @@ public class TrungLapBaoCaoService {
 
     List<BaoCaoSuCo> activeReports =
             reportRepository.findByTrangThaiXuLyNotIn(
-                    List.of("HOAN_THANH", "HUY_BO")
+                    List.of(
+                            TrangThaiXuLy.HOAN_THANH,
+                            TrangThaiXuLy.HUY_BO
+                    )
             );
 
     for (BaoCaoSuCo ex : activeReports) {
@@ -55,6 +59,7 @@ public class TrungLapBaoCaoService {
 
     return null;
 }
+
 
     public Double calculateMatchedDistance(
             BaoCaoSuCo report,

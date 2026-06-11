@@ -1,51 +1,49 @@
 package com.example.suco.repository.suco.baocao;
 
+import com.example.suco.model.BaoCaoSuCo;
+import com.example.suco.model.enums.TrangThaiXuLy;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.suco.model.BaoCaoSuCo;
-import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
-public interface SuCoTruSoRepository
-        extends JpaRepository<BaoCaoSuCo, Long> {
+public interface SuCoTruSoRepository extends JpaRepository<BaoCaoSuCo, Long> {
 
-    // Chờ xử lý
+    // =========================
+    // CHỜ TRỤ SỞ NHẬN (DA_TIEP_NHAN / CHO_XU_LY)
+    // =========================
     @Query("""
         SELECT DISTINCT b FROM BaoCaoSuCo b
         LEFT JOIN FETCH b.loaiSuCo
         LEFT JOIN FETCH b.reporter
         LEFT JOIN FETCH b.truSoTiepNhan
         WHERE b.truSoTiepNhan.id = :idTruSo
-        AND b.trangThaiXuLy = 'CHO_XU_LY'
+        AND b.trangThaiXuLy = :status
     """)
-    List<BaoCaoSuCo> findPendingByTruSo(
-            @Param("idTruSo") Long idTruSo
+    List<BaoCaoSuCo> findByTruSoAndStatus(
+            @Param("idTruSo") Long idTruSo,
+            @Param("status") TrangThaiXuLy status
     );
 
-    // Đang xử lý
-    @Query("""
-        SELECT DISTINCT b FROM BaoCaoSuCo b
-        LEFT JOIN FETCH b.loaiSuCo
-        LEFT JOIN FETCH b.reporter
-        LEFT JOIN FETCH b.truSoTiepNhan
-        WHERE b.truSoTiepNhan.id = :idTruSo
-        AND b.trangThaiXuLy = 'DANG_XU_LY'
-    """)
-    List<BaoCaoSuCo> findActiveByTruSo(
-            @Param("idTruSo") Long idTruSo
-    );
+    // =========================
+    // CHỜ XỬ LÝ
+    // =========================
+    default List<BaoCaoSuCo> findPendingByTruSo(Long idTruSo) {
+        return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.CHO_XU_LY);
+    }
 
-    // Lịch sử
-    @Query("""
-        SELECT DISTINCT b FROM BaoCaoSuCo b
-        LEFT JOIN FETCH b.loaiSuCo
-        LEFT JOIN FETCH b.reporter
-        LEFT JOIN FETCH b.truSoTiepNhan
-        WHERE b.truSoTiepNhan.id = :idTruSo
-        AND b.trangThaiXuLy = 'HOAN_THANH'
-    """)
-    List<BaoCaoSuCo> findHistoryByTruSo(
-            @Param("idTruSo") Long idTruSo
-    );
+    // =========================
+    // ĐANG XỬ LÝ
+    // =========================
+    default List<BaoCaoSuCo> findActiveByTruSo(Long idTruSo) {
+        return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.DANG_XU_LY);
+    }
+
+    // =========================
+    // HOÀN THÀNH
+    // =========================
+    default List<BaoCaoSuCo> findHistoryByTruSo(Long idTruSo) {
+        return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.HOAN_THANH);
+    }
 }

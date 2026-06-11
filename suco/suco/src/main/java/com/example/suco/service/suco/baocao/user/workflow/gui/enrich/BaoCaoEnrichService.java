@@ -47,42 +47,21 @@ public class BaoCaoEnrichService {
         );
         report.setDiaChi(address);
 
-        // =========================
-        // IMAGE ENRICHMENT
-        // =========================
+        // kiểm tra ảnh có hợp lệ không, nếu có thì lưu và set URL
         if (base64 != null && !base64.isBlank()) {
             report.setHinhAnhUrl(
                     imageStorageService.saveBase64Image(base64)
             );
         }
 
-        // =========================
-        // AI INITIAL STATE (TYPE SAFE)
-        // =========================
-        report.setTrangThaiDuyet(TrangThaiDuyet.PENDING);
-        report.setTrangThaiXuLy(TrangThaiXuLy.CHO_XU_LY);
-
-        // =========================
-        // TRUST DEFAULT (before AI)
-        // =========================
         report.setDoTinCay(1);
 
-        // =========================
-        // SAVE FIRST
-        // =========================
         BaoCaoSuCo saved = reportRepository.save(report);
 
-        // =========================
-        // DUPLICATE / AI SCORING
-        // =========================
         trungLapBaoCaoService.recalculateTrust(saved);
 
-        // nếu service có modify entity
         saved = reportRepository.save(saved);
 
-        // =========================
-        // REALTIME
-        // =========================
         realtimeService.broadcastReport(
                 suCoMapper.toMapDto(saved)
         );
