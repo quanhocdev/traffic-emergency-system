@@ -1,476 +1,282 @@
-// --- KHỞI TẠO WEBSOCKET ---
+// --- KHỞI TẠO HỆ THỐNG LẮNG NGHE REALTIME (WEBSOCKET) ---
 const socket = new SockJS("/ws-suco-web");
 const stompClient = Stomp.over(socket);
 const cameraLoaded = new Set();
+
 stompClient.connect({}, function (frame) {
-  console.log("Connected to WebSocket");
+  console.log("Connected to Control Room WebSocket");
 
   stompClient.subscribe("/topic/su-co", function (message) {
     const suCoDto = JSON.parse(message.body);
     const id = suCoDto.id;
 
-    const cardPending = document.getElementById("pending-report-" + id);
-    const tableRow = document.getElementById("report-" + id);
+    let tableRow = document.getElementById("report-" + id);
 
-    console.log("Dữ liệu realtime:", suCoDto);
-
-    // 1. CẬP NHẬT DÒNG TRONG BẢNG (Realtime hoàn toàn)
-    if (tableRow) {
-      // Cập nhật thuộc tính data-status để filter Tab không bị sai
-      tableRow.setAttribute("data-status", suCoDto.trangThaiXuLy);
-
-      // Cập nhật cột "Trụ sở tiếp nhận / Trạng thái" (Cột số 6)
-      const statusCell = tableRow.cells[6];
-      if (suCoDto.trangThaiXuLy === "CHO_XU_LY") {
-        statusCell.innerHTML = `<span style="color: #f59e0b; font-style: italic">Đang chờ...</span>`;
-      } else if (suCoDto.trangThaiXuLy === "DANG_XU_LY") {
-        statusCell.innerHTML = `<span style="color: #3b82f6;">Trụ sở #${suCoDto.truSoTiepNhan?.id || id} (Đang xử lý)</span>`;
-      } else if (suCoDto.trangThaiXuLy === "HOAN_THANH") {
-        statusCell.innerHTML = `<span style="color: #10b981;">Đã hoàn thành</span>`;
-      } else if (suCoDto.trangThaiXuLy === "HUY_BO") {
-        statusCell.innerHTML = `<span style="color: #ef4444;">Đã từ chối/Spam</span>`;
-        tableRow.style.opacity = "0.6";
-      }
-
-      // Hiệu ứng highlight dòng vừa cập nhật
-      tableRow.style.backgroundColor = "#f0f9ff";
-      setTimeout(() => {
-        tableRow.style.backgroundColor = "";
-      }, 2000);
-    }
-
-    // 2. XỬ LÝ CARD TRÊN SLIDER
-    const ketThuc = ["HUY_BO", "HOAN_THANH"].includes(suCoDto.trangThaiXuLy);
-    suCoDto.trangThaiXuLy === "DA_TIEP_NHAN";
-
-    if (ketThuc) {
-      if (cardPending) {
-        cardPending.remove();
-        updateSliderVisibility(); // Cập nhật lại số lượng hiển thị slider
-      }
+    if (!tableRow) {
+      renderNewRow(suCoDto);
+      tableRow = document.getElementById("report-" + id);
+      playNotificationSound();
+      loadNearbyCameras(id);
     } else {
-      // Cập nhật độ tin cậy nếu chưa kết thúc
-      const updateConfidence = (parent) => {
-        if (!parent) return;
-        const confElem = parent.querySelector(".confidence-val");
-        if (confElem) {
-          confElem.innerText = suCoDto.doTinCay;
-          confElem.style.color = "#ef4444";
-          setTimeout(() => {
-            confElem.style.color = "";
-          }, 1000);
-        }
-      };
-      if (cardPending) updateConfidence(cardPending);
-      if (tableRow) updateConfidence(tableRow);
+      updateExistingRow(tableRow, suCoDto);
     }
 
-    // 3. NẾU LÀ BÁO CÁO MỚI (AI duyệt xong)
-    if (!cardPending && !tableRow && suCoDto.trangThaiDuyet === "AI_APPROVED") {
-      renderNewCard(suCoDto); // Vẽ card ở trên
-      renderNewRow(suCoDto); // VẼ DÒNG Ở DƯỚI (Thêm dòng này)
-
-      if (typeof playNotificationSound === "function") playNotificationSound();
-    }
-
-    // 4. CẬP NHẬT LẠI CÁC CON SỐ TRÊN TAB
     updateTabCounts();
   });
 });
 
-function renderNewRow(suCoDto) {
+/**
+ * Hàm Sinh Dòng Mới - Đã cấu trúc lại 10 cột tách biệt đồng bộ DTO
+ */
+function renderNewRow(dto) {
   const tableBody = document.getElementById("table-body-main");
-  if (!tableBody) return;
-
-  // Kiểm tra nếu dòng này đã tồn tại thì không chèn nữa
-  if (document.getElementById("report-" + suCoDto.id)) return;
+  if (!tableBody || document.getElementById("report-" + dto.id)) return;
 
   const row = document.createElement("tr");
   row.className = "incident-row";
-  row.id = "report-" + suCoDto.id;
-  row.setAttribute("data-lat", suCoDto.viDo);
-  row.setAttribute("data-lng", suCoDto.kinhDo);
-  row.setAttribute("data-status", suCoDto.trangThaiXuLy); // Thường là CHO_XU_LY
+  row.id = "report-" + dto.id;
+
+  row.setAttribute("data-status", dto.trangThaiXuLy);
+  row.setAttribute("data-lat", dto.viDo);
+  row.setAttribute("data-lng", dto.kinhDo);
+
+  if (dto.trangThaiXuLy === "HUY_BO") {
+    row.style.opacity = "0.5";
+  }
+
+  // Định dạng hiển thị thời gian từ LocalDateTime
+  let formattedTime = "Vừa xong";
+  if (dto.thoiGianTao) {
+    try {
+      const date = new Date(dto.thoiGianTao);
+      formattedTime = date.toLocaleString("vi-VN");
+    } catch (e) {
+      formattedTime = dto.thoiGianTao;
+    }
+  }
 
   row.innerHTML = `
-        <td>${suCoDto.id}</td>
-        <td><img src="${suCoDto.hinhAnhUrl || "/images/no-image.png"}" class="img-table" /></td>
-        <td>${suCoDto.tenLoai || "Sự cố"}</td>
-        <td>
-            <div>${suCoDto.tenNguoiBao || "Người dân"}</div>
-            <div style="font-size: 11px; color: #94a3b8">${suCoDto.emailNguoiBao || ""}</div>
-        </td>
-        <td>${suCoDto.diaChi || "Không rõ vị trí"}</td>
-        <td class="confidence-val">${suCoDto.doTinCay || 1}</td>
-        <td>
-            <span style="color: #f59e0b; font-style: italic">Đang chờ...</span>
-        </td>
-        <td>
-            <div id="cam-area-${suCoDto.id}" style="display: none; flex-direction: column; gap: 5px">
-                <div id="cam-list-${suCoDto.id}" style="display: flex; gap: 5px; flex-wrap: wrap"></div>
-            </div>
-        </td>
-    `;
+    <td class="row-id-cell">${dto.id}</td>
+    <td>
+      <img src="${dto.hinhAnhUrl || "/images/no-image.png"}" class="img-table"/>
+    </td>
+    <td style="font-weight: 600; color: #1e293b;">${dto.tenLoai || "Sự cố"}</td>
+    <td>
+      <small class="badge-level ${dto.mucDoSuCo || "NONE"}">${dto.mucDoSuCo || "NONE"}</small>
+    </td>
+    <td>
+      <div style="font-weight: 500;">${dto.tenNguoiBao || "Người dân"}</div>
+      <div class="reporter-email">${dto.reporterUid || "Ẩn danh"}</div>
+    </td>
+    <td>
+      <div class="address-text">${dto.diaChi || "Không xác định"}</div>
+      <div class="coordinate-subtext">
+        <i class="fa-solid fa-location-dot"></i> Lat: ${dto.viDo || 0.0}, Lng: ${dto.kinhDo || 0.0}
+      </div>
+    </td>
+    <td class="time-cell">${formattedTime}</td>
+    <td class="confidence-val">${dto.doTinCay !== undefined ? dto.doTinCay : 1}</td>
+    <td class="status-cell">
+      ${generateStatusBadge(dto.trangThaiXuLy, dto)}
+    </td>
+    <td>
+      <div id="cam-area-${dto.id}" class="camera-zone-wrapper" style="display:none">
+        <div id="cam-list-${dto.id}" class="camera-badge-flex"></div>
+      </div>
+    </td>
+  `;
 
-  // Chèn lên đầu bảng
-  tableBody.insertBefore(row, tableBody.firstChild);
+  tableBody.prepend(row);
 
-  cameraLoaded.delete(suCoDto.id);
-  // Sau khi chèn xong, quét camera cho dòng này luôn
-  loadNearbyCameras(suCoDto.id);
+  row.style.backgroundColor = "#eff6ff";
+  setTimeout(() => (row.style.backgroundColor = ""), 2000);
 }
 
-function checkIfEmpty() {
-  const container = document.querySelector(".card-container");
-  // Nếu không còn card nào, load lại trang để Thymeleaf hiện div "Tạm thời không có báo cáo"
-  if (container && container.querySelectorAll(".card").length === 0) {
-    location.reload();
+function updateExistingRow(row, dto) {
+  row.setAttribute("data-status", dto.trangThaiXuLy);
+  row.style.opacity = dto.trangThaiXuLy === "HUY_BO" ? "0.5" : "1";
+
+  // Ở bảng mới 10 cột, ô Trạng thái nằm ở index số 8 (cột số 9)
+  const statusCell = row.cells[8];
+  if (statusCell) {
+    statusCell.innerHTML = generateStatusBadge(dto.trangThaiXuLy, dto);
+  }
+
+  row.style.backgroundColor = "#f0f9ff";
+  setTimeout(() => (row.style.backgroundColor = ""), 1500);
+}
+
+function generateStatusBadge(status, dto) {
+  switch (status) {
+    case "DA_TIEP_NHAN":
+      return `<span class="status-label status-received">
+                <i class="fa-solid fa-bell"></i> Đã tiếp nhận 
+                ${dto.truSoTiepNhan?.id ? `(Trụ sở #${dto.truSoTiepNhan.id})` : "(Chưa gán)"}
+              </span>`;
+    case "CHO_XU_LY":
+      return `<span class="status-label status-waiting">
+                <i class="fa-solid fa-clock"></i> Chờ xử lý
+              </span>`;
+    case "DANG_XU_LY":
+      return `<span class="status-label status-processing">
+                <i class="fa-solid fa-spinner fa-spin"></i> 
+                Trụ sở #${dto.truSoTiepNhan?.id || "tổng"} đang xử lý
+              </span>`;
+    case "HOAN_THANH":
+      return `<span class="status-label status-done">
+                <i class="fa-solid fa-circle-check"></i> Đã hoàn thành
+              </span>`;
+    case "HUY_BO":
+      return `<span class="status-label status-cancelled">
+                <i class="fa-solid fa-circle-xmark"></i> Đã hủy bỏ
+              </span>`;
+    default:
+      return `<span class="status-label" style="color:#64748b">Không rõ</span>`;
   }
 }
+
 function playNotificationSound() {
-  // Sử dụng âm thanh Siren hoặc Emergency Alert
   const audio = new Audio(
-    "https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3", // Tiếng còi báo động nhanh
+    "https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3",
   );
-  audio.volume = 0.7; // Chỉnh âm lượng vừa phải
-  audio.play().catch((e) => {
-    console.log("Cần tương tác với trang web để phát thanh báo động");
-  });
-}
-function renderNewCard(suCoDto) {
-  const slider = document.getElementById("pending-slider");
-  const noMsg = document.getElementById("no-pending-msg");
-
-  if (noMsg) noMsg.style.display = "none";
-  if (document.getElementById("pending-report-" + suCoDto.id)) return;
-
-  const card = document.createElement("div");
-  card.className = "card-mini pending-item new-card-highlight";
-  card.id = "pending-report-" + suCoDto.id;
-
-  // --- SỬA 1: Gán tọa độ để hàm loadNearbyCameras có dữ liệu để chạy ---
-  card.setAttribute("data-lat", suCoDto.viDo);
-  card.setAttribute("data-lng", suCoDto.kinhDo);
-
-  // --- SỬA 2: Thêm div cam-list-pending để có chỗ hiển thị camera ---
-  card.innerHTML = `
-        <img src="${suCoDto.hinhAnhUrl || "/images/no-image.png"}" class="card-mini-img" />
-        <div class="card-mini-body">
-            <span style="color: var(--accent-color); font-weight: 700; font-size: 10px;">${suCoDto.tenLoai || "SỰ CỐ"}</span>
-            <span><i class="fa-solid fa-user"></i> <b>${suCoDto.tenNguoiBao || "Người dân"}</b></span>
-            <span class="text-truncate" title="${suCoDto.diaChi}">
-                <i class="fa-solid fa-location-dot"></i> ${suCoDto.diaChi || "Không rõ vị trí"}
-            </span>
-            <span>Tin cậy: <b class="confidence-val">${suCoDto.doTinCay || 1}</b></span>
-            
-            <div id="cam-list-pending-${suCoDto.id}" style="display: flex; gap: 5px; margin-top: 5px"></div>
-
-            <a href="javascript:void(0)" onclick="alert('Mô tả: ${suCoDto.moTa}')" style="margin-top: auto; color: #64748b">
-                <i class="fa-solid fa-circle-info"></i> Chi tiết
-            </a>
-        </div>
-        <div class="card-mini-actions">
-            <button class="btn btn-ok" onclick="verify(${suCoDto.id}, true)">
-                <i class="fa-solid fa-check"></i>
-            </button>
-            <button class="btn btn-fail" onclick="verify(${suCoDto.id}, false)">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-    `;
-
-  slider.insertBefore(card, slider.firstChild);
-  updateSliderVisibility();
+  audio.volume = 0.5;
+  audio.play().catch(() => {});
 }
 
-async function verify(id, isCorrect) {
-  if (!confirm("Xác nhận xử lý báo cáo này?")) return;
-  try {
-    const res = await fetch(
-      `/admin/bao-cao-su-co/${id}/verify?isCorrect=${isCorrect}`,
-      { method: "POST" },
+window.switchTab = function (type, element) {
+  const tabItems = document.querySelectorAll(".system-tabs .tab-item");
+  tabItems.forEach((tab) => tab.classList.remove("active"));
+
+  if (element) {
+    element.classList.add("active");
+  } else {
+    const targetTab = Array.from(tabItems).find((tab) =>
+      tab.getAttribute("onclick").includes(`'${type}'`),
     );
-
-    if (res.ok) {
-      // 1. Xóa Card ở Slider phía trên
-      const pendingCard = document.getElementById("pending-report-" + id);
-      if (pendingCard) pendingCard.remove();
-
-      // 2. Xử lý dòng trong bảng
-      const row = document.getElementById("report-" + id);
-      if (row) {
-        if (isCorrect) {
-          row.setAttribute("data-status", "DANG_XU_LY");
-          row.cells[6].innerHTML = `<span style="color: #3b82f6;">Đã xác minh (Đang xử lý)</span>`;
-        } else {
-          // --- ĐOẠN QUAN TRỌNG: CHUYỂN SANG BẢNG SPAM ---
-          const spamTableBody = document.querySelector(
-            "#spam-table-container tbody",
-          );
-          const newSpamRow = document.createElement("tr");
-
-          // Lấy dữ liệu hiện tại từ dòng cũ để đưa sang bảng spam
-          const imgUrl = row.cells[1].querySelector("img").src;
-          const reporterName = row.cells[3].querySelector("div").innerText;
-          const address = row.cells[4].innerText;
-          const currentTime = new Date().toLocaleString("vi-VN");
-
-          newSpamRow.innerHTML = `
-                        <td>${id}</td>
-                        <td>${reporterName}</td>
-                        <td><img src="${imgUrl}" class="img-table" /></td>
-                        <td>Báo cáo bị từ chối bởi Admin</td>
-                        <td>${address}</td>
-                        <td>${currentTime}</td>
-                    `;
-          spamTableBody.insertBefore(newSpamRow, spamTableBody.firstChild);
-
-          // Xóa dòng cũ ở bảng chính vì nó đã là Spam
-          row.remove();
-        }
-      }
-
-      // 3. Cập nhật lại tất cả con số
-      updateTabCounts();
-      updateSliderVisibility();
-    }
-  } catch (error) {
-    console.error(error);
+    if (targetTab) targetTab.classList.add("active");
   }
-}
-// Hàm bổ trợ để tính lại số lượng trên các Tab mà không cần load trang
-function updateTabCounts() {
-  // Đếm hàng ở bảng chính
+
   const rows = document.querySelectorAll("#table-body-main .incident-row");
-  let pending = 0,
-    processing = 0,
-    done = 0;
+  rows.forEach((row) => {
+    const status = row.getAttribute("data-status");
+
+    switch (type) {
+      case "all":
+        row.style.display = "";
+        break;
+      case "pending":
+        row.style.display = status === "DA_TIEP_NHAN" ? "" : "none";
+        break;
+      case "waiting":
+        row.style.display = status === "CHO_XU_LY" ? "" : "none";
+        break;
+      case "processing":
+        row.style.display = status === "DANG_XU_LY" ? "" : "none";
+        break;
+      case "done":
+        row.style.display = status === "HOAN_THANH" ? "" : "none";
+        break;
+      case "cancel":
+        row.style.display = status === "HUY_BO" ? "" : "none";
+        break;
+    }
+  });
+};
+
+function updateTabCounts() {
+  const rows = document.querySelectorAll("#table-body-main .incident-row");
+
+  let total = rows.length;
+  let daTiepNhan = 0;
+  let choXuLy = 0;
+  let dangXuLy = 0;
+  let hoanThanh = 0;
+  let huyBo = 0;
 
   rows.forEach((row) => {
     const status = row.getAttribute("data-status");
-    if (status === "CHO_XU_LY") pending++;
-    else if (status === "DANG_XU_LY") processing++;
-    else if (status === "HOAN_THANH") done++;
+    if (status === "DA_TIEP_NHAN") daTiepNhan++;
+    else if (status === "CHO_XU_LY") choXuLy++;
+    else if (status === "DANG_XU_LY") dangXuLy++;
+    else if (status === "HOAN_THANH") hoanThanh++;
+    else if (status === "HUY_BO") huyBo++;
   });
 
-  // Đếm hàng ở bảng Spam
-  const spamRows = document.querySelectorAll(
-    "#spam-table-container tbody tr",
-  ).length;
-
-  const tabCounts = document.querySelectorAll(".tab-count");
-  if (tabCounts.length >= 5) {
-    tabCounts[0].innerText = rows.length; // Tất cả
-    tabCounts[1].innerText = pending; // Chờ
-    tabCounts[2].innerText = processing; // Đang
-    tabCounts[3].innerText = done; // Xong
-    tabCounts[4].innerText = spamRows; // Spam (Tab cuối cùng)
+  const tabItems = document.querySelectorAll(".system-tabs .tab-item");
+  if (tabItems.length >= 6) {
+    tabItems[0].querySelector(".tab-count").innerText = total;
+    tabItems[1].querySelector(".tab-count").innerText = daTiepNhan;
+    tabItems[2].querySelector(".tab-count").innerText = choXuLy;
+    tabItems[3].querySelector(".tab-count").innerText = dangXuLy;
+    tabItems[4].querySelector(".tab-count").innerText = hoanThanh;
+    tabItems[5].querySelector(".tab-count").innerText = huyBo;
   }
 }
-document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll(".pending-item").forEach((item) => {
-    const reportId = item.id.replace("pending-report-", "");
-    loadNearbyCameras(reportId);
-  });
 
-  // Load cho các item trong bảng bên dưới
+document.addEventListener("DOMContentLoaded", function () {
   document.querySelectorAll(".incident-row").forEach((row) => {
     const reportId = row.id.replace("report-", "");
     loadNearbyCameras(reportId);
   });
 
-  // Highlight item nếu có query parameter id
+  updateTabCounts();
+
   const urlParams = new URLSearchParams(window.location.search);
   const highlightId = urlParams.get("id");
   if (highlightId) {
-    const targetCard = document.getElementById("report-" + highlightId);
-    if (targetCard) {
-      // Highlight card
-      targetCard.style.backgroundColor = "#fef3c7";
-      targetCard.style.border = "2px solid #f59e0b";
-      targetCard.style.boxShadow = "0 0 20px rgba(245, 158, 11, 0.5)";
-
-      // Scroll vào view
+    const targetRow = document.getElementById("report-" + highlightId);
+    if (targetRow) {
+      targetRow.style.backgroundColor = "#fef3c7";
       setTimeout(() => {
-        targetCard.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }, 100);
-
-      // Bỏ highlight sau 3 giây
+        targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300);
       setTimeout(() => {
-        targetCard.style.backgroundColor = "";
-        targetCard.style.border = "";
-        targetCard.style.boxShadow = "";
-      }, 3000);
+        targetRow.style.backgroundColor = "";
+      }, 4000);
     }
   }
-  updateSliderVisibility();
 });
 
 async function loadNearbyCameras(reportId) {
-  if (cameraLoaded.has(reportId)) {
-    return;
-  }
+  if (cameraLoaded.has(reportId)) return;
   cameraLoaded.add(reportId);
-  // 1. Tìm tọa độ từ Card Duyệt nhanh hoặc Dòng trong bảng
-  const sourceElement =
-    document.getElementById("pending-report-" + reportId) ||
-    document.getElementById("report-" + reportId);
 
-  if (!sourceElement) return;
+  const row = document.getElementById("report-" + reportId);
+  if (!row) return;
 
-  const lat = sourceElement.getAttribute("data-lat");
-  const lng = sourceElement.getAttribute("data-lng");
-
+  const lat = row.getAttribute("data-lat");
+  const lng = row.getAttribute("data-lng");
   if (!lat || !lng || lat === "0.0") return;
 
   try {
     const res = await fetch(
       `/admin/quan-ly-camera/near-by-incident/${reportId}`,
     );
+    if (!res.ok) return;
     const cameras = await res.json();
 
-    if (cameras && cameras.length > 0) {
-      // --- CẬP NHẬT CHO CARD DUYỆT NHANH (Phần trên) ---
-      // --- CẬP NHẬT CHO CARD DUYỆT NHANH (Phần trên) ---
-      const pendingList = document.getElementById(
-        "cam-list-pending-" + reportId,
-      );
-      if (pendingList) {
-        pendingList.innerHTML = "";
-        cameras.forEach((cam) => {
-          const badge = document.createElement("div");
-          // Style này giúp badge chứa cả icon và tên trên một hàng, trông chuyên nghiệp hơn
-          badge.style = `
-            background: #fee2e2; 
-            padding: 2px 8px; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            border: 1px solid #fecaca; 
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            color: #b91c1c;
-            font-weight: 600;
+    const tableArea = document.getElementById("cam-area-" + reportId);
+    const tableList = document.getElementById("cam-list-" + reportId);
+
+    if (tableArea && tableList && cameras && cameras.length > 0) {
+      tableArea.style.display = "flex";
+      tableList.innerHTML = "";
+      cameras.forEach((cam) => {
+        const camItem = document.createElement("div");
+        camItem.innerHTML = `
+          <i class="fa-solid fa-camera" style="color: #475569;"></i>
+          <span style="font-weight: 500;">${cam.tenCamera}</span>
         `;
-
-          // Chèn cả Icon và Tên camera vào đây
-          badge.innerHTML = `
-            <i class="fa-solid fa-video" style="color: #ef4444;"></i>
-            <span>${cam.tenCamera}</span>
-        `;
-
-          badge.title = "Bấm để xem trực tiếp " + cam.tenCamera;
-          badge.onclick = (e) => {
-            e.stopPropagation();
-            cam.videoUrl
-              ? window.open(cam.videoUrl, "_blank")
-              : alert("Camera này không có luồng trực tiếp!");
-          };
-          pendingList.appendChild(badge);
-        });
-      }
-      // --- CẬP NHẬT CHO BẢNG TẤT CẢ (Phần dưới - Cột Camera mới) ---
-      const tableArea = document.getElementById("cam-area-" + reportId);
-      const tableList = document.getElementById("cam-list-" + reportId);
-
-      if (tableArea && tableList) {
-        tableArea.style.display = "flex";
-        tableList.innerHTML = "";
-        cameras.forEach((cam) => {
-          const camItem = document.createElement("div");
-          // Style cho item camera trong bảng: có viền, icon và tên
-          camItem.style = `
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            white-space: nowrap;
-        `;
-
-          camItem.innerHTML = `
-            <i class="fa-solid fa-camera" style="color: #475569;"></i>
-            <span style="font-weight: 500;">${cam.tenCamera}</span>
-        `;
-
-          camItem.onclick = () =>
-            cam.videoUrl
-              ? window.open(cam.videoUrl, "_blank")
-              : alert("Không có luồng!");
-
-          tableList.appendChild(camItem);
-        });
-      }
+        camItem.onclick = (e) => {
+          e.stopPropagation();
+          cam.videoUrl
+            ? window.open(cam.videoUrl, "_blank")
+            : alert("Camera mất tín hiệu!");
+        };
+        tableList.appendChild(camItem);
+      });
     }
   } catch (e) {
-    console.error("Lỗi quét camera cho ID: " + reportId, e);
+    console.error("Lỗi tải camera cho sự cố ID: " + reportId, e);
   }
 }
-let currentPendingPage = 0;
-const itemsPerPage = 3;
-
-// Logic Chuyển trang cho Slider phía trên
-function updateSliderVisibility() {
-  const items = document.querySelectorAll(".pending-item");
-  items.forEach((item, index) => {
-    const start = currentPendingPage * itemsPerPage;
-    const end = start + itemsPerPage;
-    item.style.display = index >= start && index < end ? "flex" : "none";
-  });
-}
-
-function nextPendingPage() {
-  const totalItems = document.querySelectorAll(".pending-item").length;
-  if ((currentPendingPage + 1) * itemsPerPage < totalItems) {
-    currentPendingPage++;
-    updateSliderVisibility();
-  }
-}
-
-function prevPendingPage() {
-  if (currentPendingPage > 0) {
-    currentPendingPage--;
-    updateSliderVisibility();
-  }
-}
-
-// Logic Chuyển Tab bên dưới
-window.switchTab = function (type) {
-  // Cập nhật UI nút tab
-  document
-    .querySelectorAll(".tab-item")
-    .forEach((tab) => tab.classList.remove("active"));
-  event.currentTarget.classList.add("active");
-
-  const mainContainer = document.getElementById("incident-table-container");
-  const spamContainer = document.getElementById("spam-table-container");
-  const rows = document.querySelectorAll(".incident-row");
-
-  if (type === "spam") {
-    mainContainer.style.display = "none";
-    spamContainer.style.display = "block";
-  } else {
-    mainContainer.style.display = "block";
-    spamContainer.style.display = "none";
-
-    rows.forEach((row) => {
-      const status = row.getAttribute("data-status");
-      if (type === "all") row.style.display = "";
-      else if (type === "pending" && status === "CHO_XU_LY")
-        row.style.display = "";
-      else if (type === "processing" && status === "DANG_XU_LY")
-        row.style.display = "";
-      else if (type === "done" && status === "HOAN_THANH")
-        row.style.display = "";
-      else row.style.display = "none";
-    });
-  }
-};

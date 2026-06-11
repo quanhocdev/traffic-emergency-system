@@ -21,16 +21,6 @@ public interface BaoCaoSuCoRepository extends JpaRepository<BaoCaoSuCo, Long> {
 """)
 List<BaoCaoSuCo> findAllForMapEntity();
 
-//     @Query("""
-//     SELECT b FROM BaoCaoSuCo b
-//     LEFT JOIN FETCH b.loaiSuCo
-//     LEFT JOIN FETCH b.reporter
-//     WHERE b.trangThaiDuyet IN ('AI_APPROVED', 'PENDING')
-//     AND b.trangThaiXuLy = 'CHO_XU_LY'
-//     ORDER BY b.thoiGianTao DESC
-// """)
-// List<BaoCaoSuCo> findPendingReportsForAdmin();
-
 List<BaoCaoSuCo> findByTrangThaiXuLyNotIn(List<TrangThaiXuLy> statuses);    
     List<BaoCaoSuCo> findByReporterUid(String uid);
 }
