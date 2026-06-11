@@ -27,6 +27,13 @@ public interface SuCoTruSoRepository extends JpaRepository<BaoCaoSuCo, Long> {
     );
 
     // =========================
+// MỚI TIẾP NHẬN (AI vừa gán)
+// =========================
+default List<BaoCaoSuCo> findNewAssignedByTruSo(Long idTruSo) {
+    return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.DA_TIEP_NHAN);
+}
+
+    // =========================
     // CHỜ XỬ LÝ
     // =========================
     default List<BaoCaoSuCo> findPendingByTruSo(Long idTruSo) {

@@ -2,154 +2,130 @@ package com.example.suco.controller.vanhanh.truso;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.http.ResponseEntity;
 
 import com.example.suco.config.AppConfig;
-import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
-import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
+import com.example.suco.model.BaoCaoSuCo;
+import com.example.suco.model.enums.TrangThaiXuLy;
+import com.example.suco.repository.suco.baocao.SuCoTruSoRepository;
 
-import org.springframework.ui.Model;
-
-import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
-import com.example.suco.dto.sos.tinhieu.UserMiniDTO; // Nhớ import cả UserMiniDTO nếu nằm ở package khác
-import com.example.suco.dto.sos.tinhieu.truso.TruSoSOSDetailResponseDTO;
-
-import java.util.stream.Collectors;
 import java.util.List;
+import java.util.Map;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/truso")
 public class PageSuCoController {
 
     @Autowired
-    private TinHieuSOSRepository tinHieuSOSRepository;
+    private SuCoTruSoRepository suCoTruSoRepository;
     
     @Autowired
     private AppConfig appConfig;
-    
-      @GetMapping("/login")
-public String trangLogin() {
-    return "truso/login";
-}
+
+    // ==========================================
+    // 🌐 VIEW - GIAO DIỆN CÁC TRANG SỰ CỐ
+    // ==========================================
+
+    @GetMapping("/login")
+    public String trangLogin() {
+        return "truso/login";
+    }
 
     @GetMapping("/trang-chu") 
     public String trangChu(HttpSession session, Model model) {
-
-    if (session.getAttribute("currentTruSo") == null) {
-        return "redirect:/truso/login";
+        if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
+        model.addAttribute("mapboxToken", appConfig.getMapboxToken());
+        return "truso/trang-chu";
     }
 
-    model.addAttribute("mapboxToken", appConfig.getMapboxToken());
-
-    return "truso/trang-chu";
-}
-
-    @GetMapping("/quan-ly-cuu-tro")
-    public String quanLyCuuTro(HttpSession session) {
-        if (session.getAttribute("currentTruSo") == null) {
-            return "redirect:/truso/login";
-        }
-        return "truso/quan-ly-cuu-tro";
+    @GetMapping("/su-co-da-tiep-nhan")
+    public String suCoDaTiepNhan(HttpSession session) {
+        if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
+        return "truso/su-co-da-tiep-nhan"; // Tab 1
     }
 
-    @GetMapping("/dang-cuu-tro")
-    public String dangCuuTro(HttpSession session) {
-        if (session.getAttribute("currentTruSo") == null) {
-            return "redirect:/truso/login";
-        }
-        return "truso/dang-cuu-tro";
+    @GetMapping("/su-co-cho-xu-ly")
+    public String suCoChoXuLy(HttpSession session) {
+        if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
+        return "truso/su-co-cho-xu-ly"; // Tab 2
     }
 
-    @GetMapping("/lich-su-cuu-tro")
-    public String lichSuCuuTro(HttpSession session, Model model) {
-        if (session.getAttribute("currentTruSo") == null) {
-            return "redirect:/truso/login";
-        }
-        Object cs = session.getAttribute("currentTruSo");
-        java.util.List<TinHieuSOS> lichSu = java.util.Collections.emptyList();
-        try {
-            if (cs instanceof com.example.suco.model.TruSo) {
-                com.example.suco.model.TruSo current = (com.example.suco.model.TruSo) cs;
-                // Lấy các SOS đã hoàn thành cho trụ sở này
-                lichSu = tinHieuSOSRepository.findByIdTruSoTiepNhanAndTrangThai(current.getId(), "HOAN_THANH");
-            }
-        } catch (Exception e) {
-            // avoid throwing to template; log to stdout for troubleshooting
-            System.err.println("Error loading lich su cuu tro: " + e.getMessage());
-            e.printStackTrace();
-            lichSu = java.util.Collections.emptyList();
-        }
-        model.addAttribute("lichSuList", lichSu);
-        return "truso/lich-su-cuu-tro";
+    @GetMapping("/su-co-dang-xu-ly")
+    public String suCoDangXuLy(HttpSession session) {
+        if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
+        return "truso/su-co-dang-xu-ly"; // Tab 3
     }
 
+    @GetMapping("/lich-su-su-co")
+    public String lichSuSuCo(HttpSession session, Model model) {
+        if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
+        TruSo current = (TruSo) session.getAttribute("currentTruSo");
+        
+        // Đẩy thẳng danh sách lịch sử vào Model để render SSR bằng Thymeleaf nếu muốn
+        List<BaoCaoSuCo> lichSu = suCoTruSoRepository.findHistoryByTruSo(current.getId());
+        model.addAttribute("lichSuSuCoList", lichSu);
+        return "truso/lich-su-su-co"; // Tab 4
+    }
 
-   @GetMapping("/api/sos-cua-toi")
+    // ==========================================
+    // ⚡ API - LẤY DỮ LIỆU SỰ CỐ (CHO JS CALL)
+    // ==========================================
+
+    @GetMapping("/api/su-co/da-tiep-nhan")
     @ResponseBody
-    public List<TruSoSOSDetailResponseDTO> sosCuaToi(HttpSession session) {
+    public List<BaoCaoSuCo> getSuCoDaTiepNhan(HttpSession session) {
         TruSo current = (TruSo) session.getAttribute("currentTruSo");
         if (current == null) return List.of();
+        return suCoTruSoRepository.findNewAssignedByTruSo(current.getId());
+    }
 
-        List<TinHieuSOS> entities = tinHieuSOSRepository.findActiveByTruSo(current.getId());
+    @GetMapping("/api/su-co/cho-xu-ly")
+    @ResponseBody
+    public List<BaoCaoSuCo> getSuCoChoXuLy(HttpSession session) {
+        TruSo current = (TruSo) session.getAttribute("currentTruSo");
+        if (current == null) return List.of();
+        return suCoTruSoRepository.findPendingByTruSo(current.getId());
+    }
 
-        return entities.stream().map(entity -> {
-            TruSoSOSDetailResponseDTO dto = new TruSoSOSDetailResponseDTO();
-            
-            // 1. Map thông tin SOS cơ bản
-            dto.setId(entity.getId());
-            dto.setViDo(entity.getViDo());
-            dto.setKinhDo(entity.getKinhDo());
-            dto.setDiaChi(entity.getDiaChi());
-            dto.setGhiChu(entity.getGhiChu());
-            dto.setHinhAnhUrl(entity.getHinhAnh());
-            dto.setGhiAmUrl(entity.getGhiAm());
-            dto.setThoiGianTao(entity.getCreatedAt());
-            dto.setTrangThai(entity.getTrangThai());
+    @GetMapping("/api/su-co/dang-xu-ly")
+    @ResponseBody
+    public List<BaoCaoSuCo> getSuCoDangXuLy(HttpSession session) {
+        TruSo current = (TruSo) session.getAttribute("currentTruSo");
+        if (current == null) return List.of();
+        return suCoTruSoRepository.findActiveByTruSo(current.getId());
+    }
 
-            // 🌟 CÁCH 1: Nếu giao diện JavaScript đọc thuộc tính VIP trực tiếp từ SOS (s.isVip)
-            // Bạn nhớ mở file TruSoSOSDetailResponseDTO.java thêm trường 'private boolean isVip;' cùng getter/setter nhé!
-            // dto.setIsVip(entity.getIsVip()); 
+    // ==========================================
+    // 🎮 API - CHUYỂN TRẠNG THÁI SỰ CỐ
+    // ==========================================
 
-            // 2. Map thông tin người gửi (UserMiniDTO) + CHECK VIP Ở ĐÂY
-            if (entity.getUser() != null) {
-                UserMiniDTO userDto = new UserMiniDTO();
-                
-                userDto.setId(entity.getUser().getUid());
-                userDto.setName(entity.getUser().getName());
-                userDto.setEmail(entity.getUser().getEmail());
-                
-                // 🌟 CÁCH 2: Gán VIP vào đối tượng Người gửi (s.nguoiGui.vip)
-                // (Chọn cách này nếu thực thể User gốc của bạn có hàm check VIP, ví dụ: entity.getUser().getIsVip())
-                // userDto.setVip(entity.getUser().getIsVip()); 
-                
-                // Hoặc nếu bạn muốn lấy luôn trạng thái VIP tạm thời từ thực thể SOS gán qua cho User:
-                userDto.setVip(entity.getIsVip());
+    @PostMapping("/api/su-co/{id}/di-chuyen-ngay")
+    @ResponseBody
+    public ResponseEntity<?> diChuyenNgay(@PathVariable Long id, HttpSession session) {
+        TruSo current = (TruSo) session.getAttribute("currentTruSo");
+        if (current == null) return ResponseEntity.status(401).body("Chưa đăng nhập");
 
-                dto.setNguoiGui(userDto);
-            }
+        BaoCaoSuCo suCo = suCoTruSoRepository.findById(id).orElse(null);
+        if (suCo == null) return ResponseEntity.notFound().build();
 
-            // 3. Map thông tin Hóa đơn
-            if (entity.getHoaDon() != null) {
-                HoaDonResponseDTO hdDto = new HoaDonResponseDTO();
-                hdDto.setId(entity.getHoaDon().getId());
-                hdDto.setSosId(entity.getHoaDon().getSosId());
-                hdDto.setTrusoId(entity.getHoaDon().getTrusoId());
-                hdDto.setUserId(entity.getHoaDon().getUserId());
-                hdDto.setNoiDungXuLy(entity.getHoaDon().getNoiDungXuLy());
-                hdDto.setThanhTien(entity.getHoaDon().getThanhTien());
-                hdDto.setCreatedAt(entity.getHoaDon().getCreatedAt());
-                hdDto.setTrangThai(entity.getHoaDon().getTrangThai());
-                
-                dto.setHoaDon(hdDto);
-            } else {
-                dto.setHoaDon(null);
-            }
+        if (suCo.getTruSoTiepNhan() == null || !suCo.getTruSoTiepNhan().getId().equals(current.getId())) {
+            return ResponseEntity.badRequest().body("Sự cố không thuộc trụ sở này");
+        }
 
-            return dto;
-        }).collect(Collectors.toList());
+        if (!suCo.getTrangThaiXuLy().canTransitionTo(TrangThaiXuLy.CHO_XU_LY)) {
+            return ResponseEntity.badRequest().body("Không thể chuyển sang Chờ xử lý");
+        }
+
+        suCo.setTrangThaiXuLy(TrangThaiXuLy.CHO_XU_LY);
+        suCoTruSoRepository.save(suCo);
+        return ResponseEntity.ok().body(Map.of("success", true));
     }
 }
