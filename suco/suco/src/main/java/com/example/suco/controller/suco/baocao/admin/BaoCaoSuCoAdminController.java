@@ -10,17 +10,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.suco.dto.suco.baocao.AdminSuCoDetailResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.service.suco.baocao.admin.AdminBaoCaoService;
-import com.example.suco.service.suco.baocao.admin.DuyetSuCoService;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
@@ -40,17 +37,9 @@ public class BaoCaoSuCoAdminController {
     @Autowired
     private AdminBaoCaoService adminBaoCaoService;
 
-    @Autowired
-    private DuyetSuCoService duyetSuCoService;
-
-
-    @Autowired
-    private SuCoMapper suCoMapper;
-
     @GetMapping
 public String page(Model model) {
 
-    List<BaoCaoSuCo> listPending = reportRepository.findPendingReportsForAdmin();
 
     List<BaoCaoSuCo> allSuCo = reportRepository.findAllForMapEntity();
 
@@ -68,7 +57,6 @@ public String page(Model model) {
             .filter(s -> "HOAN_THANH".equals(s.getTrangThaiXuLy()))
             .count();
 
-    model.addAttribute("listPending", listPending);
     model.addAttribute("allSuCo", allSuCo);
     model.addAttribute("listSpam", listSpam);
     model.addAttribute("countCho", countCho);
@@ -93,23 +81,4 @@ public String page(Model model) {
     }
 
 
-    @PostMapping("/{id}/verify")
-    @ResponseBody
-    public ResponseEntity<String> verify(
-            @PathVariable Long id,
-            @RequestParam boolean isCorrect
-    ) {
-        // reportService.verifyReport(id, isCorrect);
-        duyetSuCoService.verifyReport(id, isCorrect);
-        return ResponseEntity.ok("Xác thực thành công!");
-    }
-
-
-    @GetMapping("/pending")
-@ResponseBody
-public ResponseEntity<List<AdminSuCoDetailResponseDTO>> getPendingReports() {
-    return ResponseEntity.ok(
-            duyetSuCoService.getPendingReportsForAdmin()
-    );
-}
 }

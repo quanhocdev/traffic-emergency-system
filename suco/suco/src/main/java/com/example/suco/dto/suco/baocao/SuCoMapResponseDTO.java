@@ -5,7 +5,6 @@ public class SuCoMapResponseDTO {
     private Double viDo;
     private Double kinhDo;
     private String iconUrl;
-    private String trangThaiDuyet;
     private String trangThaiXuLy;
     private String mucDoSuCo;
     private Long truSoId;
@@ -14,7 +13,6 @@ public class SuCoMapResponseDTO {
 
     public SuCoMapResponseDTO(Long id, Double viDo, Double kinhDo,
                               String iconUrl,
-                              String trangThaiDuyet,
                               String trangThaiXuLy,
                               String mucDoSuCo,
                                    Long truSoId) {
@@ -22,7 +20,6 @@ public class SuCoMapResponseDTO {
         this.viDo = viDo;
         this.kinhDo = kinhDo;
         this.iconUrl = iconUrl;
-        this.trangThaiDuyet = trangThaiDuyet;
         this.trangThaiXuLy = trangThaiXuLy;
         this.mucDoSuCo = mucDoSuCo;
         this.truSoId = truSoId;
@@ -32,13 +29,7 @@ public class SuCoMapResponseDTO {
     public Double getViDo() { return viDo; }
     public Double getKinhDo() { return kinhDo; }
     public String getIconUrl() { return iconUrl; }
-    public String getTrangThaiDuyet() {
-    return trangThaiDuyet;
-}
 
-public void setTrangThaiDuyet(String trangThaiDuyet) {
-    this.trangThaiDuyet = trangThaiDuyet;
-}
     public String getTrangThaiXuLy() { return trangThaiXuLy; }
     public String getMucDoSuCo() { return mucDoSuCo; }
     public Long getTruSoId() { return truSoId; }

@@ -701,7 +701,9 @@ function connectWebSocket() {
     // --- 4. KÊNH SỰ CỐ TỔNG ---
     stompClient.subscribe("/topic/su-co", (msg) => {
       const updatedSuCo = JSON.parse(msg.body);
-      if (updatedSuCo.trangThaiDuyet !== "VERIFIED") return;
+      const tThai = updatedSuCo.trangThaiXuLy || updatedSuCo.trangThai;
+
+      if (tThai === "HUY_BO") return;
       const markerKey = "SU_CO_" + updatedSuCo.id;
 
       const tThai = updatedSuCo.trangThaiXuLy || updatedSuCo.trangThai;

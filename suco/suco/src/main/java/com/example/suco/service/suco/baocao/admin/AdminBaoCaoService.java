@@ -5,7 +5,6 @@ import com.example.suco.model.LoaiSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.model.User;
 import com.example.suco.model.enums.MucDoSuCo;
-import com.example.suco.model.enums.TrangThaiDuyet;
 import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.repository.suco.loai.LoaiSuCoRepository;
@@ -68,7 +67,6 @@ public BaoCaoSuCo submitAdminReport(BaoCaoSuCo report, MultipartFile image) {
     report.setNguonBaoCao("ADMIN");
 
     report.setAiXacNhan(true);
-    report.setTrangThaiDuyet(TrangThaiDuyet.VERIFIED);
 
     if (report.getMucDoSuCo() == null) {
         report.setMucDoSuCo(MucDoSuCo.NONE);
@@ -87,7 +85,7 @@ public BaoCaoSuCo submitAdminReport(BaoCaoSuCo report, MultipartFile image) {
     );
 
         report.setTruSoTiepNhan(ganNhat);
-        report.setTrangThaiXuLy(TrangThaiXuLy.CHO_XU_LY);
+        report.setTrangThaiXuLy(TrangThaiXuLy.DA_TIEP_NHAN);
     
 
     // =========================

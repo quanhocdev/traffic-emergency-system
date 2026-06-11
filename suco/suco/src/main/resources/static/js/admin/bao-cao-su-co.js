@@ -27,10 +27,7 @@ stompClient.connect({}, function (frame) {
         statusCell.innerHTML = `<span style="color: #3b82f6;">Trụ sở #${suCoDto.truSoTiepNhan?.id || id} (Đang xử lý)</span>`;
       } else if (suCoDto.trangThaiXuLy === "HOAN_THANH") {
         statusCell.innerHTML = `<span style="color: #10b981;">Đã hoàn thành</span>`;
-      } else if (
-        suCoDto.trangThaiXuLy === "REJECTED" ||
-        suCoDto.trangThaiDuyet === "REJECTED"
-      ) {
+      } else if (suCoDto.trangThaiXuLy === "HUY_BO") {
         statusCell.innerHTML = `<span style="color: #ef4444;">Đã từ chối/Spam</span>`;
         tableRow.style.opacity = "0.6";
       }
@@ -43,10 +40,8 @@ stompClient.connect({}, function (frame) {
     }
 
     // 2. XỬ LÝ CARD TRÊN SLIDER
-    const ketThuc =
-      ["HUY_BO", "HOAN_THANH", "VERIFIED", "REJECTED"].includes(
-        suCoDto.trangThaiXuLy,
-      ) || ["VERIFIED", "REJECTED"].includes(suCoDto.trangThaiDuyet);
+    const ketThuc = ["HUY_BO", "HOAN_THANH"].includes(suCoDto.trangThaiXuLy);
+    suCoDto.trangThaiXuLy === "DA_TIEP_NHAN";
 
     if (ketThuc) {
       if (cardPending) {

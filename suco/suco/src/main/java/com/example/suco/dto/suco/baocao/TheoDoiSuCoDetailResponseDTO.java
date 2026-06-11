@@ -16,8 +16,6 @@ public class TheoDoiSuCoDetailResponseDTO {
 
     private String diaChi;
 
-    private String trangThaiDuyet;
-
     private String trangThaiXuLy;
 
     private Integer doTinCay;
@@ -61,12 +59,6 @@ public class TheoDoiSuCoDetailResponseDTO {
     }
     public void setDiaChi(String diaChi) {
         this.diaChi = diaChi;
-    }
-    public String getTrangThaiDuyet() {
-        return trangThaiDuyet;
-    }
-    public void setTrangThaiDuyet(String trangThaiDuyet) {
-        this.trangThaiDuyet = trangThaiDuyet;
     }
     public String getTrangThaiXuLy() {
         return trangThaiXuLy;

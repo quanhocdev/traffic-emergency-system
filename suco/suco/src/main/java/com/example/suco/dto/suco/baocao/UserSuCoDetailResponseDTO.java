@@ -12,7 +12,6 @@ public class UserSuCoDetailResponseDTO {
     private String tenLoai;
     private String iconUrl;
 
-    private String trangThaiDuyet;
     private String trangThaiXuLy;
 
     private String mucDoNghiemTrong;
@@ -34,7 +33,6 @@ public class UserSuCoDetailResponseDTO {
     public String getMoTa() { return moTa; }
     public String getTenLoai() { return tenLoai; }
     public String getIconUrl() { return iconUrl; }
-    public String getTrangThaiDuyet() { return trangThaiDuyet; }
     public String getTrangThaiXuLy() { return trangThaiXuLy; }
     public String getMucDoNghiemTrong() { return mucDoNghiemTrong; }
     public String getHinhAnhUrl() { return hinhAnhUrl; }
@@ -50,7 +48,6 @@ public class UserSuCoDetailResponseDTO {
     public void setMoTa(String moTa) { this.moTa = moTa; }
     public void setTenLoai(String tenLoai) { this.tenLoai = tenLoai; }
     public void setIconUrl(String iconUrl) { this.iconUrl = iconUrl; }
-    public void setTrangThaiDuyet(String trangThaiDuyet) { this.trangThaiDuyet = trangThaiDuyet; }
     public void setTrangThaiXuLy(String trangThaiXuLy) { this.trangThaiXuLy = trangThaiXuLy; }
     public void setMucDoNghiemTrong(String mucDoNghiemTrong) { this.mucDoNghiemTrong = mucDoNghiemTrong; }
     public void setHinhAnhUrl(String hinhAnhUrl) { this.hinhAnhUrl = hinhAnhUrl; }
