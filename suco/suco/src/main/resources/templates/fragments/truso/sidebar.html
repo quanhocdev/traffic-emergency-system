@@ -33,6 +33,13 @@
       </a>
 
       <a
+        href="/truso/su-co-da-tiep-nhan"
+        th:class="${activePage == 'received'} ? 'nav-item active' : 'nav-item'"
+      >
+        <i class="fa-solid fa-inbox"></i> <span>Đã tiếp nhận</span>
+      </a>
+
+      <a
         href="/truso/quan-ly-cuu-tro"
         th:class="${activePage == 'pending'} ? 'nav-item active' : 'nav-item'"
       >

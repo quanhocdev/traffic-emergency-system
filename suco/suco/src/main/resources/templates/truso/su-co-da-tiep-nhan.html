@@ -1,0 +1,72 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Sự cố đã tiếp nhận - Trụ sở</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" th:href="@{/css/fragments/truso/sidebar.css}" />
+    <link rel="stylesheet" th:href="@{/css/truso/su-co-da-tiep-nhan.css}" />
+  </head>
+  <body>
+    <div th:replace="fragments/truso/sidebar :: sidebar('received')"></div>
+    <main class="main-content">
+      <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+          <h3 class="mb-0">
+            <i class="fa-solid fa-robot text-primary"></i> Sự cố AI đã tiếp nhận
+          </h3>
+          <p class="text-muted small mb-0 mt-1">
+            Danh sách sự cố và yêu cầu SOS do AI tự động định tuyến về trụ sở
+            của bạn.
+          </p>
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+          <div class="btn-group">
+            <button
+              id="btn-filter-su-co"
+              class="btn btn-outline-secondary active"
+            >
+              Sự cố
+            </button>
+            <button id="btn-filter-sos" class="btn btn-outline-danger">
+              SOS
+            </button>
+          </div>
+          <div class="text-muted">
+            Cập nhật: <span id="clock">00:00:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="incident-list">
+        <div class="alert alert-secondary py-4" id="no-data">
+          Đang tải danh sách dữ liệu sự cố từ hệ thống...
+        </div>
+      </div>
+    </main>
+
+    <div id="overlay"></div>
+    <div id="detail-panel">
+      <div
+        class="d-flex justify-content-between align-items-center mb-2 pb-2 border-b"
+      >
+        <strong class="text-primary"
+          ><i class="fa-solid fa-circle-info"></i> Chi tiết sự cố</strong
+        >
+        <button id="detail-close" class="btn btn-sm btn-light">✖</button>
+      </div>
+      <div id="detail-body"></div>
+    </div>
+
+    <script th:src="@{/js/truso/su-co-da-tiep-nhan.js}"></script>
+    <script th:src="@{/js/fragments/truso/sidebar.js}"></script>
+  </body>
+</html>

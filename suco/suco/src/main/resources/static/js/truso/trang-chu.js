@@ -706,8 +706,6 @@ function connectWebSocket() {
       if (tThai === "HUY_BO") return;
       const markerKey = "SU_CO_" + updatedSuCo.id;
 
-      const tThai = updatedSuCo.trangThaiXuLy || updatedSuCo.trangThai;
-
       if (
         !activeMarkers[markerKey] &&
         tThai !== "HOAN_THANH" &&

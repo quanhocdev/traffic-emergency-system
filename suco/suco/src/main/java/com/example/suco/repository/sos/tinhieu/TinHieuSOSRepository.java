@@ -10,22 +10,29 @@ import java.util.List;
 @Repository
 public interface TinHieuSOSRepository extends JpaRepository<TinHieuSOS, Long> {
     
-List<TinHieuSOS> findByUserUid(String uid);
+    // Lấy danh sách SOS của riêng một User (phục vụ app di động của khách hàng)
+    List<TinHieuSOS> findByUserUid(String uid);
 
 @Query("""
-    SELECT s FROM TinHieuSOS s 
-    LEFT JOIN FETCH s.user u 
-    WHERE s.trangThai NOT IN ('HOAN_THANH', 'HUY_BO') 
-    AND s.idTruSoTiepNhan = :idTruSo
-    ORDER BY u.totalPoints DESC, s.createdAt ASC
-""")
-List<TinHieuSOS> findActiveByTruSo(@Param("idTruSo") Long idTruSo);
+        SELECT DISTINCT s FROM TinHieuSOS s 
+        LEFT JOIN FETCH s.user u 
+        WHERE s.idTruSoTiepNhan = :idTruSo
+        AND s.trangThai = :trangThai
+        ORDER BY s.createdAt ASC
+    """)
+    List<TinHieuSOS> findByTruSoAndStatus(
+            @Param("idTruSo") Long idTruSo, 
+            @Param("trangThai") String trangThai
+    );
+    default List<TinHieuSOS> findNewAssignedByTruSo(Long idTruSo) {
+        return findByTruSoAndStatus(idTruSo, "DA_TIEP_NHAN");
+    }
 
-    List<TinHieuSOS> findByIdTruSoTiepNhanAndTrangThaiIn(Long idTruSo, List<String> trangThais);
-    
-    List<TinHieuSOS> findByIdTruSoTiepNhanAndTrangThai(Long idTruSo, String trangThai);
+    default List<TinHieuSOS> findActiveByTruSo(Long idTruSo) {
+        return findByTruSoAndStatus(idTruSo, "DANG_CUU_TRO"); 
+    }
 
-    // Lấy lịch sử hoàn thành
-    @Query("SELECT s FROM TinHieuSOS s WHERE s.trangThai = 'HOAN_THANH' AND s.idTruSoTiepNhan = :idTruSo")
-    List<TinHieuSOS> findHistoryByTruSo(@Param("idTruSo") Long idTruSo);
+    default List<TinHieuSOS> findHistoryByTruSo(Long idTruSo) {
+        return findByTruSoAndStatus(idTruSo, "HOAN_THANH");
+    }
 }
