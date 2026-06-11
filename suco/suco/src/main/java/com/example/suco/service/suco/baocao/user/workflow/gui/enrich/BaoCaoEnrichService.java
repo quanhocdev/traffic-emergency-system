@@ -10,7 +10,6 @@ import com.example.suco.service.suco.baocao.system.validation.TrungLapBaoCaoServ
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.suco.model.enums.TrangThaiXuLy;
-import com.example.suco.model.enums.TrangThaiDuyet;
 
 @Service
 public class BaoCaoEnrichService {

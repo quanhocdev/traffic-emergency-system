@@ -1,19 +1,19 @@
-package com.example.suco.model.enums;
+// package com.example.suco.model.enums;
 
-public enum TrangThaiDuyet {
+// public enum TrangThaiDuyet {
 
-    PENDING("Chờ AI xử lý"),
-    AI_APPROVED("AI đề xuất duyệt"),
-    VERIFIED("Admin xác nhận"),
-    REJECTED("Từ chối");
+//     PENDING("Chờ AI xử lý"),
+//     AI_APPROVED("AI đề xuất duyệt"),
+//     VERIFIED("Admin xác nhận"),
+//     REJECTED("Từ chối");
 
-    private final String label;
+//     private final String label;
 
-    TrangThaiDuyet(String label) {
-        this.label = label;
-    }
+//     TrangThaiDuyet(String label) {
+//         this.label = label;
+//     }
 
-    public String getLabel() {
-        return label;
-    }
-}
+//     public String getLabel() {
+//         return label;
+//     }
+// }

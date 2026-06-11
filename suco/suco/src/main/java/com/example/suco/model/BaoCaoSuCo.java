@@ -3,7 +3,6 @@ package com.example.suco.model;
 import java.time.LocalDateTime;
 
 import com.example.suco.model.enums.MucDoSuCo;
-import com.example.suco.model.enums.TrangThaiDuyet;
 import com.example.suco.model.enums.TrangThaiXuLy;
 
 import jakarta.persistence.Column;
@@ -56,11 +55,6 @@ public class BaoCaoSuCo {
 
     private boolean aiXacNhan = false;
 
-    // PENDING, AI_APPROVED, VERIFIED, REJECTED
-    @Enumerated(EnumType.STRING)
-    @Column(name = "trang_thai_duyet")
-    private TrangThaiDuyet trangThaiDuyet = TrangThaiDuyet.PENDING;
-
     // NONE, LOW, MEDIUM, HIGH
     @Enumerated(EnumType.STRING)
     @Column(name = "muc_do_su_co")
@@ -111,9 +105,6 @@ private String diaChi;
 
     public boolean isAiXacNhan() { return aiXacNhan; }
     public void setAiXacNhan(boolean aiXacNhan) { this.aiXacNhan = aiXacNhan; }
-
-    public TrangThaiDuyet getTrangThaiDuyet() { return trangThaiDuyet; }
-    public void setTrangThaiDuyet(TrangThaiDuyet trangThaiDuyet) { this.trangThaiDuyet = trangThaiDuyet; }
 
    public MucDoSuCo getMucDoSuCo() {
         return mucDoSuCo;

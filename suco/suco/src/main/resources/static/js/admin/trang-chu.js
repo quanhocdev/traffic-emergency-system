@@ -456,18 +456,13 @@ function connectWebSocket() {
         const suCoDto = JSON.parse(message.body);
         console.log("Admin nhận dữ liệu cập nhật realtime:", suCoDto);
 
-        // TRƯỜNG HỢP 1: Bị hủy hoặc Từ chối -> Xóa marker
-        if (
-          suCoDto.trangThaiXuLy === "HUY_BO" ||
-          suCoDto.trangThaiDuyet === "REJECTED"
-        ) {
+        if (suCoDto.trangThaiXuLy === "HUY_BO") {
           if (
             typeof incidentMarkersMap !== "undefined" &&
             incidentMarkersMap[suCoDto.id]
           ) {
             incidentMarkersMap[suCoDto.id].remove();
             delete incidentMarkersMap[suCoDto.id];
-            loadPendingReports(); // Cập nhật sidebar
           }
         }
         // TRƯỜNG HỢP 2: Cập nhật Mức độ, Trạng thái, hoặc Hoàn thành
@@ -478,15 +473,9 @@ function connectWebSocket() {
           renderSingleIncident(suCoDto);
 
           // Phát âm thanh nếu là sự cố mới được đẩy lên (AI_APPROVED)
-          if (
-            suCoDto.trangThaiDuyet === "AI_APPROVED" &&
-            suCoDto.trangThaiXuLy === "CHO_XU_LY"
-          ) {
+          if (suCoDto.trangThaiXuLy === "DA_TIEP_NHAN") {
             playNotificationSound();
           }
-
-          // Luôn làm mới danh sách chờ duyệt ở sidebar để Admin nắm bắt dữ liệu
-          loadPendingReports();
         }
       });
     },
@@ -497,78 +486,9 @@ function connectWebSocket() {
   );
 }
 
-// Hàm tải danh sách sự cố cần duyệt
-async function loadPendingReports() {
-  try {
-    const response = await fetch("/api/su-co/map");
-    const reports = await response.json();
-
-    console.log("REPORTS =", reports);
-    console.log("FIRST REPORT =", reports[0]);
-
-    // Lọc chỉ lấy những bản ghi có trạng thái PENDING hoặc chưa duyệt
-    const pendingReports = reports.filter(
-      (r) =>
-        r.trangThaiDuyet === "PENDING" || r.trangThaiDuyet === "AI_APPROVED",
-    );
-
-    const list = document.getElementById("notification-list");
-    const badge = document.querySelector("#notification-bell .badge");
-
-    // Xóa nội dung cũ
-    list.innerHTML = "";
-
-    if (pendingReports.length === 0) {
-      list.innerHTML =
-        '<div class="no-notification">Không có báo cáo cần duyệt</div>';
-      badge.innerText = 0;
-      badge.style.display = "none";
-      return;
-    }
-
-    badge.innerText = pendingReports.length;
-    badge.style.display = "block";
-
-    // Sắp xếp theo id từ cao nhất đến thấp nhất (mới nhất lên trên)
-    pendingReports.sort((a, b) => b.id - a.id);
-
-    pendingReports.forEach((report) => {
-      console.log("REPORT ITEM =", report);
-      const item = document.createElement("div");
-      item.className = "notification-item";
-
-      const loaiSuCo = report.loaiSuCo ? report.loaiSuCo.ten : "Sự cố";
-      const moTa = report.moTa || "Không có mô tả";
-      const formattedDate = new Date(report.thoiGianTao).toLocaleString(
-        "vi-VN",
-      );
-
-      // Hiển thị tương tự trang báo cáo: mô tả, loại, vị trí, độ tin cậy
-      item.innerHTML = `
-              <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 0;">
-                <div style="flex: 1; min-width: 0;">
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    <strong style="color: #1e293b; font-size: 13px;">${loaiSuCo}</strong>
-                    <span style="font-size: 10px; color: #3b82f6; font-weight: 600;">${report.trangThaiDuyet === "PENDING" ? "CHỜ DUYỆT" : "AI XÁC NHẬN"}</span>
-                  </div>
-                </div>
-                <button onclick="goToReview(${report.id})" style="padding: 6px 10px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap; flex-shrink: 0;">
-                  Duyệt
-                </button>
-              </div>
-              <div class="time">${formattedDate}</div>
-            `;
-
-      list.appendChild(item);
-    });
-  } catch (error) {
-    console.error("Lỗi tải danh sách sự cố:", error);
-  }
-}
-
 // Hàm chuyển đến trang duyệt
 function goToReview(reportId) {
-  window.location.href = `/admin/bao-cao-su-co?id=${reportId}`;
+  window.location.href = `/admin/bao-cao-su-co`;
 }
 
 function renderSingleIncident(suCo) {
@@ -600,8 +520,8 @@ function renderSingleIncident(suCo) {
 
   const isWaitingAdmin =
     suCo.trangThaiDuyet === "AI_APPROVED" || suCo.trangThaiDuyet === "PENDING";
-    console.log("Mức độ:", suCo.mucDoSuCo);
-console.log("Duyệt:", suCo.trangThaiDuyet);
+  console.log("Mức độ:", suCo.mucDoSuCo);
+  console.log("Duyệt:", suCo.trangThaiDuyet);
   let borderColor = "#ffffff";
   if (suCo.trangThaiDuyet === "VERIFIED") {
     if (suCo.mucDoSuCo === "HIGH") borderColor = "#e74c3c";
@@ -737,7 +657,6 @@ document.addEventListener("DOMContentLoaded", () => {
   connectWebSocket();
   toggleNewStationFields();
   toggleNewCameraFields();
-  loadPendingReports(); // Tải danh sách sự cố cần duyệt lần đầu
 
   const bellIcon = document.getElementById("notification-bell");
   const dropdown = document.getElementById("notification-dropdown");
@@ -746,7 +665,6 @@ document.addEventListener("DOMContentLoaded", () => {
     e.stopPropagation();
     // Tải lại danh sách khi click vào chuông
     if (!dropdown.classList.contains("show")) {
-      loadPendingReports();
     }
     dropdown.classList.toggle("show");
     if (dropdown.classList.contains("show")) {
