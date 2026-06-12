@@ -1,254 +1,725 @@
-// --- KHỞI TẠO WEBSOCKET GIÁM SÁT SỰ CỐ ---
-const socket = new SockJS("/ws-suco-web");
-const stompClient = Stomp.over(socket);
-const cameraLoaded = new Set();
+// --- 1. BIẾN TOÀN CỤC & ĐIỀU KHIỂN BẢN ĐỒ ---
+map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
 
-stompClient.connect({}, function (frame) {
-  console.log("Connected to Incident Management WebSocket");
+const geocoder = new MapboxGeocoder({
+  accessToken: mapboxgl.accessToken,
+  mapboxgl: mapboxgl,
+  placeholder: "Tìm địa chỉ...",
+  countries: "vn",
+  marker: false,
+});
+map.addControl(geocoder, "top-left");
 
-  stompClient.subscribe("/topic/su-co", function (message) {
-    const suCoDto = JSON.parse(message.body);
-    const id = suCoDto.id;
-    const tableRow = document.getElementById("report-" + id);
-    const status = suCoDto.trangThaiXuLy;
+// Marker đỏ để chọn vị trí
+let pickerMarker = new mapboxgl.Marker({
+  color: "#ff0000",
+  draggable: true,
+});
 
-    // Phát âm thanh báo động nếu có sự cố MỚI đổ về (Đã tiếp nhận)
-    if (!tableRow && status === "DA_TIEP_NHAN") {
-      playNotificationSound();
-      renderNewRow(suCoDto);
-      loadNearbyCameras(id);
+// --- 2. TIỆN ÍCH BẢN ĐỒ ---
+function saveMapState(lng, lat) {
+  localStorage.setItem("map_lng", lng);
+  localStorage.setItem("map_lat", lat);
+}
+
+function updateLocationFields(lng, lat) {
+  const formattedLat = lat.toFixed(6);
+  const formattedLng = lng.toFixed(6);
+  document
+    .querySelectorAll(".lat-field")
+    .forEach((el) => (el.value = formattedLat));
+  document
+    .querySelectorAll(".lng-field")
+    .forEach((el) => (el.value = formattedLng));
+  saveMapState(lng, lat);
+}
+
+function clearAllMarkers() {
+  currentMarkers.forEach((m) => m.remove());
+  currentMarkers = [];
+}
+
+// Xử lý chuyển đổi qua lại giữa các Tab Panel bên sườn
+const tabs = document.querySelectorAll(".control-tab");
+const panels = document.querySelectorAll(".side-panel");
+
+tabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    const targetId = tab.getAttribute("data-target");
+    const targetPanel = document.getElementById(targetId);
+
+    if (tab.classList.contains("active")) {
+      tab.classList.remove("active");
+      targetPanel.classList.remove("open");
+    } else {
+      closeIncidentPanel();
+      tabs.forEach((t) => t.classList.remove("active"));
+      panels.forEach((p) => p.classList.remove("open"));
+      tab.classList.add("active");
+      targetPanel.classList.add("open");
     }
-    // Nếu dòng đã tồn tại, tiến hành cập nhật trạng thái trực tiếp
-    else if (tableRow) {
-      tableRow.setAttribute("data-status", status);
-      const statusCell = tableRow.querySelector(".status-cell");
-
-      if (statusCell) {
-        statusCell.innerHTML = renderStatus(status, suCoDto);
-      }
-
-      // Xử lý hiệu ứng mờ nếu bị Hủy bỏ giữa chừng
-      if (status === "HUY_BO") {
-        tableRow.style.opacity = "0.5";
-      } else {
-        tableRow.style.opacity = "1";
-      }
-
-      // Highlight hiệu ứng nhấp nháy khi có cập nhật tiến độ từ Trụ sở
-      tableRow.style.backgroundColor = "#f0f9ff";
-      setTimeout(() => (tableRow.style.backgroundColor = ""), 1500);
-    }
-
-    updateTabCounts();
   });
 });
 
-// Hàm sinh dòng mới khi có sự cố vừa được gán từ AI/Hệ thống
-function renderNewRow(suCoDto) {
-  const tableBody = document.getElementById("table-body-main");
-  if (!tableBody) return;
-  if (document.getElementById("report-" + suCoDto.id)) return;
-
-  const row = document.createElement("tr");
-  row.className = "incident-row";
-  row.id = "report-" + suCoDto.id;
-
-  row.setAttribute("data-status", suCoDto.trangThaiXuLy);
-  row.setAttribute("data-lat", suCoDto.viDo);
-  row.setAttribute("data-lng", suCoDto.kinhDo);
-
-  row.innerHTML = `
-    <td>${suCoDto.id}</td>
-    <td>
-      <img src="${suCoDto.hinhAnhUrl || "/images/no-image.png"}" class="img-table"/>
-    </td>
-    <td>
-      <div style="font-weight: 600;">${suCoDto.tenLoai || "Sự cố"}</div>
-      <small class="badge" style="background: #fee2e2; color: #ef4444;">${suCoDto.mucDoSuCo || "NONE"}</small>
-    </td>
-    <td>
-      <div>${suCoDto.tenNguoiBao || "Người dân"}</div>
-      <div style="font-size:11px;color:#94a3b8">${suCoDto.reporterUid || ""}</div>
-    </td>
-    <td>${suCoDto.diaChi || "Không rõ"}</td>
-    <td class="confidence-val">${suCoDto.doTinCay || 1}</td>
-    <td class="status-cell">
-      ${renderStatus(suCoDto.trangThaiXuLy, suCoDto)}
-    </td>
-    <td>
-      <div id="cam-area-${suCoDto.id}" style="display:none">
-        <div id="cam-list-${suCoDto.id}" style="display:flex; flex-wrap:wrap; gap:5px"></div>
-      </div>
-    </td>
-  `;
-
-  tableBody.prepend(row);
-}
-
-// Chuẩn hóa hiển thị trạng thái theo đúng Enum Backend
-function renderStatus(status, dto) {
-  const truSoId = dto.truSoTiepNhan ? dto.truSoTiepNhan.id : null;
-  const tenTruSo = dto.truSoTiepNhan ? `Trụ sở #${truSoId}` : "Chưa rõ trụ sở";
-
-  switch (status) {
-    case "DA_TIEP_NHAN":
-      return `<span style="color:#f59e0b; font-style:italic; font-weight:500;">
-                <i class="fa-solid fa-bell"></i> Đã tiếp nhận (${tenTruSo})
-              </span>`;
-    case "CHO_XU_LY":
-      return `<span style="color:#d97706; font-weight:500;">
-                <i class="fa-solid fa-clock"></i> Chờ xử lý
-              </span>`;
-    case "DANG_XU_LY":
-      return `<span style="color:#3b82f6; font-weight:600;">
-                <i class="fa-solid fa-spinner fa-spin"></i> ${tenTruSo} đang xử lý
-              </span>`;
-    case "HOAN_THANH":
-      return `<span style="color:#10b981; font-weight:600;">
-                <i class="fa-solid fa-circle-check"></i> Đã hoàn thành
-              </span>`;
-    case "HUY_BO":
-      return `<span style="color:#ef4444; font-weight:500;">
-                <i class="fa-solid fa-circle-xmark"></i> Đã hủy bỏ
-              </span>`;
-    default:
-      return `<span class="text-muted">Không rõ</span>`;
+// --- 3. SỰ KIỆN LÊN BẢN ĐỒ (MAP EVENTS) ---
+map.on("load", () => {
+  if (
+    typeof savedLng !== "undefined" &&
+    typeof savedLat !== "undefined" &&
+    savedLng &&
+    savedLat
+  ) {
+    pickerMarker
+      .setLngLat([parseFloat(savedLng), parseFloat(savedLat)])
+      .addTo(map);
   }
-}
 
-// Thay đổi trạng thái chủ động từ phía Admin (nếu điều phối thủ công bằng nút bấm)
-async function updateIncidentStatus(id, nextStatus) {
-  if (!confirm(`Xác nhận chuyển sự cố #${id} sang trạng thái này?`)) return;
-  try {
-    const res = await fetch(
-      `/admin/bao-cao-su-co/${id}/status?status=${nextStatus}`,
-      {
-        method: "POST",
+  // Hiển thị tòa nhà 3D
+  const layers = map.getStyle().layers;
+  const labelLayerId = layers.find(
+    (layer) => layer.type === "symbol" && layer.layout["text-field"],
+  ).id;
+
+  map.addLayer(
+    {
+      id: "3d-buildings",
+      source: "composite",
+      "source-layer": "building",
+      filter: ["==", "extrude", "true"],
+      type: "fill-extrusion",
+      minzoom: 15,
+      paint: {
+        "fill-extrusion-color": "#e0e0e0",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-base": ["get", "min_height"],
+        "fill-extrusion-opacity": 0.8,
       },
-    );
-    if (!res.ok)
-      alert("Không thể chuyển trạng thái. Vui lòng kiểm tra lại quy tắc Enum!");
+    },
+    labelLayerId,
+  );
+
+  // Tải toàn bộ Marker ban đầu
+  loadIncidentMarkers();
+  loadTruSoMarkers();
+  loadCameraMarkers();
+});
+
+map.on("click", (e) => {
+  // Không ghim đè vị trí mới nếu bấm trúng các thẻ marker đang hoạt động
+  if (e.originalEvent.target.closest(".mapboxgl-marker")) return;
+
+  const { lng, lat } = e.lngLat;
+  pickerMarker.setLngLat([lng, lat]).addTo(map);
+  updateLocationFields(lng, lat);
+});
+
+geocoder.on("result", (e) => {
+  const [lng, lat] = e.result.geometry.coordinates;
+  pickerMarker.setLngLat([lng, lat]).addTo(map);
+  updateLocationFields(lng, lat);
+});
+
+pickerMarker.on("dragend", () => {
+  const lngLat = pickerMarker.getLngLat();
+  updateLocationFields(lngLat.lng, lngLat.lat);
+});
+
+// --- 4. HÀM TẢI DỮ LIỆU TỪ BACKEND API ---
+async function loadIncidentMarkers() {
+  try {
+    const response = await fetch("/api/su-co/map");
+    const incidents = await response.json();
+
+    // Xóa sạch bộ marker cũ trên map để vẽ bản mới
+    Object.values(incidentMarkersMap).forEach((m) => m.remove());
+    incidentMarkersMap = {};
+
+    incidents.forEach((suCo) => renderSingleIncident(suCo));
   } catch (error) {
-    console.error("Lỗi cập nhật trạng thái:", error);
+    console.error("Lỗi tải marker sự cố:", error);
   }
 }
 
-// Tính toán chính xác số lượng trên các tab bộ lọc
-function updateTabCounts() {
-  const rows = document.querySelectorAll("#table-body-main .incident-row");
+async function loadTruSoMarkers() {
+  try {
+    const response = await fetch("/admin/quan-ly-tru-so/all"); // Đổi sang đúng endpoint của AdminTruSoController
+    const danhSachTruSo = await response.json();
 
-  let daTiepNhan = 0;
-  let choXuLy = 0;
-  let dangXuLy = 0;
-  let hoanThanh = 0;
-  let huyBo = 0;
+    truSoMarkersList.forEach((m) => m.remove());
+    truSoMarkersList = [];
 
-  rows.forEach((row) => {
-    const status = row.getAttribute("data-status");
-    if (status === "DA_TIEP_NHAN") daTiepNhan++;
-    else if (status === "CHO_XU_LY") choXuLy++;
-    else if (status === "DANG_XU_LY") dangXuLy++;
-    else if (status === "HOAN_THANH") hoanThanh++;
-    else if (status === "HUY_BO") huyBo++;
-  });
+    danhSachTruSo.forEach((ts) => {
+      const lng = parseFloat(ts.kinhDo);
+      const lat = parseFloat(ts.viDo);
+      if (isNaN(lng) || isNaN(lat) || (lng === 0 && lat === 0)) return;
 
-  const tabCounts = document.querySelectorAll(".tab-count");
-  if (tabCounts.length >= 5) {
-    tabCounts[0].innerText = rows.length; // Tất cả
-    tabCounts[1].innerText = daTiepNhan;
-    tabCounts[2].innerText = choXuLy;
-    tabCounts[3].innerText = dangXuLy;
-    tabCounts[4].innerText = hoanThanh;
-    if (tabCounts[5]) tabCounts[5].innerText = huyBo; // Cập nhật cho tab Hủy bỏ nếu có
+      const el = document.createElement("div");
+      el.className = "tru-so-marker";
+      el.innerHTML = `<i class="fa-solid fa-house-chimney-medical" style="color: #27ae60; font-size: 30px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></i>`;
+
+      const marker = new mapboxgl.Marker({
+        element: el,
+        anchor: "bottom",
+      })
+        .setLngLat([lng, lat])
+        .setPopup(
+          new mapboxgl.Popup().setHTML(
+            `<h4>${ts.tenTruSo}</h4><p>${ts.diaChi || ""}</p>`,
+          ),
+        )
+        .addTo(map);
+
+      truSoMarkersList.push(marker);
+    });
+  } catch (error) {
+    console.error("Lỗi tải marker trụ sở:", error);
   }
 }
 
-// Hàm quét Camera xung quanh dựa vào tọa độ thực tế của sự cố
-async function loadNearbyCameras(reportId) {
-  if (cameraLoaded.has(reportId)) return;
-  cameraLoaded.add(reportId);
+async function loadCameraMarkers() {
+  try {
+    const response = await fetch("/admin/quan-ly-camera/all-json");
+    const cameras = await response.json();
 
-  const sourceElement = document.getElementById("report-" + reportId);
-  if (!sourceElement) return;
+    cameraMarkersList.forEach((m) => m.remove());
+    cameraMarkersList = [];
 
-  const lat = sourceElement.getAttribute("data-lat");
-  const lng = sourceElement.getAttribute("data-lng");
-  if (!lat || !lng || lat === "0.0") return;
+    cameras.forEach((cam) => {
+      const lng = parseFloat(cam.kinhDo);
+      const lat = parseFloat(cam.viDo);
+      if (isNaN(lng) || isNaN(lat) || (lng === 0 && lat === 0)) return;
+
+      const el = document.createElement("div");
+      el.className = "camera-marker";
+      el.innerHTML = `<i class="fa-solid fa-camera-retro" style="color: #3b82f6; font-size: 24px;"></i>`;
+
+      const marker = new mapboxgl.Marker({
+        element: el,
+        anchor: "center",
+      })
+        .setLngLat([lng, lat])
+        .setPopup(
+          new mapboxgl.Popup().setHTML(
+            `<b>${cam.tenCamera}</b><p>${cam.moTa || ""}</p>`,
+          ),
+        )
+        .addTo(map);
+
+      cameraMarkersList.push(marker);
+    });
+  } catch (error) {
+    console.error("Lỗi tải marker camera:", error);
+  }
+}
+
+// --- 5. XỬ LÝ GỬI FORM (SUBMIT FORM LOGIC) ---
+async function handleAdminSubmit() {
+  const form = document.getElementById("adminSubmitForm");
+  const formData = new FormData(form);
+
+  if (!formData.get("viDo") || !formData.get("kinhDo")) {
+    alert("Vui lòng chọn vị trí trên bản đồ bằng cách click!");
+    return;
+  }
 
   try {
-    const res = await fetch(
-      `/admin/quan-ly-camera/near-by-incident/${reportId}`,
-    );
-    if (!res.ok) return;
-    const cameras = await res.json();
+    const response = await fetch("/admin/bao-cao-su-co/admin-submit", {
+      method: "POST",
+      body: formData,
+    });
 
-    const tableArea = document.getElementById("cam-area-" + reportId);
-    const tableList = document.getElementById("cam-list-" + reportId);
+    if (response.ok) {
+      alert("Đã tạo sự cố thành công!");
+      form.reset();
+      pickerMarker.remove();
+      loadIncidentMarkers();
 
-    if (tableArea && tableList && cameras && cameras.length > 0) {
-      tableArea.style.display = "flex";
-      tableList.innerHTML = "";
-
-      cameras.forEach((cam) => {
-        const camItem = document.createElement("div");
-        camItem.className = "cam-badge-item";
-        camItem.style = `
-          background: #f1f5f9; border: 1px solid #cbd5e1;
-          padding: 3px 8px; border-radius: 4px; font-size: 11px;
-          cursor: pointer; display: flex; align-items: center; gap: 5px;
-          white-space: nowrap;
-        `;
-        camItem.innerHTML = `
-          <i class="fa-solid fa-video" style="color: #475569;"></i>
-          <span style="font-weight: 500;">${cam.tenCamera}</span>
-        `;
-        camItem.onclick = () =>
-          cam.videoUrl
-            ? window.open(cam.videoUrl, "_blank")
-            : alert("Không có luồng trực tiếp!");
-
-        tableList.appendChild(camItem);
-      });
+      document
+        .querySelector('.control-tab[data-target="form-su-co"]')
+        ?.classList.remove("active");
+      document.getElementById("form-su-co")?.classList.remove("open");
+    } else {
+      alert("Lỗi khi tạo báo cáo.");
     }
-  } catch (e) {
-    console.error("Lỗi quét camera cho ID: " + reportId, e);
+  } catch (error) {
+    console.error("Error:", error);
+    alert("Lỗi kết nối server.");
   }
 }
 
-// Lắng nghe sự kiện switch tab lọc dữ liệu
-window.switchTab = function (type) {
-  const rows = document.querySelectorAll(".incident-row");
-  rows.forEach((row) => {
-    const status = row.getAttribute("data-status");
-    if (type === "all") row.style.display = "";
-    else if (type === "pending")
-      row.style.display = status === "DA_TIEP_NHAN" ? "" : "none";
-    else if (type === "waiting")
-      row.style.display = status === "CHO_XU_LY" ? "" : "none";
-    else if (type === "processing")
-      row.style.display = status === "DANG_XU_LY" ? "" : "none";
-    else if (type === "done")
-      row.style.display = status === "HOAN_THANH" ? "" : "none";
-    else if (type === "cancel")
-      row.style.display = status === "HUY_BO" ? "" : "none";
-  });
-};
+async function handleSosSubmit() {
+  const form = document.getElementById("sosSubmitForm");
+  const select = document.getElementById("select-tru-so");
+  const truSoId = select.value;
+  const formData = new FormData(form);
 
-// Khởi chạy khi DOM sẵn sàng
-document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll(".incident-row").forEach((row) => {
-    const reportId = row.id.replace("report-", "");
-    loadNearbyCameras(reportId);
-  });
-  updateTabCounts();
-});
+  const kinhDo = formData.get("kinhDo");
+  const viDo = formData.get("viDo");
+
+  if (!kinhDo || !viDo) {
+    alert("Vui lòng click chọn vị trí trên bản đồ trước!");
+    return;
+  }
+
+  // CHẾ ĐỘ 1: Gán tọa độ cho Trụ sở cũ sẵn có
+  if (truSoId !== "") {
+    const url = `/admin/quan-ly-tru-so/gan-toa-do/${truSoId}?kinhDo=${kinhDo}&viDo=${viDo}`;
+    try {
+      const response = await fetch(url, { method: "POST" });
+      if (response.ok) {
+        alert("✅ Đã gán vị trí cho trụ sở thành công!");
+        loadTruSoMarkers();
+        pickerMarker.remove();
+        form.reset();
+      } else {
+        alert("❌ Lỗi gán tọa độ trụ sở.");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    return;
+  }
+
+  // CHẾ ĐỘ 2: Tạo trụ sở mới hoàn toàn
+  try {
+    const response = await fetch("/admin/quan-ly-tru-so/them", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.ok) {
+      alert("✅ Thêm mới trụ sở thành công!");
+      loadTruSoMarkers();
+      form.reset();
+      toggleNewStationFields();
+      if (pickerMarker) pickerMarker.remove();
+    } else {
+      alert("❌ Lỗi: " + (await response.text()));
+    }
+  } catch (error) {
+    console.error("Lỗi kết nối SOS:", error);
+    alert("❌ Không thể kết nối đến máy chủ");
+  }
+}
+
+async function handleCameraSubmit() {
+  const form = document.getElementById("cameraSubmitForm");
+  const select = document.getElementById("select-camera");
+  const formData = new FormData(form);
+
+  const lat = formData.get("viDo");
+  const lng = formData.get("kinhDo");
+
+  if (!lat || !lng) {
+    alert("Vui lòng click chọn vị trí trên bản đồ trước!");
+    return;
+  }
+
+  let url = "";
+  let options = {};
+
+  // THÊM MỚI CAMERA
+  if (select.value === "") {
+    if (!formData.get("tenCamera")) {
+      alert("Vui lòng nhập tên Camera mới!");
+      return;
+    }
+    url = "/admin/quan-ly-camera/them";
+    options = {
+      method: "POST",
+      body: formData,
+    };
+  }
+  // GÁN TOẠ ĐỘ CAMERA CŨ
+  else {
+    const params = new URLSearchParams({
+      kinhDo: lng,
+      viDo: lat,
+    });
+    url = `/admin/quan-ly-camera/gan-toa-do/${select.value}?${params.toString()}`;
+    options = {
+      method: "POST",
+    };
+  }
+
+  try {
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText); // Sửa từ `throw new errorText()` sai cú pháp
+    }
+
+    const result = await response.text();
+    alert("✅ Thành công: " + result);
+
+    if (pickerMarker) pickerMarker.remove();
+    await loadCameraMarkers();
+
+    const cameraPanel = document.getElementById("form-camera");
+    const cameraTab = document.querySelector(
+      '.control-tab[data-target="form-camera"]',
+    );
+
+    if (cameraPanel) cameraPanel.classList.remove("open");
+    if (cameraTab) cameraTab.classList.remove("active");
+
+    form.reset();
+    toggleFormMode();
+  } catch (err) {
+    console.error("Chi tiết lỗi:", err);
+    alert("❌ Có lỗi xảy ra: " + err.message);
+  }
+}
+
+// --- 6. LOGIC ẨN/HIỆN TRƯỜNG FORM NHẬP LIỆU ---
+function toggleFormMode() {
+  const select = document.getElementById("select-camera");
+  const fieldsGroup = document.getElementById("camera-fields-group");
+  const tenInput = document.getElementById("inputTenCamera");
+
+  if (!select || !fieldsGroup) return;
+
+  if (select.value !== "") {
+    fieldsGroup.style.display = "none";
+    if (tenInput) tenInput.required = false;
+  } else {
+    fieldsGroup.style.display = "block";
+    if (tenInput) tenInput.required = true;
+  }
+}
+
+function toggleNewStationFields() {
+  const select = document.getElementById("select-tru-so");
+  const fields = document.getElementById("new-station-fields");
+  if (!select || !fields) return;
+  const inputs = fields.querySelectorAll("input");
+
+  if (select.value !== "") {
+    fields.style.display = "none";
+    inputs.forEach((i) => i.removeAttribute("required"));
+  } else {
+    fields.style.display = "block";
+    inputs.forEach((i) => i.setAttribute("required", "required"));
+  }
+}
+
+function toggleNewCameraFields() {
+  const select = document.getElementById("select-camera");
+  const fields = document.getElementById("new-camera-fields");
+  if (!select || !fields) return;
+
+  if (select.value !== "") {
+    fields.style.display = "none";
+    const inputs = fields.querySelectorAll("input");
+    inputs.forEach((i) => i.removeAttribute("required"));
+  } else {
+    fields.style.display = "block";
+    const nameInput = fields.querySelector('input[name="tenCamera"]');
+    if (nameInput) nameInput.setAttribute("required", "required");
+  }
+}
 
 function playNotificationSound() {
   const audio = new Audio(
     "https://assets.mixkit.co/active_storage/sfx/951/951-preview.mp3",
   );
-  audio.volume = 0.6;
-  audio
-    .play()
-    .catch(() => console.log("Yêu cầu tương tác để phát còi báo động"));
+  audio.volume = 0.7;
+  audio.play().catch((e) => {
+    console.log(
+      "Cần tương tác người dùng trước khi phát âm thanh báo động:",
+      e,
+    );
+  });
 }
+
+// --- 7. REALTIME WEBSOCKETS ---
+function connectWebSocket() {
+  const socket = new SockJS("/ws-suco-web");
+  const stompClient = Stomp.over(socket);
+
+  stompClient.connect(
+    {},
+    function (frame) {
+      // Kênh chuông thông báo Text
+      stompClient.subscribe("/topic/admin-notifications", function (message) {
+        updateNotificationList(message.body);
+      });
+
+      // Kênh cập nhật trực tiếp điểm sự cố lên Mapbox
+      stompClient.subscribe("/topic/su-co", function (message) {
+        const suCoDto = JSON.parse(message.body);
+        console.log("Realtime Update:", suCoDto);
+
+        if (suCoDto.trangThaiXuLy === "HUY_BO") {
+          if (
+            typeof incidentMarkersMap !== "undefined" &&
+            incidentMarkersMap[suCoDto.id]
+          ) {
+            incidentMarkersMap[suCoDto.id].remove();
+            delete incidentMarkersMap[suCoDto.id];
+          }
+        } else {
+          renderSingleIncident(suCoDto);
+          if (suCoDto.trangThaiXuLy === "DA_TIEP_NHAN") {
+            playNotificationSound();
+          }
+        }
+      });
+    },
+    function (err) {
+      console.log("WebSocket disconnected. Reconnecting in 5s...");
+      setTimeout(connectWebSocket, 5000);
+    },
+  );
+}
+
+function updateNotificationList(message) {
+  notificationCount++;
+  const bell = document.getElementById("notification-bell");
+  const badge = bell?.querySelector(".badge");
+  const list = document.getElementById("notification-list");
+
+  if (badge) {
+    badge.innerText = notificationCount;
+    badge.style.display = "block";
+  }
+  if (bell) bell.classList.add("ring-animation");
+
+  const noNoti = list?.querySelector(".no-notification");
+  if (noNoti) noNoti.remove();
+
+  const newItem = document.createElement("div");
+  newItem.className = "notification-item";
+  newItem.innerHTML = `
+        <div style="display: flex; gap: 10px; align-items: flex-start;">
+            <i class="fa-solid fa-circle-exclamation" style="color: #ef4444; margin-top: 4px;"></i>
+            <div>
+                <div style="font-weight: 600; font-size: 13px;">Sự cố mới cần duyệt</div>
+                <div style="font-size: 12px; color: #555;">${message}</div>
+                <div class="time">${new Date().toLocaleTimeString("vi-VN")}</div>
+            </div>
+        </div>`;
+
+  if (list) list.insertBefore(newItem, list.firstChild);
+}
+
+function renderSingleIncident(suCo) {
+  const id = suCo.id;
+
+  // 1. KIỂM TRA TRẠNG THÁI: Nếu đã hoàn thành hoặc hủy thì xóa Marker
+  if (suCo.trangThaiXuLy === "HOAN_THANH" || suCo.trangThaiXuLy === "HUY_BO") {
+    if (incidentMarkersMap[id]) {
+      incidentMarkersMap[id].remove();
+      delete incidentMarkersMap[id];
+    }
+    return;
+  }
+
+  if (incidentMarkersMap[id]) {
+    incidentMarkersMap[id].remove();
+  }
+
+  const lng = parseFloat(suCo.kinhDo);
+  const lat = parseFloat(suCo.viDo);
+  if (isNaN(lng) || isNaN(lat)) return;
+
+  const isWaitingAdmin =
+    suCo.trangThaiDuyet === "AI_APPROVED" || suCo.trangThaiDuyet === "PENDING";
+  let borderColor = "#ffffff";
+  if (suCo.trangThaiDuyet === "VERIFIED") {
+    if (suCo.mucDoSuCo === "HIGH") borderColor = "#e74c3c";
+    else if (suCo.mucDoSuCo === "MEDIUM") borderColor = "#f1c40f";
+    else if (suCo.mucDoSuCo === "LOW") borderColor = "#2ecc71";
+  }
+
+  const tenHienThi =
+    suCo.tenLoai || (suCo.loaiSuCo ? suCo.loaiSuCo.ten : "Sự cố");
+  const iconPath = suCo.iconUrl || (suCo.loaiSuCo ? suCo.loaiSuCo.iconUrl : "");
+
+  const el = document.createElement("div");
+  el.className = "custom-marker" + (isWaitingAdmin ? " pending-marker" : "");
+  let iconHTML = isWaitingAdmin
+    ? `<i class="fa-solid fa-circle-exclamation" style="color: #3498db; font-size: 24px;"></i>`
+    : `<div class="marker-icon" style="background-image: url('${iconPath}'); width: 30px; height: 30px;"></div>`;
+
+  el.innerHTML = `
+        <div class="marker-pin" style="border-color: ${borderColor}; background-color: white;">
+            ${iconHTML}
+        </div>
+        <div class="marker-tail" style="background-color: ${borderColor};"></div>`;
+
+  // 🌟 ĐÃ BỎ ĐOẠN .setPopup(...) Ở ĐÂY ĐỂ TRÁNH HIỆN POPUP ĐÈ LÊN SỰ CỐ
+  const marker = new mapboxgl.Marker({
+    element: el,
+    anchor: "bottom",
+  })
+    .setLngLat([lng, lat])
+    .addTo(map);
+
+  // Khi bấm vào Marker -> Mở panel chi tiết mượt mà bên phải
+  el.addEventListener("click", (e) => {
+    e.stopPropagation(); // Ngăn sự kiện click lan ra bản đồ
+    loadIncidentDetail(suCo.id);
+  });
+
+  incidentMarkersMap[id] = marker;
+}
+
+async function loadIncidentDetail(id) {
+  try {
+    const response = await fetch(`/api/su-co/${id}`);
+    if (!response.ok) throw new Error("Không lấy được chi tiết sự cố");
+
+    const detail = await response.json();
+    showIncidentPanel(detail);
+  } catch (e) {
+    console.error("Lỗi load chi tiết:", e);
+  }
+}
+
+function showIncidentPanel(data) {
+  const panel = document.getElementById("incident-detail-panel");
+  const content = document.getElementById("incident-detail-content");
+  const badgeContainer = document.getElementById("incident-id-badge-container");
+  if (!panel || !content) return;
+
+  // Tắt toàn bộ các Tab Form đang mở bên sườn để tránh chồng chéo diện tích
+  if (typeof tabs !== "undefined" && typeof panels !== "undefined") {
+    tabs.forEach((t) => t.classList.remove("active"));
+    panels.forEach((p) => p.classList.remove("open"));
+  }
+
+  panel.classList.add("open");
+
+  // 1. Cập nhật Mã sự cố lên vị trí badge góc phải trên Header
+  if (badgeContainer) {
+    badgeContainer.innerHTML = `<span class="incident-id-badge">#${data.id}</span>`;
+  }
+
+  // 2. Chuyển đổi định dạng hiển thị các trường dữ liệu trạng thái
+  const statusMap = {
+    PENDING: "Chờ duyệt",
+    AI_APPROVED: "AI xác thực",
+    DA_TIEP_NHAN: "Đang xử lý",
+    HOAN_THANH: "Đã hoàn thành",
+    HUY_BO: "Đã hủy bỏ",
+  };
+  const levelMap = { HIGH: "🔴 Cao", MEDIUM: "🟡 Trung bình", LOW: "🟢 Thấp" };
+
+  const trangThaiVn = statusMap[data.trangThaiXuLy] || data.trangThaiXuLy;
+  const mucDoVn = levelMap[data.mucDoSuCo] || data.mucDoSuCo;
+
+  // Định dạng ngày giờ tạo sự cố sinh động hơn
+  let thoiGianTaoStr = "Đang cập nhật...";
+  if (data.thoiGianTao) {
+    thoiGianTaoStr = new Date(data.thoiGianTao).toLocaleString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  }
+
+  // Tính toán màu sắc đại diện cho thanh tiến trình độ tin cậy (%)
+  const percent = data.doTinCay != null ? data.doTinCay : 0;
+  let reliabilityColor = "#ef4444"; // Đỏ (Kém tin cậy)
+  if (percent >= 80)
+    reliabilityColor = "#22c55e"; // Xanh lá (Tin cậy cao)
+  else if (percent >= 50) reliabilityColor = "#f59e0b"; // Vàng (Trung bình)
+
+  // Tên trụ sở phụ trách tiếp nhận xử lý điều phối
+  const tenTruSoPhuTrach = data.truSoTiepNhan
+    ? data.truSoTiepNhan.tenTruSo
+    : "Chưa bàn giao";
+
+  // 3. Đổ cấu trúc cây HTML phân tách nhóm dữ liệu rõ ràng, rộng rãi
+  content.innerHTML = `
+        <img class="main-img" src="${data.hinhAnhUrl || "https://placehold.co/600x400?text=Khong+Co+Hinh+Anh"}" alt="Ảnh hiện trường sự cố">
+        
+        <div class="info-section-card">
+            <div class="info-section-title"><i class="fa-solid fa-circle-info"></i> Thông tin chung</div>
+            <table class="detail-table">
+                <tr><td class="label">Loại sự cố</td><td class="value" style="color:var(--accent-color);">${data.tenLoai || "Chưa rõ loại"}</td></tr>
+                <tr><td class="label">Mức độ nguy hiểm</td><td class="value">${mucDoVn}</td></tr>
+                <tr><td class="label">Trạng thái xử lý</td><td class="value"><span style="background: rgba(59,130,246,0.1); padding: 2px 8px; border-radius: 6px;">${trangThaiVn}</span></td></tr>
+                <tr><td class="label">Thời gian báo</td><td class="value" style="font-weight: normal; font-size: 13px;">${thoiGianTaoStr}</td></tr>
+                <tr><td class="label">Đơn vị tiếp nhận</td><td class="value" style="color:#10b981;">${tenTruSoPhuTrach}</td></tr>
+            </table>
+        </div>
+
+        <div class="info-section-card">
+            <div class="info-section-title"><i class="fa-solid fa-shield-halved"></i> Đánh giá độ xác thực</div>
+            <div class="reliability-container">
+                <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600;">
+                    <span style="color:#64748b;">Mức độ tin cậy hệ thống:</span>
+                    <span style="color:${reliabilityColor};">${percent}%</span>
+                </div>
+                <div class="reliability-bar-bg">
+                    <div class="reliability-bar-fill" style="width: ${percent}%; background-color: ${reliabilityColor};"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-section-card">
+            <div class="info-section-title"><i class="fa-solid fa-user-shield"></i> Danh tính người báo cáo</div>
+            <table class="detail-table">
+                <tr><td class="label">Người báo cáo</td><td class="value">${data.tenNguoiBao || "Ẩn danh (Khách)"}</td></tr>
+                <tr><td class="label">Tài khoản UID / Email</td><td class="value" style="font-size:12px; font-family:monospace; font-weight:normal; word-break: break-all;">${data.reporterUid || "Không có dữ liệu"}</td></tr>
+            </table>
+        </div>
+
+        <div class="info-section-card">
+            <div class="info-section-title"><i class="fa-solid fa-location-dot"></i> Vị trí & Hiện trường</div>
+            <div style="font-size: 14px; color: #334155; line-height: 1.5; margin-bottom: 10px;">
+                <b>Địa chỉ:</b> ${data.diaChi || "Không xác định rõ địa chỉ cụ thể."}
+            </div>
+            <div style="font-size: 14px; color: #334155; line-height: 1.5; background: #f8fafc; padding: 12px; border-radius: 8px; border-left: 3px solid #cbd5e1;">
+                <b>Nội dung mô tả:</b> ${data.moTa || "Người dân không để lại lời mô tả thêm."}
+            </div>
+        </div>
+
+        <button class="panel-action-btn" onclick="window.location.href='/admin/quan-ly-su-co?id=${data.id}'">
+            ĐẾN TRANG ĐIỀU PHỐI XỬ LÝ NGAY
+        </button>
+    `;
+}
+function closeIncidentPanel() {
+  document.getElementById("incident-detail-panel")?.classList.remove("open");
+}
+
+// --- 8. KHỞI CHẠY KHI ĐÃ SẴN SÀNG DOM ---
+document.addEventListener("DOMContentLoaded", () => {
+  connectWebSocket();
+  toggleNewStationFields();
+  toggleNewCameraFields();
+
+  const bellIcon = document.getElementById("notification-bell");
+  const dropdown = document.getElementById("notification-dropdown");
+
+  if (bellIcon && dropdown) {
+    bellIcon.addEventListener("click", (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle("show");
+      if (dropdown.classList.contains("show")) {
+        bellIcon.classList.remove("ring-animation");
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!dropdown.contains(e.target) && !bellIcon.contains(e.target)) {
+        dropdown.classList.remove("show");
+      }
+    });
+  }
+
+  // Công cụ quét check lỗi 'undefined' (Chạy ẩn dưới Console)
+  document.querySelectorAll("*").forEach((el) => {
+    for (const attr of el.attributes || []) {
+      if (String(attr.value).includes("undefined")) {
+        console.log("🔍 [Phát hiện chuỗi lạ]:", el, attr.name, attr.value);
+      }
+    }
+  });
+});
