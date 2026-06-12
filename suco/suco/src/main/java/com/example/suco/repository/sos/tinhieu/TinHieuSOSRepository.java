@@ -13,6 +13,17 @@ public interface TinHieuSOSRepository extends JpaRepository<TinHieuSOS, Long> {
     // Lấy danh sách SOS của riêng một User (phục vụ app di động của khách hàng)
     List<TinHieuSOS> findByUserUid(String uid);
 
+    // Lấy tất cả SOS đang hoạt động, cho map
+    @Query("""
+    SELECT DISTINCT s FROM TinHieuSOS s 
+    LEFT JOIN FETCH s.user u 
+    WHERE s.idTruSoTiepNhan = :idTruSo
+    AND s.trangThai IN ('CHO_XU_LY', 'DA_TIEP_NHAN', 'DANG_XU_LY', 'DANG_CUU_TRO')
+    ORDER BY s.createdAt DESC
+""")
+List<TinHieuSOS> findActiveSOSByTruSo(@Param("idTruSo") Long idTruSo);
+
+// Lấy tất cả SOS cho từng trang
 @Query("""
         SELECT DISTINCT s FROM TinHieuSOS s 
         LEFT JOIN FETCH s.user u 

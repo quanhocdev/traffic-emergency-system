@@ -54,7 +54,7 @@ public class DispatchEngineService {
         return;
     }
 
-    event.setTrangThai("CHO_XU_LY");
+    event.setTrangThai("DA_TIEP_NHAN");
 
     event.setIdTruSoTiepNhan(best.getId());
 

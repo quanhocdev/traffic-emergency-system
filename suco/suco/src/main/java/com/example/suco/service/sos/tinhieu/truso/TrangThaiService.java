@@ -36,62 +36,58 @@ public class TrangThaiService {
     private CheckTrangThaiService checkTrangThaiService;
 
     public void capNhatTrangThaiSOS(
-        Long id,
-        String status,
-        TruSo current
-) {
+            Long id,
+            String status,
+            TruSo current
+    ) {
+        if (status != null) {
+            status = status.split(",")[0].trim();
+        }
 
-    if (status != null) {
-        status = status.split(",")[0].trim();
-    }
+        TinHieuSOS sos = tinHieuSOSRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy SOS"
+                ));
 
-    TinHieuSOS sos = tinHieuSOSRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Không tìm thấy SOS"
-            ));
+        String currentStatus = sos.getTrangThai();
 
-    String currentStatus = sos.getTrangThai();
+        checkTrangThaiService.validateAll(
+                sos,
+                currentStatus,
+                status,
+                current
+        );
 
-    checkTrangThaiService.validateAll(
-            sos,
-            currentStatus,
-            status,
-            current
-    );
+        // =========================================================================
+        // ĐÓNG DẤU ID TRỤ SỞ: Đảm bảo khi tiếp nhận/xử lý thì bản ghi được gắn với Trụ sở
+        // Tránh tình trạng cột id_tru_so_tiep_nhan trong DB bị NULL gây mất ghim khi F5
+        // =========================================================================
+        if ("DA_TIEP_NHAN".equals(status) || "DANG_XU_LY".equals(status) || "DANG_CUU_TRO".equals(status)) {
+            sos.setIdTruSoTiepNhan(current.getId());
+        }
 
-    if ("HOAN_THANH".equals(status)) {
+        if ("HOAN_THANH".equals(status)) {
+            sos.setTrangThai("HOAN_THANH");
+            tinHieuSOSRepository.save(sos);
+            notify(sos, current);
+            return;
+        }
 
-        sos.setTrangThai("HOAN_THANH");
+        if ("DA_HUY".equals(status)) {
+            sos.setTrangThai("DA_HUY");
+            tinHieuSOSRepository.save(sos);
+            notify(sos, current);
+            return;
+        }
 
-
+        sos.setTrangThai(status);
         tinHieuSOSRepository.save(sos);
 
         notify(sos, current);
-
-        return;
     }
-
-    if ("DA_HUY".equals(status)) {
-
-        sos.setTrangThai("DA_HUY");
-
-        tinHieuSOSRepository.save(sos);
-
-        notify(sos, current);
-
-        return;
-    }
-
-    sos.setTrangThai(status);
-
-    tinHieuSOSRepository.save(sos);
-
-    notify(sos, current);
-}
 
     private void notify(TinHieuSOS sos, TruSo current) {
-
         tinHieuRealtimeService.guiThongDiep(sos);
 
         SOSMapResponseDTO dto = tinHieuMapper.toMapDto(sos);
@@ -113,10 +109,9 @@ public class TrangThaiService {
     }
 
     public List<TruSoSOSDetailResponseDTO> layDanhSachSOSActive(
-        TruSo current,
-        String status
-) {
-
+            TruSo current,
+            String status
+    ) {
         if (current == null) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
@@ -124,7 +119,8 @@ public class TrangThaiService {
             );
         }
 
-        return tinHieuSOSRepository.findActiveByTruSo(current.getId())
+        // Đã đồng bộ hàm quét đa trạng thái dở dang từ Repository
+        return tinHieuSOSRepository.findActiveSOSByTruSo(current.getId())
                 .stream()
                 .filter(sos ->
                         status == null ||

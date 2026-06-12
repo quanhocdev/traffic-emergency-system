@@ -84,123 +84,106 @@
   margin-top: 10px;
 }
 
-.pulse-marker {
+/* =========================================================================
+   CỤM MARKER SOS (ĐÃ TỐI ƯU HÓA HIỆU ỨNG NHẤP NHÁY VÀ VÒNG BUNG)
+   ========================================================================= */
+
+/* Class nền tảng cho ghim tròn SOS (Hỗ trợ JS cập nhật màu động) */
+.simple-dot {
   width: 24px;
   height: 24px;
-  background: var(--danger);
-  border: 3px solid white;
   border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   cursor: pointer;
-  animation: pulse 1.5s infinite;
+  position: relative;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease;
 }
-@keyframes pulse {
+
+/* Hiệu ứng nháy cơ bản quanh viền cho trạng thái mặc định cần chú ý (CHO_XU_LY) */
+.pulse-marker {
+  animation: local-pulse 1.5s infinite;
+}
+
+@keyframes local-pulse {
   0% {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+    box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
   }
   100% {
     box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
   }
 }
-/* Chờ xử lý: Đỏ nháy */
-.marker-cho-xu-ly {
-  width: 24px;
-  height: 24px;
-  background: #ef4444;
-  border: 3px solid white;
-  border-radius: 50%;
-  animation: pulse 1.5s infinite;
-}
-/* Đang xử lý: Vàng nháy */
-.marker-dang-xu-ly {
-  width: 24px;
-  height: 24px;
-  background: #f59e0b;
-  border: 3px solid white;
-  border-radius: 50%;
-  animation: pulse-yellow 1.5s infinite;
-}
-/* Hoàn thành: Xanh lá, đứng yên */
-.marker-hoan-thanh {
-  width: 24px;
-  height: 24px;
-  background: #10b981;
-  border: 3px solid white;
-  border-radius: 50%;
-}
 
-@keyframes pulse-yellow {
-  0% {
-    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 15px rgba(245, 158, 11, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
-  }
-}
-/* CSS này giúp tạo hình dáng Marker giống ghim bản đồ */
-.marker-pin {
-  width: 50px;
-  height: 50px;
-  border-radius: 50% 50% 50% 50%; /* Hình tròn */
-  border: 4px solid; /* Màu sẽ được gán bằng JS */
+/* Trạng thái DA_TIEP_NHAN: Kích hoạt vòng tròn sóng âm lan tỏa rộng ra ngoài */
+.marker-pulse {
   position: relative;
-  z-index: 2;
 }
 
-.marker-tail {
-  width: 15px;
-  height: 15px;
-  transform: rotate(45deg);
+.marker-pulse::after {
+  content: "";
   position: absolute;
-  bottom: -7px;
-  left: 18px;
-  z-index: 1;
+  /* Đặt vị trí chính giữa tuyệt đối so với thẻ cha 24px */
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  margin-top: -12px; /* Trừ một nửa chiều cao */
+  margin-left: -12px; /* Trừ một nửa chiều rộng */
+  border-radius: 50%;
+  border: 3px solid #ff0000;
+  animation: pulse-ring 1.6s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+  opacity: 0;
+  pointer-events: none; /* Tránh cản trở sự kiện di chuột hoặc click vào marker */
+  box-sizing: border-box;
 }
 
-.marker-icon {
-  width: 30px;
-  height: 30px;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  80%,
+  100% {
+    transform: scale(2.5); /* Tăng độ nở rộng cho vòng bung nhìn rõ ràng hơn */
+    opacity: 0;
+  }
 }
+
+/* =========================================================================
+   CỤM MARKER SỰ CỐ (HÌNH GHIM GIỌT NƯỚC CÓ ĐUÔI NHỌN)
+   ========================================================================= */
 .custom-marker-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* Không đặt position: relative ở đây để tránh làm lệch anchor của Mapbox */
 }
 
-/* Phần đầu ghim hình tròn trắng, viền có màu */
 .marker-pin-main {
-  width: 42px; /* Tăng từ 36px lên 42px */
+  width: 42px;
   height: 42px;
   border-radius: 50%;
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25); /* Đổ bóng đậm hơn cho rõ */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
   border: 3px solid #94a3b8;
   z-index: 2;
   position: relative;
-  box-sizing: border-box; /* QUAN TRỌNG: Giữ hình tròn hoàn hảo */
-  overflow: hidden; /* Cắt bớt phần icon thừa nếu có */
+  box-sizing: border-box;
+  overflow: hidden;
 }
-/* Icon bên trong */
+
 .marker-pin-main img {
-  width: 26px; /* Tăng kích thước icon */
+  width: 26px;
   height: 26px;
   object-fit: contain;
 }
 
-/* Đuôi nhọn của ghim */
-/* Đuôi nhọn của ghim - Cố định vị trí tuyệt đối */
 .marker-tail-fix {
   width: 0;
   height: 0;
@@ -210,27 +193,8 @@
   margin-top: -4px;
   z-index: 1;
 }
-/* Hiệu ứng nháy chuẩn: Không lan rộng, chỉ nháy quanh Marker */
-@keyframes pulse-red {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-  }
-}
 
-.marker-pulse {
-  animation: pulse-red 2s infinite;
-  border-radius: 50%;
-}
-
+/* Hiệu ứng rung bần bật khi có sự cố khẩn cấp */
 @keyframes shake {
   0% {
     transform: rotate(0);
@@ -252,38 +216,38 @@
   animation: shake 0.5s infinite;
 }
 
-/* Làm cho form và button trông như một cái link bình thường */
+/* =========================================================================
+   CÁC THÀNH PHẦN GIAO DIỆN KHÁC (DROPDOWN TRỤ SỞ, NAV BUTTON, BELL NOTI)
+   ========================================================================= */
 .nav-item-form {
-  display: inline; /* Giữ nó nằm trên cùng một dòng nếu cần */
+  display: inline;
   margin: 0;
   padding: 0;
 }
 
 .nav-item-button {
-  background: none; /* Xóa nền xám mặc định */
-  border: none; /* Xóa viền mặc định */
-  padding: 0; /* Xóa khoảng cách mặc định */
-  font: inherit; /* Dùng font của menu cha */
-  cursor: pointer; /* Hiện bàn tay khi rê chuột vào */
-  color: inherit; /* Lấy màu chữ của menu */
-  display: flex; /* Để căn chỉnh icon và chữ cho đẹp */
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  color: inherit;
+  display: flex;
   align-items: center;
-  width: 100%; /* Để nó tràn hết chiều ngang như thẻ a */
+  width: 100%;
   text-decoration: none;
 }
 
-/* Hiệu ứng hover cho đồng bộ với các thẻ a khác */
 .nav-item-button:hover {
-  background-color: #374151; /* Hoặc màu hover bạn đang dùng */
+  background-color: #374151;
   border-radius: 0.5rem;
 }
-/* BẢNG ĐIỀU KHIỂN TRỤ SỞ */
 
 .scp-dropdown {
   position: absolute;
   top: 20px;
   left: 90px;
-  width: 200px; /* Thu hẹp tối đa chiều rộng mặc định */
+  width: 200px;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(15, 23, 42, 0.15);
@@ -294,7 +258,6 @@
   font-family: inherit;
 }
 
-/* Phần bấm vào để mở rộng */
 .scp-trigger {
   padding: 10px 14px;
   display: flex;
@@ -318,11 +281,9 @@
   transition: color 0.3s;
 }
 
-/* Định nghĩa màu động cho chấm tròn theo class */
 .dot-SAN_SANG {
   color: #22c55e;
 }
-
 .dot-NGOAI_TUYEN {
   color: #94a3b8;
 }
@@ -333,34 +294,29 @@
   transition: transform 0.3s ease;
 }
 
-/* Phần nội dung ẩn bên trong */
 .scp-content {
-  max-height: 0; /* Mặc định ẩn bằng cách thu chiều cao về 0 */
+  max-height: 0;
   overflow: hidden;
   opacity: 0;
-  padding: 0 14px; /* Giữ padding trái phải, trên dưới bằng 0 khi ẩn */
+  padding: 0 14px;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* Class active khi mở rộng */
 .scp-dropdown.show {
-  width: 240px; /* Nở rộng nhẹ ra một chút để dễ thao tác select */
+  width: 240px;
 }
-
 .scp-dropdown.show .chevron-icon {
-  transform: rotate(180deg); /* Xoay mũi tên lên */
+  transform: rotate(180deg);
 }
-
 .scp-dropdown.show .scp-content {
-  max-height: 160px; /* Chiều cao đủ chứa Form + Button */
+  max-height: 160px;
   opacity: 1;
-  padding-bottom: 14px; /* Hiện khoảng cách bên dưới khi mở */
+  padding-bottom: 14px;
 }
 
-/* Form controls bên trong */
 .scp-content .form-group {
   display: flex;
   flex-direction: column;
@@ -393,7 +349,6 @@
 .scp-content select:focus {
   border-color: #2563eb;
 }
-
 .scp-content button {
   width: 100%;
   padding: 9px;
@@ -414,16 +369,14 @@
 .scp-content button:hover {
   background: #1d4ed8;
 }
-/* CẤU TRÚC NÚT THÔNG BÁO CHUÔNG */
 
 #noti-bell {
   position: absolute;
   top: 20px;
   right: 20px;
-  z-index: 1002; /* Đảm bảo nổi hẳn lên trên bản đồ và các bảng khác */
+  z-index: 1002;
 }
 
-/* Khối tròn bọc icon chuông */
 .bell-icon-wrapper {
   background: white;
   width: 42px;
@@ -449,7 +402,6 @@
   color: #1e293b;
 }
 
-/* Badge số lượng thông báo màu đỏ */
 #noti-count {
   position: absolute;
   top: -2px;
@@ -461,16 +413,15 @@
   height: 18px;
   font-size: 10px;
   font-weight: 700;
-  display: flex; /* Dùng flex để căn giữa số 0 số 1 */
+  display: flex;
   align-items: center;
   justify-content: center;
   border: 2px solid white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Danh sách thông báo khi click đổ xuống */
 #noti-list {
-  display: none; /* Điều khiển ẩn hiện qua JS */
+  display: none;
   position: absolute;
   top: 52px;
   right: 0;
