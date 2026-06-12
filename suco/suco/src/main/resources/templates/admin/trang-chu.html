@@ -37,14 +37,15 @@
         <div id="adminMap"></div>
         <div id="incident-detail-panel" class="incident-detail-panel">
           <div class="panel-header">
-            <h3>Chi tiết sự cố</h3>
-
-            <button onclick="closeIncidentPanel()">
+            <div class="panel-header-left">
+              <h3>Chi tiết sự cố khẩn cấp</h3>
+              <div id="incident-id-badge-container"></div>
+            </div>
+            <button class="close-btn" onclick="closeIncidentPanel()">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
-
-          <div id="incident-detail-content">Chọn một sự cố trên bản đồ...</div>
+          <div id="incident-detail-content"></div>
         </div>
         <div id="notification-bell">
           <i class="fa-solid fa-bell"></i>
