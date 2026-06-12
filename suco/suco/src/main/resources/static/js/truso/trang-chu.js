@@ -101,6 +101,19 @@ async function drawRoute(targetLng, targetLat) {
     console.error("Lỗi vẽ route:", err);
   }
 }
+
+function anKhoiBanDo(id) {
+  const markerKey = "SOS_" + id;
+  if (activeMarkers[markerKey]) {
+    // Xóa marker vật lý trên bản đồ Mapbox
+    activeMarkers[markerKey].marker.remove();
+    // Xóa khỏi object lưu trữ dữ liệu
+    delete activeMarkers[markerKey];
+    // Đóng panel thông tin chi tiết lại
+    closeDetail();
+    console.log(`Đã ẩn SOS bản ghi số [${id}] khỏi bản đồ.`);
+  }
+}
 function showSOSDetail(item) {
   const panel = document.getElementById("sos-detail-panel");
   const content = document.getElementById("panel-content");
@@ -132,6 +145,7 @@ function showSOSDetail(item) {
   const audioUrl = fixUrl(item.ghiAmUrl);
 
   const statusLabel = {
+    DA_TIEP_NHAN: "Đã tiếp nhận",
     CHO_XU_LY: "Chờ xử lý",
     DANG_XU_LY: "Đang xử lý",
     HOAN_THANH: "Hoàn thành",
@@ -140,11 +154,18 @@ function showSOSDetail(item) {
 
   let actionButton = "";
   if (trangThai === "CHO_XU_LY") {
-    actionButton = `<button class="btn-approve" onclick="doiTrangThai(${id}, 'DANG_XU_LY')">
-                        <i class="fa-solid fa-truck-fast"></i> TIẾP NHẬN CỨU TRỢ</button>`;
+    actionButton = `<button class="btn-approve" onclick="doiTrangThai(${id}, 'DA_TIEP_NHAN')">
+                        <i class="fa-solid fa-bell"></i> TIẾP NHẬN YÊU CẦU</button>`;
+  } else if (trangThai === "DA_TIEP_NHAN") {
+    actionButton = `<button class="btn-approve" style="background:#f59e0b" onclick="doiTrangThai(${id}, 'DANG_XU_LY')">
+                        <i class="fa-solid fa-truck-fast"></i> XUẤT PHÁT CỨU TRỢ</button>`;
   } else if (trangThai === "DANG_XU_LY") {
     actionButton = `<button class="btn-approve" style="background:#10b981" onclick="doiTrangThai(${id}, 'HOAN_THANH')">
                         <i class="fa-solid fa-check-double"></i> XÁC NHẬN HOÀN THÀNH</button>`;
+  } else if (trangThai === "HOAN_THANH") {
+    // THÊM NÚT ẨN NGAY LẬP TỨC KHI ĐÃ HOÀN THÀNH
+    actionButton = `<button class="btn-approve" style="background:#64748b; width:100%;" onclick="anKhoiBanDo(${id})">
+                        <i class="fa-solid fa-eye-slash"></i> ẨN KHỎI BẢN ĐỒ NGAY</button>`;
   }
 
   content.innerHTML = `
@@ -427,35 +448,65 @@ function addSOSMarker(item, type = "SOS") {
   const trangThai =
     type === "SOS" ? item.trangThai : item.trangThaiXuLy || item.trangThai;
 
-  const forceDeleteStatus = ["HUY_BO", "DA_AN", "SPAM"];
+  // 1. Quản lý xóa bỏ ghim khi trạng thái kết thúc/bị hủy
+  const forceDeleteStatus = ["HUY_BO", "DA_HUY", "DA_AN", "SPAM"];
   if (forceDeleteStatus.includes(trangThai)) {
     if (activeMarkers[markerKey]) {
       activeMarkers[markerKey].marker.remove();
       delete activeMarkers[markerKey];
-      closeDetail();
+      if (typeof closeDetail === "function") closeDetail();
     }
     return;
   }
 
-  let themeColor = "#94a3b8"; // Xám mặc định
+  // 2. Đọc tọa độ linh hoạt (hỗ trợ cả trường tiếng Anh lẫn tiếng Việt từ API)
+  const lng = parseFloat(item.kinhDo || item.longitude);
+  const lat = parseFloat(item.viDo || item.latitude);
 
+  if (isNaN(lng) || isNaN(lat)) {
+    console.warn(`Bỏ qua marker ${markerKey} do sai tọa độ:`, item);
+    return;
+  }
+
+  let themeColor = "#94a3b8"; // Mặc định xám khi chưa có mức độ
+  let isPulse = "";
+
+  // =========================================================================
+  // PHÂN CHIA LOGIC MÀU SẮC RIÊNG BIỆT CHO SỰ CỐ VÀ SOS
+  // =========================================================================
   if (type === "SU_CO") {
     const mDo = item.mucDoSuCo || item.mucDo;
     if (mDo && mDo !== "NONE") {
-      if (mDo === "HIGH") themeColor = "#ef4444";
-      else if (mDo === "MEDIUM") themeColor = "#f59e0b";
-      else if (mDo === "LOW") themeColor = "#10b981";
+      if (mDo === "HIGH")
+        themeColor = "#ef4444"; // Đỏ - Cao
+      else if (mDo === "MEDIUM")
+        themeColor = "#f59e0b"; // Vàng - Trung bình
+      else if (mDo === "LOW") themeColor = "#10b981"; // Xanh lá - Thấp
     }
   } else {
-    if (trangThai === "CHO_XU_LY") themeColor = "#ff0000";
-    else if (trangThai === "DANG_XU_LY") themeColor = "#f59e0b";
-    else themeColor = "#10b981";
+    // SOS không có mức độ -> chỉ ăn màu và hiệu ứng bung theo TRẠNG THÁI
+    if (trangThai === "CHO_XU_LY") {
+      themeColor = "#ff0000"; // Đỏ tĩnh
+      isPulse = "";
+    } else if (trangThai === "DA_TIEP_NHAN") {
+      themeColor = "#ff0000"; // Vẫn đỏ
+      isPulse = "marker-pulse"; // Bật hiệu ứng sóng bung ra ra ngoài
+    } else if (trangThai === "DANG_XU_LY" || trangThai === "DANG_CUU_TRO") {
+      themeColor = "#f59e0b"; // Vàng / Cam
+      isPulse = "";
+    } else if (trangThai === "HOAN_THANH") {
+      themeColor = "#10b981"; // Xanh lá
+      isPulse = "";
+    }
   }
 
-  // Nếu Marker tồn tại, chỉ cần update màu và data
+  // =========================================================================
+  // XỬ LÝ CẬP NHẬT TRỰC TIẾP NẾU MARKER ĐÃ TỒN TẠI TRÊN DOM
+  // =========================================================================
   if (activeMarkers[markerKey]) {
     activeMarkers[markerKey].data = item;
     const el = activeMarkers[markerKey].marker.getElement();
+
     if (type === "SU_CO") {
       const pin = el.querySelector(".marker-pin-main");
       const tail = el.querySelector(".marker-tail-fix");
@@ -465,60 +516,80 @@ function addSOSMarker(item, type = "SOS") {
       const dot = el.querySelector(".simple-dot");
       if (dot) {
         dot.style.backgroundColor = themeColor;
-        if (trangThai !== "CHO_XU_LY") dot.classList.remove("marker-pulse");
+        if (isPulse) {
+          dot.classList.add("marker-pulse");
+        } else {
+          dot.classList.remove("marker-pulse");
+        }
       }
     }
     return;
   }
 
+  // =========================================================================
+  // XỬ LÝ TẠO MỚI HOÀN TOÀN CẤU TRÚC GIAO DIỆN MARKER (HTML INNER)
+  // =========================================================================
   const el = document.createElement("div");
   el.className = "custom-marker-wrapper";
 
   if (type === "SU_CO") {
-    const isPulse = trangThai === "CHO_XU_LY" ? "marker-pulse" : "";
+    // Trả lại nguyên vẹn thiết kế Giọt nước + Đuôi nhọn + Icon loại sự cố của bạn
+    const pulseClass = trangThai === "CHO_XU_LY" ? "marker-pulse" : "";
     const iconUrl =
       item.iconUrl || "https://cdn-icons-png.flaticon.com/512/564/564619.png";
 
     el.innerHTML = `
-            <div class="marker-pin-main ${isPulse}" style="border-color: ${themeColor}">
-                <img src="${iconUrl}" alt="icon">
-            </div>
-            <div class="marker-tail-fix" style="border-top-color: ${themeColor}"></div>
-        `;
+        <div class="marker-pin-main ${pulseClass}" style="border-color: ${themeColor}">
+            <img src="${iconUrl}" alt="icon">
+        </div>
+        <div class="marker-tail-fix" style="border-top-color: ${themeColor}"></div>
+    `;
   } else {
-    const isPulse = trangThai === "CHO_XU_LY" ? "marker-pulse" : "";
+    // Thiết kế chấm tròn đơn giản của SOS (Có vương miện nếu là tài khoản VIP)
     const isVip = item.isVip || item.vip;
     const crownHtml = isVip
-      ? `<div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); color: #FFD700; font-size: 18px; text-shadow: 1px 1px 3px rgba(0,0,0,0.6); z-index: 10;">
-                <i class="fa-solid fa-crown"></i>
-             </div>`
+      ? `<div style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); color: #FFD700; font-size: 18px; text-shadow: 1px 1px 3px rgba(0,0,0,0.6); z-index: 10;"><i class="fa-solid fa-crown"></i></div>`
       : "";
 
     el.innerHTML = `
-            ${crownHtml}
-            <div class="simple-dot ${isPulse}" 
-                 style="background-color: ${themeColor}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5); cursor: pointer;">
-            </div>
-        `;
+        ${crownHtml}
+        <div class="simple-dot ${isPulse}" 
+             style="background-color: ${themeColor}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5); cursor: pointer;">
+        </div>
+    `;
   }
 
+  // Khởi tạo Marker lên bản đồ Mapbox với anchor chuẩn xác từng loại
   const marker = new mapboxgl.Marker({
     element: el,
     anchor: type === "SU_CO" ? "bottom" : "center",
   })
-    .setLngLat([parseFloat(item.kinhDo), parseFloat(item.viDo)])
+    .setLngLat([lng, lat])
     .addTo(map);
 
   activeMarkers[markerKey] = { marker, data: item, type };
 
+  // Đăng ký sự kiện click mở Panel chi tiết (Đã đồng bộ tên hàm sang tiếng Anh)
   el.addEventListener("click", async (e) => {
     e.stopPropagation();
-    kíchHoạtChiTiếtTừMarker(markerKey, type);
+    activateMarkerDetail(markerKey, type);
   });
+
+  // Tự động ẩn khỏi bản đồ sau 3 phút nếu trạng thái là HOAN_THANH
+  if (type === "SOS" && trangThai === "HOAN_THANH") {
+    setTimeout(() => {
+      if (typeof anKhoiBanDo === "function") {
+        anKhoiBanDo(item.id);
+      } else if (activeMarkers[markerKey]) {
+        activeMarkers[markerKey].marker.remove();
+        delete activeMarkers[markerKey];
+      }
+    }, 180000);
+  }
 }
 
 // Hàm bổ trợ gọi API đồng bộ tránh lỗi cache dữ liệu panel
-async function kíchHoạtChiTiếtTừMarker(markerKey, type) {
+async function activateMarkerDetail(markerKey, type) {
   const latestData = activeMarkers[markerKey].data;
   if (type === "SU_CO") {
     try {
@@ -830,13 +901,29 @@ function loadExistingSOS() {
   return fetch("/sos/hoat-dong")
     .then((res) => res.json())
     .then((data) => {
+      // SỬA TẠI ĐÂY: Truy cập vào thuộc tính .marker trước khi gọi remove()
+      Object.keys(activeMarkers).forEach((id) => {
+        // Kiểm tra nếu đúng là loại SOS và có tồn tại instance marker thì mới xóa
+        if (
+          activeMarkers[id] &&
+          activeMarkers[id].type === "SOS" &&
+          activeMarkers[id].marker
+        ) {
+          activeMarkers[id].marker.remove(); // Thêm .marker vào đây
+          delete activeMarkers[id];
+        }
+      });
+
+      // Duyệt qua danh sách dữ liệu mới từ Backend trả về
       data.forEach((item) => {
         addSOSMarker(item, "SOS");
-        addNotiItem(item, "SOS", true);
+        if (typeof addNotiItem === "function") {
+          addNotiItem(item, "SOS", true);
+        }
       });
-    });
+    })
+    .catch((err) => console.error("Lỗi khi load danh sách SOS:", err));
 }
-
 async function saveStationConfig() {
   const payload = {
     trangThaiHoatDong: document.getElementById("trangThaiHoatDong").value,
