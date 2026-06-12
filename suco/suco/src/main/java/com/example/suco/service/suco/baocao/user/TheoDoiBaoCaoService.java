@@ -1,5 +1,5 @@
 package com.example.suco.service.suco.baocao.user;
-import com.example.suco.dto.suco.baocao.TheoDoiSuCoDetailResponseDTO;
+import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoDetailResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.example.suco.dto.suco.baocao;
+package com.example.suco.dto.suco.baocao.user;
 
 import java.time.LocalDateTime;
 
