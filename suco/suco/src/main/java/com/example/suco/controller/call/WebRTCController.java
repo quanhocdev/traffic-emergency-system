@@ -13,10 +13,6 @@ public class WebRTCController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    /**
-     * Nhận tín hiệu từ Client (Web hoặc Android) và chuyển tiếp đến đúng người nhận
-     * Destination từ client gửi lên: /app/call-signal
-     */
     @MessageMapping("/call-signal")
     public void handleCallSignal(@Payload Map<String, Object> signal) {
         // Kiểm tra an toàn dữ liệu đầu vào
@@ -34,15 +30,15 @@ public class WebRTCController {
             // Gửi cho Web Admin (Trụ sở)
             destination = "/topic/tru-so/" + toUser + "/call";
         } else {
-            // Gửi cho ứng dụng Android (Dựa trên UID Firebase)
+            // Gửi cho ứng dụng Android
             destination = "/topic/user/" + toUser + "/call";
         }
 
         try {
             messagingTemplate.convertAndSend(destination, signal);
-            System.out.println("✅ Forwarding [" + type + "] signal to: " + destination);
+            System.out.println("Forwarding [" + type + "] signal to: " + destination);
         } catch (Exception e) {
-            System.err.println("❌ Lỗi khi chuyển tiếp tín hiệu WebRTC: " + e.getMessage());
+            System.err.println("Lỗi khi chuyển tiếp tín hiệu WebRTC: " + e.getMessage());
         }
     }
 }

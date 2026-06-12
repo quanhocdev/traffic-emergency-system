@@ -1,6 +1,6 @@
 package com.example.suco.service.sos.tinhieu.user;
 
-import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
+import com.example.suco.dto.sos.tinhieu.user.TinHieuSOSRequestDTO;
 import com.example.suco.mapper.TinHieuMapper;
 import com.example.suco.repository.vanhanh.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;

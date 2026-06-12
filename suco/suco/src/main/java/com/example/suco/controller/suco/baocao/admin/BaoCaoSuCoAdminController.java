@@ -1,9 +1,6 @@
 package com.example.suco.controller.suco.baocao.admin;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-
-import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.service.suco.baocao.admin.AdminBaoCaoService;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
@@ -76,7 +71,6 @@ public String page(Model model) {
         //BaoCaoSuCo saved = reportService.submitAdminReport(report, image);
         BaoCaoSuCo saved = adminBaoCaoService.submitAdminReport(report, image);
     
-        // Trả về JSON cho trình duyệt xử lý
         return ResponseEntity.ok(saved); 
     }
 

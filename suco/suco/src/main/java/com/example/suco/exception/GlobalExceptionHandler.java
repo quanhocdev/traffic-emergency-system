@@ -47,6 +47,7 @@ public ResponseEntity<Map<String, String>> handleDuplicate(DataIntegrityViolatio
                     "message", "Tên loại sự cố đã tồn tại"
             ));
 }
+// Thiếu token hoặc token không hợp lệ
 @ExceptionHandler(MissingRequestHeaderException.class)
 public ResponseEntity<Map<String, Object>> handleMissingHeader(MissingRequestHeaderException ex) {
         return ResponseEntity
@@ -58,6 +59,7 @@ public ResponseEntity<Map<String, Object>> handleMissingHeader(MissingRequestHea
                 ));
     
 }
+// Dữ liệu đầu vào không hợp lệ
 @ExceptionHandler(MethodArgumentNotValidException.class)
 public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
     // Lấy tất cả các lỗi và nối thành một chuỗi message
@@ -75,6 +77,7 @@ public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgu
                     "confidence", 0
             ));
 }
+// Bắt lỗi chung cho các RuntimeException khác
 @ExceptionHandler(RuntimeException.class)
 public ResponseEntity<Map<String, String>> handleRuntime(RuntimeException ex) {
     return ResponseEntity

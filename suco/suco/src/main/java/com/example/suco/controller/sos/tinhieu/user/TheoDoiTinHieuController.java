@@ -1,7 +1,7 @@
 package com.example.suco.controller.sos.tinhieu.user;
 
-import com.example.suco.dto.sos.tinhieu.TheoDoiSOSDetailResponseDTO;
-import com.example.suco.dto.sos.tinhieu.TheoDoiSOSItemResponseDTO;
+import com.example.suco.dto.sos.tinhieu.user.TheoDoiSOSDetailResponseDTO;
+import com.example.suco.dto.sos.tinhieu.user.TheoDoiSOSItemResponseDTO;
 import com.example.suco.service.sos.tinhieu.user.TheoDoiTinHieuService;
 
 import org.springframework.beans.factory.annotation.Autowired;

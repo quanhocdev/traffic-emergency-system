@@ -11,7 +11,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        // Cấu hình bộ đếm thời gian Heartbeat độc lập để tránh nghẽn luồng
+
         ThreadPoolTaskScheduler te = new ThreadPoolTaskScheduler();
         te.setPoolSize(1);
         te.setThreadNamePrefix("ws-heartbeat-thread-");

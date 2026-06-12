@@ -2,12 +2,12 @@ package com.example.suco.mapper;
 
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
 import com.example.suco.dto.sos.tinhieu.SOSMapResponseDTO;
-import com.example.suco.dto.sos.tinhieu.TheoDoiSOSDetailResponseDTO;
-import com.example.suco.dto.sos.tinhieu.TheoDoiSOSItemResponseDTO;
-import com.example.suco.dto.sos.tinhieu.TinHieuSOSRequestDTO;
 import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 import com.example.suco.dto.sos.tinhieu.admin.AdminSOSDetailResponseDTO;
 import com.example.suco.dto.sos.tinhieu.truso.TruSoSOSDetailResponseDTO;
+import com.example.suco.dto.sos.tinhieu.user.TheoDoiSOSDetailResponseDTO;
+import com.example.suco.dto.sos.tinhieu.user.TheoDoiSOSItemResponseDTO;
+import com.example.suco.dto.sos.tinhieu.user.TinHieuSOSRequestDTO;
 import com.example.suco.model.User;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;

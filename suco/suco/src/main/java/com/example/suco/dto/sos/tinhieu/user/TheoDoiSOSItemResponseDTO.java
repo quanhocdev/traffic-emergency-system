@@ -1,4 +1,4 @@
-package com.example.suco.dto.sos.tinhieu;
+package com.example.suco.dto.sos.tinhieu.user;
 import java.time.LocalDateTime;
 
 public class TheoDoiSOSItemResponseDTO {

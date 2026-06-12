@@ -1,4 +1,4 @@
-package com.example.suco.dto.sos.tinhieu;
+package com.example.suco.dto.sos.tinhieu.user;
 
 public class TinHieuSOSRequestDTO {
     private double viDo;

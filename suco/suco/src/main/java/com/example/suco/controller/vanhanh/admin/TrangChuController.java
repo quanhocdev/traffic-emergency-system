@@ -6,11 +6,10 @@ import com.example.suco.repository.vanhanh.CameraRepository;
 import com.example.suco.repository.vanhanh.TruSoRepository;
 import com.example.suco.config.AppConfig;
 import com.example.suco.model.Camera; 
-import org.springframework.beans.factory.annotation.Autowired; // Thêm import này
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 

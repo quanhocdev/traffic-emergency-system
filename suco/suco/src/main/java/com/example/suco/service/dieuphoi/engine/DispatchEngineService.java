@@ -28,9 +28,6 @@ public class DispatchEngineService {
     @Autowired
     private TinHieuSOSRepository tinHieuSOSRepository;
 
-    // =====================================================
-    // START DISPATCH
-    // =====================================================
     public void startDispatch(TinHieuSOS event) {
 
     double lat = event.getViDo();

@@ -59,9 +59,7 @@ public Map<String, Object> capNhatMucDo(
         "Mức độ không hợp lệ"
     );
 }
-    // =========================
-    // VALIDATE STATUS (ENUM SAFE)
-    // =========================
+
     if (suCo.getTrangThaiXuLy() == TrangThaiXuLy.HOAN_THANH
             || suCo.getTrangThaiXuLy() == TrangThaiXuLy.HUY_BO) {
 
@@ -79,9 +77,6 @@ public Map<String, Object> capNhatMucDo(
         );
     }
 
-    // =========================
-    // CHECK TRỤ SỞ
-    // =========================
     if (suCo.getTruSoTiepNhan() == null) {
         throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
@@ -96,9 +91,6 @@ public Map<String, Object> capNhatMucDo(
         );
     }
 
-    // =========================
-    // UPDATE ENUM DIRECTLY
-    // =========================
     suCo.setMucDoSuCo(mucDo);
 
 
