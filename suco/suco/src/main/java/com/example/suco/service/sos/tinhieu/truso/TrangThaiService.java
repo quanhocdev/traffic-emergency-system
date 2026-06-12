@@ -35,9 +35,6 @@ public class TrangThaiService {
     @Autowired
     private CheckTrangThaiService checkTrangThaiService;
 
-    // =========================================
-    // UPDATE TRẠNG THÁI
-    // =========================================
     public void capNhatTrangThaiSOS(
         Long id,
         String status,
@@ -63,9 +60,6 @@ public class TrangThaiService {
             current
     );
 
-    // =========================================
-    // HOÀN THÀNH
-    // =========================================
     if ("HOAN_THANH".equals(status)) {
 
         sos.setTrangThai("HOAN_THANH");
@@ -78,9 +72,6 @@ public class TrangThaiService {
         return;
     }
 
-    // =========================================
-    // HỦY
-    // =========================================
     if ("DA_HUY".equals(status)) {
 
         sos.setTrangThai("DA_HUY");
@@ -92,18 +83,13 @@ public class TrangThaiService {
         return;
     }
 
-    // =========================================
-    // DEFAULT
-    // =========================================
     sos.setTrangThai(status);
 
     tinHieuSOSRepository.save(sos);
 
     notify(sos, current);
 }
-    // =========================================
-    // COMMON NOTIFY
-    // =========================================
+
     private void notify(TinHieuSOS sos, TruSo current) {
 
         tinHieuRealtimeService.guiThongDiep(sos);
@@ -126,9 +112,6 @@ public class TrangThaiService {
         );
     }
 
-    // =========================================
-    // LIST ACTIVE
-    // =========================================
     public List<TruSoSOSDetailResponseDTO> layDanhSachSOSActive(
         TruSo current,
         String status

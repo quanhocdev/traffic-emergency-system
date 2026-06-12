@@ -76,9 +76,7 @@ public BaoCaoSuCo submitAdminReport(BaoCaoSuCo report, MultipartFile image) {
         report.setHinhAnhUrl(imageStorageService.saveMultipartImage(image));
     }
 
-    // =========================
     // TRỤ SỞ GẦN NHẤT
-    // =========================
     TruSo ganNhat = truSoSelectorService.selectNearest(
             report.getViDo(),
             report.getKinhDo()
@@ -86,16 +84,9 @@ public BaoCaoSuCo submitAdminReport(BaoCaoSuCo report, MultipartFile image) {
 
         report.setTruSoTiepNhan(ganNhat);
         report.setTrangThaiXuLy(TrangThaiXuLy.DA_TIEP_NHAN);
-    
 
-    // =========================
-    // SAVE FIRST
-    // =========================
     BaoCaoSuCo savedReport = reportRepository.save(report);
 
-    // =========================
-    // GEO CODING (FIX ORDER BUG)
-    // =========================
     if (savedReport.getDiaChi() == null || savedReport.getDiaChi().isBlank()) {
         String address = geocodingService.getAddress(
                 savedReport.getViDo(),
@@ -106,9 +97,7 @@ public BaoCaoSuCo submitAdminReport(BaoCaoSuCo report, MultipartFile image) {
         savedReport = reportRepository.save(savedReport);
     }
 
-    // =========================
-    // REALTIME
-    // =========================
+    
     realtimeService.broadcastReport(
             suCoMapper.toMapDto(savedReport));
 

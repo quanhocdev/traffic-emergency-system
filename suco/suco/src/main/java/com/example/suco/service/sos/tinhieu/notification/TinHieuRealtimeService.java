@@ -77,17 +77,18 @@ public class TinHieuRealtimeService {
 }
     private String layThongDiepTrangThai(String trangThai) {
     switch (trangThai) {
-        case "DANG_XU_LY":
+        case "DA_TIEP_NHAN":
+            return "Yêu cầu đã được tiếp nhận!";
+        case "CHO_XU_LY":
             return "Lực lượng cứu hộ đang đến!";
-
+        case "DANG_XU_LY":
+            return "Lực lượng cứu hộ đang xử lý!";
         case "HOAN_THANH":
-            return "Hỗ trợ đã hoàn tất.";
-
+            return "Cứu hộ đã hoàn tất!";
         case "HUY_BO":
-            return "Yêu cầu đã bị hủy.";
-
+            return "Yêu cầu đã bị hủy!";
         default:
-            return "Yêu cầu đang được xử lý.";
+            return "Yêu cầu đã gửi đi!";
     }
 }
 public void guiThongDiep(TinHieuSOS sos) {

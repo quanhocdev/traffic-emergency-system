@@ -16,9 +16,6 @@ public class FirebaseConfig {
 
     @PostConstruct
     public void init() throws IOException {
-        // InputStream serviceAccount =
-        //         new ClassPathResource("canhbao-b600b-firebase-adminsdk-fbsvc-85c5d04d98.json").getInputStream();
-
         Resource serviceAccountResource = new ClassPathResource("canhbao-b600b-firebase-adminsdk-fbsvc-85c5d04d98.json");
         if (!serviceAccountResource.exists()) {
             System.out.println("Firebase service account JSON not found. Skipping Firebase initialization.");

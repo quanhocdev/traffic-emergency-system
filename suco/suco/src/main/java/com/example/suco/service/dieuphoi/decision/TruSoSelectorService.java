@@ -23,15 +23,13 @@ public class TruSoSelectorService {
     @Autowired
     private TruSoRepository truSoRepository;
 
-    /**
-     * CHỌN TRỤ SỞ GẦN NHẤT (single decision point)
-     */
  private boolean isAvailable(TruSo truSo) {
 
     return truSo.getTrangThaiHoatDong()
             == TrangThaiHoatDongTruSo.SAN_SANG;
 }
 
+    // Trả về trụ sở gần nhất trong bán kính tìm kiếm, nếu không có thì trả về trụ sở gần nhất trên toàn bộ hệ thống    
     public TruSo selectNearest(double lat, double lng) {
 
         List<TruSo> candidates = geoHashService.findTruSoInArea(lat, lng);
@@ -48,9 +46,7 @@ public class TruSoSelectorService {
                 .orElse(null);
     }
 
-    /**
-     * TRẢ DANH SÁCH ĐÃ SORT (cho SOS / điều phối)
-     */
+    // Trả danh sách trụ sở đã sắp xếp
     public List<TruSo> selectSorted(double lat, double lng) {
 
         List<TruSo> candidates = geoHashService.findTruSoInArea(lat, lng);

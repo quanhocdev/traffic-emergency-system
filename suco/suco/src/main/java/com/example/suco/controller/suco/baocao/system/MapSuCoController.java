@@ -2,11 +2,7 @@ package com.example.suco.controller.suco.baocao.system;
 
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
-import com.example.suco.model.BaoCaoSuCo;
-import com.example.suco.model.TruSo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
-
-import jakarta.servlet.http.HttpSession;
 import com.example.suco.service.suco.baocao.system.validation.RoleDetailService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;

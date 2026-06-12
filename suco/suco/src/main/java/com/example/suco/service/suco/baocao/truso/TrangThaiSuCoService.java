@@ -50,9 +50,7 @@ public Map<String, Object> updateSuCoStatus(
 
     log.info("Update status report {} → {}", id, status);
 
-    // =========================
-    // BLOCK FINAL STATES
-    // =========================
+
     if (suCo.getTrangThaiXuLy() == TrangThaiXuLy.HOAN_THANH
             || suCo.getTrangThaiXuLy() == TrangThaiXuLy.HUY_BO) {
 
@@ -62,9 +60,6 @@ public Map<String, Object> updateSuCoStatus(
         );
     }
 
-    // =========================
-    // NO SAME STATE
-    // =========================
     if (suCo.getTrangThaiXuLy() == status) {
         throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
@@ -72,9 +67,6 @@ public Map<String, Object> updateSuCoStatus(
         );
     }
 
-    // =========================
-    // STATE MACHINE RULES
-    // =========================
     switch (status) {
 
         case CHO_XU_LY -> {
@@ -123,18 +115,12 @@ public Map<String, Object> updateSuCoStatus(
         }
     }
 
-    // =========================
-    // APPLY UPDATE
-    // =========================
     suCo.setTrangThaiXuLy(status);
 
     BaoCaoSuCo saved = reportRepository.save(suCo);
 
     SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
 
-    // =========================
-    // REALTIME
-    // =========================
     realtimeService.broadcastReport(dto);
 
     if (saved.getTruSoTiepNhan() != null) {
