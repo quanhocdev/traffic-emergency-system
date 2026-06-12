@@ -127,10 +127,11 @@ fun LichSuScreen(
                     is TheoDoiBaoCaoUiState.Success -> {
                         val filtered = state.data.filter { item ->
                             when (selectedStatusTab) {
-                                0 -> item.trangThaiXuLy == "CHO_XU_LY"
-                                1 -> item.trangThaiXuLy == "DANG_XU_LY"
-                                2 -> item.trangThaiXuLy == "HOAN_THANH"
-                                3 -> item.trangThaiXuLy == "HUY_BO"
+                                0 -> item.trangThaiXuLy == "DA_TIEP_NHAN"
+                                1 -> item.trangThaiXuLy == "CHO_XU_LY"
+                                2 -> item.trangThaiXuLy == "DANG_XU_LY"
+                                3 -> item.trangThaiXuLy == "HOAN_THANH"
+                                4 -> item.trangThaiXuLy == "HUY_BO"
                                 else -> true
                             }
                         }
@@ -151,10 +152,11 @@ fun LichSuScreen(
                     is TheoDoiTinHieuUiState.Success -> {
                         val filtered = state.data.filter { item ->
                             when (selectedStatusTab) {
-                                0 -> item.trangThai == "CHO_XU_LY" || item.trangThai == "PENDING"
-                                1 -> item.trangThai == "DANG_XU_LY"
-                                2 -> item.trangThai == "HOAN_THANH"
-                                3 -> item.trangThai == "HUY_BO"
+                                0 -> item.trangThai == "DA_TIEP_NHAN"
+                                1 -> item.trangThai == "CHO_XU_LY"
+                                2 -> item.trangThai == "DANG_XU_LY"
+                                3 -> item.trangThai == "HOAN_THANH"
+                                4 -> item.trangThai == "HUY_BO"
                                 else -> true
                             }
                         }

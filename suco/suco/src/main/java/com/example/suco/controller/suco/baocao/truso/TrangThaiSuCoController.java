@@ -1,7 +1,7 @@
 package com.example.suco.controller.suco.baocao.truso;
 
-import com.example.suco.dto.suco.baocao.TruSoSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.truso.TrangThaiSuCoRequestDTO;
+import com.example.suco.dto.suco.baocao.truso.TruSoSuCoDetailResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;

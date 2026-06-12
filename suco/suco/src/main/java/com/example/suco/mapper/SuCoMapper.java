@@ -2,11 +2,11 @@ package com.example.suco.mapper;
 import com.example.suco.model.LoaiSuCo;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
-import com.example.suco.dto.suco.baocao.TheoDoiSuCoDetailResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
-import com.example.suco.dto.suco.baocao.AdminSuCoDetailResponseDTO;
-import com.example.suco.dto.suco.baocao.TruSoSuCoDetailResponseDTO;
-import com.example.suco.dto.suco.baocao.UserSuCoDetailResponseDTO;
+import com.example.suco.dto.suco.baocao.admin.AdminSuCoDetailResponseDTO;
+import com.example.suco.dto.suco.baocao.truso.TruSoSuCoDetailResponseDTO;
+import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoDetailResponseDTO;
+import com.example.suco.dto.suco.baocao.user.UserSuCoDetailResponseDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import org.springframework.stereotype.Component;
 

@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 data class DoiTienDtoRealtime(
     @SerializedName("userId")
     val userId: String = "Ẩn danh",
-    val email: String = "",           // Nếu null, mặc định rỗng
+    val email: String = "",
     val soDiemDoi: Int = 0,
     val giaTri: Long = 0,
     val ngayDoi: String? = null
