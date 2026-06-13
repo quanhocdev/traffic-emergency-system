@@ -89,55 +89,50 @@ function appendSOS(sos) {
 function loadPendingSOS() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
 
-  fetch("/sos/hoat-dong")
+  fetch("/truso/api/sos/cho-xu-ly")
     .then((res) => res.json())
     .then((data) => {
-      console.log("📦 API /active RAW DATA =", data);
-      data.forEach((x) => {
-        console.log("➡️ SOS ITEM:", x.id, x.user);
-      });
-      const list = document.getElementById("sos-list");
+      console.log("📦 Dữ liệu SOS ĐANG DI CHUYỂN (CHO_XU_LY) =", data);
+
+      // 1. Kiểm tra lại ID container trong file HTML của trang quản lý này.
+      // Nếu HTML dùng id="rescue-list" thì sửa đây thành "rescue-list"
+      const list = document.getElementById("rescue-list");
+
       if (!Array.isArray(data) || data.length === 0) {
-        // ... xử lý no-data như cũ ...
-        return;
-      }
-
-      // --- LOGIC SẮP XẾP MỚI ---
-      data.sort((a, b) => {
-        const pointsA = a.user && a.user.totalPoints ? a.user.totalPoints : 0;
-        const pointsB = b.user && b.user.totalPoints ? b.user.totalPoints : 0;
-
-        // 1. Ưu tiên điểm số giảm dần
-        if (pointsB !== pointsA) {
-          return pointsB - pointsA;
-        }
-        // 2. Nếu bằng điểm nhau, ai gửi trước (hoặc sau) thì tùy bạn (ở đây là mới nhất lên đầu)
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      });
-
-      // Lọc các trạng thái chờ xử lý
-      const pendingSOS = data.filter((item) => {
-        const status = item.trangThai || item.status;
-        return status === "CHO_XU_LY";
-      });
-
-      const noDataElem = document.getElementById("no-data");
-      if (pendingSOS.length === 0) {
-        if (noDataElem) noDataElem.style.display = "block";
+        if (document.getElementById("no-data"))
+          document.getElementById("no-data").style.display = "block";
         list.innerHTML = "";
         return;
       }
 
-      if (noDataElem) noDataElem.style.display = "none";
-      list.innerHTML = ""; // Xóa danh sách cũ
-      pendingSOS.forEach((sos) => {
-        const existed = document.getElementById("sos-card-" + sos.id);
-
-        if (!existed) {
-          list.insertAdjacentHTML("beforeend", renderSOSItem(sos));
-        }
+      // --- LOGIC SẮP XẾP THEO ĐIỂM VIP ---
+      data.sort((a, b) => {
+        const pointsA =
+          a.nguoiGui && a.nguoiGui.totalPoints ? a.nguoiGui.totalPoints : 0;
+        const pointsB =
+          b.nguoiGui && b.nguoiGui.totalPoints ? b.nguoiGui.totalPoints : 0;
+        if (pointsB !== pointsA) return pointsB - pointsA;
+        return (
+          new Date(b.thoiGianTao || b.createdAt) -
+          new Date(a.thoiGianTao || a.createdAt)
+        );
       });
-    });
+
+      const pendingSOS = data;
+
+      if (document.getElementById("no-data"))
+        document.getElementById("no-data").style.display = "none";
+
+      list.innerHTML = ""; // Xóa dòng chữ loading...
+
+      // 2. Điền logic render thật vào đây để nó vẽ Card lên màn hình
+      pendingSOS.forEach((sos) => {
+        list.innerHTML += renderSOSItem(sos); // Gọi hàm render items gán vào list
+      });
+    })
+    .catch((err) =>
+      console.error("Lỗi khi load danh sách đang di chuyển:", err),
+    );
 }
 
 // --- SỰ CỐ VIEW ---

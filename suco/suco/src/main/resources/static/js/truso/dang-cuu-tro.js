@@ -6,11 +6,9 @@ function fixUrl(path) {
   return `/uploads/sos/${path}`;
 }
 
-/*<![CDATA[*/
-var TRUSO_ID = /*[[${session.currentTruSo != null ? session.currentTruSo.id : 0}]]*/ 0;
-/*]]>*/
+var TRUSO_ID = window.TRUSO_ID || 0;
 
-let currentFilter = "su-co";
+let currentFilter = "sos"; // Mặc định chuyển thành "sos" để khớp với logic tải trang đầu tiên
 let allData = [];
 
 function formatTime(iso) {
@@ -20,6 +18,63 @@ function formatTime(iso) {
   } catch (e) {
     return iso;
   }
+}
+
+// --- HÀM FORMAT ITEM (BỊ THIẾU TRONG CODE CŨ CỦA BẠN) ---
+function formatItem(s, type) {
+  const upperType = String(type).toUpperCase().trim();
+  const timeRaw = s.thoiGianTao || s.createdAt || s.thoiGian;
+  let statusRaw =
+    upperType === "SOS"
+      ? s.trangThai || s.trangThaiXuLy
+      : s.trangThaiXuLy || s.trangThai;
+
+  let statusClean = String(statusRaw || "")
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/Đ/g, "D")
+    .trim()
+    .replace(/\s+/g, "_");
+
+  // Quy chuẩn các trạng thái đang xử lý của SOS về DANG_XU_LY để bộ lọc render nhận diện được
+  if (
+    upperType === "SOS" &&
+    (statusClean === "DA_TIEP_NHAN" ||
+      statusClean === "DANG_CUU_TRO" ||
+      statusClean === "CHO_XU_LY")
+  ) {
+    statusClean = "DANG_XU_LY";
+  }
+
+  let isVipUser = false;
+  if (upperType === "SOS") {
+    if (s.nguoiGui) isVipUser = s.nguoiGui.vip || s.nguoiGui.totalPoints >= 100;
+    else if (s.user) isVipUser = s.user.vip;
+  }
+
+  return {
+    id: s.id,
+    viDo: s.viDo,
+    kinhDo: s.kinhDo,
+    createdAt: timeRaw,
+    ghiChu:
+      upperType === "SOS"
+        ? s.ghiChu || "SOS Khẩn cấp"
+        : s.moTa || "Sự cố đường bộ",
+    trangThaiXuLy: statusClean,
+    itemType: upperType,
+    isVip: isVipUser,
+    hoaDon: upperType === "SOS" ? s.hoaDon || null : null,
+    thanhToan: upperType === "SOS" ? s.thanhToan || null : null,
+    reporterUid:
+      upperType === "SOS"
+        ? s.reporterUid || (s.nguoiGui ? s.nguoiGui.uid : null)
+        : s.userUid || null,
+    userPoints:
+      upperType === "SOS" ? (s.nguoiGui ? s.nguoiGui.totalPoints : 0) : 0,
+    _raw: s,
+  };
 }
 
 // 1. Sửa hàm render để hiển thị giao diện động chuẩn xác
@@ -50,7 +105,6 @@ function renderRescueItem(sos) {
   // --- LOGIC NÚT HÀNH ĐỘNG (XỬ LÝ / TẠO HÓA ĐƠN) ---
   let actionBtn = "";
   if (sos.itemType === "SUCO") {
-    // Đối với Sự cố: Thêm nút dẫn đường nhanh ra ngoài và nút Hoàn thành ca
     actionBtn = `
           <button class="btn btn-sm btn-outline-success mb-2 w-100" onclick="gotoMap(${sos.id || 0})">
               <i class="fa-solid fa-map-location-dot"></i> Dẫn đường
@@ -59,7 +113,6 @@ function renderRescueItem(sos) {
               <i class="fa-solid fa-check"></i> Hoàn thành
           </button>`;
   } else {
-    // Đối với SOS khẩn cấp: Xử lý theo luồng Hóa đơn
     if (sos.hoaDon) {
       if (sos.hoaDon.trangThai === "PAID") {
         actionBtn = `
@@ -165,7 +218,7 @@ function openPayment(id) {
     statusArea.innerHTML = `<span class="normal-badge"><i class="fa-solid fa-user"></i> Khách hàng vãng lai</span>`;
     amountInput.value = "";
     amountInput.readOnly = false;
-    vipNote.innerText = "Vui lòng nhập giá thỏa thuận with khách.";
+    vipNote.innerText = "Vui lòng nhập giá thỏa thuận với khách.";
   }
 
   document.getElementById("overlay").style.display = "block";
@@ -212,160 +265,117 @@ async function submitPayment(e) {
   }
 }
 
-async function loadActiveRescues() {
-  try {
-    console.log("=== BẮT ĐẦU TẢI DỮ LIỆU CỨU TRỢ CHUYÊN BIỆT ===");
+function loadActiveRescues() {
+  if (!TRUSO_ID || TRUSO_ID === 0) {
+    console.error("❌ LỖI: TRUSO_ID chưa được khởi tạo hoặc bằng 0!", TRUSO_ID);
+    return;
+  }
 
-    const [sosRes, sucoRes] = await Promise.all([
-      fetch("/truso/api/sos/dang-xu-ly").catch((e) => {
-        console.error("❌ Lỗi gọi API SOS:", e);
-        return null;
-      }),
-      fetch("/su-co/danh-sach-hien-tai?status=DANG_XU_LY").catch((e) => {
-        console.error("❌ Lỗi gọi API Sự cố:", e);
-        return null;
-      }),
-    ]);
+  console.log("=== 🔥 BẮT ĐẦU FETCH DỮ LIỆU ĐANG XỬ LÝ ===");
+  fetch("/truso/api/sos/dang-xu-ly")
+    .then((res) => {
+      console.log(`📡 Phản hồi từ Server: Status code = ${res.status}`);
+      return res.json();
+    })
+    .then((data) => {
+      console.log("📦 Dữ liệu GỐC (Raw JSON) nhận từ API:", data);
 
-    let sosData = [];
-    let sucoData = [];
-
-    // 1. Kiểm tra & Log dữ liệu SOS
-    if (sosRes && sosRes.ok) {
-      const rawSosText = await sosRes.text();
-      console.log("👉 [LOG 1] Chuỗi SOS thô từ API:", rawSosText);
-
-      try {
-        if (rawSosText && rawSosText.trim() !== "") {
-          const parsedSos = JSON.parse(rawSosText);
-          console.log("👉 [LOG 2] SOS sau khi Parse JSON:", parsedSos);
-
-          sosData = (parsedSos || []).map((item) => {
-            if (
-              item.trangThai === "Đang xử lý" ||
-              item.trangThaiXuLy === "Đang xử lý"
-            ) {
-              item.trangThai = "DANG_XU_LY";
-              item.trangThaiXuLy = "DANG_XU_LY";
-            }
-            return item;
-          });
-          console.log("👉 [LOG 3] Mảng sosData sau khi ép mã:", sosData);
-        }
-      } catch (e) {
-        console.error("❌ Lỗi cấu trúc JSON SOS:", e);
+      if (!Array.isArray(data)) {
+        console.error(
+          "❌ LỖI: Dữ liệu API trả về không phải là một Mảng (Array)!",
+          data,
+        );
+        return;
       }
-    } else {
-      console.warn(
-        "⚠️ API SOS trả về lỗi hoặc Status code không ok:",
-        sosRes?.status,
+
+      const formattedSosList = data.map((item) => {
+        return formatItem(item, "SOS");
+      });
+
+      console.log(
+        "✨ Danh sách SOS sau khi chạy qua formatItem:",
+        formattedSosList,
       );
-    }
 
-    // 2. Kiểm tra & Log dữ liệu Sự cố
-    if (sucoRes && sucoRes.ok) {
-      try {
-        const rawSuCo = await sucoRes.json();
-        console.log("👉 [LOG 4] Mảng Sự cố gốc từ API:", rawSuCo);
-
-        sucoData = (rawSuCo || []).map((item) => {
-          if (
-            item.trangThaiXuLy === "Đang xử lý" ||
-            item.trangThai === "Đang xử lý"
-          ) {
-            item.trangThaiXuLy = "DANG_XU_LY";
-            item.trangThai = "DANG_XU_LY";
-          }
-          return item;
-        });
-        console.log("👉 [LOG 5] Mảng sucoData sau khi ép mã:", sucoData);
-      } catch (e) {
-        console.error("❌ Lỗi cấu trúc JSON Sự cố:", e);
-      }
-    } else {
-      console.warn(
-        "⚠️ API Sự cố trả về lỗi hoặc Status code không ok:",
-        sucoRes?.status,
+      const truocKhiGop = allData.length;
+      allData = allData
+        .filter((it) => it.itemType !== "SOS")
+        .concat(formattedSosList);
+      console.log(
+        `🔄 Đồng bộ allData: Trước gộp (${truocKhiGop} items) -> Sau khi gộp (${allData.length} items)`,
       );
-    }
 
-    // 3. Chuẩn hóa cấu trúc
-    const formattedSos = (sosData || []).map((s) => formatItem(s, "SOS"));
-    const formattedSuCo = (sucoData || []).map((s) => formatItem(s, "SUCO"));
-    console.log("👉 [LOG 6] Mảng formattedSos sau formatItem:", formattedSos);
-    console.log("👉 [LOG 7] Mảng formattedSuCo sau formatItem:", formattedSuCo);
+      renderData();
+    })
+    .catch((err) => {
+      console.error(
+        "❌ LỖI hệ thống khi fetch /truso/api/sos/dang-xu-ly:",
+        err,
+      );
+    });
+}
 
-    // 4. Lọc trùng lặp dữ liệu
-    allData = [...formattedSuCo, ...formattedSos].filter(
-      (item, index, arr) =>
-        arr.findIndex(
-          (other) =>
-            other.id === item.id &&
-            String(other.itemType).toUpperCase() ===
-              String(item.itemType).toUpperCase(),
-        ) === index,
-    );
+function renderData() {
+  console.log("=== 🛠️ BẮT ĐẦU CHẠY HÀM RENDERDATA ===");
+  console.log("Current Filter (Tab đang chọn) =", currentFilter);
 
-    console.log(
-      "🚀 [LOG MẤU CHỐT] Mảng allData SAU KHI GỘP & LỌC TRÙNG:",
-      allData,
-    );
-
-    // Tiến hành vẽ giao diện
-    renderData();
-  } catch (err) {
+  const list = document.getElementById("rescue-list");
+  if (!list) {
     console.error(
-      "❌ Lỗi nghiêm trọng phát sinh trong loadActiveRescues:",
-      err,
+      "❌ LỖI: Không tìm thấy phần tử DOM nào có id là 'rescue-list' trên giao diện HTML!",
     );
-  }
-}
-function formatItem(s, type) {
-  const upperType = String(type).toUpperCase().trim();
-  const timeRaw = s.thoiGianTao || s.createdAt || s.thoiGian;
-
-  // Lấy trạng thái linh hoạt bất kể trường nào trả về
-  let statusRaw =
-    upperType === "SOS"
-      ? s.trangThai || s.trangThaiXuLy
-      : s.trangThaiXuLy || s.trangThai;
-
-  let statusClean = String(statusRaw || "")
-    .toUpperCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/Đ/g, "D")
-    .trim()
-    .replace(/\s+/g, "_");
-
-  // Nếu là SOS đã được phân phối về Trụ sở (Đang xử lý/Đã tiếp nhận) -> Đều coi như đang xử lý tại trang này
-  if (
-    upperType === "SOS" &&
-    (statusClean === "DA_TIEP_NHAN" ||
-      statusClean === "DANG_CUU_TRO" ||
-      statusClean === "CHO_XU_LY")
-  ) {
-    statusClean = "DANG_XU_LY";
+    return;
   }
 
-  return {
-    id: s.id,
-    viDo: s.viDo,
-    kinhDo: s.kinhDo,
-    createdAt: timeRaw,
-    ghiChu:
-      upperType === "SOS"
-        ? s.ghiChu || "SOS Khẩn cấp"
-        : s.moTa || "Sự cố đường bộ",
-    trangThaiXuLy: statusClean,
-    itemType: upperType,
-    isVip: upperType === "SOS" ? (s.nguoiGui ? s.nguoiGui.vip : false) : false,
-    hoaDon: upperType === "SOS" ? s.hoaDon || null : null,
-    thanhToan: upperType === "SOS" ? s.thanhToan || null : null,
-    reporterUid: upperType === "SOS" ? s.reporterUid : s.userUid || null,
-    _raw: s,
-  };
+  list.innerHTML = "";
+
+  let filtered = allData.filter((item) => {
+    // 1. Kiểm tra bộ lọc Tab
+    const map = { sos: "SOS", "su-co": "SUCO" };
+    if (item.itemType !== map[currentFilter]) {
+      return false;
+    }
+
+    // 2. Kiểm tra bộ lọc Trạng thái xử lý hợp lệ công việc hiện trường
+    const st = String(item.trangThaiXuLy ?? "")
+      .trim()
+      .toUpperCase();
+    const hopLe = st === "DANG_XU_LY" || st.includes("XU_LY") || st === "";
+
+    if (!hopLe) {
+      console.warn(
+        `⚠️ Item #${item.id} [${item.itemType}] bị loại do trạng thái xử lý không khớp: "${st}"`,
+      );
+    }
+
+    return hopLe;
+  });
+
+  console.log("🎯 Danh sách sau khi BỊ LỌC =", filtered);
+
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div class="alert alert-secondary py-4 text-center">
+        Hiện không có ca cứu trợ nào đang diễn ra trong danh mục này.
+      </div>`;
+    return;
+  }
+
+  filtered.sort((a, b) => {
+    if (a.isVip !== b.isVip) return a.isVip ? -1 : 1;
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
+  filtered.forEach((it) => {
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = renderRescueItem(it);
+    if (wrapper.firstElementChild) {
+      list.appendChild(wrapper.firstElementChild);
+    }
+  });
+  console.log(`✅ Render thành công ${filtered.length} thẻ lên giao diện!`);
 }
+
 function filterType(type) {
   currentFilter = type;
   const bSuCo = document.getElementById("btn-filter-su-co");
@@ -382,56 +392,6 @@ function filterType(type) {
   renderData();
 }
 
-function renderData() {
-  const list = document.getElementById("rescue-list");
-  if (!list) return;
-
-  list.innerHTML = "";
-
-  let filtered = allData.filter((item) => {
-    // 1. Lọc theo Tab đang chọn (sos hoặc su-co)
-    if (currentFilter) {
-      const map = {
-        sos: "SOS",
-        "su-co": "SUCO",
-      };
-      if (item.itemType !== map[currentFilter]) {
-        return false;
-      }
-    }
-
-    // 2. Lọc trạng thái xử lý an toàn
-    const st = String(item.trangThaiXuLy ?? "")
-      .trim()
-      .toUpperCase();
-
-    // Trang quản lý riêng hiển thị tất cả các ca đang chịu trách nhiệm: ĐANG_XU_LY hoặc các trạng thái tương đương
-    return st === "DANG_XU_LY" || st.includes("XU_LY") || st === "";
-  });
-
-  // Sắp xếp ưu tiên VIP, sau đó đến thời gian mới nhất
-  filtered.sort((a, b) => {
-    if (a.isVip !== b.isVip) return a.isVip ? -1 : 1;
-    return new Date(b.createdAt) - new Date(a.createdAt);
-  });
-
-  if (filtered.length === 0) {
-    list.innerHTML = `
-      <div class="alert alert-secondary py-4 text-center">
-        Hiện không có ca cứu trợ nào đang diễn ra trong danh mục này.
-      </div>`;
-    return;
-  }
-
-  filtered.forEach((it) => {
-    const wrapper = document.createElement("div");
-    // Tạo phần tử bọc để tránh lỗi DOM
-    wrapper.innerHTML = renderRescueItem(it);
-    if (wrapper.firstElementChild) {
-      list.appendChild(wrapper.firstElementChild);
-    }
-  });
-}
 function openDetailFromRow(id) {
   const el = document.getElementById("rescue-" + id);
   if (!el) return;
@@ -498,20 +458,21 @@ function gotoMap(id) {
   }
 }
 
-document.getElementById &&
+if (document.getElementById) {
   document.addEventListener("click", function (e) {
     if (e.target && e.target.id === "detail-close") {
       document.getElementById("detail-panel").style.display = "none";
       document.getElementById("overlay").style.display = "none";
     }
   });
+}
 
 setInterval(() => {
   const c = document.getElementById("clock");
   if (c) c.innerText = new Date().toLocaleTimeString();
 }, 1000);
 
-// --- CẤU HÌNH SOCKET & WEBRTC (GIỮ NGUYÊN HOẠT ĐỘNG CHUẨN) ---
+// --- CẤU HÌNH SOCKET & WEBRTC ---
 let stompClient = null;
 
 function connectWebSocket() {
@@ -558,6 +519,10 @@ window.addEventListener("load", () => {
   const bSOS = document.getElementById("btn-filter-sos");
   if (bSuCo) bSuCo.addEventListener("click", () => filterType("su-co"));
   if (bSOS) bSOS.addEventListener("click", () => filterType("sos"));
+
+  currentFilter = "sos";
+  if (bSOS) bSOS.classList.add("active");
+  if (bSuCo) bSuCo.classList.remove("active");
 
   loadActiveRescues();
   connectWebSocket();
@@ -657,7 +622,7 @@ function createPeerConnection() {
       remoteAudio.volume = 0.8;
       remoteAudio
         .play()
-        .catch((err) => console.error("Trình duyệt chặn phát m thanh:", err));
+        .catch((err) => console.error("Trình duyệt chặn phát âm thanh:", err));
     }
   };
 
@@ -700,6 +665,7 @@ function showCallPanel(status) {
   document.getElementById("call-status").innerText = status;
 }
 
+// Bổ sung từ khóa đóng/ngắt cuộc gọi
 function endCall() {
   if (targetUserId) {
     sendSignal({ type: "BYE", to: targetUserId, from: "TRU_SO_" + TRUSO_ID });

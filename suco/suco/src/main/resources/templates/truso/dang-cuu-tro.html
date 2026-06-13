@@ -16,6 +16,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <script th:inline="javascript">
+      window.TRUSO_ID = /*[[${session.currentTruSo != null ? session.currentTruSo.id : 0}]]*/ 0;
+      console.log("Kiểm tra TRUSO_ID nhận từ Thymeleaf:", window.TRUSO_ID);
+    </script>
   </head>
   <body>
     <div th:replace="fragments/truso/sidebar :: sidebar('doing')"></div>
@@ -162,6 +167,7 @@
         </button>
       </div>
     </div>
+
     <script th:src="@{/js/truso/dang-cuu-tro.js}"></script>
     <script th:src="@{/js/fragments/truso/sidebar.js}"></script>
   </body>
