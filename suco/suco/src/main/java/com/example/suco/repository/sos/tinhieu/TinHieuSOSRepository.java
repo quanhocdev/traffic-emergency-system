@@ -18,7 +18,7 @@ public interface TinHieuSOSRepository extends JpaRepository<TinHieuSOS, Long> {
     SELECT DISTINCT s FROM TinHieuSOS s 
     LEFT JOIN FETCH s.user u 
     WHERE s.idTruSoTiepNhan = :idTruSo
-    AND s.trangThai IN ('CHO_XU_LY', 'DA_TIEP_NHAN', 'DANG_XU_LY', 'DANG_CUU_TRO')
+    AND s.trangThai IN ('DA_TIEP_NHAN','CHO_XU_LY','DANG_XU_LY', 'HOAN_THANH')
     ORDER BY s.createdAt DESC
 """)
 List<TinHieuSOS> findActiveSOSByTruSo(@Param("idTruSo") Long idTruSo);
@@ -39,8 +39,12 @@ List<TinHieuSOS> findActiveSOSByTruSo(@Param("idTruSo") Long idTruSo);
         return findByTruSoAndStatus(idTruSo, "DA_TIEP_NHAN");
     }
 
+    default List<TinHieuSOS> findMovingByTruSo(Long idTruSo) {
+        return findByTruSoAndStatus(idTruSo, "CHO_XU_LY");
+    }
+
     default List<TinHieuSOS> findActiveByTruSo(Long idTruSo) {
-        return findByTruSoAndStatus(idTruSo, "DANG_CUU_TRO"); 
+        return findByTruSoAndStatus(idTruSo, "DANG_XU_LY"); 
     }
 
     default List<TinHieuSOS> findHistoryByTruSo(Long idTruSo) {

@@ -615,8 +615,8 @@ async function activateMarkerDetail(markerKey, type) {
     }
   } else {
     try {
-      const res = await fetch(`/sos/chi-tiet/${latestData.id}`); 
-      
+      const res = await fetch(`/sos/chi-tiet/${latestData.id}`);
+
       if (res.ok) {
         const fullDetailSOS = await res.json(); // TruSoSOSDetailResponseDTO đầy đủ trường
         activeMarkers[markerKey].data = fullDetailSOS; // Ghi đè vào bộ nhớ tạm
@@ -647,17 +647,24 @@ function handleRedirectParams() {
 
   if (sosId) {
     const markerKey = "SOS_" + sosId;
+    let retryCount = 0;
+    const maxRetries = 10; // Tăng số lần thử (Tổng thời gian chờ tối đa 5 giây)
+
     const showIfReady = () => {
       const entry = activeMarkers[markerKey];
       if (entry) {
-        showSOSDetail(entry.data);
+        // ĐỒNG BỘ: Kích hoạt hàm gọi API chi tiết chuẩn giống như khi click vào Marker
+        activateMarkerDetail(markerKey, "SOS");
+      } else if (retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(showIfReady, 500); // Thử lại sau mỗi 500ms nếu bản đồ chưa nạp xong ghim
       } else {
-        setTimeout(() => {
-          const e2 = activeMarkers[markerKey];
-          if (e2) showSOSDetail(e2.data);
-        }, 500);
+        console.warn(
+          `Không tìm thấy Marker cứu hộ với Key: ${markerKey} sau 5 giây.`,
+        );
       }
     };
+
     showIfReady();
   }
 }
@@ -956,7 +963,6 @@ function loadExistingSOS() {
   return fetch("/sos/hoat-dong")
     .then((res) => res.json())
     .then((data) => {
-      // SỬA TẠI ĐÂY: Truy cập vào thuộc tính .marker trước khi gọi remove()
       Object.keys(activeMarkers).forEach((id) => {
         // Kiểm tra nếu đúng là loại SOS và có tồn tại instance marker thì mới xóa
         if (

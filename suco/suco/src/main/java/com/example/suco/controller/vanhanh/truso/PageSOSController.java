@@ -16,6 +16,7 @@ import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 import com.example.suco.dto.sos.tinhieu.truso.TruSoSOSDetailResponseDTO;
+import com.example.suco.mapper.TinHieuMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -28,10 +29,9 @@ public class PageSOSController {
 
     @Autowired
     private TinHieuSOSRepository tinHieuSOSRepository;
+     @Autowired
+private TinHieuMapper tinHieuMapper; 
 
-    // ==========================================
-    // 🌐 VIEW - GIAO DIỆN CÁC TRANG SOS
-    // ==========================================
 
     @GetMapping("/sos-da-tiep-nhan")
     public String sosDaTiepNhan(HttpSession session) {
@@ -39,7 +39,7 @@ public class PageSOSController {
         return "truso/sos-da-tiep-nhan"; // Tab 1
     }
 
-    @GetMapping("/quan-ly-cuu-tro") // Chính là trang Chờ Cứu Trợ cũ của bạn
+    @GetMapping("/quan-ly-cuu-tro")
     public String quanLyCuuTro(HttpSession session) {
         if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
         return "truso/quan-ly-cuu-tro"; // Tab 2
@@ -66,70 +66,51 @@ public class PageSOSController {
     // ==========================================
 
     @GetMapping("/api/sos/da-tiep-nhan")
-    @ResponseBody
-    public List<TinHieuSOS> getSosDaTiepNhan(HttpSession session) {
-        TruSo current = (TruSo) session.getAttribute("currentTruSo");
-        if (current == null) return List.of();
-        return tinHieuSOSRepository.findNewAssignedByTruSo(current.getId());
+@ResponseBody
+public List<TruSoSOSDetailResponseDTO> getSosDaTiepNhan(HttpSession session) {
+    TruSo current = (TruSo) session.getAttribute("currentTruSo");
+    if (current == null) return List.of();
+    
+    // Đổ qua stream map như các hàm khác
+    return tinHieuSOSRepository.findNewAssignedByTruSo(current.getId()).stream()
+            .map(tinHieuMapper::toTruSoDetailDto)
+            .toList();
+}
+
+@GetMapping("/api/sos/cho-xu-ly")
+@ResponseBody
+public List<TruSoSOSDetailResponseDTO> getSosChoCuuTro(HttpSession session) {
+    // 1. Kiểm tra session Trụ sở
+    TruSo current = (TruSo) session.getAttribute("currentTruSo");
+    if (current == null) return List.of();
+    
+    // 2. Gọi hàm findMovingByTruSo chuyên biệt quét trạng thái CHO_XU_LY mà ta vừa thêm trong Repository
+    List<TinHieuSOS> movingEntities = tinHieuSOSRepository.findMovingByTruSo(current.getId());
+    
+    // 3. Đẩy qua mapper có sẵn của bạn để map đầy đủ thông tin hóa đơn, người gửi giống các API khác
+    return movingEntities.stream()
+            .map(tinHieuMapper::toTruSoDetailDto)
+            .collect(Collectors.toList());
+}
+   
+
+@GetMapping("/api/sos/dang-xu-ly")
+@ResponseBody
+public List<TruSoSOSDetailResponseDTO> sosCuaToi(HttpSession session) {
+    // 1. Lấy thông tin Trụ sở đang đăng nhập từ Session
+    TruSo current = (TruSo) session.getAttribute("currentTruSo");
+    if (current == null) {
+        return List.of(); // Trả về mảng rỗng nếu chưa đăng nhập hoặc mất session
     }
 
-    @GetMapping("/api/sos/cho-cuu-tro")
-    @ResponseBody
-    public List<TinHieuSOS> getSosChoCuuTro(HttpSession session) {
-        TruSo current = (TruSo) session.getAttribute("currentTruSo");
-        if (current == null) return List.of();
-        // Lấy danh sách đang chờ cứu trợ (bạn có thể map chuỗi tương ứng trong DB)
-        return tinHieuSOSRepository.findByTruSoAndStatus(current.getId(), "CHO_XU_LY");
-    }
+    // 2. Gọi Repository lấy danh sách thực thể (Đổi tên thành sosEntities để tránh trùng biến cục bộ)
+    List<TinHieuSOS> sosEntities = tinHieuSOSRepository.findActiveByTruSo(current.getId());
 
-    @GetMapping("/api/sos-cua-toi") // API này map DTO phức tạp cho trang Đang cứu trợ
-    @ResponseBody
-    public List<TruSoSOSDetailResponseDTO> sosCuaToi(HttpSession session) {
-        TruSo current = (TruSo) session.getAttribute("currentTruSo");
-        if (current == null) return List.of();
-
-        List<TinHieuSOS> entities = tinHieuSOSRepository.findActiveByTruSo(current.getId());
-
-        return entities.stream().map(entity -> {
-            TruSoSOSDetailResponseDTO dto = new TruSoSOSDetailResponseDTO();
-            dto.setId(entity.getId());
-            dto.setViDo(entity.getViDo());
-            dto.setKinhDo(entity.getKinhDo());
-            dto.setDiaChi(entity.getDiaChi());
-            dto.setGhiChu(entity.getGhiChu());
-            dto.setHinhAnhUrl(entity.getHinhAnh());
-            dto.setGhiAmUrl(entity.getGhiAm());
-            dto.setThoiGianTao(entity.getCreatedAt());
-            dto.setTrangThai(entity.getTrangThai());
-
-            if (entity.getUser() != null) {
-                UserMiniDTO userDto = new UserMiniDTO();
-                userDto.setId(entity.getUser().getUid());
-                userDto.setName(entity.getUser().getName());
-                userDto.setEmail(entity.getUser().getEmail());
-                userDto.setVip(entity.getIsVip());
-                dto.setNguoiGui(userDto);
-            }
-            if (entity.getHoaDon() != null) {
-                HoaDonResponseDTO hdDto = new HoaDonResponseDTO();
-                hdDto.setId(entity.getHoaDon().getId());
-                hdDto.setSosId(entity.getHoaDon().getSosId());
-                hdDto.setTrusoId(entity.getHoaDon().getTrusoId());
-                hdDto.setUserId(entity.getHoaDon().getUserId());
-                hdDto.setNoiDungXuLy(entity.getHoaDon().getNoiDungXuLy());
-                hdDto.setThanhTien(entity.getHoaDon().getThanhTien());
-                hdDto.setCreatedAt(entity.getHoaDon().getCreatedAt());
-                hdDto.setTrangThai(entity.getHoaDon().getTrangThai());
-                dto.setHoaDon(hdDto);
-            }
-            return dto;
-        }).collect(Collectors.toList());
-    }
-
-    // ==========================================
-    // 🎮 API - CHUYỂN TRẠNG THÁI SOS
-    // ==========================================
-
+    // 3. Đẩy qua TinHieuMapper đã cấu trúc để tự động chuyển sang DTO kèm Hóa Đơn
+    return sosEntities.stream()
+            .map(tinHieuMapper::toTruSoDetailDto)
+            .collect(Collectors.toList());
+}
     @PostMapping("/api/sos/{id}/di-chuyen-ngay")
     @ResponseBody
     public ResponseEntity<?> sosDiChuyenNgay(@PathVariable Long id, HttpSession session) {
