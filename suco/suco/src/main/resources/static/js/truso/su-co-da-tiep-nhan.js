@@ -66,20 +66,26 @@ function formatTime(iso) {
   });
 }
 
+// Thay thế toàn bộ cụm hàm loadIncidents() cũ bằng hàm gộp chuẩn hóa này:
 async function loadIncidents() {
   const listContainer = document.getElementById("incident-list");
   try {
     listContainer.innerHTML = `
       <div class="alert alert-secondary py-4" id="no-data">
-         <span class="spinner"></span> Đang tải danh sách sự cố từ hệ thống...
+         <span class="spinner"></span> Đang tải toàn bộ dữ liệu đã tiếp nhận từ hệ thống...
       </div>`;
 
-    // 🌟 CHỈ GỌI API SỰ CỐ
-    const res = await fetch("/truso/api/su-co/da-tiep-nhan");
-    const sucoRes = res.ok ? await res.json() : [];
+    // Gọi song song cả 2 API để tránh nghẽn luồng
+    const [resSuCo, resSos] = await Promise.all([
+      fetch("/truso/api/su-co/da-tiep-nhan").catch(() => null),
+      fetch("/truso/api/sos/da-tiep-nhan").catch(() => null),
+    ]);
 
-    // Chuẩn hóa dữ liệu Sự cố
-    allIncidentData = (sucoRes || []).map((s) => ({
+    const sucoRaw = resSuCo && resSuCo.ok ? await resSuCo.json() : [];
+    const sosRaw = resSos && resSos.ok ? await resSos.json() : [];
+
+    // 1. Chuẩn hóa dữ liệu Sự cố
+    const sucoMapped = (sucoRaw || []).map((s) => ({
       ...s,
       itemType: "SUCO",
       id: s.id,
@@ -91,68 +97,30 @@ async function loadIncidents() {
       mucDo: s.mucDoSuCo || "NONE",
     }));
 
-    // Sắp xếp thời gian mới nhất lên đầu
+    // 2. Chuẩn hóa dữ liệu SOS
+    const sosMapped = (sosRaw || []).map((item) => ({
+      ...item,
+      itemType: "SOS",
+      id: item.id,
+      time: item.createdAt || item.thoiGianTao,
+      diaChi: item.diaChi || `${item.viDo}, ${item.kinhDo}`,
+      ghiChu: item.ghiChu || "Yêu cầu cứu trợ khẩn cấp",
+      hinhAnh: fixUrl(item.hinhAnh), // Hoặc item.hinhAnhUrl tùy thuộc thực tế API SOS trả về trường nào
+    }));
+
+    // 3. Gộp mảng và sắp xếp theo thời gian mới nhất lên đầu
+    allIncidentData = [...sucoMapped, ...sosMapped];
     allIncidentData.sort(
       (a, b) => new Date(b.time || 0) - new Date(a.time || 0),
     );
 
-    renderIncidents(); // Hàm render lúc này không cần biến filter nữa, cứ thế vẽ ra thôi
-  } catch (error) {
-    console.error("Lỗi khi tải dữ liệu sự cố:", error);
-    listContainer.innerHTML = `<div class="alert alert-danger py-3">Không thể tải dữ liệu: ${error.message}</div>`;
-  }
-}
-async function loadIncidents() {
-  const listContainer = document.getElementById("incident-list");
-  try {
-    listContainer.innerHTML = `<div class="alert alert-secondary py-4"><span class="spinner"></span> Đang tải dữ liệu...</div>`;
-
-    // 1. Tự động nhận diện API theo đường dẫn trang web hiện tại
-    const isSosPage = window.location.pathname.includes("sos");
-    const apiUrl = isSosPage
-      ? "/truso/api/sos/da-tiep-nhan"
-      : "/truso/api/su-co/da-tiep-nhan";
-
-    const response = await fetch(apiUrl);
-    const rawData = response.ok ? await response.json() : [];
-
-    // 2. Map dữ liệu chuẩn hóa tùy theo loại trang
-    allIncidentData = (rawData || []).map((item) => {
-      if (isSosPage) {
-        return {
-          ...item,
-          itemType: "SOS",
-          id: item.id,
-          time: item.createdAt || item.thoiGianTao,
-          diaChi: item.diaChi || `${item.viDo}, ${item.kinhDo}`,
-          ghiChu: item.ghiChu || "Yêu cầu cứu trợ khẩn cấp",
-          hinhAnh: fixUrl(item.hinhAnh),
-        };
-      } else {
-        return {
-          ...item,
-          itemType: "SUCO",
-          id: item.id,
-          time: item.thoiGianTao || item.createdAt,
-          diaChi: item.diaChi || `${item.viDo}, ${item.kinhDo}`,
-          ghiChu: item.moTa || "Không có mô tả",
-          hinhAnh: fixUrl(item.hinhAnhUrl),
-          loai: item.loaiSuCo ? item.loaiSuCo.tenLoai : "Sự cố",
-          mucDo: item.mucDoSuCo || "NONE",
-        };
-      }
-    });
-
-    // 3. Sắp xếp thời gian
-    allIncidentData.sort(
-      (a, b) => new Date(b.time || 0) - new Date(a.time || 0),
-    );
-
-    // 4. Render (Lúc này hàm renderIncidents() bên dưới cứ vẽ hết mảng allIncidentData, không cần filter() nữa)
+    // 4. Vẽ ra giao diện theo Tab đang Active hiện tại
     renderIncidents();
   } catch (error) {
-    console.error("Lỗi hệ thống:", error);
-    listContainer.innerHTML = `<div class="alert alert-danger py-3">Không thể tải dữ liệu: ${error.message}</div>`;
+    console.error("Lỗi khi tải dữ liệu tổng hợp:", error);
+    if (listContainer) {
+      listContainer.innerHTML = `<div class="alert alert-danger py-3">Không thể tải dữ liệu: ${error.message}</div>`;
+    }
   }
 }
 

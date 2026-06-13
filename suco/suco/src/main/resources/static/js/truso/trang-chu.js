@@ -133,8 +133,6 @@ function showSOSDetail(item) {
     ? new Date(item.thoiGianTao).toLocaleString("vi-VN")
     : "Vừa xong";
 
-  const trangThai = item.trangThai || "CHO_XU_LY";
-
   const fixUrl = (path) => {
     if (!path) return null;
     if (path.startsWith("/uploads") || path.startsWith("http")) return path;
@@ -144,6 +142,12 @@ function showSOSDetail(item) {
   const imgUrl = fixUrl(item.hinhAnhUrl);
   const audioUrl = fixUrl(item.ghiAmUrl);
 
+  // 1. Chuẩn hóa dữ liệu đầu vào: Ép in hoa và xóa sạch khoảng trắng thừa
+  let trangThai = item.trangThai || "CHO_XU_LY";
+  if (typeof trangThai === "string") {
+    trangThai = trangThai.toUpperCase().trim();
+  }
+
   const statusLabel = {
     DA_TIEP_NHAN: "Đã tiếp nhận",
     CHO_XU_LY: "Chờ xử lý",
@@ -152,20 +156,24 @@ function showSOSDetail(item) {
     HUY_BO: "Hủy bỏ",
   };
 
+  // 2. Kiểm tra và render chính xác nút bấm theo chuỗi đã chuẩn hóa
   let actionButton = "";
-  if (trangThai === "CHO_XU_LY") {
-    actionButton = `<button class="btn-approve" onclick="doiTrangThai(${id}, 'DA_TIEP_NHAN')">
-                        <i class="fa-solid fa-bell"></i> TIẾP NHẬN YÊU CẦU</button>`;
-  } else if (trangThai === "DA_TIEP_NHAN") {
+  if (trangThai === "DA_TIEP_NHAN") {
+    actionButton = `<button class="btn-approve" onclick="doiTrangThai(${id}, 'CHO_XU_LY')">
+                        <i class="fa-solid fa-bell"></i> XUẤT PHÁT CỨU HỘ</button>`;
+  } else if (trangThai === "CHO_XU_LY") {
     actionButton = `<button class="btn-approve" style="background:#f59e0b" onclick="doiTrangThai(${id}, 'DANG_XU_LY')">
-                        <i class="fa-solid fa-truck-fast"></i> XUẤT PHÁT CỨU TRỢ</button>`;
+                        <i class="fa-solid fa-truck-fast"></i> BẮT ĐẦU CỨU HỘ</button>`;
   } else if (trangThai === "DANG_XU_LY") {
     actionButton = `<button class="btn-approve" style="background:#10b981" onclick="doiTrangThai(${id}, 'HOAN_THANH')">
-                        <i class="fa-solid fa-check-double"></i> XÁC NHẬN HOÀN THÀNH</button>`;
+                        <i class="fa-solid fa-check-double"></i> CỨU HỘ HOÀN TẤT</button>`;
   } else if (trangThai === "HOAN_THANH") {
-    // THÊM NÚT ẨN NGAY LẬP TỨC KHI ĐÃ HOÀN THÀNH
     actionButton = `<button class="btn-approve" style="background:#64748b; width:100%;" onclick="anKhoiBanDo(${id})">
                         <i class="fa-solid fa-eye-slash"></i> ẨN KHỎI BẢN ĐỒ NGAY</button>`;
+  } else {
+    // Trường hợp phòng hờ nếu có trạng thái lạ, hiển thị nút vô hiệu hóa để không bị tàng hình
+    actionButton = `<button class="btn-approve" style="background:#94a3b8; cursor:not-allowed;" disabled>
+                        <i class="fa-solid fa-exclamation-triangle"></i> TRẠNG THÁI KHÔNG XÁC ĐỊNH (${trangThai})</button>`;
   }
 
   content.innerHTML = `
@@ -588,9 +596,9 @@ function addSOSMarker(item, type = "SOS") {
   }
 }
 
-// Hàm bổ trợ gọi API đồng bộ tránh lỗi cache dữ liệu panel
 async function activateMarkerDetail(markerKey, type) {
   const latestData = activeMarkers[markerKey].data;
+
   if (type === "SU_CO") {
     try {
       const res = await fetch(`/su-co/chi-tiet/${latestData.id}`);
@@ -602,14 +610,26 @@ async function activateMarkerDetail(markerKey, type) {
         showSuCoDetail(latestData);
       }
     } catch (err) {
-      console.error("Lỗi kết nối API chi tiết:", err);
+      console.error("Lỗi kết nối API chi tiết sự cố:", err);
       showSuCoDetail(latestData);
     }
   } else {
-    showSOSDetail(latestData);
+    try {
+      const res = await fetch(`/sos/chi-tiet/${latestData.id}`); 
+      
+      if (res.ok) {
+        const fullDetailSOS = await res.json(); // TruSoSOSDetailResponseDTO đầy đủ trường
+        activeMarkers[markerKey].data = fullDetailSOS; // Ghi đè vào bộ nhớ tạm
+        showSOSDetail(fullDetailSOS); // Đổ dữ liệu lên Panel bên phải
+      } else {
+        showSOSDetail(latestData); // Dự phòng dữ liệu cũ nếu lỗi
+      }
+    } catch (err) {
+      console.error("Lỗi khi kết nối API chi tiết SOS:", err);
+      showSOSDetail(latestData);
+    }
   }
 }
-
 function handleRedirectParams() {
   const params = new URLSearchParams(window.location.search);
   const toLat = params.get("toLat");
@@ -866,26 +886,61 @@ function doiTrangThaiSuCo(id, status) {
 }
 
 function doiTrangThai(id, status) {
-  fetch(`/sos/cap-nhat-trang-thai/${id}?status=${status}&idTruSo=${idTruSo}`, {
-    method: "PATCH",
-  }).then((res) => {
-    if (res.ok) {
-      const markerKey = "SOS_" + id;
-      if (activeMarkers[markerKey]) {
-        activeMarkers[markerKey].data.trangThai = status;
-        if (status === "HOAN_THANH") {
-          activeMarkers[markerKey].marker.remove();
-          delete activeMarkers[markerKey];
-          closeDetail();
-        } else {
-          showSOSDetail(activeMarkers[markerKey].data);
-          addSOSMarker(activeMarkers[markerKey].data, "SOS");
-        }
-      }
-    }
-  });
-}
+  if (
+    !confirm("Bạn có chắc chắn muốn điều động lực lượng xử lý mục này chứ?")
+  ) {
+    return;
+  }
 
+  // 1. Tạo đúng cấu trúc Object tương ứng với TrangThaiSOSRequestDTO ở Backend
+  const requestBody = {
+    status: status, // Ví dụ: "DANG_XU_LY"
+  };
+
+  const url = `/sos/cap-nhat-trang-thai/${id}`;
+  console.log("Đang gửi yêu cầu điều động SOS lên:", url, requestBody);
+
+  // 2. Thực hiện FETCH cấu hình Method PATCH và gửi kèm JSON Body
+  fetch(url, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json", // Bắt buộc khai báo để Spring Boot hiểu
+    },
+    body: JSON.stringify(requestBody), // Chuyển đổi Object thành chuỗi JSON
+  })
+    .then((res) => {
+      if (res.ok) {
+        alert("Điều động lực lượng xuất phát cứu hộ thành công!");
+
+        // Cập nhật lại UI map nếu có quản lý danh sách marker đang chạy
+        const markerKey = "SOS_" + id;
+        if (typeof activeMarkers !== "undefined" && activeMarkers[markerKey]) {
+          activeMarkers[markerKey].data.trangThai = status;
+
+          if (status === "HOAN_THANH" || status === "DA_TIEP_NHAN") {
+            // Tùy theo logic nghiệp vụ của bạn: ẩn đi hoặc load lại marker màu mới
+            activeMarkers[markerKey].marker.remove();
+            delete activeMarkers[markerKey];
+            closeDetail();
+          } else {
+            showSOSDetail(activeMarkers[markerKey].data);
+          }
+        } else {
+          // Nếu không quản lý mảng, chỉ cần reload lại trang hoặc cập nhật UI cục bộ
+          if (typeof loadIncidents === "function") loadIncidents();
+        }
+      } else {
+        // Nếu Backend trả về lỗi (Ví dụ: 401 do hết hạn session, hoặc lỗi logic service)
+        res.text().then((text) => {
+          alert(`Hệ thống từ chối thực thi (Mã lỗi ${res.status}): ` + text);
+        });
+      }
+    })
+    .catch((err) => {
+      console.error("Lỗi kết nối mạng:", err);
+      alert("Không thể kết nối đến máy chủ cập nhật trạng thái!");
+    });
+}
 function loadExistingSuCo() {
   return fetch(`/api/su-co/map`)
     .then((res) => res.json())
