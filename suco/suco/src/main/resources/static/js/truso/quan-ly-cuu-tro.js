@@ -96,7 +96,7 @@ function loadPendingSOS() {
 
       // 1. Kiểm tra lại ID container trong file HTML của trang quản lý này.
       // Nếu HTML dùng id="rescue-list" thì sửa đây thành "rescue-list"
-      const list = document.getElementById("rescue-list");
+      const list = document.getElementById("sos-list");
 
       if (!Array.isArray(data) || data.length === 0) {
         if (document.getElementById("no-data"))
@@ -915,21 +915,27 @@ function confirmRescue(id) {
     });
 }
 
-window.addEventListener("load", function () {
-  // 1. Kiểm tra ID trụ sở ngay lập tức
+document.addEventListener("DOMContentLoaded", function () {
+  // 1. Kiểm tra ID trụ sở ngay lập tức (Lấy từ window đã hứng ở HTML)
+  if (typeof window.TRUSO_ID !== "undefined") {
+    TRUSO_ID = window.TRUSO_ID;
+  }
+
   if (!TRUSO_ID || TRUSO_ID === 0) {
-    console.error("Không tìm thấy ID trụ sở từ Session!");
+    console.error("❌ LỖI: Không tìm thấy ID trụ sở từ Session!");
     return;
   }
 
-  // 2. Gán sự kiện cho các nút chuyển view (Tab)
+  // 2. Gán sự kiện click cho các nút chuyển view (Tab) công cụ điều khiển
   const btnSuCo = document.getElementById("btn-su-co");
   const btnSos = document.getElementById("btn-sos");
   if (btnSuCo) btnSuCo.addEventListener("click", () => setActiveView("suco"));
   if (btnSos) btnSos.addEventListener("click", () => setActiveView("sos"));
 
+  // 3. Bây giờ DOM đã sẵn sàng 100%, gọi an toàn không lo bị null nữa
   setActiveView("sos");
 
+  // 4. Kết nối WebSocket realtime
   setTimeout(() => {
     connectRealtime();
   }, 300);

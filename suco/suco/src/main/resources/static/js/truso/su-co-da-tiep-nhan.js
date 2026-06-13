@@ -49,7 +49,7 @@ function startClock() {
 
 // Hàm xử lý đường dẫn ảnh từ server
 function fixUrl(path) {
-  if (!path) return "/images/default-incident.jpg"; // Ảnh mặc định nếu null
+  if (!path) return "/images/default-incident.jpg";
   if (path.startsWith("http") || path.startsWith("/uploads/")) return path;
   return `/uploads/sos/${path}`;
 }
@@ -92,7 +92,7 @@ async function loadIncidents() {
       time: s.thoiGianTao || s.createdAt,
       diaChi: s.diaChi || `${s.viDo}, ${s.kinhDo}`,
       ghiChu: s.moTa || "Không có mô tả",
-      hinhAnh: fixUrl(s.hinhAnhUrl),
+      hinhAnh: fixUrl(s.hinhAnh || s.hinhAnhUrl),
       loai: s.loaiSuCo ? s.loaiSuCo.tenLoai : "Sự cố",
       mucDo: s.mucDoSuCo || "NONE",
     }));
@@ -105,7 +105,7 @@ async function loadIncidents() {
       time: item.createdAt || item.thoiGianTao,
       diaChi: item.diaChi || `${item.viDo}, ${item.kinhDo}`,
       ghiChu: item.ghiChu || "Yêu cầu cứu trợ khẩn cấp",
-      hinhAnh: fixUrl(item.hinhAnh), // Hoặc item.hinhAnhUrl tùy thuộc thực tế API SOS trả về trường nào
+      hinhAnh: fixUrl(item.hinhAnhUrl || item.hinhAnh),
     }));
 
     // 3. Gộp mảng và sắp xếp theo thời gian mới nhất lên đầu
