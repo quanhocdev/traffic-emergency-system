@@ -130,4 +130,21 @@ public class TrangThaiService {
                 .map(tinHieuMapper::toTruSoDetailDto)
                 .toList();
     }
+
+    public TruSoSOSDetailResponseDTO layChiTietSOSChoTruSo(Long id, TruSo current) {
+        if (current == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Vui lòng đăng nhập tài khoản trụ sở!"
+            );
+        }
+
+        TinHieuSOS sos = tinHieuSOSRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy tín hiệu SOS này!"
+                ));
+
+        return tinHieuMapper.toTruSoDetailDto(sos);
+    }
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.suco.dto.sos.tinhieu.truso.TrangThaiSOSRequestDTO;
+import com.example.suco.dto.sos.tinhieu.truso.TruSoSOSDetailResponseDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
@@ -75,6 +76,17 @@ public ResponseEntity<?> getSosActive(
             )
     );
 }
+@GetMapping("/chi-tiet/{id}")
+    public ResponseEntity<?> getChiTietSosChoTruSo(
+            @PathVariable Long id,
+            HttpSession session) {
 
+        TruSo current = (TruSo) session.getAttribute("currentTruSo");
+
+        // Gọi sang Service xử lý logic và nhận về DTO đầy đủ trường thông tin
+        TruSoSOSDetailResponseDTO dto = trangThaiSOSService.layChiTietSOSChoTruSo(id, current);
+
+        return ResponseEntity.ok(dto);
+    }
 }
 
