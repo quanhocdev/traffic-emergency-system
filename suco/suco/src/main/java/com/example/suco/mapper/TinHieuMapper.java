@@ -13,6 +13,7 @@ import com.example.suco.model.TinHieuSOS;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
 import org.springframework.stereotype.Component;
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 
 @Component
 public class TinHieuMapper {
@@ -73,12 +74,13 @@ public SOSMapResponseDTO toMapDto(TinHieuSOS sos) {
     return dto;
 }
 // Entity → ResponseDTO TruSo
-public TruSoSOSDetailResponseDTO toTruSoDetailDto(
-        TinHieuSOS sos
-) {
+// Entity → ResponseDTO TruSo
+public TruSoSOSDetailResponseDTO toTruSoDetailDto(TinHieuSOS sos) {
+    if (sos == null) {
+        return null;
+    }
 
-    TruSoSOSDetailResponseDTO dto =
-            new TruSoSOSDetailResponseDTO();
+    TruSoSOSDetailResponseDTO dto = new TruSoSOSDetailResponseDTO();
 
     dto.setId(sos.getId());
     dto.setViDo(sos.getViDo());
@@ -90,11 +92,27 @@ public TruSoSOSDetailResponseDTO toTruSoDetailDto(
     dto.setTrangThai(sos.getTrangThai());
     dto.setThoiGianTao(sos.getCreatedAt());
 
+    // Map thông tin người gửi cứu hộ
     dto.setNguoiGui(toUserMiniDTO(sos.getUser()));
+
+    // 🔥 GẮN CHUẨN ĐỐI TƯỢNG HÓA ĐƠN TỪ PACKAGE QUANLY
+    if (sos.getHoaDon() != null) {
+        HoaDonResponseDTO hdDto = new HoaDonResponseDTO();
+        
+        hdDto.setId(sos.getHoaDon().getId());
+        hdDto.setSosId(sos.getHoaDon().getSosId());
+        hdDto.setTrusoId(sos.getHoaDon().getTrusoId());
+        hdDto.setUserId(sos.getHoaDon().getUserId());
+        hdDto.setNoiDungXuLy(sos.getHoaDon().getNoiDungXuLy());
+        hdDto.setThanhTien(sos.getHoaDon().getThanhTien());
+        hdDto.setCreatedAt(sos.getHoaDon().getCreatedAt());
+        hdDto.setTrangThai(sos.getHoaDon().getTrangThai());
+        
+        dto.setHoaDon(hdDto);
+    }
 
     return dto;
 }
-
 // Entity → ResponseDTO Admin
 public AdminSOSDetailResponseDTO toAdminDetailDto(
         TinHieuSOS sos,

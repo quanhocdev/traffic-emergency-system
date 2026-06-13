@@ -214,13 +214,15 @@ async function submitPayment(e) {
 
 async function loadActiveRescues() {
   try {
+    console.log("=== BẮT ĐẦU TẢI DỮ LIỆU CỨU TRỢ CHUYÊN BIỆT ===");
+
     const [sosRes, sucoRes] = await Promise.all([
-      fetch("/truso/api/sos-cua-toi").catch((e) => {
-        console.error("Lỗi API SOS:", e);
+      fetch("/truso/api/sos/dang-xu-ly").catch((e) => {
+        console.error("❌ Lỗi gọi API SOS:", e);
         return null;
       }),
       fetch("/su-co/danh-sach-hien-tai?status=DANG_XU_LY").catch((e) => {
-        console.error("Lỗi API Sự cố:", e);
+        console.error("❌ Lỗi gọi API Sự cố:", e);
         return null;
       }),
     ]);
@@ -228,41 +230,72 @@ async function loadActiveRescues() {
     let sosData = [];
     let sucoData = [];
 
+    // 1. Kiểm tra & Log dữ liệu SOS
     if (sosRes && sosRes.ok) {
       const rawSosText = await sosRes.text();
+      console.log("👉 [LOG 1] Chuỗi SOS thô từ API:", rawSosText);
+
       try {
-        if (rawSosText && rawSosText.trim() !== "")
-          sosData = JSON.parse(rawSosText);
+        if (rawSosText && rawSosText.trim() !== "") {
+          const parsedSos = JSON.parse(rawSosText);
+          console.log("👉 [LOG 2] SOS sau khi Parse JSON:", parsedSos);
+
+          sosData = (parsedSos || []).map((item) => {
+            if (
+              item.trangThai === "Đang xử lý" ||
+              item.trangThaiXuLy === "Đang xử lý"
+            ) {
+              item.trangThai = "DANG_XU_LY";
+              item.trangThaiXuLy = "DANG_XU_LY";
+            }
+            return item;
+          });
+          console.log("👉 [LOG 3] Mảng sosData sau khi ép mã:", sosData);
+        }
       } catch (e) {
-        console.error("Lỗi JSON SOS:", e);
+        console.error("❌ Lỗi cấu trúc JSON SOS:", e);
       }
+    } else {
+      console.warn(
+        "⚠️ API SOS trả về lỗi hoặc Status code không ok:",
+        sosRes?.status,
+      );
     }
 
+    // 2. Kiểm tra & Log dữ liệu Sự cố
     if (sucoRes && sucoRes.ok) {
       try {
         const rawSuCo = await sucoRes.json();
+        console.log("👉 [LOG 4] Mảng Sự cố gốc từ API:", rawSuCo);
 
-        // CẬP NHẬT TẠI ĐÂY: Can thiệp trực tiếp vào mảng gốc trả về từ API
         sucoData = (rawSuCo || []).map((item) => {
-          if (item.trangThaiXuLy === "Đang xử lý") {
-            item.trangThaiXuLy = "DANG_XU_LY"; // Đè hẳn giá trị tiếng Việt thành mã không dấu
+          if (
+            item.trangThaiXuLy === "Đang xử lý" ||
+            item.trangThai === "Đang xử lý"
+          ) {
+            item.trangThaiXuLy = "DANG_XU_LY";
+            item.trangThai = "DANG_XU_LY";
           }
           return item;
         });
+        console.log("👉 [LOG 5] Mảng sucoData sau khi ép mã:", sucoData);
       } catch (e) {
-        console.error("Lỗi JSON Sự cố:", e);
+        console.error("❌ Lỗi cấu trúc JSON Sự cố:", e);
       }
+    } else {
+      console.warn(
+        "⚠️ API Sự cố trả về lỗi hoặc Status code không ok:",
+        sucoRes?.status,
+      );
     }
 
-    // Lúc này log ra chắc chắn sẽ là "DANG_XU_LY", không còn chữ tiếng Việt nữa
-    console.log("Dữ liệu SOS gốc:", sosData);
-    console.log("Dữ liệu Sự cố gốc (Đã ép mã):", sucoData);
-
-    // Chuẩn hóa cấu trúc dữ liệu đẩy vào mảng dùng chung
+    // 3. Chuẩn hóa cấu trúc
     const formattedSos = (sosData || []).map((s) => formatItem(s, "SOS"));
     const formattedSuCo = (sucoData || []).map((s) => formatItem(s, "SUCO"));
+    console.log("👉 [LOG 6] Mảng formattedSos sau formatItem:", formattedSos);
+    console.log("👉 [LOG 7] Mảng formattedSuCo sau formatItem:", formattedSuCo);
 
-    // Lọc trùng lặp dữ liệu
+    // 4. Lọc trùng lặp dữ liệu
     allData = [...formattedSuCo, ...formattedSos].filter(
       (item, index, arr) =>
         arr.findIndex(
@@ -273,39 +306,58 @@ async function loadActiveRescues() {
         ) === index,
     );
 
-    console.log("=== TOÀN BỘ DATA SAU KHI GỘP ===", allData);
+    console.log(
+      "🚀 [LOG MẤU CHỐT] Mảng allData SAU KHI GỘP & LỌC TRÙNG:",
+      allData,
+    );
+
+    // Tiến hành vẽ giao diện
     renderData();
   } catch (err) {
-    console.error("Lỗi nghiêm trọng trong loadActiveRescues:", err);
+    console.error(
+      "❌ Lỗi nghiêm trọng phát sinh trong loadActiveRescues:",
+      err,
+    );
   }
 }
-
 function formatItem(s, type) {
   const upperType = String(type).toUpperCase().trim();
-
   const timeRaw = s.thoiGianTao || s.createdAt || s.thoiGian;
 
+  // Lấy trạng thái linh hoạt bất kể trường nào trả về
   let statusRaw =
     upperType === "SOS"
-      ? s.trangThai
-      : s.trangThaiXuLy || s.trangThai || "DANG_XU_LY";
+      ? s.trangThai || s.trangThaiXuLy
+      : s.trangThaiXuLy || s.trangThai;
 
-  // SỬA TẠI ĐÂY: Thêm replace khoảng trắng thành gạch dưới
-  let statusClean = String(statusRaw)
+  let statusClean = String(statusRaw || "")
     .toUpperCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/Đ/g, "D")
     .trim()
-    .replace(/\s+/g, "_"); // <--- Biến "DANG XU LY" thành "DANG_XU_LY"
+    .replace(/\s+/g, "_");
+
+  // Nếu là SOS đã được phân phối về Trụ sở (Đang xử lý/Đã tiếp nhận) -> Đều coi như đang xử lý tại trang này
+  if (
+    upperType === "SOS" &&
+    (statusClean === "DA_TIEP_NHAN" ||
+      statusClean === "DANG_CUU_TRO" ||
+      statusClean === "CHO_XU_LY")
+  ) {
+    statusClean = "DANG_XU_LY";
+  }
 
   return {
     id: s.id,
     viDo: s.viDo,
     kinhDo: s.kinhDo,
     createdAt: timeRaw,
-    ghiChu: upperType === "SOS" ? s.ghiChu || "SOS" : s.moTa || "Sự cố",
-    trangThaiXuLy: statusClean, // Bây giờ sẽ là "DANG_XU_LY" chuẩn đét
+    ghiChu:
+      upperType === "SOS"
+        ? s.ghiChu || "SOS Khẩn cấp"
+        : s.moTa || "Sự cố đường bộ",
+    trangThaiXuLy: statusClean,
     itemType: upperType,
     isVip: upperType === "SOS" ? (s.nguoiGui ? s.nguoiGui.vip : false) : false,
     hoaDon: upperType === "SOS" ? s.hoaDon || null : null,
@@ -337,6 +389,7 @@ function renderData() {
   list.innerHTML = "";
 
   let filtered = allData.filter((item) => {
+    // 1. Lọc theo Tab đang chọn (sos hoặc su-co)
     if (currentFilter) {
       const map = {
         sos: "SOS",
@@ -346,12 +399,17 @@ function renderData() {
         return false;
       }
     }
+
+    // 2. Lọc trạng thái xử lý an toàn
     const st = String(item.trangThaiXuLy ?? "")
       .trim()
       .toUpperCase();
-    return st === "DANG_XU_LY";
+
+    // Trang quản lý riêng hiển thị tất cả các ca đang chịu trách nhiệm: ĐANG_XU_LY hoặc các trạng thái tương đương
+    return st === "DANG_XU_LY" || st.includes("XU_LY") || st === "";
   });
 
+  // Sắp xếp ưu tiên VIP, sau đó đến thời gian mới nhất
   filtered.sort((a, b) => {
     if (a.isVip !== b.isVip) return a.isVip ? -1 : 1;
     return new Date(b.createdAt) - new Date(a.createdAt);
@@ -359,19 +417,21 @@ function renderData() {
 
   if (filtered.length === 0) {
     list.innerHTML = `
-      <div class="alert alert-secondary py-4">
-        Hiện không có cứu trợ đang diễn ra cho danh mục này.
+      <div class="alert alert-secondary py-4 text-center">
+        Hiện không có ca cứu trợ nào đang diễn ra trong danh mục này.
       </div>`;
     return;
   }
 
   filtered.forEach((it) => {
     const wrapper = document.createElement("div");
+    // Tạo phần tử bọc để tránh lỗi DOM
     wrapper.innerHTML = renderRescueItem(it);
-    list.appendChild(wrapper.firstElementChild);
+    if (wrapper.firstElementChild) {
+      list.appendChild(wrapper.firstElementChild);
+    }
   });
 }
-
 function openDetailFromRow(id) {
   const el = document.getElementById("rescue-" + id);
   if (!el) return;
