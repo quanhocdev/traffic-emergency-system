@@ -113,9 +113,9 @@ function generateStatusBadge(status, dto) {
                 <i class="fa-solid fa-bell"></i> Đã tiếp nhận 
                 ${dto.truSoTiepNhan?.id ? `(Trụ sở #${dto.truSoTiepNhan.id})` : "(Chưa gán)"}
               </span>`;
-    case "CHO_XU_LY":
+    case "DANG_DI_CHUYEN":
       return `<span class="status-label status-waiting">
-                <i class="fa-solid fa-clock"></i> Chờ xử lý
+                <i class="fa-solid fa-clock"></i> Đang di chuyển
               </span>`;
     case "DANG_XU_LY":
       return `<span class="status-label status-processing">
@@ -168,7 +168,7 @@ window.switchTab = function (type, element) {
         row.style.display = status === "DA_TIEP_NHAN" ? "" : "none";
         break;
       case "waiting":
-        row.style.display = status === "CHO_XU_LY" ? "" : "none";
+        row.style.display = status === "DANG_DI_CHUYEN" ? "" : "none";
         break;
       case "processing":
         row.style.display = status === "DANG_XU_LY" ? "" : "none";
@@ -188,7 +188,7 @@ function updateTabCounts() {
 
   let total = rows.length;
   let daTiepNhan = 0;
-  let choXuLy = 0;
+  let dangDiChuyen = 0;
   let dangXuLy = 0;
   let hoanThanh = 0;
   let huyBo = 0;
@@ -196,7 +196,7 @@ function updateTabCounts() {
   rows.forEach((row) => {
     const status = row.getAttribute("data-status");
     if (status === "DA_TIEP_NHAN") daTiepNhan++;
-    else if (status === "CHO_XU_LY") choXuLy++;
+    else if (status === "DANG_DI_CHUYEN") dangDiChuyen++;
     else if (status === "DANG_XU_LY") dangXuLy++;
     else if (status === "HOAN_THANH") hoanThanh++;
     else if (status === "HUY_BO") huyBo++;
@@ -206,7 +206,7 @@ function updateTabCounts() {
   if (tabItems.length >= 6) {
     tabItems[0].querySelector(".tab-count").innerText = total;
     tabItems[1].querySelector(".tab-count").innerText = daTiepNhan;
-    tabItems[2].querySelector(".tab-count").innerText = choXuLy;
+    tabItems[2].querySelector(".tab-count").innerText = dangDiChuyen;
     tabItems[3].querySelector(".tab-count").innerText = dangXuLy;
     tabItems[4].querySelector(".tab-count").innerText = hoanThanh;
     tabItems[5].querySelector(".tab-count").innerText = huyBo;

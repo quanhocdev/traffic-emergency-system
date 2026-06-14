@@ -42,7 +42,7 @@ function formatItem(s, type) {
     upperType === "SOS" &&
     (statusClean === "DA_TIEP_NHAN" ||
       statusClean === "DANG_CUU_TRO" ||
-      statusClean === "CHO_XU_LY")
+      statusClean === "DANG_DI_CHUYEN")
   ) {
     statusClean = "DANG_XU_LY";
   }

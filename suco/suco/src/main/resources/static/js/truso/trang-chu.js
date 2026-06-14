@@ -951,13 +951,25 @@ function doiTrangThai(id, status) {
 }
 function loadExistingSuCo() {
   return fetch(`/api/su-co/map`)
-    .then((res) => res.json())
+    .then((res) => {
+      if (!res.ok) {
+        // Nếu API lỗi (400, 500...), ném lỗi ra để xử lý ở catch
+        throw new Error(`API lỗi với status: ${res.status}`);
+      }
+      return res.json();
+    })
     .then((data) => {
-      data.forEach((item) => {
-        addSOSMarker(item, "SU_CO");
-        addNotiItem(item, "SU_CO", true);
-      });
-    });
+      // Kiểm tra chắc chắn data trả về phải là một Mảng
+      if (Array.isArray(data)) {
+        data.forEach((item) => {
+          addSOSMarker(item, "SU_CO");
+          addNotiItem(item, "SU_CO", true);
+        });
+      } else {
+        console.error("Dữ liệu trả về không phải là mảng:", data);
+      }
+    })
+    .catch((err) => console.error("Lỗi khi tải sự cố:", err));
 }
 
 function loadExistingSOS() {

@@ -1,6 +1,7 @@
 package com.example.suco.repository.sos.tinhieu;
 
 import com.example.suco.model.TinHieuSOS;
+import com.example.suco.model.enums.TrangThaiXuLy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,21 +11,32 @@ import java.util.List;
 @Repository
 public interface TinHieuSOSRepository extends JpaRepository<TinHieuSOS, Long> {
     
-    // Lấy danh sách SOS của riêng một User (phục vụ app di động của khách hàng)
     List<TinHieuSOS> findByUserUid(String uid);
 
-    // Lấy tất cả SOS đang hoạt động, cho map
+    // 🔥 Sạch sẽ hoàn toàn: Dùng một danh sách tham số truyền vào thay vì viết cứng chữ
     @Query("""
-    SELECT DISTINCT s FROM TinHieuSOS s 
-    LEFT JOIN FETCH s.user u 
-    WHERE s.idTruSoTiepNhan = :idTruSo
-    AND s.trangThai IN ('DA_TIEP_NHAN','DANG_DI_CHUYEN','DANG_XU_LY', 'HOAN_THANH')
-    ORDER BY s.createdAt DESC
-""")
-List<TinHieuSOS> findActiveSOSByTruSo(@Param("idTruSo") Long idTruSo);
+        SELECT DISTINCT s FROM TinHieuSOS s 
+        LEFT JOIN FETCH s.user u 
+        WHERE s.idTruSoTiepNhan = :idTruSo
+        AND s.trangThai IN :statuses
+        ORDER BY s.createdAt DESC
+    """)
+    List<TinHieuSOS> findActiveSOSByStatuses(
+            @Param("idTruSo") Long idTruSo,
+            @Param("statuses") List<TrangThaiXuLy> statuses
+    );
 
-// Lấy tất cả SOS cho từng trang
-@Query("""
+    // 🔥 Hàm default giữ nguyên tên cũ của bạn, tự động nạp danh sách Enum chuẩn
+    default List<TinHieuSOS> findActiveSOSByTruSo(Long idTruSo) {
+        return findActiveSOSByStatuses(idTruSo, List.of(
+            TrangThaiXuLy.DA_TIEP_NHAN,
+            TrangThaiXuLy.DANG_DI_CHUYEN,
+            TrangThaiXuLy.DANG_XU_LY,
+            TrangThaiXuLy.HOAN_THANH
+        ));
+    }
+
+    @Query("""
         SELECT DISTINCT s FROM TinHieuSOS s 
         LEFT JOIN FETCH s.user u 
         WHERE s.idTruSoTiepNhan = :idTruSo
@@ -33,21 +45,23 @@ List<TinHieuSOS> findActiveSOSByTruSo(@Param("idTruSo") Long idTruSo);
     """)
     List<TinHieuSOS> findByTruSoAndStatus(
             @Param("idTruSo") Long idTruSo, 
-            @Param("trangThai") String trangThai
+            @Param("trangThai") TrangThaiXuLy trangThai
     );
+    
     default List<TinHieuSOS> findNewAssignedByTruSo(Long idTruSo) {
-        return findByTruSoAndStatus(idTruSo, "DA_TIEP_NHAN");
+        return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.DA_TIEP_NHAN);
     }
 
     default List<TinHieuSOS> findMovingByTruSo(Long idTruSo) {
-        return findByTruSoAndStatus(idTruSo, "DANG_DI_CHUYEN");
+        return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.DANG_DI_CHUYEN);
     }
 
     default List<TinHieuSOS> findActiveByTruSo(Long idTruSo) {
-        return findByTruSoAndStatus(idTruSo, "DANG_XU_LY"); 
+        return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.DANG_XU_LY); 
     }
 
+    // Giữ nguyên bản gốc của bạn: Chỉ lấy HOAN_THANH
     default List<TinHieuSOS> findHistoryByTruSo(Long idTruSo) {
-        return findByTruSoAndStatus(idTruSo, "HOAN_THANH");
+        return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.HOAN_THANH);
     }
 }

@@ -92,10 +92,8 @@ function loadPendingSOS() {
   fetch("/truso/api/sos/cho-xu-ly")
     .then((res) => res.json())
     .then((data) => {
-      console.log("📦 Dữ liệu SOS ĐANG DI CHUYỂN (CHO_XU_LY) =", data);
+      console.log(" Dữ liệu SOS ĐANG DI CHUYỂN (DANG_DI_CHUYEN) =", data);
 
-      // 1. Kiểm tra lại ID container trong file HTML của trang quản lý này.
-      // Nếu HTML dùng id="rescue-list" thì sửa đây thành "rescue-list"
       const list = document.getElementById("sos-list");
 
       if (!Array.isArray(data) || data.length === 0) {
@@ -195,7 +193,7 @@ function loadPendingSuCo() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
 
   // Sửa URL cho đúng với Spring Boot Controller và truyền param status
-  fetch(`/su-co/danh-sach-hien-tai?status=CHO_XU_LY`)
+  fetch(`/su-co/danh-sach-hien-tai?status=DANG_DI_CHUYEN`)
     .then((res) => {
       if (!res.ok) throw new Error("Mã lỗi: " + res.status);
       return res.json();
@@ -205,8 +203,6 @@ function loadPendingSuCo() {
       const list = document.getElementById("sos-list");
       list.innerHTML = "";
 
-      // Vì Backend đã lọc sẵn các phần tử "CHO_XU_LY" dựa vào param status,
-      // nên ở đây 'data' chính là danh sách sự cố đang chờ xử lý của trụ sở.
       const pendingData = data;
 
       const noDataElem = document.getElementById("no-data");
@@ -275,7 +271,6 @@ function handleRealtimeSuCo(suCo) {
 
   console.log(">>> WebSocket nhận sự cố:", id, "Trạng thái:", status);
 
-  // Nếu trạng thái KHÔNG PHẢI là "CHO_XU_LY", xóa nó khỏi danh sách chờ
   if (
     status === "HUY_BO" ||
     status === "DANG_XU_LY" ||
@@ -289,8 +284,7 @@ function handleRealtimeSuCo(suCo) {
     return;
   }
 
-  // Nếu là sự cố mới (CHO_XU_LY) và đang ở tab "Sự cố"
-  if (status === "CHO_XU_LY" && CURRENT_VIEW === "suco") {
+  if (status === "DANG_DI_CHUYEN" && CURRENT_VIEW === "suco") {
     if (!card) {
       const list = document.getElementById("sos-list");
       const noData = document.getElementById("no-data");
@@ -305,7 +299,7 @@ function handleRealtimeSuCo(suCo) {
 function handleRealtimeSOS(sos) {
   const status = sos.trangThai || sos.status;
 
-  if (status === "CHO_XU_LY" && CURRENT_VIEW === "sos") {
+  if (status === "DANG_DI_CHUYEN" && CURRENT_VIEW === "sos") {
     const list = document.getElementById("sos-list");
     const cardExist = document.getElementById("sos-card-" + sos.id);
 
@@ -327,7 +321,7 @@ function handleRealtimeSOS(sos) {
         );
       });
     }
-  } else if (status !== "CHO_XU_LY") {
+  } else if (status !== "DANG_DI_CHUYEN") {
     // Nếu trạng thái thay đổi sang cái khác, xóa card đó đi
     const card = document.getElementById("sos-card-" + sos.id);
     if (card) {
@@ -557,7 +551,7 @@ function openSOSDetail(id) {
   const audioUrl = fixUrlLocal(rawAudio);
 
   const ghiChu = obj.ghiChu || "Không có ghi chú hiện trường";
-  const trangThai = obj.trangThai || obj.status || "CHO_XU_LY";
+  const trangThai = obj.trangThai || obj.status || "DANG_DI_CHUYEN";
   const displayAddress = obj.diaChi || `${obj.viDo}, ${obj.kinhDo}`;
   const thoiGian =
     obj.createdAt || obj.thoiGianTao
@@ -565,7 +559,7 @@ function openSOSDetail(id) {
       : "Vừa xong";
 
   const statusLabel = {
-    CHO_XU_LY: "Chờ xử lý",
+    DANG_DI_CHUYEN: "Đang di chuyển",
     DANG_XU_LY: "Đang xử lý",
     HOAN_THANH: "Hoàn thành",
     HUY_BO: "Hủy bỏ",
@@ -618,7 +612,7 @@ function openSOSDetail(id) {
     </div>
 
     ${
-      trangThai === "CHO_XU_LY"
+      trangThai === "DANG_DI_CHUYEN"
         ? `
       <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
           <button class="btn btn-primary w-100" onclick="confirmRescue(${obj.id})">
@@ -661,7 +655,7 @@ function openSuCoDetail(id) {
   const moTa = obj.moTa || "Không có mô tả chi tiết";
   const icon = obj.iconUrl || "https://placehold.co/24x24?text=⚠";
   const mucDo = obj.mucDoNghiemTrong || obj.mucDo || "LOW";
-  const trangThai = obj.trangThaiXuLy || obj.trangThai || "CHO_XU_LY";
+  const trangThai = obj.trangThaiXuLy || obj.trangThai || "DANG_DI_CHUYEN";
   const diaChi = obj.diaChi || `${obj.viDo}, ${obj.kinhDo}`;
   const tenNguoiBao = obj.tenNguoiBao || obj.reporterName || "Khách vãng lai";
 
@@ -686,14 +680,14 @@ function openSuCoDetail(id) {
     mucDo === "HIGH" ? "#ef4444" : mucDo === "MEDIUM" ? "#f59e0b" : "#10b981";
 
   const statusLabels = {
-    CHO_XU_LY: "Chờ xử lý",
+    DANG_DI_CHUYEN: "Đang di chuyển",
     DANG_XU_LY: "Đang xử lý",
     HOAN_THANH: "Hoàn thành",
     HUY_BO: "Hủy bỏ",
   };
 
   let actionButtonHtml = "";
-  if (trangThai === "CHO_XU_LY") {
+  if (trangThai === "DANG_DI_CHUYEN") {
     actionButtonHtml = `
         <button class="btn btn-warning w-100 p-2 fw-bold" onclick="doiTrangThaiSuCo(${obj.id}, 'DANG_XU_LY')">
             <i class="fa-solid fa-truck-fire"></i> XUẤT PHÁT NGAY
