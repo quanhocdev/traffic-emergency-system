@@ -5,6 +5,7 @@ import com.example.suco.dto.sos.tinhieu.SOSMapResponseDTO;
 import com.example.suco.dto.sos.tinhieu.truso.TruSoSOSDetailResponseDTO;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
+import com.example.suco.model.enums.TrangThaiXuLy; 
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.sos.tinhieu.notification.TinHieuRealtimeService;
 import com.example.suco.service.sos.tinhieu.truso.validation.CheckTrangThaiService;
@@ -37,11 +38,11 @@ public class TrangThaiService {
 
     public void capNhatTrangThaiSOS(
             Long id,
-            String status,
+            String statusStr, // Đổi tên biến thành statusStr cho rõ bản chất là chuỗi nhận vào
             TruSo current
     ) {
-        if (status != null) {
-            status = status.split(",")[0].trim();
+        if (statusStr != null) {
+            statusStr = statusStr.split(",")[0].trim();
         }
 
         TinHieuSOS sos = tinHieuSOSRepository.findById(id)
@@ -50,38 +51,37 @@ public class TrangThaiService {
                         "Không tìm thấy SOS"
                 ));
 
-        String currentStatus = sos.getTrangThai();
+        String currentStatusStr = sos.getTrangThai() != null ? sos.getTrangThai().name() : null;
 
+        // Giữ nguyên kiểm tra validation cũ từ Service kiểm tra của bạn
         checkTrangThaiService.validateAll(
                 sos,
-                currentStatus,
-                status,
+                currentStatusStr,
+                statusStr,
                 current
         );
 
-        // =========================================================================
-        // ĐÓNG DẤU ID TRỤ SỞ: Đảm bảo khi tiếp nhận/xử lý thì bản ghi được gắn với Trụ sở
-        // Tránh tình trạng cột id_tru_so_tiep_nhan trong DB bị NULL gây mất ghim khi F5
-        // =========================================================================
-        if ("DA_TIEP_NHAN".equals(status) || "DANG_XU_LY".equals(status) || "DANG_CUU_TRO".equals(status)) {
+        TrangThaiXuLy targetStatus;
+        try {
+            // Trường hợp Front-end truyền chuỗi đặc biệt cũ, map sang Enum tương ứng
+            if ("DANG_CUU_TRO".equalsIgnoreCase(statusStr)) {
+                targetStatus = TrangThaiXuLy.DANG_DI_CHUYEN;
+            } else if ("DA_HUY".equalsIgnoreCase(statusStr)) {
+                targetStatus = TrangThaiXuLy.HUY_BO;
+            } else {
+                targetStatus = TrangThaiXuLy.valueOf(statusStr.toUpperCase());
+            }
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái cập nhật không hợp lệ: " + statusStr);
+        }
+
+         if (targetStatus == TrangThaiXuLy.DA_TIEP_NHAN || 
+            targetStatus == TrangThaiXuLy.DANG_DI_CHUYEN || 
+            targetStatus == TrangThaiXuLy.DANG_XU_LY) {
             sos.setIdTruSoTiepNhan(current.getId());
         }
 
-        if ("HOAN_THANH".equals(status)) {
-            sos.setTrangThai("HOAN_THANH");
-            tinHieuSOSRepository.save(sos);
-            notify(sos, current);
-            return;
-        }
-
-        if ("DA_HUY".equals(status)) {
-            sos.setTrangThai("DA_HUY");
-            tinHieuSOSRepository.save(sos);
-            notify(sos, current);
-            return;
-        }
-
-        sos.setTrangThai(status);
+        sos.setTrangThai(targetStatus);
         tinHieuSOSRepository.save(sos);
 
         notify(sos, current);
@@ -119,14 +119,21 @@ public class TrangThaiService {
             );
         }
 
-        // Đã đồng bộ hàm quét đa trạng thái dở dang từ Repository
         return tinHieuSOSRepository.findActiveSOSByTruSo(current.getId())
                 .stream()
-                .filter(sos ->
-                        status == null ||
-                        status.isEmpty() ||
-                        status.equalsIgnoreCase(sos.getTrangThai())
-                )
+                .filter(sos -> {
+                        if (status == null || status.isEmpty()) return true;
+                        String currentEnumStr = sos.getTrangThai() != null ? sos.getTrangThai().name() : "";
+                        
+                        // Hỗ trợ quét cả các alias cũ khi lọc danh sách
+                        if ("DANG_CUU_TRO".equalsIgnoreCase(status)) {
+                            return TrangThaiXuLy.DANG_DI_CHUYEN.name().equalsIgnoreCase(currentEnumStr);
+                        }
+                        if ("DA_HUY".equalsIgnoreCase(status)) {
+                            return TrangThaiXuLy.HUY_BO.name().equalsIgnoreCase(currentEnumStr);
+                        }
+                        return status.equalsIgnoreCase(currentEnumStr);
+                })
                 .map(tinHieuMapper::toTruSoDetailDto)
                 .toList();
     }
