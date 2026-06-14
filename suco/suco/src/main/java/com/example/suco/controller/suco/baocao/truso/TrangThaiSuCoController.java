@@ -29,49 +29,49 @@ private SuCoMapper suCoMapper;
     private TrangThaiSuCoService trangThaiServiceService;
     
 
-@GetMapping("/danh-sach-hien-tai")
-public List<TruSoSuCoDetailResponseDTO> getSuCoHienTai(
-        @RequestParam(required = false) String status,
-        HttpSession session) {
+// @GetMapping("/danh-sach-hien-tai")
+// public List<TruSoSuCoDetailResponseDTO> getSuCoHienTai(
+//         @RequestParam(required = false) String status,
+//         HttpSession session) {
 
-    TruSo current = (TruSo) session.getAttribute("currentTruSo");
+//     TruSo current = (TruSo) session.getAttribute("currentTruSo");
 
-    if (current == null) {
-        return List.of();
-    }
+//     if (current == null) {
+//         return List.of();
+//     }
 
-    List<BaoCaoSuCo> data;
+//     List<BaoCaoSuCo> data;
 
-    if ("CHO_XU_LY".equalsIgnoreCase(status)) {
-        data = repo.findPendingByTruSo(current.getId());
+//     if ("CHO_XU_LY".equalsIgnoreCase(status)) {
+//         data = repo.findPendingByTruSo(current.getId());
 
-    } else if ("DANG_XU_LY".equalsIgnoreCase(status)) {
-        data = repo.findActiveByTruSo(current.getId());
+//     } else if ("DANG_XU_LY".equalsIgnoreCase(status)) {
+//         data = repo.findActiveByTruSo(current.getId());
 
-    } else {
-        data = repo.findActiveByTruSo(current.getId());
-    }
+//     } else {
+//         data = repo.findActiveByTruSo(current.getId());
+//     }
 
-    return data.stream()
-            .map(suCoMapper::toTruSoDetailDto)
-            .toList();
-}
+//     return data.stream()
+//             .map(suCoMapper::toTruSoDetailDto)
+//             .toList();
+// }
 
-    @GetMapping("/lich-su")
-public List<TruSoSuCoDetailResponseDTO> getSuCoHistory(
-        HttpSession session
-) {
-    TruSo current = (TruSo) session.getAttribute("currentTruSo");
+//     @GetMapping("/lich-su")
+// public List<TruSoSuCoDetailResponseDTO> getSuCoHistory(
+//         HttpSession session
+// ) {
+//     TruSo current = (TruSo) session.getAttribute("currentTruSo");
 
-    if (current == null) {
-        return List.of();
-    }
+//     if (current == null) {
+//         return List.of();
+//     }
 
-    return repo.findHistoryByTruSo(current.getId())
-            .stream()
-            .map(suCoMapper::toTruSoDetailDto)
-            .toList();
-}
+//     return repo.findHistoryByTruSo(current.getId())
+//             .stream()
+//             .map(suCoMapper::toTruSoDetailDto)
+//             .toList();
+// }
 
 
     @PatchMapping("/cap-nhat-trang-thai/{id}")
