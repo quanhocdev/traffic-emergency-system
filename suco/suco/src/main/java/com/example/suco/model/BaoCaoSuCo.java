@@ -62,10 +62,9 @@ public class BaoCaoSuCo {
 
     private LocalDateTime thoiGianTao = LocalDateTime.now();
 
-    @Enumerated(EnumType.STRING)
+@Enumerated(EnumType.STRING)
 @Column(name = "trang_thai_xu_ly")
-private TrangThaiXuLy trangThaiXuLy = TrangThaiXuLy.CHO_XU_LY;
-
+private TrangThaiXuLy trangThaiXuLy = TrangThaiXuLy.DA_TIEP_NHAN;
 
 
 @ManyToOne(fetch = FetchType.LAZY)

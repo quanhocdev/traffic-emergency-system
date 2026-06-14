@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController; // 🔥 Dùng RestController
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
 import com.example.suco.model.TruSo;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import jakarta.servlet.http.HttpSession;
 
-@RestController // 🔥 Thay bằng @RestController để bỏ hết @ResponseBody
+@RestController 
 @RequestMapping("/truso")
 public class PageSuCoController {
 
@@ -64,11 +64,11 @@ public class PageSuCoController {
             return ResponseEntity.badRequest().body("Sự cố không thuộc trụ sở này");
         }
 
-        if (!suCo.getTrangThaiXuLy().canTransitionTo(TrangThaiXuLy.CHO_XU_LY)) {
-            return ResponseEntity.badRequest().body("Không thể chuyển sang Chờ xử lý");
+        if (!suCo.getTrangThaiXuLy().canTransitionTo(TrangThaiXuLy.DANG_DI_CHUYEN)) {
+            return ResponseEntity.badRequest().body("Không thể chuyển sang Đang di chuyển");
         }
 
-        suCo.setTrangThaiXuLy(TrangThaiXuLy.CHO_XU_LY);
+        suCo.setTrangThaiXuLy(TrangThaiXuLy.DANG_DI_CHUYEN);
         suCoTruSoRepository.save(suCo);
         return ResponseEntity.ok().body(Map.of("success", true));
     }

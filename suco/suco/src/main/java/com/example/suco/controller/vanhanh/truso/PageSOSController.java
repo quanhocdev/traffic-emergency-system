@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
+import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.dto.sos.tinhieu.truso.TruSoSOSDetailResponseDTO;
 import com.example.suco.mapper.TinHieuMapper;
@@ -88,7 +89,7 @@ public class PageSOSController {
             return ResponseEntity.badRequest().body("Yêu cầu SOS không thuộc trụ sở này");
         }
 
-        sos.setTrangThai("CHO_XU_LY"); 
+        sos.setTrangThai(TrangThaiXuLy.DANG_DI_CHUYEN); 
         tinHieuSOSRepository.save(sos);
         return ResponseEntity.ok().body(Map.of("success", true));
     }

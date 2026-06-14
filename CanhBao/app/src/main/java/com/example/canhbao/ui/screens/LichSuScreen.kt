@@ -39,7 +39,7 @@ fun LichSuScreen(
     var selectedMainTab by remember { mutableIntStateOf(0) }
     val mainTabs = listOf("SỰ CỐ", "SOS")
     var selectedStatusTab by remember { mutableIntStateOf(0) }
-    val statusFilters = listOf("Chờ tiếp nhận", "Đang xử lý", "Đã xong", "Đã hủy")
+    val statusFilters = listOf("Đã tiếp nhận", "Chờ xử lý", "Đang xử lý", "Đã xong", "Đã hủy")
 
     LaunchedEffect(Unit) {
         baoCaoViewModel.fetchData()

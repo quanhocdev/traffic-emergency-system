@@ -12,195 +12,178 @@ import com.example.suco.model.User;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
+import com.example.suco.model.enums.TrangThaiXuLy; // 🔥 Import Enum vào đây
 import org.springframework.stereotype.Component;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 
 @Component
 public class TinHieuMapper {
 
-private UserMiniDTO toUserMiniDTO(User user) {
-        
-    if (user == null) {
-        return null;
+    private UserMiniDTO toUserMiniDTO(User user) {
+        if (user == null) {
+            return null;
+        }
+
+        UserMiniDTO dto = new UserMiniDTO();
+        dto.setId(user.getUid());
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setTotalPoints(user.getTotalPoints());
+
+        return dto;
     }
 
-    UserMiniDTO dto = new UserMiniDTO();
+    // Request DTO → Entity
+    public TinHieuSOS toEntity(
+            TinHieuSOSRequestDTO dto,
+            String uid,
+            User user
+    ) {
+        TinHieuSOS sos = new TinHieuSOS();
 
-    dto.setId(user.getUid());
-    dto.setName(user.getName());
-    dto.setEmail(user.getEmail());
-    dto.setTotalPoints(user.getTotalPoints());
+        // user info
+        sos.setUserId(uid);
+        sos.setUser(user);
 
-    return dto;
-}
-            // Request DTO → Entity
-        public TinHieuSOS toEntity(
-        TinHieuSOSRequestDTO dto,
-        String uid,
-        User user
-) {
-    TinHieuSOS sos = new TinHieuSOS();
+        // business data
+        sos.setViDo(dto.getViDo());
+        sos.setKinhDo(dto.getKinhDo());
+        sos.setGhiChu(dto.getGhiChu());
 
-    // user info
-    sos.setUserId(uid);
-    sos.setUser(user);
+        // 🔥 ĐỔI TỪ "CHO_XU_LY" SANG ENUM MẶC ĐỊNH LÀ DA_TIEP_NHAN THEO LOGIC MỚI
+        sos.setTrangThai(TrangThaiXuLy.DA_TIEP_NHAN);
 
-    // business data
-    sos.setViDo(dto.getViDo());
-    sos.setKinhDo(dto.getKinhDo());
-    sos.setGhiChu(dto.getGhiChu());
-
-    // default state
-    sos.setTrangThai("CHO_XU_LY");
-
-    return sos;
-}
-
-public SOSMapResponseDTO toMapDto(TinHieuSOS sos) {
-
-    SOSMapResponseDTO dto = new SOSMapResponseDTO();
-
-    dto.setId(sos.getId());
-    dto.setViDo(sos.getViDo());
-    dto.setKinhDo(sos.getKinhDo());
-    dto.setTrangThai(sos.getTrangThai());
-
-    TruSoMiniDTO mini = new TruSoMiniDTO();
-    mini.setId(sos.getIdTruSoTiepNhan()); 
-    mini.setTenTruSo(null);
-
-    dto.setTruSo(mini);
-
-    return dto;
-}
-// Entity → ResponseDTO TruSo
-// Entity → ResponseDTO TruSo
-public TruSoSOSDetailResponseDTO toTruSoDetailDto(TinHieuSOS sos) {
-    if (sos == null) {
-        return null;
+        return sos;
     }
 
-    TruSoSOSDetailResponseDTO dto = new TruSoSOSDetailResponseDTO();
+    public SOSMapResponseDTO toMapDto(TinHieuSOS sos) {
+        SOSMapResponseDTO dto = new SOSMapResponseDTO();
 
-    dto.setId(sos.getId());
-    dto.setViDo(sos.getViDo());
-    dto.setKinhDo(sos.getKinhDo());
-    dto.setDiaChi(sos.getDiaChi());
-    dto.setGhiChu(sos.getGhiChu());
-    dto.setHinhAnhUrl(sos.getHinhAnh());
-    dto.setGhiAmUrl(sos.getGhiAm());
-    dto.setTrangThai(sos.getTrangThai());
-    dto.setThoiGianTao(sos.getCreatedAt());
-
-    // Map thông tin người gửi cứu hộ
-    dto.setNguoiGui(toUserMiniDTO(sos.getUser()));
-
-    // 🔥 GẮN CHUẨN ĐỐI TƯỢNG HÓA ĐƠN TỪ PACKAGE QUANLY
-    if (sos.getHoaDon() != null) {
-        HoaDonResponseDTO hdDto = new HoaDonResponseDTO();
+        dto.setId(sos.getId());
+        dto.setViDo(sos.getViDo());
+        dto.setKinhDo(sos.getKinhDo());
         
-        hdDto.setId(sos.getHoaDon().getId());
-        hdDto.setSosId(sos.getHoaDon().getSosId());
-        hdDto.setTrusoId(sos.getHoaDon().getTrusoId());
-        hdDto.setUserId(sos.getHoaDon().getUserId());
-        hdDto.setNoiDungXuLy(sos.getHoaDon().getNoiDungXuLy());
-        hdDto.setThanhTien(sos.getHoaDon().getThanhTien());
-        hdDto.setCreatedAt(sos.getHoaDon().getCreatedAt());
-        hdDto.setTrangThai(sos.getHoaDon().getTrangThai());
-        
-        dto.setHoaDon(hdDto);
+        // 🔥 Đổi sang .name() để truyền chuỗi String ra DTO (giữ nguyên kiểu dữ liệu của DTO)
+        dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
+
+        TruSoMiniDTO mini = new TruSoMiniDTO();
+        mini.setId(sos.getIdTruSoTiepNhan()); 
+        mini.setTenTruSo(null);
+
+        dto.setTruSo(mini);
+
+        return dto;
     }
 
-    return dto;
-}
-// Entity → ResponseDTO Admin
-public AdminSOSDetailResponseDTO toAdminDetailDto(
-        TinHieuSOS sos,
-        TruSoMiniDTO truSoDto
-) {
+    // Entity → ResponseDTO TruSo
+    public TruSoSOSDetailResponseDTO toTruSoDetailDto(TinHieuSOS sos) {
+        if (sos == null) {
+            return null;
+        }
 
-    AdminSOSDetailResponseDTO dto =
-            new AdminSOSDetailResponseDTO();
+        TruSoSOSDetailResponseDTO dto = new TruSoSOSDetailResponseDTO();
 
-    dto.setId(sos.getId());
-    dto.setViDo(sos.getViDo());
-    dto.setKinhDo(sos.getKinhDo());
-    dto.setDiaChi(sos.getDiaChi());
-    dto.setGhiChu(sos.getGhiChu());
-    dto.setHinhAnhUrl(sos.getHinhAnh());
-    dto.setGhiAmUrl(sos.getGhiAm());
-    dto.setThoiGianTao(sos.getCreatedAt());
-    dto.setTrangThai(sos.getTrangThai());
-    dto.setUserId(sos.getUserId());
-    dto.setNguoiGui(toUserMiniDTO(sos.getUser()));
+        dto.setId(sos.getId());
+        dto.setViDo(sos.getViDo());
+        dto.setKinhDo(sos.getKinhDo());
+        dto.setDiaChi(sos.getDiaChi());
+        dto.setGhiChu(sos.getGhiChu());
+        dto.setHinhAnhUrl(sos.getHinhAnh());
+        dto.setGhiAmUrl(sos.getGhiAm());
+        
+        // 🔥 Chuyển đổi Enum thành String .name()
+        dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
+        dto.setThoiGianTao(sos.getCreatedAt());
 
+        // Map thông tin người gửi cứu hộ
+        dto.setNguoiGui(toUserMiniDTO(sos.getUser()));
 
-    dto.setTruSoTiepNhan(truSoDto);
-    return dto;
-}
+        // 🔥 GẮN CHUẨN ĐỐI TƯỢNG HÓA ĐƠN TỪ PACKAGE QUANLY
+        if (sos.getHoaDon() != null) {
+            HoaDonResponseDTO hdDto = new HoaDonResponseDTO();
+            
+            hdDto.setId(sos.getHoaDon().getId());
+            hdDto.setSosId(sos.getHoaDon().getSosId());
+            hdDto.setTrusoId(sos.getHoaDon().getTrusoId());
+            hdDto.setUserId(sos.getHoaDon().getUserId());
+            hdDto.setNoiDungXuLy(sos.getHoaDon().getNoiDungXuLy());
+            hdDto.setThanhTien(sos.getHoaDon().getThanhTien());
+            hdDto.setCreatedAt(sos.getHoaDon().getCreatedAt());
+            hdDto.setTrangThai(sos.getHoaDon().getTrangThai());
+            
+            dto.setHoaDon(hdDto);
+        }
 
+        return dto;
+    }
 
-// Entity → ItemResponseDTO cá nhân
+    // Entity → ResponseDTO Admin
+    public AdminSOSDetailResponseDTO toAdminDetailDto(
+            TinHieuSOS sos,
+            TruSoMiniDTO truSoDto
+    ) {
+        AdminSOSDetailResponseDTO dto = new AdminSOSDetailResponseDTO();
 
-public TheoDoiSOSItemResponseDTO toTheoDoiItemDto(
-        TinHieuSOS sos, String tenTruSo
-) {
+        dto.setId(sos.getId());
+        dto.setViDo(sos.getViDo());
+        dto.setKinhDo(sos.getKinhDo());
+        dto.setDiaChi(sos.getDiaChi());
+        dto.setGhiChu(sos.getGhiChu());
+        dto.setHinhAnhUrl(sos.getHinhAnh());
+        dto.setGhiAmUrl(sos.getGhiAm());
+        dto.setThoiGianTao(sos.getCreatedAt());
+        
+        // 🔥 Chuyển đổi Enum thành String .name()
+        dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
+        dto.setUserId(sos.getUserId());
+        dto.setNguoiGui(toUserMiniDTO(sos.getUser()));
 
- TheoDoiSOSItemResponseDTO dto =
-            new TheoDoiSOSItemResponseDTO();
+        dto.setTruSoTiepNhan(truSoDto);
+        return dto;
+    }
 
-    dto.setId(sos.getId());
+    // Entity → ItemResponseDTO cá nhân
+    public TheoDoiSOSItemResponseDTO toTheoDoiItemDto(
+            TinHieuSOS sos, String tenTruSo
+    ) {
+        TheoDoiSOSItemResponseDTO dto = new TheoDoiSOSItemResponseDTO();
 
-    dto.setHinhAnh( sos.getHinhAnh() );
+        dto.setId(sos.getId());
+        dto.setHinhAnh(sos.getHinhAnh());
+        
+        // 🔥 Chuyển đổi Enum thành String .name()
+        dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
+        dto.setCreatedAt(sos.getCreatedAt());
+        dto.setTenTruSo(tenTruSo);
 
-    dto.setTrangThai( sos.getTrangThai());
-
-    dto.setCreatedAt(sos.getCreatedAt());
-
-    dto.setTenTruSo(tenTruSo);
-
-
-    return dto;
-}
-
+        return dto;
+    }
 
     // Entity → ResponseDTO cá nhân
     public TheoDoiSOSDetailResponseDTO toTheoDoiDto(TinHieuSOS sos, TruSoMapDto truSoDto, UserInfoResponseDTO user) {
+        TheoDoiSOSDetailResponseDTO dto = new TheoDoiSOSDetailResponseDTO();
 
-    TheoDoiSOSDetailResponseDTO dto = new TheoDoiSOSDetailResponseDTO();
+        dto.setId(sos.getId());
+        dto.setViDo(sos.getViDo());
+        dto.setKinhDo(sos.getKinhDo());
+        dto.setDiaChi(sos.getDiaChi());
+        dto.setGhiChu(sos.getGhiChu());
+        dto.setHinhAnh(sos.getHinhAnh());
+        dto.setGhiAm(sos.getGhiAm());
 
-    dto.setId(sos.getId());
+        // 🔥 Chuyển đổi Enum thành String .name()
+        dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
+        dto.setCreatedAt(sos.getCreatedAt());
 
-    dto.setViDo(sos.getViDo());
-    dto.setKinhDo(sos.getKinhDo());
-
-    dto.setDiaChi(sos.getDiaChi());
-
-    dto.setGhiChu(sos.getGhiChu());
-    dto.setHinhAnh(sos.getHinhAnh());
-    dto.setGhiAm(sos.getGhiAm());
-
-    dto.setTrangThai(sos.getTrangThai());
-
-    dto.setCreatedAt(sos.getCreatedAt());
-
-    if (sos.getHoaDon() != null) {
-
-        dto.setHoaDonId(
-                sos.getHoaDon().getId()
-        );
-
-        dto.setThanhTien(
-                sos.getHoaDon().getThanhTien()
-        );
-
-        dto.setTrangThaiHoaDon(
-                sos.getHoaDon().getTrangThai()
-        );
-    }
+        if (sos.getHoaDon() != null) {
+            dto.setHoaDonId(sos.getHoaDon().getId());
+            dto.setThanhTien(sos.getHoaDon().getThanhTien());
+            dto.setTrangThaiHoaDon(sos.getHoaDon().getTrangThai());
+        }
+        
         dto.setTruSo(truSoDto);
         dto.setUser(user);
 
-    return dto;
-}
+        return dto;
+    }
 }
