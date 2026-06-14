@@ -101,7 +101,6 @@
   transition: background-color 0.3s ease;
 }
 
-/* Hiệu ứng nháy cơ bản quanh viền cho trạng thái mặc định cần chú ý (CHO_XU_LY) */
 .pulse-marker {
   animation: local-pulse 1.5s infinite;
 }
