@@ -143,14 +143,14 @@ function showSOSDetail(item) {
   const audioUrl = fixUrl(item.ghiAmUrl);
 
   // 1. Chuẩn hóa dữ liệu đầu vào: Ép in hoa và xóa sạch khoảng trắng thừa
-  let trangThai = item.trangThai || "CHO_XU_LY";
+  let trangThai = item.trangThai || "DANG_DI_CHUYEN";
   if (typeof trangThai === "string") {
     trangThai = trangThai.toUpperCase().trim();
   }
 
   const statusLabel = {
     DA_TIEP_NHAN: "Đã tiếp nhận",
-    CHO_XU_LY: "Chờ xử lý",
+    DANG_DI_CHUYEN: "Đang di chuyển",
     DANG_XU_LY: "Đang xử lý",
     HOAN_THANH: "Hoàn thành",
     HUY_BO: "Hủy bỏ",
@@ -159,9 +159,9 @@ function showSOSDetail(item) {
   // 2. Kiểm tra và render chính xác nút bấm theo chuỗi đã chuẩn hóa
   let actionButton = "";
   if (trangThai === "DA_TIEP_NHAN") {
-    actionButton = `<button class="btn-approve" onclick="doiTrangThai(${id}, 'CHO_XU_LY')">
+    actionButton = `<button class="btn-approve" onclick="doiTrangThai(${id}, 'DANG_DI_CHUYEN')">
                         <i class="fa-solid fa-bell"></i> XUẤT PHÁT CỨU HỘ</button>`;
-  } else if (trangThai === "CHO_XU_LY") {
+  } else if (trangThai === "DANG_DI_CHUYEN") {
     actionButton = `<button class="btn-approve" style="background:#f59e0b" onclick="doiTrangThai(${id}, 'DANG_XU_LY')">
                         <i class="fa-solid fa-truck-fast"></i> BẮT ĐẦU CỨU HỘ</button>`;
   } else if (trangThai === "DANG_XU_LY") {
@@ -273,7 +273,7 @@ function showSuCoDetail(item) {
   // =========================================================================
   // XỬ LÝ TRẠNG THÁI XỬ LÝ
   // =========================================================================
-  let trangThai = item.trangThaiXuLy || item.trangThai || "CHO_XU_LY";
+  let trangThai = item.trangThaiXuLy || item.trangThai || "DANG_DI_CHUYEN";
   if (typeof trangThai === "string") {
     trangThai = trangThai.toUpperCase();
   }
@@ -295,8 +295,8 @@ function showSuCoDetail(item) {
   const imgUrl = fixUrl(item.hinhAnhUrl);
 
   const statusLabels = {
-    CHO_XU_LY: "Chờ xử lý",
-    "CHỜ XỬ LÝ": "Chờ xử lý",
+    DANG_DI_CHUYEN: "Đang di chuyển",
+    "ĐANG DI CHUYỂN": "Đang di chuyển",
     DANG_XU_LY: "Đang xử lý",
     "ĐANG XỬ LÝ": "Đang xử lý",
     HOAN_THANH: "Hoàn thành",
@@ -307,7 +307,8 @@ function showSuCoDetail(item) {
 
   let actionButton = "";
 
-  const laChoXuLy = trangThai === "CHO_XU_LY" || trangThai === "CHỜ XỬ LÝ";
+  const laChoXuLy =
+    trangThai === "DANG_DI_CHUYEN" || trangThai === "ĐANG DI CHUYỂN";
   const laDangXuLy = trangThai === "DANG_XU_LY" || trangThai === "ĐANG XỬ LÝ";
   const laHoanThanh = trangThai === "HOAN_THANH" || trangThai === "HOÀN THÀNH";
 
@@ -493,7 +494,7 @@ function addSOSMarker(item, type = "SOS") {
     }
   } else {
     // SOS không có mức độ -> chỉ ăn màu và hiệu ứng bung theo TRẠNG THÁI
-    if (trangThai === "CHO_XU_LY") {
+    if (trangThai === "DANG_DI_CHUYEN") {
       themeColor = "#ff0000"; // Đỏ tĩnh
       isPulse = "";
     } else if (trangThai === "DA_TIEP_NHAN") {
@@ -542,7 +543,7 @@ function addSOSMarker(item, type = "SOS") {
 
   if (type === "SU_CO") {
     // Trả lại nguyên vẹn thiết kế Giọt nước + Đuôi nhọn + Icon loại sự cố của bạn
-    const pulseClass = trangThai === "CHO_XU_LY" ? "marker-pulse" : "";
+    const pulseClass = trangThai === "DANG_DI_CHUYEN" ? "marker-pulse" : "";
     const iconUrl =
       item.iconUrl || "https://cdn-icons-png.flaticon.com/512/564/564619.png";
 

@@ -50,12 +50,12 @@ public class RulesTrangThaiService {
         switch (current) {
             case "DA_TIEP_NHAN":
                 // Từ Đã tiếp nhận (Mặc định ban đầu) -> Bấm xuất phát chỉ được chuyển sang Chờ xử lý (hoặc Hủy)
-                if (!("CHO_XU_LY".equals(next) || "DA_HUY".equals(next))) {
+                if (!("DANG_DI_CHUYEN".equals(next) || "DA_HUY".equals(next))) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Từ trạng thái Đã tiếp nhận phải chuyển sang Chờ xử lý cứu trợ");
                 }
                 break;
 
-            case "CHO_XU_LY":
+            case "DANG_DI_CHUYEN":
                 // Từ Chờ xử lý (Đang di chuyển trên đường) -> Bấm bắt đầu cứu hộ để chuyển sang Đang xử lý
                 if (!("DANG_XU_LY".equals(next) || "DA_HUY".equals(next))) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Từ trạng thái Chờ xử lý phải chuyển sang Đang xử lý cứu hộ");

@@ -15,13 +15,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.example.suco.service.suco.baocao.admin.AdminBaoCaoService;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
+import com.example.suco.model.enums.TrangThaiXuLy; // 🔥 Import Enum vào để so sánh chuẩn
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
 import com.example.suco.repository.suco.baocao.SpamRepository;
 
 @Controller
 @RequestMapping("/admin/bao-cao-su-co")
 public class BaoCaoSuCoAdminController {
-
 
     @Autowired
     private BaoCaoSuCoRepository reportRepository;
@@ -33,46 +33,49 @@ public class BaoCaoSuCoAdminController {
     private AdminBaoCaoService adminBaoCaoService;
 
     @GetMapping
-public String page(Model model) {
+    public String page(Model model) {
 
+        List<BaoCaoSuCo> allSuCo = reportRepository.findAllForMapEntity();
+        List<Spam> listSpam = spamRepository.findAll();
 
-    List<BaoCaoSuCo> allSuCo = reportRepository.findAllForMapEntity();
+        // 🔥 Sửa logic so sánh: So sánh trực tiếp giữa Enum với Enum bằng toán tử ==
+        long countTiepNhan = allSuCo.stream()
+                .filter(s -> s.getTrangThaiXuLy() == TrangThaiXuLy.DA_TIEP_NHAN)
+                .count();
 
-    List<Spam> listSpam = spamRepository.findAll();
+        long countDiChuyen = allSuCo.stream()
+                .filter(s -> s.getTrangThaiXuLy() == TrangThaiXuLy.DANG_DI_CHUYEN)
+                .count();
 
-    long countCho = allSuCo.stream()
-            .filter(s -> "CHO_XU_LY".equals(s.getTrangThaiXuLy()))
-            .count();
+        long countDang = allSuCo.stream()
+                .filter(s -> s.getTrangThaiXuLy() == TrangThaiXuLy.DANG_XU_LY)
+                .count();
 
-    long countDang = allSuCo.stream()
-            .filter(s -> "DANG_XU_LY".equals(s.getTrangThaiXuLy()))
-            .count();
+        long countXong = allSuCo.stream()
+                .filter(s -> s.getTrangThaiXuLy() == TrangThaiXuLy.HOAN_THANH)
+                .count();
 
-    long countXong = allSuCo.stream()
-            .filter(s -> "HOAN_THANH".equals(s.getTrangThaiXuLy()))
-            .count();
+        model.addAttribute("allSuCo", allSuCo);
+        model.addAttribute("listSpam", listSpam);
+        
+        // 🔥 Đẩy các giá trị thống kê mới ra giao diện hiển thị
+        model.addAttribute("countTiepNhan", countTiepNhan);
+        model.addAttribute("countDiChuyen", countDiChuyen);
+        model.addAttribute("countDang", countDang);
+        model.addAttribute("countXong", countXong);
+        
+        model.addAttribute("activePage", "bao-cao-su-co");
 
-    model.addAttribute("allSuCo", allSuCo);
-    model.addAttribute("listSpam", listSpam);
-    model.addAttribute("countCho", countCho);
-    model.addAttribute("countDang", countDang);
-    model.addAttribute("countXong", countXong);
-    model.addAttribute("activePage", "bao-cao-su-co");
-
-    return "admin/bao-cao-su-co";
-}
+        return "admin/bao-cao-su-co";
+    }
 
     @PostMapping(value = "/admin-submit", consumes = "multipart/form-data")
     @ResponseBody
-    public ResponseEntity<BaoCaoSuCo> adminSubmit( // Đổi String thành BaoCaoSuCo
+    public ResponseEntity<BaoCaoSuCo> adminSubmit(
         @ModelAttribute BaoCaoSuCo report,
         @RequestParam("image") MultipartFile image
     ) {
-        //BaoCaoSuCo saved = reportService.submitAdminReport(report, image);
         BaoCaoSuCo saved = adminBaoCaoService.submitAdminReport(report, image);
-    
         return ResponseEntity.ok(saved); 
     }
-
-
 }
