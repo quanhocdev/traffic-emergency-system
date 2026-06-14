@@ -2,6 +2,7 @@ package com.example.suco.service.sos.tinhieu.user.workflow.gui;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
+import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.repository.sos.goi.MuaGoiRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class VipService {
         if (!laVip || truSo == null) return;
 
         sos.setIdTruSoTiepNhan(truSo.getId());
-        sos.setTrangThai("DANG_XU_LY");
+        sos.setTrangThai(TrangThaiXuLy.DANG_XU_LY);
 
     }
 }

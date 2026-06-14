@@ -37,7 +37,7 @@ default List<BaoCaoSuCo> findNewAssignedByTruSo(Long idTruSo) {
     // CHỜ XỬ LÝ
     // =========================
     default List<BaoCaoSuCo> findPendingByTruSo(Long idTruSo) {
-        return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.CHO_XU_LY);
+        return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.DANG_DI_CHUYEN);
     }
 
     // =========================

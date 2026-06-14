@@ -27,154 +27,156 @@ public class TrangThaiSuCoService {
     private BaoCaoRealtimeService realtimeService;
 
     @Autowired
-private TruSoRepository truSoRepository;
+    private TruSoRepository truSoRepository;
 
-@Autowired
-private SuCoMapper suCoMapper;
+    @Autowired
+    private SuCoMapper suCoMapper;
 
-    private static final Logger log =
-        LoggerFactory.getLogger(TrangThaiSuCoService.class);
+    private static final Logger log = LoggerFactory.getLogger(TrangThaiSuCoService.class);
 
     @Transactional
-public Map<String, Object> updateSuCoStatus(
-        Long id,
-        TrangThaiXuLy status,
-        TruSo current
-) {
+    public Map<String, Object> updateSuCoStatus(
+            Long id,
+            TrangThaiXuLy status,
+            TruSo current
+    ) {
 
-    BaoCaoSuCo suCo = reportRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Không tìm thấy sự cố"
-            ));
+        BaoCaoSuCo suCo = reportRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy sự cố"
+                ));
 
-    log.info("Update status report {} → {}", id, status);
+        log.info("Update status report {} → {}", id, status);
 
-
-    if (suCo.getTrangThaiXuLy() == TrangThaiXuLy.HOAN_THANH
-            || suCo.getTrangThaiXuLy() == TrangThaiXuLy.HUY_BO) {
-
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Sự cố đã kết thúc, không thể thay đổi trạng thái!"
-        );
-    }
-
-    if (suCo.getTrangThaiXuLy() == status) {
-        throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Trạng thái đã là giá trị hiện tại"
-        );
-    }
-
-    switch (status) {
-
-        case CHO_XU_LY -> {
+        if (suCo.getTrangThaiXuLy() == TrangThaiXuLy.HOAN_THANH
+                || suCo.getTrangThaiXuLy() == TrangThaiXuLy.HUY_BO) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Không được quay lại CHỜ XỬ LÝ"
+                    "Sự cố đã kết thúc, không thể thay đổi trạng thái!"
             );
         }
 
-        case DANG_XU_LY -> {
-            if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.CHO_XU_LY) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Chỉ được tiếp nhận từ CHỜ XỬ LÝ"
-                );
-            }
-
-            suCo.setTruSoTiepNhan(current);
+        if (suCo.getTrangThaiXuLy() == status) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Trạng thái đã là giá trị hiện tại"
+            );
         }
 
-        case HOAN_THANH -> {
-            if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.DANG_XU_LY) {
+        switch (status) {
+            case DA_TIEP_NHAN -> {
                 throw new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
-                        "Phải đang xử lý mới được hoàn thành"
+                        "Không được quay lại trạng thái ĐÃ TIẾP NHẬN"
                 );
             }
 
-            if (suCo.getTruSoTiepNhan() == null ||
-                !suCo.getTruSoTiepNhan().getId().equals(current.getId())) {
+            case DANG_DI_CHUYEN -> {
+                // Chỉ cho phép chuyển sang Đang di chuyển nếu sự cố đang ở trạng thái Đã tiếp nhận
+                if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.DA_TIEP_NHAN) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Chỉ được xuất phát di chuyển khi sự cố ở trạng thái ĐÃ TIẾP NHẬN"
+                    );
+                }
+                suCo.setTruSoTiepNhan(current);
+            }
 
-                throw new ResponseStatusException(
-                        HttpStatus.FORBIDDEN,
-                        "Bạn không có quyền hoàn thành sự cố này!"
-                );
+            case DANG_XU_LY -> {
+                // Phải đang trên đường di chuyển tới mới được bấm bắt đầu xử lý thực tế
+                if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.DANG_DI_CHUYEN) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Phải chuyển sang trạng thái ĐANG DI CHUYỂN trước khi tiến hành xử lý"
+                    );
+                }
+                suCo.setTruSoTiepNhan(current);
+            }
+
+            case HOAN_THANH -> {
+                if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.DANG_XU_LY) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Phải đang xử lý mới được hoàn thành"
+                    );
+                }
+
+                if (suCo.getTruSoTiepNhan() == null ||
+                    !suCo.getTruSoTiepNhan().getId().equals(current.getId())) {
+                    throw new ResponseStatusException(
+                            HttpStatus.FORBIDDEN,
+                            "Bạn không có quyền hoàn thành sự cố này!"
+                    );
+                }
+            }
+
+            case HUY_BO -> {
+                // Người dùng hoặc hệ thống chỉ được hủy khi chưa tiến hành xử lý thực tế tại hiện trường
+                if (suCo.getTrangThaiXuLy() == TrangThaiXuLy.DANG_XU_LY) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Đội cứu hộ đang xử lý tại hiện trường, không thể hủy bỏ!"
+                    );
+                }
             }
         }
 
-        case HUY_BO -> {
-            if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.CHO_XU_LY) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Chỉ được hủy khi CHỜ XỬ LÝ"
-                );
-            }
+        suCo.setTrangThaiXuLy(status);
+        BaoCaoSuCo saved = reportRepository.save(suCo);
+        SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
+
+        realtimeService.broadcastReport(dto);
+
+        if (saved.getTruSoTiepNhan() != null) {
+            realtimeService.broadcastTruSo(
+                    saved.getTruSoTiepNhan().getId(),
+                    dto
+            );
         }
-    }
 
-    suCo.setTrangThaiXuLy(status);
+        if (saved.getReporter() != null) {
+            realtimeService.refreshUserHistory(
+                    saved.getReporter().getUid()
+            );
+        }
 
-    BaoCaoSuCo saved = reportRepository.save(suCo);
-
-    SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
-
-    realtimeService.broadcastReport(dto);
-
-    if (saved.getTruSoTiepNhan() != null) {
-        realtimeService.broadcastTruSo(
-                saved.getTruSoTiepNhan().getId(),
-                dto
+        return Map.of(
+                "message", "Cập nhật trạng thái thành công",
+                "newStatus", status
         );
     }
 
-    if (saved.getReporter() != null) {
-        realtimeService.refreshUserHistory(
-                saved.getReporter().getUid()
-        );
-    }
-
-    return Map.of(
-            "message", "Cập nhật trạng thái thành công",
-            "newStatus", status
-    );
-}
     @Transactional
-public void updateProcessStatus(
-        Long reportId,
-        TrangThaiXuLy status,
-        Long idTruSoThucTe
-) {
+    public void updateProcessStatus(
+            Long reportId,
+            TrangThaiXuLy status,
+            Long idTruSoThucTe
+    ) {
+        BaoCaoSuCo report = reportRepository.findById(reportId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy báo cáo"));
 
-    BaoCaoSuCo report = reportRepository.findById(reportId)
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy báo cáo"));
+        report.setTrangThaiXuLy(status);
 
-    report.setTrangThaiXuLy(status);
+        if (status == TrangThaiXuLy.DANG_DI_CHUYEN || status == TrangThaiXuLy.DANG_XU_LY) {
+            TruSo truSo = truSoRepository.findById(idTruSoThucTe)
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Không tìm thấy trụ sở"
+                    ));
+            report.setTruSoTiepNhan(truSo);
+        }
 
-    if (status == TrangThaiXuLy.DANG_XU_LY) {
+        BaoCaoSuCo saved = reportRepository.save(report);
+        SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
 
-        TruSo truSo = truSoRepository.findById(idTruSoThucTe)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Không tìm thấy trụ sở"
-                ));
+        realtimeService.broadcastReport(dto);
 
-        report.setTruSoTiepNhan(truSo);
+        if (saved.getTruSoTiepNhan() != null) {
+            realtimeService.broadcastTruSo(
+                    saved.getTruSoTiepNhan().getId(),
+                    dto
+            );
+        }
     }
-
-    BaoCaoSuCo saved = reportRepository.save(report);
-
-    SuCoMapResponseDTO dto = suCoMapper.toMapDto(saved);
-
-    realtimeService.broadcastReport(dto);
-
-    if (saved.getTruSoTiepNhan() != null) {
-        realtimeService.broadcastTruSo(
-                saved.getTruSoTiepNhan().getId(),
-                dto
-        );
-    }
-}
 }

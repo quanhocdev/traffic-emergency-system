@@ -50,7 +50,6 @@ public class TinHieuMapper {
         sos.setKinhDo(dto.getKinhDo());
         sos.setGhiChu(dto.getGhiChu());
 
-        // 🔥 ĐỔI TỪ "CHO_XU_LY" SANG ENUM MẶC ĐỊNH LÀ DA_TIEP_NHAN THEO LOGIC MỚI
         sos.setTrangThai(TrangThaiXuLy.DA_TIEP_NHAN);
 
         return sos;
