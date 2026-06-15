@@ -236,37 +236,68 @@ function renderIncidents() {
     .join("");
 }
 
-// 3. XỬ LÝ ĐIỀU ĐỘNG "DI CHUYỂN NGAY" LÊN BACKEND CHO CẢ 2 PHÂN LOẠI
+// 3. XỬ LÝ ĐIỀU ĐỘNG "DI CHUYỂN NGAY" QUA API PATCH CHO CẢ SU CO VÀ SOS
 async function dispatchIncident(type, id, buttonEl) {
   if (
     !confirm(
       "Bạn có chắc chắn muốn điều động lực lượng di chuyển xử lý mục này chứ?",
     )
-  )
+  ) {
     return;
+  }
 
   buttonEl.disabled = true;
   buttonEl.innerHTML = `<span class="spinner"></span> Đang xử lý...`;
 
-  // Tự động nhận diện endpoint tương ứng theo đối tượng click
+  // 1. Tự động nhận diện chính xác endpoint PATCH theo cấu trúc hệ thống của bạn
   const apiUrl =
     type === "SOS"
-      ? `/truso/api/sos/${id}/di-chuyen-ngay` // Thêm/sửa URL API điều hướng SOS của bạn tại đây nếu khác
-      : `/truso/api/su-co/${id}/di-chuyen-ngay`;
+      ? `/sos/cap-nhat-trang-thai/${id}`
+      : `/su-co/cap-nhat-trang-thai/${id}`;
+
+  const targetStatus = "DANG_DI_CHUYEN";
+
+  const csrfToken = document
+    .querySelector('meta[name="_csrf"]')
+    ?.getAttribute("content");
+  const csrfHeader = document
+    .querySelector('meta[name="_csrf_header"]')
+    ?.getAttribute("content");
+
+  const headers = {
+    "Content-Type": "application/json",
+  };
+  if (csrfToken && csrfHeader) {
+    headers[csrfHeader] = csrfToken;
+  }
 
   try {
-    const response = await fetch(apiUrl, { method: "POST" });
+    const response = await fetch(apiUrl, {
+      method: "PATCH",
+      headers: headers,
+      body: JSON.stringify({
+        status: targetStatus,
+      }),
+    });
 
     if (response.ok) {
-      loadIncidents(); // Tải lại danh sách sau khi đổi trạng thái thành công
+      alert("Điều động lực lượng thành công!");
+      loadIncidents();
     } else {
-      const msg = await response.text();
-      alert("Lỗi thực thi từ hệ thống: " + msg);
+      let errorMsg = "Lỗi thực thi từ hệ thống";
+      try {
+        const errJson = await response.json();
+        errorMsg = errJson.message || errorMsg;
+      } catch {
+        errorMsg = await response.text();
+      }
+      alert("Không thể điều động: " + errorMsg);
+
       buttonEl.disabled = false;
       buttonEl.innerHTML = `<i class="fa-solid fa-truck-fast"></i> Di chuyển ngay`;
     }
   } catch (err) {
-    alert("Lỗi đường truyền internet!");
+    alert("Lỗi kết nối mạng, vui lòng thử lại!");
     buttonEl.disabled = false;
     buttonEl.innerHTML = `<i class="fa-solid fa-truck-fast"></i> Di chuyển ngay`;
   }
