@@ -13,7 +13,6 @@ public interface TinHieuSOSRepository extends JpaRepository<TinHieuSOS, Long> {
     
     List<TinHieuSOS> findByUserUid(String uid);
 
-    // 🔥 Sạch sẽ hoàn toàn: Dùng một danh sách tham số truyền vào thay vì viết cứng chữ
     @Query("""
         SELECT DISTINCT s FROM TinHieuSOS s 
         LEFT JOIN FETCH s.user u 
@@ -26,13 +25,11 @@ public interface TinHieuSOSRepository extends JpaRepository<TinHieuSOS, Long> {
             @Param("statuses") List<TrangThaiXuLy> statuses
     );
 
-    // 🔥 Hàm default giữ nguyên tên cũ của bạn, tự động nạp danh sách Enum chuẩn
     default List<TinHieuSOS> findActiveSOSByTruSo(Long idTruSo) {
         return findActiveSOSByStatuses(idTruSo, List.of(
             TrangThaiXuLy.DA_TIEP_NHAN,
             TrangThaiXuLy.DANG_DI_CHUYEN,
-            TrangThaiXuLy.DANG_XU_LY,
-            TrangThaiXuLy.HOAN_THANH
+            TrangThaiXuLy.DANG_XU_LY
         ));
     }
 
@@ -60,7 +57,6 @@ public interface TinHieuSOSRepository extends JpaRepository<TinHieuSOS, Long> {
         return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.DANG_XU_LY); 
     }
 
-    // Giữ nguyên bản gốc của bạn: Chỉ lấy HOAN_THANH
     default List<TinHieuSOS> findHistoryByTruSo(Long idTruSo) {
         return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.HOAN_THANH);
     }

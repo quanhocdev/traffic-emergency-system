@@ -1,16 +1,13 @@
 package com.example.suco.dto.suco.baocao.truso;
 
-import com.example.suco.model.enums.TrangThaiXuLy;
-
 public class TrangThaiSuCoRequestDTO {
 
-    private TrangThaiXuLy status;
+    private String status;
 
-    public TrangThaiXuLy getStatus() {
+    public String getStatus() {
         return status;
     }
-
-    public void setStatus(TrangThaiXuLy status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 }

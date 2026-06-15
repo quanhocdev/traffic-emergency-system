@@ -37,9 +37,15 @@ public class TrangThaiSuCoService {
     @Transactional
     public Map<String, Object> updateSuCoStatus(
             Long id,
-            TrangThaiXuLy status,
+            String statusStr, // Thống nhất nhận chuỗi String thô từ Controller đẩy qua giống SOS
             TruSo current
     ) {
+
+        System.out.println("==========>> BACKEND ĐÃ NHẬN ĐƯỢC REQUEST!! ID: " + id + " | STATUS_STR: " + statusStr);
+        // Tách chuỗi loại bỏ ký tự lạ nếu có từ Frontend gửi lên giống SOS
+        if (statusStr != null) {
+            statusStr = statusStr.split(",")[0].trim();
+        }
 
         BaoCaoSuCo suCo = reportRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
@@ -47,8 +53,23 @@ public class TrangThaiSuCoService {
                         "Không tìm thấy sự cố"
                 ));
 
-        log.info("Update status report {} → {}", id, status);
+        log.info("Update status report {} → {}", id, statusStr);
 
+        // Tiến hành băm chuỗi thô ra Enum an toàn trong try-catch giống SOS
+        TrangThaiXuLy status;
+        try {
+            if ("DANG_CUU_TRO".equalsIgnoreCase(statusStr)) {
+                status = TrangThaiXuLy.DANG_DI_CHUYEN;
+            } else if ("DA_HUY".equalsIgnoreCase(statusStr)) {
+                status = TrangThaiXuLy.HUY_BO;
+            } else {
+                status = TrangThaiXuLy.valueOf(statusStr.toUpperCase());
+            }
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái cập nhật không hợp lệ: " + statusStr);
+        }
+
+        // Giữ nguyên toàn bộ logic nghiệp vụ kiểm tra trạng thái cũ của bạn
         if (suCo.getTrangThaiXuLy() == TrangThaiXuLy.HOAN_THANH
                 || suCo.getTrangThaiXuLy() == TrangThaiXuLy.HUY_BO) {
             throw new ResponseStatusException(
@@ -73,7 +94,6 @@ public class TrangThaiSuCoService {
             }
 
             case DANG_DI_CHUYEN -> {
-                // Chỉ cho phép chuyển sang Đang di chuyển nếu sự cố đang ở trạng thái Đã tiếp nhận
                 if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.DA_TIEP_NHAN) {
                     throw new ResponseStatusException(
                             HttpStatus.BAD_REQUEST,
@@ -84,7 +104,6 @@ public class TrangThaiSuCoService {
             }
 
             case DANG_XU_LY -> {
-                // Phải đang trên đường di chuyển tới mới được bấm bắt đầu xử lý thực tế
                 if (suCo.getTrangThaiXuLy() != TrangThaiXuLy.DANG_DI_CHUYEN) {
                     throw new ResponseStatusException(
                             HttpStatus.BAD_REQUEST,
@@ -103,7 +122,7 @@ public class TrangThaiSuCoService {
                 }
 
                 if (suCo.getTruSoTiepNhan() == null ||
-                    !suCo.getTruSoTiepNhan().getId().equals(current.getId())) {
+                        !suCo.getTruSoTiepNhan().getId().equals(current.getId())) {
                     throw new ResponseStatusException(
                             HttpStatus.FORBIDDEN,
                             "Bạn không có quyền hoàn thành sự cố này!"
@@ -112,7 +131,6 @@ public class TrangThaiSuCoService {
             }
 
             case HUY_BO -> {
-                // Người dùng hoặc hệ thống chỉ được hủy khi chưa tiến hành xử lý thực tế tại hiện trường
                 if (suCo.getTrangThaiXuLy() == TrangThaiXuLy.DANG_XU_LY) {
                     throw new ResponseStatusException(
                             HttpStatus.BAD_REQUEST,
@@ -153,6 +171,7 @@ public class TrangThaiSuCoService {
             TrangThaiXuLy status,
             Long idTruSoThucTe
     ) {
+        
         BaoCaoSuCo report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy báo cáo"));
 
