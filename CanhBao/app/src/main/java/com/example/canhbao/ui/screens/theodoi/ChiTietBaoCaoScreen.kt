@@ -1,4 +1,4 @@
-package com.example.canhbao.ui.screens
+package com.example.canhbao.ui.screens.theodoi
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
@@ -22,7 +22,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoDetailResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.viewmodel.TheoDoiBaoCaoViewModel // Giả định tên ViewModel quản lý Báo cáo của bạn
 

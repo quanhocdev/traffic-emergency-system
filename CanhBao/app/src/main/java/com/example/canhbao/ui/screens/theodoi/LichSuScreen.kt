@@ -1,5 +1,6 @@
-package com.example.canhbao.ui.screens
+package com.example.canhbao.ui.screens.theodoi
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -40,7 +41,6 @@ fun LichSuScreen(
     val mainTabs = listOf("SỰ CỐ", "SOS")
     var selectedStatusTab by remember { mutableIntStateOf(0) }
 
-    // 🌟 ĐỒNG BỘ: Danh sách nhãn hiển thị bộ lọc trạng thái trên UI
     val statusFilters = listOf("Đã tiếp nhận", "Chờ xử lý", "Đang xử lý", "Đã xong", "Đã hủy")
 
     LaunchedEffect(Unit) {
@@ -144,8 +144,7 @@ fun LichSuScreen(
                         } else {
                             LazyColumn(modifier = Modifier.fillMaxSize().padding(top = 4.dp)) {
                                 items(filtered) { item ->
-                                    android.util.Log.d("DATA_CHECK", "ID: ${item.id} -> Trang thai thuc te: ${item.trangThaiXuLy}")
-                                    // 🚀 ĐÃ CẬP NHẬT: Gọi đúng hàm callback onDetailClick để mở màn hình chi tiết
+                                    Log.d("DATA_CHECK", "ID: ${item.id} -> Trang thai thuc te: ${item.trangThaiXuLy}")
                                     BaoCaoItemUI(
                                         item = item,
                                         onDetailClick = { suCoId ->
@@ -158,7 +157,6 @@ fun LichSuScreen(
                     }
                 }
             } else {
-                // ================= TAB 2: CỨU HỘ SOS =================
                 when (val state = tinHieuViewModel.uiState) {
                     is TheoDoiTinHieuUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center), color = sosRed)
                     is TheoDoiTinHieuUiState.Error -> ErrorUI(state.message, Modifier.align(Alignment.Center)) { tinHieuViewModel.fetchData() }

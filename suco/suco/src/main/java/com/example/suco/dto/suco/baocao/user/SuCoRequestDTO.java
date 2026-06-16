@@ -1,4 +1,4 @@
-package com.example.suco.dto.suco.baocao;
+package com.example.suco.dto.suco.baocao.user;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

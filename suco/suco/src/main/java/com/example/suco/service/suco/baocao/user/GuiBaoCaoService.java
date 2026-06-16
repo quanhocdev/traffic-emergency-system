@@ -1,8 +1,8 @@
 package com.example.suco.service.suco.baocao.user;
 
-import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
 import com.example.suco.dto.suco.baocao.ai.AiResponse;
 import com.example.suco.dto.suco.baocao.ai.AiVerifyResult;
+import com.example.suco.dto.suco.baocao.user.SuCoRequestDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.service.suco.baocao.user.workflow.gui.ai.BaoCaoAiService;

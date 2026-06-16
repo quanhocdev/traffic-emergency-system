@@ -1,4 +1,4 @@
-package com.example.canhbao.ui.screens
+package com.example.canhbao.ui.screens.theodoi
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
@@ -26,9 +26,9 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.canhbao.R
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
-import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSDetailResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.viewmodel.TheoDoiTinHieuViewModel
+import kotlin.collections.get
 
 private val PrimaryRed = Color(0xFFDC2626)
 private val LightRedBg = Color(0xFFFEF2F2)
