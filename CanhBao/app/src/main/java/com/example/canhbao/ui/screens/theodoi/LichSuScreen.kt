@@ -149,6 +149,10 @@ fun LichSuScreen(
                                         item = item,
                                         onDetailClick = { suCoId ->
                                             navController.navigate("chi_tiet_bao_cao/$suCoId")
+                                        },
+                                        onCancelClick = { id ->
+                                            // Gọi hàm hủy từ viewModel giống như bạn làm ở màn chi tiết
+                                            baoCaoViewModel.cancelSuCo(id)
                                         }
                                     )
                                 }

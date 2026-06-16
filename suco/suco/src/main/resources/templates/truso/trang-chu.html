@@ -19,7 +19,9 @@
   </head>
   <body>
     <!-- Sidebar cố định bên trái -->
-    <div th:replace="~{fragments/truso/sidebar :: sidebar('map')}"></div>
+    <div
+      th:replace="~{fragments/truso/sidebar :: sidebar('map', ${truSo})}"
+    ></div>
 
     <!-- Toàn bộ không gian làm việc bên phải -->
     <main class="main-content">

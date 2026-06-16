@@ -23,7 +23,9 @@
     </script>
   </head>
   <body>
-    <div th:replace="fragments/truso/sidebar :: sidebar('doing')"></div>
+    <div
+      th:replace="fragments/truso/sidebar :: sidebar('doing', ${truSo})"
+    ></div>
 
     <main class="main-content">
       <div class="d-flex align-items-center justify-content-between mb-4">

@@ -26,31 +26,41 @@ public class PageTruSoController {
     @GetMapping("/trang-chu") 
     public String trangChu(HttpSession session, Model model) {
         if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
+        Object truSo = session.getAttribute("currentTruSo");
         model.addAttribute("mapboxToken", appConfig.getMapboxToken());
+        model.addAttribute("truSo", truSo);
         return "truso/trang-chu";
     }
 
     @GetMapping("/da-tiep-nhan")
-    public String sosDaTiepNhan(HttpSession session) {
+    public String sosDaTiepNhan(HttpSession session, Model model) {
         if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
+        Object truSo = session.getAttribute("currentTruSo");
+        model.addAttribute("truSo", truSo);
         return "truso/da-tiep-nhan"; // Tab 1
     }
 
     @GetMapping("/cho-xu-ly")
-    public String quanLyCuuTro(HttpSession session) {
+    public String quanLyCuuTro(HttpSession session, Model model) {
         if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
+        Object truSo = session.getAttribute("currentTruSo");
+        model.addAttribute("truSo", truSo);
         return "truso/cho-xu-ly"; // Tab 2
     }
 
     @GetMapping("/dang-xu-ly")
-    public String dangCuuTro(HttpSession session) {
+    public String dangCuuTro(HttpSession session, Model model) {
         if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
+        Object truSo = session.getAttribute("currentTruSo");
+        model.addAttribute("truSo", truSo);
         return "truso/dang-xu-ly"; // Tab 3
     }
 
     @GetMapping("/da-xu-ly")
-    public String lichSuCuuTro(HttpSession session) {
+    public String lichSuCuuTro(HttpSession session, Model model) {
         if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
+        Object truSo = session.getAttribute("currentTruSo");
+        model.addAttribute("truSo", truSo);
         return "truso/da-xu-ly"; // Tab 4
     }
 
