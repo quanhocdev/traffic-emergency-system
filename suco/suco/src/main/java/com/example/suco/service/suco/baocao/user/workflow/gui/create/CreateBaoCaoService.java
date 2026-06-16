@@ -1,6 +1,6 @@
 package com.example.suco.service.suco.baocao.user.workflow.gui.create;
 
-import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
+import com.example.suco.dto.suco.baocao.user.SuCoRequestDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.LoaiSuCo;
 import com.example.suco.model.User;

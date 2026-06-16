@@ -11,8 +11,8 @@ import com.example.suco.service.suco.baocao.user.HuyBaoCaoService;
 import com.google.firebase.auth.FirebaseAuthException;
 import jakarta.validation.Valid;
 
-import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
 import com.example.suco.dto.suco.baocao.ai.AiResponse;
+import com.example.suco.dto.suco.baocao.user.SuCoRequestDTO;
 
 @RestController
 @RequestMapping("/api/su-co")

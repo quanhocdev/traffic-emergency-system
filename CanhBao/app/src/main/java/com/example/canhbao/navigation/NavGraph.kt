@@ -20,6 +20,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.ui.screens.*
+import com.example.canhbao.ui.screens.theodoi.ChiTietBaoCaoScreen
+import com.example.canhbao.ui.screens.theodoi.ChiTietSosScreen
+import com.example.canhbao.ui.screens.theodoi.LichSuScreen
 import com.example.canhbao.viewmodel.*
 import ua.naiksoftware.stomp.Stomp
 

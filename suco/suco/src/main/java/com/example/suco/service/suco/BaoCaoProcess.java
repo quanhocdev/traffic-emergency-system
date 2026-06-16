@@ -1,6 +1,6 @@
 package com.example.suco.service.suco;
 
-import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
+import com.example.suco.dto.suco.baocao.user.SuCoRequestDTO;
 import com.example.suco.model.BaoCaoSuCo;
 
 public interface BaoCaoProcess {
