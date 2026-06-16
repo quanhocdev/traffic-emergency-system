@@ -214,74 +214,69 @@ class TheoDoiTinHieuViewModel : ViewModel() {
 
     @SuppressLint("CheckResult")
     private fun connectWebSocket() {
-
-        if (mStompClient?.isConnected == true)
-            return
+        if (mStompClient?.isConnected == true) return
 
         val uid = FirebaseAuth.getInstance().currentUser?.uid
 
         mStompClient = Stomp.over(
             Stomp.ConnectionProvider.OKHTTP,
-            "${AppConfig.WS_BASE_URL}/ws-suco/websocket"
+            "${AppConfig.WS_BASE_URL}/ws-suco"
         )
 
-        // SOS status user-specific
-        uid?.let {
+        // 🌟 Bọc toàn bộ các lệnh subscribe vào bên trong sự kiện OPENED
+        mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
+            when (lifecycleEvent.type) {
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> {
+                    Log.d("WebSocket_TinHieu", "🟢 Kết nối SOS thành công! Đang đăng ký các kênh...")
 
-            mStompClient?.topic("/topic/user/$it/sos-status")
-                ?.subscribe({
-
-                    loadDataFromApi()
-
-                }, {
-                    Log.e("WebSocket", "SOS error: ${it.message}")
-                })
-        }
-
-        // history
-        uid?.let {
-
-            mStompClient?.topic("/topic/user/$it/history")
-                ?.subscribe({
-
-                    loadDataFromApi()
-
-                }, {
-                    Log.e("WebSocket", "History error: ${it.message}")
-                })
-        }
-
-        // invoice
-        mStompClient?.topic("/topic/user/invoice")
-            ?.subscribe({ topicMessage ->
-
-                val thanhToan =
-                    Gson().fromJson(
-                        topicMessage.payload,
-                        ThanhToanResponseDTO::class.java
-                    )
-
-                viewModelScope.launch {
-
-                    val hoaDonId = thanhToan.hoaDonId ?: return@launch
-
-                    val currentMap = pendingInvoicesMap.toMutableMap()
-
-                    if (thanhToan.trangThai == "SUCCESS") {
-                        currentMap.remove(hoaDonId)
-                    } else {
-                        currentMap[hoaDonId] = thanhToan
+                    // 1. SOS status user-specific
+                    uid?.let { id ->
+                        mStompClient?.topic("/topic/user/$id/sos-status")?.subscribe({
+                            loadDataFromApi()
+                        }, {
+                            Log.e("WebSocket", "SOS error: ${it.message}")
+                        })
                     }
 
-                    pendingInvoicesMap = currentMap
+                    // 2. History
+                    uid?.let { id ->
+                        mStompClient?.topic("/topic/user/$id/history")?.subscribe({
+                            loadDataFromApi()
+                        }, {
+                            Log.e("WebSocket", "History error: ${it.message}")
+                        })
+                    }
 
-                    loadDataFromApi()
-                    loadTuiQua()
+                    // 3. Invoice
+                    mStompClient?.topic("/topic/user/invoice")?.subscribe({ topicMessage ->
+                        val thanhToan = Gson().fromJson(
+                            topicMessage.payload,
+                            ThanhToanResponseDTO::class.java
+                        )
+                        viewModelScope.launch {
+                            val hoaDonId = thanhToan.hoaDonId ?: return@launch
+                            val currentMap = pendingInvoicesMap.toMutableMap()
+
+                            if (thanhToan.trangThai == "SUCCESS") {
+                                currentMap.remove(hoaDonId)
+                            } else {
+                                currentMap[hoaDonId] = thanhToan
+                            }
+
+                            pendingInvoicesMap = currentMap
+                            loadDataFromApi()
+                            loadTuiQua()
+                        }
+                    }, {
+                        Log.e("WebSocket", "Invoice error: ${it.message}")
+                    })
                 }
-
-            }, {
-                Log.e("WebSocket", "Invoice error: ${it.message}")
-            })
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
+                    Log.e("WebSocket_TinHieu", "❌ Lỗi luồng: ${lifecycleEvent.exception?.message}")
+                }
+                else -> {}
+            }
+        }
 
         mStompClient?.connect()
     }

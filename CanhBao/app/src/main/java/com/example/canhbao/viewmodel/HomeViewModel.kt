@@ -54,18 +54,31 @@ class HomeViewModel : ViewModel() {
 
         mStompClient = Stomp.over(
             Stomp.ConnectionProvider.OKHTTP,
-            "${AppConfig.WS_BASE_URL}/ws-suco/websocket"
+            "${AppConfig.WS_BASE_URL}/ws-suco"
         )
 
-        mStompClient?.topic("/topic/user-stats/$uid")?.subscribe(
-            { topicMessage ->
-                val updatedUser = Gson().fromJson(topicMessage.payload, SuCoUserDto::class.java)
-                userDetail = updatedUser
-            },
-            { error ->
-                error.printStackTrace()
+        mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
+            when (lifecycleEvent.type) {
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> {
+                    android.util.Log.d("WebSocket_Home", "🟢 Home Connected! Đang đăng ký cổng stats...")
+
+                    mStompClient?.topic("/topic/user-stats/$uid")?.subscribe(
+                        { topicMessage ->
+                            val updatedUser = Gson().fromJson(topicMessage.payload, SuCoUserDto::class.java)
+                            // Đồng bộ giao diện UI Thread
+                            userDetail = updatedUser
+                        },
+                        { error ->
+                            error.printStackTrace()
+                        }
+                    )
+                }
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
+                    android.util.Log.e("WebSocket_Home", "❌ Lỗi mạng: ${lifecycleEvent.exception?.message}")
+                }
+                else -> {}
             }
-        )
+        }
 
         mStompClient?.connect()
     }

@@ -7,7 +7,6 @@ data class UserSuCoDetailResponseDTO(
     val moTa: String?,
     val tenLoai: String?,
     val iconUrl: String?,
-    val trangThaiDuyet: String?,
     val trangThaiXuLy: String?,
     val mucDoNghiemTrong: String?,
     val hinhAnhUrl: String?,

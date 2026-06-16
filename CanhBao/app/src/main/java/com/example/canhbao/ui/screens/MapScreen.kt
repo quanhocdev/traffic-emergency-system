@@ -372,7 +372,6 @@ fun MapScreen(
                                         moTa = "Không có mô tả chi tiết", // Dữ liệu mặc định vì DTO này không có mô tả
                                         tenLoai = "Sự cố giao thông",      // Gán tên tạm thời cho tiêu đề sheet
                                         iconUrl = foundSuCo.iconUrl,
-                                        trangThaiDuyet = null,
                                         trangThaiXuLy = foundSuCo.trangThaiXuLy,
                                         mucDoNghiemTrong = foundSuCo.mucDoSuCo,
                                         hinhAnhUrl = null,
