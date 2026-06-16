@@ -3,10 +3,13 @@ import com.example.suco.model.LoaiSuCo;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.dto.suco.baocao.SuCoRequestDTO;
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
+import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
 import com.example.suco.dto.suco.baocao.admin.AdminSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.truso.TruSoSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoDetailResponseDTO;
+import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoItemResponseDTO;
 import com.example.suco.dto.suco.baocao.user.UserSuCoDetailResponseDTO;
+import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import org.springframework.stereotype.Component;
 
@@ -209,7 +212,22 @@ if (b.getTruSoTiepNhan() != null) {
     return dto;
 }
 
-    public TheoDoiSuCoDetailResponseDTO toTheoDoiDto(BaoCaoSuCo b) {
+public TheoDoiSuCoItemResponseDTO toTheoDoiItemDto(BaoCaoSuCo b, String tenTruSo) {
+        if (b == null) return null;
+        
+        TheoDoiSuCoItemResponseDTO dto = new TheoDoiSuCoItemResponseDTO();
+        
+        dto.setId(b.getId());
+        dto.setTenLoai(b.getLoaiSuCo() != null ? b.getLoaiSuCo().getTen() : null);
+        dto.setHinhAnhUrl(b.getHinhAnhUrl());
+        dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
+        dto.setThoiGianTao(b.getThoiGianTao());
+        dto.setTenTruSoTiepNhan(tenTruSo);
+
+        return dto;
+    }
+
+    public TheoDoiSuCoDetailResponseDTO toTheoDoiDto(BaoCaoSuCo b, TruSoMapDto truSoDto, UserInfoResponseDTO user) {
     TheoDoiSuCoDetailResponseDTO dto =
             new TheoDoiSuCoDetailResponseDTO();
 
@@ -239,15 +257,9 @@ if (b.getTruSoTiepNhan() != null) {
 
     dto.setThoiGianTao(b.getThoiGianTao());
 
-    if (b.getTruSoTiepNhan() != null) {
-        dto.setIdTruSoTiepNhan(
-                b.getTruSoTiepNhan().getId()
-        );
+dto.setTruSo(truSoDto);
+dto.setUser(user);
 
-        dto.setTenTruSoTiepNhan(
-                b.getTruSoTiepNhan().getTenTruSo()
-        );
-    }
 
     return dto;
 }

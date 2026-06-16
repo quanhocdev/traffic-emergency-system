@@ -12,7 +12,7 @@ import com.example.suco.model.User;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
-import com.example.suco.model.enums.TrangThaiXuLy; // 🔥 Import Enum vào đây
+import com.example.suco.model.enums.TrangThaiXuLy; 
 import org.springframework.stereotype.Component;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 
@@ -62,7 +62,6 @@ public class TinHieuMapper {
         dto.setViDo(sos.getViDo());
         dto.setKinhDo(sos.getKinhDo());
         
-        // 🔥 Đổi sang .name() để truyền chuỗi String ra DTO (giữ nguyên kiểu dữ liệu của DTO)
         dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
 
         TruSoMiniDTO mini = new TruSoMiniDTO();
@@ -90,14 +89,12 @@ public class TinHieuMapper {
         dto.setHinhAnhUrl(sos.getHinhAnh());
         dto.setGhiAmUrl(sos.getGhiAm());
         
-        // 🔥 Chuyển đổi Enum thành String .name()
         dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
         dto.setThoiGianTao(sos.getCreatedAt());
 
         // Map thông tin người gửi cứu hộ
         dto.setNguoiGui(toUserMiniDTO(sos.getUser()));
 
-        // 🔥 GẮN CHUẨN ĐỐI TƯỢNG HÓA ĐƠN TỪ PACKAGE QUANLY
         if (sos.getHoaDon() != null) {
             HoaDonResponseDTO hdDto = new HoaDonResponseDTO();
             
@@ -132,7 +129,6 @@ public class TinHieuMapper {
         dto.setGhiAmUrl(sos.getGhiAm());
         dto.setThoiGianTao(sos.getCreatedAt());
         
-        // 🔥 Chuyển đổi Enum thành String .name()
         dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
         dto.setUserId(sos.getUserId());
         dto.setNguoiGui(toUserMiniDTO(sos.getUser()));
@@ -150,7 +146,6 @@ public class TinHieuMapper {
         dto.setId(sos.getId());
         dto.setHinhAnh(sos.getHinhAnh());
         
-        // 🔥 Chuyển đổi Enum thành String .name()
         dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
         dto.setCreatedAt(sos.getCreatedAt());
         dto.setTenTruSo(tenTruSo);
@@ -170,7 +165,6 @@ public class TinHieuMapper {
         dto.setHinhAnh(sos.getHinhAnh());
         dto.setGhiAm(sos.getGhiAm());
 
-        // 🔥 Chuyển đổi Enum thành String .name()
         dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
         dto.setCreatedAt(sos.getCreatedAt());
 
