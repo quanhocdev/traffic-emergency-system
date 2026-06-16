@@ -13,6 +13,8 @@ public class TheoDoiSuCoItemResponseDTO {
 
     private LocalDateTime thoiGianTao;
 
+    private String tenTruSoTiepNhan;
+
     // getter/setter
     public Long getId() {
         return id;
@@ -43,6 +45,12 @@ public class TheoDoiSuCoItemResponseDTO {
     }
     public void setThoiGianTao(LocalDateTime thoiGianTao) {
         this.thoiGianTao = thoiGianTao;
+    }
+    public String getTenTruSoTiepNhan() {
+        return tenTruSoTiepNhan;
+    }
+    public void setTenTruSoTiepNhan(String tenTruSoTiepNhan) {
+        this.tenTruSoTiepNhan = tenTruSoTiepNhan;
     }
 
     

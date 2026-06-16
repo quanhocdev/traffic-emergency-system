@@ -2,9 +2,10 @@ package com.example.suco.dto.suco.baocao.user;
 
 import java.time.LocalDateTime;
 
-public class TheoDoiSuCoDetailResponseDTO {
+import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
+import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 
-  
+public class TheoDoiSuCoDetailResponseDTO {
 
     private Long id;
 
@@ -20,7 +21,9 @@ public class TheoDoiSuCoDetailResponseDTO {
 
     private Integer doTinCay;   
 
-    private Long idTruSoTiepNhan;
+    private TruSoMapDto truSo;
+
+    private UserInfoResponseDTO user;
 
     private String tenTruSoTiepNhan;
 
@@ -90,11 +93,17 @@ public class TheoDoiSuCoDetailResponseDTO {
     public void setTenTruSoTiepNhan(String tenTruSoTiepNhan) {
         this.tenTruSoTiepNhan = tenTruSoTiepNhan;
     }
-    public Long getIdTruSoTiepNhan() {
-        return idTruSoTiepNhan;
+    public TruSoMapDto getTruSo() {
+        return truSo;
     }
-    public void setIdTruSoTiepNhan(Long idTruSoTiepNhan) {
-        this.idTruSoTiepNhan = idTruSoTiepNhan;
+    public void setTruSo(TruSoMapDto truSo) {
+        this.truSo = truSo;
+    }
+    public UserInfoResponseDTO getUser() {
+        return user;
+    }
+    public void setUser(UserInfoResponseDTO user) {
+        this.user = user;
     }
 
 }
