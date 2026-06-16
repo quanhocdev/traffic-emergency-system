@@ -3,11 +3,13 @@ package com.example.canhbao.viewmodel
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoDetailResponseDTO
+import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoItemResponseDTO // ✅ Thêm import bản rút gọn
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
 import com.google.android.gms.tasks.Tasks
@@ -21,7 +23,7 @@ import ua.naiksoftware.stomp.StompClient
 sealed class TheoDoiBaoCaoUiState {
     object Loading : TheoDoiBaoCaoUiState()
     data class Success(
-        val data: List<TheoDoiSuCoDetailResponseDTO>
+        val data: List<TheoDoiSuCoItemResponseDTO> // 🔄 ĐÃ SỬA: Danh sách trả về bản Item rút gọn
     ) : TheoDoiBaoCaoUiState()
 
     data class Error(
@@ -31,9 +33,12 @@ sealed class TheoDoiBaoCaoUiState {
 
 class TheoDoiBaoCaoViewModel : ViewModel() {
 
-    var uiState: TheoDoiBaoCaoUiState by mutableStateOf(
-        TheoDoiBaoCaoUiState.Loading
-    )
+    // Quản lý trạng thái màn hình danh sách sự cố
+    var uiState: TheoDoiBaoCaoUiState by mutableStateOf(TheoDoiBaoCaoUiState.Loading)
+        private set
+
+    // ➕ BỔ SUNG: Map lưu trữ dữ liệu chi tiết của từng sự cố dựa trên ID (Khớp hoàn toàn với SOS)
+    var detailUiStateMap = mutableStateMapOf<Long, TheoDoiSuCoDetailResponseDTO>()
         private set
 
     private var mStompClient: StompClient? = null
@@ -42,10 +47,7 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
         val user = FirebaseAuth.getInstance().currentUser
             ?: throw Exception("Chưa đăng nhập")
 
-        val tokenResult = Tasks.await(
-            user.getIdToken(false)
-        )
-
+        val tokenResult = Tasks.await(user.getIdToken(false))
         return "Bearer ${tokenResult.token ?: ""}"
     }
 
@@ -57,29 +59,61 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
     private fun loadDataFromApi() {
         viewModelScope.launch {
             try {
-
                 uiState = TheoDoiBaoCaoUiState.Loading
 
                 val response = withContext(Dispatchers.IO) {
                     val token = getToken()
-                    api.getTheoDoiSuCo(token)
+                    api.getTheoDoiSuCo(token) // Nhận về List<TheoDoiSuCoItemResponseDTO>
                 }
 
-                uiState =
-                    TheoDoiBaoCaoUiState.Success(response)
-
+                uiState = TheoDoiBaoCaoUiState.Success(response)
             } catch (e: Exception) {
-
-                uiState =
-                    TheoDoiBaoCaoUiState.Error(
-                        e.localizedMessage
-                            ?: "Lỗi kết nối Server"
-                    )
-
-                Log.e(
-                    "TheoDoiBaoCao",
-                    "loadData error: ${e.message}"
+                uiState = TheoDoiBaoCaoUiState.Error(
+                    e.localizedMessage ?: "Lỗi kết nối Server"
                 )
+                Log.e("TheoDoiBaoCao", "loadData error: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * ➕ BỔ SUNG: Hàm lấy dữ liệu chi tiết của một Sự cố cụ thể từ API
+     * Sẽ được gọi tự động bên trong `LaunchedEffect` của ChiTietBaoCaoScreen
+     */
+    fun fetchDetailSuCo(suCoId: Long) {
+        viewModelScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    val token = getToken()
+                    api.getTheoDoiSuCoDetail(token, suCoId)
+                }
+                // Cập nhật hoặc thêm mới đối tượng vào Map theo ID để UI cập nhật realtime
+                detailUiStateMap[suCoId] = response
+            } catch (e: Exception) {
+                Log.e("TheoDoiBaoCao", "fetchDetailSuCo lỗi ID #$suCoId: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * 🔄 ĐÃ SỬA TÊN HÀM: Đổi từ cancelBaoCao thành cancelSuCo để khớp 100% với
+     * nút bấm "Hủy Báo Cáo Sự Cố" bên giao diện ChiTietBaoCaoScreen bạn vừa viết
+     */
+    fun cancelSuCo(suCoId: Long) {
+        viewModelScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    val token = getToken()
+                    api.cancelSuCo(token, suCoId)
+                    // Lưu ý: Nếu api.cancelSuCo trả về Response<Void>, bạn có thể dùng .isSuccessful
+                    // Nếu nó trả về trực tiếp DTO hoặc kiểu khác, hãy cấu trúc lại dòng này cho khớp Retrofit nhé
+                }
+
+                // Hủy thành công thì xóa dữ liệu cũ trong map chi tiết và refresh lại danh sách tổng
+                detailUiStateMap.remove(suCoId)
+                loadDataFromApi()
+            } catch (e: Exception) {
+                Log.e("TheoDoiBaoCao", "cancel error: ${e.message}")
             }
         }
     }
@@ -95,13 +129,12 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
             "${AppConfig.WS_BASE_URL}/ws-suco"
         )
 
-        // 🌟 Lắng nghe vòng đời kết nối trước để đảm bảo an toàn đường truyền
         mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
             when (lifecycleEvent.type) {
                 ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> {
                     Log.d("WebSocket_BaoCao", "🟢 Kết nối thành công! Bắt đầu subscribe...")
 
-                    // Kênh 1: Sự cố chung công khai trên bản đồ
+                    // Kênh 1: Có sự cố mới công cộng chung
                     mStompClient?.topic("/topic/su-co")?.subscribe({
                         Log.d("WebSocket_BaoCao", "🔄 Nhận tín hiệu sự cố chung -> Tải lại API")
                         loadDataFromApi()
@@ -109,11 +142,17 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
                         Log.e("WebSocket_BaoCao", "Lỗi kênh /topic/su-co: ${it.message}")
                     })
 
-                    // Kênh 2: Lịch sử cá nhân của người báo (Cần ghép UID động giống bên SOS)
+                    // Kênh 2: Có cập nhật trạng thái trong lịch sử cá nhân (Ví dụ: Trạm bấm tiếp nhận/Từ chối)
                     uid?.let { id ->
                         mStompClient?.topic("/topic/user/$id/history")?.subscribe({
                             Log.d("WebSocket_BaoCao", "🔄 Nhận tín hiệu lịch sử cá nhân -> Tải lại API")
                             loadDataFromApi()
+
+                            // 💡 Mẹo thông minh: Khi có update lịch sử từ socket, quét qua các ID đang mở
+                            // trên màn hình chi tiết để kéo lại data mới nhất luôn, không sợ bị out-date dữ liệu
+                            detailUiStateMap.keys.forEach { activeId ->
+                                fetchDetailSuCo(activeId)
+                            }
                         }, {
                             Log.e("WebSocket_BaoCao", "Lỗi kênh history cá nhân: ${it.message}")
                         })
@@ -129,41 +168,7 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
             }
         }
 
-        // Kích hoạt kết nối sau khi đã thiết lập lắng nghe vòng đời
         mStompClient?.connect()
-    }
-
-    fun cancelBaoCao(
-        baoCaoId: Long
-    ) {
-
-        viewModelScope.launch {
-
-            try {
-
-                val success =
-                    withContext(Dispatchers.IO) {
-
-                        val token = getToken()
-
-                        api.cancelSuCo(
-                            token,
-                            baoCaoId
-                        ).isSuccessful
-                    }
-
-                if (success) {
-                    loadDataFromApi()
-                }
-
-            } catch (e: Exception) {
-
-                Log.e(
-                    "TheoDoiBaoCao",
-                    "cancel error: ${e.message}"
-                )
-            }
-        }
     }
 
     override fun onCleared() {

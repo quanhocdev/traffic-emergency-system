@@ -58,7 +58,7 @@ fun NavGraph(authViewModel: AuthViewModel) {
     val tinhHieuSosViewModel: TinHieuSOSViewModel = viewModel()
     val lichSuViewModel: LichSuViewModel = viewModel()
 
-    // 💡 KHỞI TẠO CHUNG: Để màn hình Lịch Sử và màn Chi Tiết SOS dùng chung Instance dữ liệu thời gian thực
+    // 💡 KHỞI TẠO CHUNG: Để màn hình Lịch Sử và màn Chi Tiết dùng chung Instance dữ liệu thời gian thực
     val theoDoiBaoCaoViewModel: TheoDoiBaoCaoViewModel = viewModel()
     val theoDoiTinHieuViewModel: TheoDoiTinHieuViewModel = viewModel()
 
@@ -201,7 +201,7 @@ fun NavGraph(authViewModel: AuthViewModel) {
         composable("lich_su") {
             LichSuScreen(
                 navController = navController,
-                baoCaoViewModel = theoDoiBaoCaoViewModel, // Sử dụng VM chung phạm vi định tuyến
+                baoCaoViewModel = theoDoiBaoCaoViewModel,
                 tinHieuViewModel = theoDoiTinHieuViewModel
             )
         }
@@ -215,7 +215,18 @@ fun NavGraph(authViewModel: AuthViewModel) {
             ChiTietSosScreen(
                 sosId = sosId,
                 navController = navController,
-                viewModel = theoDoiTinHieuViewModel // Dùng chung VM để đồng bộ trạng thái phát media/hóa đơn
+                viewModel = theoDoiTinHieuViewModel
+            )
+        }
+        composable(
+            route = "chi_tiet_bao_cao/{suCoId}",
+            arguments = listOf(navArgument("suCoId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val suCoId = backStackEntry.arguments?.getLong("suCoId") ?: 0L
+            ChiTietBaoCaoScreen(
+                suCoId = suCoId,
+                navController = navController,
+                viewModel = theoDoiBaoCaoViewModel
             )
         }
 

@@ -1,9 +1,4 @@
 package com.example.canhbao.data.model.suco.baocao
-
-import java.time.LocalDateTime
-
-
-
 data class TheoDoiSuCoItemResponseDTO (
     val id: Long?,
 
@@ -13,6 +8,7 @@ data class TheoDoiSuCoItemResponseDTO (
 
     val trangThaiXuLy: String?,
 
-    val thoiGianTao: String?
+    val thoiGianTao: String?,
 
+    val tenTruSoTiepNhan: String?
 )

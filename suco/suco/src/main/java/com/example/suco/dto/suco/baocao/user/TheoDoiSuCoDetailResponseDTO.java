@@ -25,8 +25,6 @@ public class TheoDoiSuCoDetailResponseDTO {
 
     private UserInfoResponseDTO user;
 
-    private String tenTruSoTiepNhan;
-
     private String mucDoNghiemTrong;
 
     private LocalDateTime thoiGianTao;
@@ -86,12 +84,6 @@ public class TheoDoiSuCoDetailResponseDTO {
     }
     public void setThoiGianTao(LocalDateTime thoiGianTao) {
         this.thoiGianTao = thoiGianTao;
-    }
-    public String getTenTruSoTiepNhan() {
-        return tenTruSoTiepNhan;
-    }
-    public void setTenTruSoTiepNhan(String tenTruSoTiepNhan) {
-        this.tenTruSoTiepNhan = tenTruSoTiepNhan;
     }
     public TruSoMapDto getTruSo() {
         return truSo;
