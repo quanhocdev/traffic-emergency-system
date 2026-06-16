@@ -39,6 +39,8 @@ fun LichSuScreen(
     var selectedMainTab by remember { mutableIntStateOf(0) }
     val mainTabs = listOf("SỰ CỐ", "SOS")
     var selectedStatusTab by remember { mutableIntStateOf(0) }
+
+    // 🌟 ĐỒNG BỘ: Danh sách nhãn hiển thị bộ lọc trạng thái trên UI
     val statusFilters = listOf("Đã tiếp nhận", "Chờ xử lý", "Đang xử lý", "Đã xong", "Đã hủy")
 
     LaunchedEffect(Unit) {
@@ -120,40 +122,51 @@ fun LichSuScreen(
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding).background(Color(0xFFF5F5F5))) {
             if (selectedMainTab == 0) {
-                // TAB 1: SỰ CỐ
+                // ================= TAB 1: SỰ CỐ CÔNG CỘNG =================
                 when (val state = baoCaoViewModel.uiState) {
-                    is TheoDoiBaoCaoUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    is TheoDoiBaoCaoUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center), color = trafficBlue)
                     is TheoDoiBaoCaoUiState.Error -> ErrorUI(state.message, Modifier.align(Alignment.Center)) { baoCaoViewModel.fetchData() }
                     is TheoDoiBaoCaoUiState.Success -> {
                         val filtered = state.data.filter { item ->
+                            val status = item.trangThaiXuLy?.trim() ?: ""
                             when (selectedStatusTab) {
-                                0 -> item.trangThaiXuLy == "DA_TIEP_NHAN"
-                                1 -> item.trangThaiXuLy == "CHO_XU_LY"
-                                2 -> item.trangThaiXuLy == "DANG_XU_LY"
-                                3 -> item.trangThaiXuLy == "HOAN_THANH"
-                                4 -> item.trangThaiXuLy == "HUY_BO"
+                                0 -> status == "Đã tiếp nhận"
+                                1 -> status == "Chờ xử lý"
+                                2 -> status == "Đang xử lý"  // 🎯 Khớp 100% với log "ID: 51 -> Trang thai thuc te: Đang xử lý"
+                                3 -> status == "Đã hoàn thành" || status == "Đã xong"
+                                4 -> status == "Đã hủy"
                                 else -> true
                             }
                         }
-                        if (filtered.isEmpty()) { EmptyStateUI(Modifier.align(Alignment.Center)) } else {
+                        
+                        if (filtered.isEmpty()) {
+                            EmptyStateUI(Modifier.align(Alignment.Center))
+                        } else {
                             LazyColumn(modifier = Modifier.fillMaxSize().padding(top = 4.dp)) {
                                 items(filtered) { item ->
-                                    BaoCaoItemUI(item = item, onCancelClick = { baoCaoViewModel.cancelBaoCao(item.id) })
+                                    android.util.Log.d("DATA_CHECK", "ID: ${item.id} -> Trang thai thuc te: ${item.trangThaiXuLy}")
+                                    // 🚀 ĐÃ CẬP NHẬT: Gọi đúng hàm callback onDetailClick để mở màn hình chi tiết
+                                    BaoCaoItemUI(
+                                        item = item,
+                                        onDetailClick = { suCoId ->
+                                            navController.navigate("chi_tiet_bao_cao/$suCoId")
+                                        }
+                                    )
                                 }
                             }
                         }
                     }
                 }
             } else {
-                // TAB 2: SOS
+                // ================= TAB 2: CỨU HỘ SOS =================
                 when (val state = tinHieuViewModel.uiState) {
-                    is TheoDoiTinHieuUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    is TheoDoiTinHieuUiState.Loading -> CircularProgressIndicator(Modifier.align(Alignment.Center), color = sosRed)
                     is TheoDoiTinHieuUiState.Error -> ErrorUI(state.message, Modifier.align(Alignment.Center)) { tinHieuViewModel.fetchData() }
                     is TheoDoiTinHieuUiState.Success -> {
                         val filtered = state.data.filter { item ->
                             when (selectedStatusTab) {
                                 0 -> item.trangThai == "DA_TIEP_NHAN"
-                                1 -> item.trangThai == "CHO_XU_LY"
+                                1 -> item.trangThai == "CHO_XU_LY" || item.trangThai == "PENDING"
                                 2 -> item.trangThai == "DANG_XU_LY"
                                 3 -> item.trangThai == "HOAN_THANH"
                                 4 -> item.trangThai == "HUY_BO"
@@ -163,10 +176,12 @@ fun LichSuScreen(
                         if (filtered.isEmpty()) { EmptyStateUI(Modifier.align(Alignment.Center)) } else {
                             LazyColumn(modifier = Modifier.fillMaxSize().padding(top = 4.dp)) {
                                 items(filtered) { item ->
-                                    TinHieuItemUI(item = item, onDetailClick = { sosId ->
-                                        // Chuyển hướng sang màn hình Chi tiết SOS vừa tách ra
-                                        navController.navigate("chi_tiet_sos/$sosId")
-                                    })
+                                    TinHieuItemUI(
+                                        item = item,
+                                        onDetailClick = { sosId ->
+                                            navController.navigate("chi_tiet_sos/$sosId")
+                                        }
+                                    )
                                 }
                             }
                         }

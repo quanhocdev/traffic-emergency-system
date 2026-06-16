@@ -5,9 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,205 +21,130 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoDetailResponseDTO
+import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoItemResponseDTO // ✅ Đã đổi sang nhận Item DTO
 import com.example.canhbao.data.network.AppConfig
 
-// Định nghĩa bảng màu Xanh nước biển chủ đạo cho phần Báo cáo
+// Bảng màu xanh nước biển chủ đạo đại diện cho luồng Báo Cáo Sự Cố
 private val PrimaryBlue = Color(0xFF1976D2)
 private val LightBlueBg = Color(0xFFE3F2FD)
 private val BorderBlue = Color(0xFF90CAF9)
 private val TextDark = Color(0xFF1F2937)
 private val TextGray = Color(0xFF6B7280)
-private val CancelRed = Color(0xFFDC2626)
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BaoCaoItemUI(
-    item: TheoDoiSuCoDetailResponseDTO,
-    onCancelClick: () -> Unit
+    item: TheoDoiSuCoItemResponseDTO,
+    onDetailClick: (Long) -> Unit
 ) {
+    // Ép kiểu/Kiểm tra ID an toàn, phòng hờ Backend trả về null
+    val itemId = item.id ?: return
+
+    // Xử lý chuỗi định dạng ngày tháng gọn gàng từ chuỗi ISO (yyyy-MM-ddThh:mm:ss)
     val displayDate = try {
         item.thoiGianTao
             ?.substringBefore("T")
             ?.split("-")
             ?.reversed()
             ?.joinToString("/")
-            ?: ""
+            ?: "Không rõ thời gian"
     } catch (_: Exception) {
-        ""
+        "Không rõ thời gian"
     }
 
-    // Sử dụng OutlinedCard kèm viền xanh để phân tách rõ ràng giống trang SOS
     OutlinedCard(
+        onClick = { onDetailClick(itemId) },   // ✅ Click vào Item sẽ mở màn hình chi tiết (nơi chứa nút Hủy báo cáo)
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 8.dp), // Khoảng cách giãn giữa các item
-        shape = RoundedCornerShape(14.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp), // Đồng bộ padding với luồng SOS
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.outlinedCardColors(containerColor = Color.White),
-        border = BorderStroke(1.5.dp, BorderBlue), // Viền xanh nước biển bo góc
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, BorderBlue),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(14.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // --- PHẦN 1: NỘI DUNG CHÍNH (ẢNH & THÔNG TIN SƠ BỘ) ---
-            Row(
-                verticalAlignment = Alignment.Top
+            // 1. Ảnh thu nhỏ của vụ sự cố công cộng (Thumbnail)
+            Box(
+                modifier = Modifier
+                    .size(65.dp) // Kích thước bằng chuẩn với item cứu hộ SOS
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(LightBlueBg)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(85.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(LightBlueBg)
-                ) {
-                    if (item.hinhAnhUrl.isNullOrEmpty()) {
-                        Icon(
-                            imageVector = Icons.Default.Build,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .size(32.dp),
-                            tint = PrimaryBlue
-                        )
-                    } else {
-                        AsyncImage(
-                            model = "${AppConfig.HTTP_BASE_URL}${item.hinhAnhUrl}",
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                }
-
-                Spacer(Modifier.width(14.dp))
-
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = item.tenLoai ?: "Sự cố",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = PrimaryBlue
+                if (item.hinhAnhUrl.isNullOrEmpty()) {
+                    Icon(
+                        imageVector = Icons.Default.Build,
+                        contentDescription = null,
+                        tint = PrimaryBlue,
+                        modifier = Modifier.size(24.dp).align(Alignment.Center)
                     )
-
-                    item.moTa?.let {
-                        Text(
-                            text = it,
-                            fontSize = 13.sp,
-                            color = TextDark,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.LocationOn,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = PrimaryBlue
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = item.diaChi ?: "Không rõ vị trí",
-                            fontSize = 12.sp,
-                            color = TextGray,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DateRange,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = TextGray
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = displayDate,
-                            fontSize = 12.sp,
-                            color = TextGray
-                        )
-                    }
-                }
-            }
-
-            Spacer(Modifier.height(12.dp))
-            Divider(color = Color(0xFFF3F4F6), thickness = 1.dp) // Đường phân cách mờ
-            Spacer(Modifier.height(12.dp))
-
-            // --- PHẦN 2: TRẠNG THÁI & CHỈ SỐ (THIẾT KẾ DẠNG BADGE GỌN GÀNG) ---
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .background(Color(0xFFF0FDF4), shape = RoundedCornerShape(6.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "Độ tin cậy: ${item.doTinCay ?: "---"}",
-                        color = Color(0xFF16A34A),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .background(Color(0xFFEFF6FF), shape = RoundedCornerShape(6.dp))
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = "Mức độ: ${item.mucDoNghiemTrong ?: "---"}",
-                        color = PrimaryBlue,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold
+                } else {
+                    AsyncImage(
+                        model = "${AppConfig.HTTP_BASE_URL}${item.hinhAnhUrl}",
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
                     )
                 }
             }
 
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.width(12.dp))
 
-            // Các dòng thông số chi tiết dưới dạng văn bản phối màu nhẹ
+            // 2. Khu vực thông tin cơ bản của sự cố
             Column(
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                // Tiêu đề: Tên loại sự cố báo cáo
                 Text(
-                    text = "Tiếp nhận: ${item.tenTruSoTiepNhan ?: "Chưa có"}",
-                    fontSize = 12.sp,
-                    color = TextGray
+                    text = item.tenLoai ?: "Sự cố không rõ loại",
+                    color = TextDark,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
-            }
 
-            // --- PHẦN 3: NÚT BẤM HÀNH ĐỘNG (NẾU CÓ) ---
-            if (item.trangThaiXuLy == "CHO_XU_LY" || item.trangThaiXuLy == "DA_TIEP_NHAN") {
-                Spacer(Modifier.height(14.dp))
-
-                OutlinedButton(
-                    onClick = onCancelClick,
-                    border = BorderStroke(1.2.dp, CancelRed),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = CancelRed),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(38.dp)
-                ) {
+                // Trạm/Trụ sở chịu trách nhiệm xử lý
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Home, null, tint = TextGray, modifier = Modifier.size(14.dp))
+                    Spacer(Modifier.width(4.dp))
                     Text(
-                        text = "Hủy báo cáo",
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "Trạm: ${item.tenTruSoTiepNhan ?: "Đang tìm kiếm..."}",
+                        color = TextGray,
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                // Thời gian người dùng gửi báo cáo lên hệ thống
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.CalendarToday, null, tint = TextGray, modifier = Modifier.size(14.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = displayDate,
+                        color = TextGray,
+                        fontSize = 12.sp
                     )
                 }
             }
+
+            Spacer(Modifier.width(4.dp))
+
+            // 3. Mũi tên điều hướng ẩn dụ thúc đẩy hành động Click xem chi tiết
+            Icon(
+                imageVector = Icons.Default.ArrowForwardIos,
+                contentDescription = null,
+                tint = Color.LightGray,
+                modifier = Modifier
+                    .size(14.dp)
+                    .padding(end = 2.dp)
+            )
         }
     }
 }
