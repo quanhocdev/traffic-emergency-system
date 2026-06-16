@@ -6,6 +6,6 @@ data class SuCoMapResponseDTO(
     val kinhDo: Double,
     val iconUrl: String?,
     val trangThaiXuLy: String?,
-    val mucDoNghiemTrong: String?,
+    val mucDoSuCo: String?,
     val truSoId: Long?
 )

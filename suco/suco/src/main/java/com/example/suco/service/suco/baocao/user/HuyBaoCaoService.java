@@ -56,14 +56,8 @@ public ResponseEntity<?> cancelReport(
             reportId
     );
 
-    // =========================
-    // CHECK OWNER
-    // =========================
     quyenHanService.checkOwner(report, currentUid);
 
-    // =========================
-    // BLOCK IF FINAL STATE
-    // =========================
     if (report.getTrangThaiXuLy().isFinalState()) {
 
         return ResponseEntity.badRequest()
@@ -73,9 +67,7 @@ public ResponseEntity<?> cancelReport(
                 ));
     }
 
-    // =========================
-    // ONLY USER CANCEL RULE
-    // =========================
+
     if (!report.getTrangThaiXuLy().canBeCancelledByUser()) {
 
         return ResponseEntity.badRequest()
@@ -85,9 +77,7 @@ public ResponseEntity<?> cancelReport(
                 ));
     }
 
-    // =========================
     // UPDATE STATE
-    // =========================
     report.setTrangThaiXuLy(TrangThaiXuLy.HUY_BO);
 
     BaoCaoSuCo saved = reportRepository.save(report);

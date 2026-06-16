@@ -374,7 +374,7 @@ fun MapScreen(
                                         iconUrl = foundSuCo.iconUrl,
                                         trangThaiDuyet = null,
                                         trangThaiXuLy = foundSuCo.trangThaiXuLy,
-                                        mucDoNghiemTrong = foundSuCo.mucDoNghiemTrong,
+                                        mucDoNghiemTrong = foundSuCo.mucDoSuCo,
                                         hinhAnhUrl = null,
                                         doTinCay = null,
                                         tenNguoiBao = null,

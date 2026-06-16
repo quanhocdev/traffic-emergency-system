@@ -5,7 +5,6 @@ import com.example.suco.dto.suco.baocao.ai.AiResponse;
 import com.example.suco.dto.suco.baocao.ai.AiVerifyResult;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.enums.TrangThaiXuLy;
-import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.service.suco.baocao.user.workflow.gui.ai.BaoCaoAiService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.create.CreateBaoCaoService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.duplicate.DuplicateBaoCaoService;
@@ -42,9 +41,6 @@ public class GuiBaoCaoService {
     @Autowired
     private BaoCaoSuCoRepository reportRepository;
 
-    @Autowired
-    private SuCoMapper suCoMapper;
-
 @Autowired
     private TruSoSelectorService truSoSelectorService;
 
@@ -56,15 +52,11 @@ public AiResponse submitReport(
         String base64FullData
 ) {
 
-    // =========================
     // 1. CREATE
-    // =========================
     BaoCaoSuCo report =
             createBaoCaoService.create(uid, dto);
 
-    // =========================
     // 2. AI VERIFY
-    // =========================
     AiVerifyResult ai =
             baoCaoAiService.verify(
                     report,
@@ -75,9 +67,7 @@ public AiResponse submitReport(
         return baoCaoResponseFactory.reject(ai);
     }
 
-    // =========================
     // 3. DUPLICATE CHECK
-    // =========================
     AiResponse duplicateResponse =
             duplicateBaoCaoService.process(uid, report);
 
@@ -85,18 +75,14 @@ public AiResponse submitReport(
         return duplicateResponse;
     }
 
-    // =========================
     // 4. ENRICH + SAVE BASE DATA
-    // =========================
     BaoCaoSuCo savedReport =
             baoCaoEnrichService.enrichAndSave(
                     report,
                     base64FullData
             );
 
-    // =========================
-    // 5. AI ASSIGN TRỤ SỞ (QUAN TRỌNG)
-    // =========================
+    // 5. AI ASSIGN TRỤ SỞ 
     var truSo = truSoSelectorService.selectNearest(
             savedReport.getViDo(),
             savedReport.getKinhDo()
@@ -104,22 +90,16 @@ public AiResponse submitReport(
 
     savedReport.setTruSoTiepNhan(truSo);
 
-    // =========================
     // 6. SET STATE
-    // =========================
     savedReport.setTrangThaiXuLy(
             TrangThaiXuLy.DA_TIEP_NHAN
     );
 
-    // =========================
     // 7. SAVE FINAL STATE
-    // =========================
     BaoCaoSuCo finalReport =
             reportRepository.save(savedReport);
 
-    // =========================
-    // 8. RESPONSE + OPTIONAL REWARD (KHÔNG NÊN REWARD Ở ĐÂY)
-    // =========================
+    // 8. RESPONSE + OPTIONAL REWARD 
     return baoCaoResponseFactory.success(finalReport);
 }
 }

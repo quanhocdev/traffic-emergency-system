@@ -59,12 +59,10 @@ async function drawRoute(targetLng, targetLat) {
       geometry: json.routes[0].geometry,
     };
 
-    // KIỂM TRA: Nếu đã có Source "route" trên bản đồ rồi
     if (map.getSource("route")) {
       // Chỉ cần cập nhật lại dữ liệu tọa độ mới, không tạo lại nữa
       map.getSource("route").setData(geojsonData);
 
-      // Nếu Layer bị mất (do hàm khác xóa nhầm), tạo lại Layer
       if (!map.getLayer("route")) {
         map.addLayer({
           id: "route",
@@ -240,10 +238,6 @@ function showSuCoDetail(item) {
   const tenLoai = item.tenLoai || "Sự cố";
   const moTa = item.moTa || "Không có mô tả";
   const icon = item.iconUrl || "https://placehold.co/24x24?text=⚠";
-
-  // =========================================================================
-  // XỬ LÝ ĐỒNG BỘ MỨC ĐỘ (Chấp nhận cả trường tiếng Anh từ WebSocket lẫn tiếng Việt từ DTO)
-  // =========================================================================
   const rawMucDo = item.mucDoSuCo;
 
   let mucDoKey = "LOW";
@@ -269,10 +263,6 @@ function showSuCoDetail(item) {
       : mucDoKey === "MEDIUM"
         ? "#f59e0b"
         : "#10b981";
-
-  // =========================================================================
-  // XỬ LÝ TRẠNG THÁI XỬ LÝ
-  // =========================================================================
   let trangThai = item.trangThaiXuLy || item.trangThai || "DANG_DI_CHUYEN";
   if (typeof trangThai === "string") {
     trangThai = trangThai.toUpperCase();
@@ -480,9 +470,6 @@ function addSOSMarker(item, type = "SOS") {
   let themeColor = "#94a3b8"; // Mặc định xám khi chưa có mức độ
   let isPulse = "";
 
-  // =========================================================================
-  // PHÂN CHIA LOGIC MÀU SẮC RIÊNG BIỆT CHO SỰ CỐ VÀ SOS
-  // =========================================================================
   if (type === "SU_CO") {
     const mDo = item.mucDoSuCo || item.mucDo;
     if (mDo && mDo !== "NONE") {
@@ -508,10 +495,6 @@ function addSOSMarker(item, type = "SOS") {
       isPulse = "";
     }
   }
-
-  // =========================================================================
-  // XỬ LÝ CẬP NHẬT TRỰC TIẾP NẾU MARKER ĐÃ TỒN TẠI TRÊN DOM
-  // =========================================================================
   if (activeMarkers[markerKey]) {
     activeMarkers[markerKey].data = item;
     const el = activeMarkers[markerKey].marker.getElement();
@@ -535,9 +518,6 @@ function addSOSMarker(item, type = "SOS") {
     return;
   }
 
-  // =========================================================================
-  // XỬ LÝ TẠO MỚI HOÀN TOÀN CẤU TRÚC GIAO DIỆN MARKER (HTML INNER)
-  // =========================================================================
   const el = document.createElement("div");
   el.className = "custom-marker-wrapper";
 
@@ -654,7 +634,6 @@ function handleRedirectParams() {
     const showIfReady = () => {
       const entry = activeMarkers[markerKey];
       if (entry) {
-        // ĐỒNG BỘ: Kích hoạt hàm gọi API chi tiết chuẩn giống như khi click vào Marker
         activateMarkerDetail(markerKey, "SOS");
       } else if (retryCount < maxRetries) {
         retryCount++;
@@ -934,11 +913,9 @@ function doiTrangThai(id, status) {
             showSOSDetail(activeMarkers[markerKey].data);
           }
         } else {
-          // Nếu không quản lý mảng, chỉ cần reload lại trang hoặc cập nhật UI cục bộ
           if (typeof loadIncidents === "function") loadIncidents();
         }
       } else {
-        // Nếu Backend trả về lỗi (Ví dụ: 401 do hết hạn session, hoặc lỗi logic service)
         res.text().then((text) => {
           alert(`Hệ thống từ chối thực thi (Mã lỗi ${res.status}): ` + text);
         });
@@ -977,18 +954,16 @@ function loadExistingSOS() {
     .then((res) => res.json())
     .then((data) => {
       Object.keys(activeMarkers).forEach((id) => {
-        // Kiểm tra nếu đúng là loại SOS và có tồn tại instance marker thì mới xóa
         if (
           activeMarkers[id] &&
           activeMarkers[id].type === "SOS" &&
           activeMarkers[id].marker
         ) {
-          activeMarkers[id].marker.remove(); // Thêm .marker vào đây
+          activeMarkers[id].marker.remove();
           delete activeMarkers[id];
         }
       });
 
-      // Duyệt qua danh sách dữ liệu mới từ Backend trả về
       data.forEach((item) => {
         addSOSMarker(item, "SOS");
         if (typeof addNotiItem === "function") {

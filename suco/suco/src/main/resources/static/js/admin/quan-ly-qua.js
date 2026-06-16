@@ -136,7 +136,6 @@ function submitEdit() {
     document.getElementById("editNgayKetThuc").value || "",
   );
 
-  // 👇 QUAN TRỌNG NHẤT
   const file = document.getElementById("editHinhAnh").files[0];
   if (file) {
     formData.append("hinhAnh", file);
@@ -161,8 +160,7 @@ function changeStatus(select) {
   const confirmChange = confirm("Bạn có chắc muốn thay đổi trạng thái không?");
 
   if (!confirmChange) {
-    // Hủy → reset lại giá trị cũ (tránh UI bị đổi)
-    location.reload(); // hoặc giữ nguyên trạng thái cũ
+    location.reload();
     return;
   }
 

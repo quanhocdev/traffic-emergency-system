@@ -16,7 +16,6 @@ let pickerMarker = new mapboxgl.Marker({
   draggable: true,
 });
 
-// --- 2. TIỆN ÍCH BẢN ĐỒ ---
 function saveMapState(lng, lat) {
   localStorage.setItem("map_lng", lng);
   localStorage.setItem("map_lat", lat);
@@ -503,12 +502,12 @@ function updateNotificationList(message) {
 
   if (list) list.insertBefore(newItem, list.firstChild);
 }
-
 function renderSingleIncident(suCo) {
   const id = suCo.id;
 
-  // 1. KIỂM TRA TRẠNG THÁI: Nếu đã hoàn thành hoặc hủy thì xóa Marker
-  if (suCo.trangThaiXuLy === "HOAN_THANH" || suCo.trangThaiXuLy === "HUY_BO") {
+  // 1. KIỂM TRA TRẠNG THÁI KẾT THÚC
+  const trangThai = suCo.trangThaiXuLy || suCo.trangThai || "";
+  if (trangThai === "HOAN_THANH" || trangThai === "HUY_BO") {
     if (incidentMarkersMap[id]) {
       incidentMarkersMap[id].remove();
       delete incidentMarkersMap[id];
@@ -516,40 +515,74 @@ function renderSingleIncident(suCo) {
     return;
   }
 
-  if (incidentMarkersMap[id]) {
-    incidentMarkersMap[id].remove();
-  }
-
   const lng = parseFloat(suCo.kinhDo);
   const lat = parseFloat(suCo.viDo);
   if (isNaN(lng) || isNaN(lat)) return;
 
-  const isWaitingAdmin =
-    suCo.trangThaiDuyet === "AI_APPROVED" || suCo.trangThaiDuyet === "PENDING";
-  let borderColor = "#ffffff";
-  if (suCo.trangThaiDuyet === "VERIFIED") {
-    if (suCo.mucDoSuCo === "HIGH") borderColor = "#e74c3c";
-    else if (suCo.mucDoSuCo === "MEDIUM") borderColor = "#f1c40f";
-    else if (suCo.mucDoSuCo === "LOW") borderColor = "#2ecc71";
-  }
+  // 2. LẤY MỨC ĐỘ & ĐỒNG BỘ MÀU SẮC (Bắt hết các kiểu chữ của Backend)
+  let mucDo = suCo.mucDoSuCo || suCo.mucDo || "NONE";
+  if (typeof mucDo === "string") mucDo = mucDo.toUpperCase().trim();
 
-  const tenHienThi =
-    suCo.tenLoai || (suCo.loaiSuCo ? suCo.loaiSuCo.ten : "Sự cố");
+  let borderColor = "#94a3b8"; // Mặc định: Xám (NONE)
+  if (mucDo === "HIGH")
+    borderColor = "#e74c3c"; // Đỏ
+  else if (mucDo === "MEDIUM")
+    borderColor = "#f1c40f"; // Vàng
+  else if (mucDo === "LOW") borderColor = "#2ecc71"; // Xanh lá
+
   const iconPath = suCo.iconUrl || (suCo.loaiSuCo ? suCo.loaiSuCo.iconUrl : "");
 
+  // TRƯỜNG HỢP 1: CẬP NHẬT MARKER ĐÃ CÓ (Dùng setProperty để cưỡng ép đổi màu)
+  if (incidentMarkersMap[id]) {
+    const markerEl = incidentMarkersMap[id].getElement();
+    incidentMarkersMap[id].setLngLat([lng, lat]);
+
+    const pin = markerEl.querySelector(".marker-pin");
+    const tail = markerEl.querySelector(".marker-tail");
+    const icon = markerEl.querySelector(".marker-icon");
+
+    if (pin)
+      pin.style.setProperty("border", `3px solid ${borderColor}`, "important");
+    if (tail) {
+      // Ép cả background-color lẫn background thường về rỗng để triệt tiêu thuộc tính cũ của CSS
+      tail.style.setProperty("background", "none", "important");
+      tail.style.setProperty("background-color", borderColor, "important");
+    }
+    if (icon) icon.style.backgroundImage = `url('${iconPath}')`;
+
+    return;
+  }
+
+  // TRƯỜNG HỢP 2: TẠO MỚI MARKER HOÀN TOÀN
   const el = document.createElement("div");
-  el.className = "custom-marker" + (isWaitingAdmin ? " pending-marker" : "");
-  let iconHTML = isWaitingAdmin
-    ? `<i class="fa-solid fa-circle-exclamation" style="color: #3498db; font-size: 24px;"></i>`
-    : `<div class="marker-icon" style="background-image: url('${iconPath}'); width: 30px; height: 30px;"></div>`;
+  el.className = "custom-marker";
+
+  let iconHTML = `<div class="marker-icon" style="background-image: url('${iconPath}'); width: 30px; height: 30px; background-size: cover; background-position: center;"></div>`;
 
   el.innerHTML = `
-        <div class="marker-pin" style="border-color: ${borderColor}; background-color: white;">
+        <div class="marker-pin">
             ${iconHTML}
         </div>
-        <div class="marker-tail" style="background-color: ${borderColor};"></div>`;
+        <div class="marker-tail"></div>`;
 
-  // 🌟 ĐÃ BỎ ĐOẠN .setPopup(...) Ở ĐÂY ĐỂ TRÁNH HIỆN POPUP ĐÈ LÊN SỰ CỐ
+  const pinEl = el.querySelector(".marker-pin");
+  const tailEl = el.querySelector(".marker-tail");
+
+  if (pinEl) {
+    pinEl.style.setProperty("border", `3px solid ${borderColor}`, "important");
+    pinEl.style.setProperty("background-color", "#ffffff", "important");
+    pinEl.style.setProperty("display", "flex", "important");
+    pinEl.style.setProperty("align-items", "center", "important");
+    pinEl.style.setProperty("justify-content", "center", "important");
+    pinEl.style.setProperty("border-radius", "50%", "important");
+  }
+
+  if (tailEl) {
+    tailEl.style.setProperty("background", "none", "important");
+    tailEl.style.setProperty("background-color", borderColor, "important");
+  }
+
+  // Khởi tạo và đưa Marker lên bản đồ
   const marker = new mapboxgl.Marker({
     element: el,
     anchor: "bottom",
@@ -557,15 +590,13 @@ function renderSingleIncident(suCo) {
     .setLngLat([lng, lat])
     .addTo(map);
 
-  // Khi bấm vào Marker -> Mở panel chi tiết mượt mà bên phải
   el.addEventListener("click", (e) => {
-    e.stopPropagation(); // Ngăn sự kiện click lan ra bản đồ
-    loadIncidentDetail(suCo.id);
+    e.stopPropagation();
+    loadIncidentDetail(id);
   });
 
   incidentMarkersMap[id] = marker;
 }
-
 async function loadIncidentDetail(id) {
   try {
     const response = await fetch(`/api/su-co/${id}`);
@@ -598,12 +629,18 @@ function showIncidentPanel(data) {
   }
 
   // 2. Chuyển đổi định dạng hiển thị các trường dữ liệu trạng thái
+  // 2. Chuyển đổi định dạng hiển thị các trường dữ liệu trạng thái (Đã xóa PENDING)
   const statusMap = {
-    PENDING: "Chờ duyệt",
     AI_APPROVED: "AI xác thực",
+    DANG_DI_CHUYEN: "Đang di chuyển",
+    "ĐANG DI CHUYỂN": "Đang di chuyển",
     DA_TIEP_NHAN: "Đang xử lý",
+    DANG_XU_LY: "Đang xử lý",
+    "ĐANG XỬ LÝ": "Đang xử lý",
     HOAN_THANH: "Đã hoàn thành",
+    "HOÀN THÀNH": "Đã hoàn thành",
     HUY_BO: "Đã hủy bỏ",
+    "HỦY BỎ": "Đã hủy bỏ",
   };
   const levelMap = { HIGH: "🔴 Cao", MEDIUM: "🟡 Trung bình", LOW: "🟢 Thấp" };
 

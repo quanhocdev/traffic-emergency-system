@@ -1,6 +1,3 @@
-// ==========================
-// Sidebar Toggle
-// ==========================
 const toggleBtn = document.querySelector(".toggle-btn");
 const sidebar = document.getElementById("sidebar");
 
@@ -10,9 +7,6 @@ if (toggleBtn && sidebar) {
   });
 }
 
-// ==========================
-// Bootstrap Modal
-// ==========================
 let detailModal;
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -22,17 +16,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ==========================
-// Format tiền
-// ==========================
 function formatMoney(value) {
   if (value === null || value === undefined) return "0 VNĐ";
   return new Intl.NumberFormat("vi-VN").format(Number(value)) + " VNĐ";
 }
 
-// ==========================
-// Open detail hóa đơn
-// ==========================
 let loadingDetail = false;
 
 async function openDetail(hoaDonId) {
@@ -62,9 +50,6 @@ async function openDetail(hoaDonId) {
   }
 }
 
-// ==========================
-// Render thông tin hóa đơn
-// ==========================
 function renderHoaDonInfo(hd) {
   if (!hd) return;
 
@@ -80,9 +65,6 @@ function renderHoaDonInfo(hd) {
   `;
 }
 
-// ==========================
-// Render danh sách thanh toán
-// ==========================
 function renderPayments(list) {
   const tbody = document.getElementById("paymentTable");
 
