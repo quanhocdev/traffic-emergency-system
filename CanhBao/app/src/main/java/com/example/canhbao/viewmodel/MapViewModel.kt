@@ -180,51 +180,96 @@ class MapViewModel : ViewModel() {
                 withContext(Dispatchers.Main) {
                     _suCoWithIcons.value = currentWithIcons.toList()
                 }
-                // 📝 LOG CHÉC 2: Thành công hay không phải thấy dòng này!
                 android.util.Log.d("REALTIME_BUG", "✅ Vẽ đè Icon thành công! Đã đẩy vào StateFlow hiển thị. Tổng số Marker hiện tại: ${currentWithIcons.size}")
             } else {
                 android.util.Log.e("REALTIME_BUG", "💥 LỖI: Tải hoặc xử lý tạo Bitmap cho Icon thất bại!")
             }
         }
     }
-    // Thêm biến global trong class MapViewModel để giữ kết nối không bị chết yểu
-    // Trong MapViewModel.kt
+
+    // 🌟 CHỈ GIỮ LẠI DUY NHẤT 1 BIẾN QUAN LÝ Ở ĐÂY
     private var realtimeSocketManager: RealtimeSocketManager? = null
 
-    fun startRealtimeSocket(context: Context, stompClient: StompClient) {
-        // Nếu manager cũ có rồi và stomp đang chạy tốt thì bỏ qua
-        if (realtimeSocketManager != null && stompClient.isConnected) {
+    fun startRealtimeSocket(context: Context) {
+        val currentClient = SocketClientProvider.stompClient
+
+        if (realtimeSocketManager != null && currentClient.isConnected) {
+            android.util.Log.d(
+                "REALTIME_BUG",
+                "✅ WebSocket đang hoạt động ổn định. Không cần kết nối lại."
+            )
             return
         }
 
-        // Nếu socket lỗi/chết, hủy diệt tận gốc để tái sinh luồng mới
-        android.util.Log.w("REALTIME_BUG", "⚠️ Phát hiện rò rỉ luồng cũ hoặc ngắt kết nối. Đang tái khởi tạo đường truyền...")
+        android.util.Log.w(
+            "REALTIME_BUG",
+            "⚠️ Phát hiện mất kết nối hoặc khởi tạo lần đầu. Đang thiết lập đường truyền sạch..."
+        )
+
         realtimeSocketManager = null
 
-        // Ép tạo mới một client sạch không dính rác RxJava cũ
         SocketClientProvider.initNewClient()
         val activeClient = SocketClientProvider.stompClient
-        activeClient.connect()
 
         realtimeSocketManager = RealtimeSocketManager(context, activeClient).apply {
             subscribe(object : RealtimeSocketManager.Callback {
                 override fun onSuCoUpdate(suCo: SuCoMapResponseDTO) {
-                    if (suCo.trangThaiXuLy == "HUY_BO" || suCo.trangThaiXuLy == "HOAN_THANH") {
-                        removeSuCoFromSocket(suCo.id)
-                    } else {
-                        updateSuCoFromSocket(context, suCo)
-                    }
+                    android.util.Log.d(
+                        "REALTIME_BUG",
+                        "📥 Nhận sự cố Realtime thành công (ID: ${suCo.id})"
+                    )
+                    updateSuCoFromSocket(context, suCo)
                 }
 
                 override fun onSuCoRemove(id: Long) {
                     removeSuCoFromSocket(id)
                 }
-                override fun onTruSoRemove(id: Long) {}
+
+                override fun onTruSoRemove(id: Long) {
+                    val updatedTruSo = _truSoWithIcons.value.filter { it.first.id != id }
+                    _truSoWithIcons.value = updatedTruSo
+                    android.util.Log.w(
+                        "REALTIME_BUG",
+                        "🔥 Đã xóa trụ sở ID = $id theo thời gian thực"
+                    )
+                }
+
                 override fun onCameraUpdate(camera: CameraMapDto) {}
-                override fun onCameraRemove(id: Long) {}
+                override fun onCameraRemove(id: Long) {
+                    removeCameraFromSocket(id)
+                }
             })
         }
+
+        activeClient.lifecycle().subscribe { lifecycleEvent ->
+            when (lifecycleEvent.type) {
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> {
+                    android.util.Log.i(
+                        "REALTIME_BUG",
+                        "🟢 WEBSOCKET ĐÃ ĐẾN TRẠNG THÁI OPENED! Thông suốt đường truyền mạng LAN."
+                    )
+                }
+
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
+                    android.util.Log.e(
+                        "REALTIME_BUG",
+                        "🔴 LỖI KẾT NỐI SOCKET: ",
+                        lifecycleEvent.exception
+                    )
+                }
+
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.CLOSED -> {
+                    android.util.Log.w("REALTIME_BUG", "🔌 Mạng WebSocket đã đóng.")
+                }
+
+                else -> {}
+            }
+        }
+
+        android.util.Log.d("REALTIME_BUG", "⚡ Đang gửi gói tin Handshake lên Spring Boot...")
+        activeClient.connect()
     }
+
 
     fun removeSuCoFromSocket(id: Long) {
         viewModelScope.launch(Dispatchers.Main) { // Chạy thẳng trên Main thread cho an toàn với UI State
