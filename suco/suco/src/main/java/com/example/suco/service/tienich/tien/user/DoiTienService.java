@@ -27,7 +27,6 @@ public class DoiTienService {
 public boolean thucHienDoiTien(String uid, DoiTienDto dto) {
     if (dto.getSoDiemDoi() <= 0) return false;
 
-    // ✅ dùng uid từ token
     User user = userRepository.findById(uid).orElse(null);
 
     if (user == null || user.getTotalPoints() < dto.getSoDiemDoi()) return false;
@@ -82,7 +81,7 @@ public void broadcastFundStats() {
 
     messagingTemplate.convertAndSend("/topic/public-fund", payload);
 }
-// Thêm hàm này vào DoiTienService.java
+
 public List<Map<String, Object>> getFormattedVinhDanh() {
     List<com.example.suco.model.DoiTien> logs = doiTienRepository.findTop10ByLoaiDoiOrderByNgayDoiDesc("QUYEN_GOP");
     

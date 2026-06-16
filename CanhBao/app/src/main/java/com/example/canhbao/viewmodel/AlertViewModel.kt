@@ -54,7 +54,7 @@ class AlertViewModel : ViewModel() {
                 // Vì SuCoMapResponseDTO không có tên cụ thể, ta dùng định danh chung là "sự cố"
                 val tenSuCo = "sự cố"
 
-                val mucDoText = when (suCo.mucDoNghiemTrong?.uppercase()) {
+                val mucDoText = when (suCo.mucDoSuCo?.uppercase()) {
                     "HIGH" -> "mức độ cao"
                     "MEDIUM" -> "mức độ trung bình"
                     "LOW" -> "mức độ thấp"

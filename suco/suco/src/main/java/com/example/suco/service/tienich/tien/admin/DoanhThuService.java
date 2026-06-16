@@ -31,16 +31,10 @@ public class DoanhThuService {
     @Autowired
     private ThanhToanCuuHoMapper thanhToanCuuHoMapper;
 
-    // =========================
-    // TỔNG DOANH THU
-    // =========================
     public BigDecimal layTongDoanhThu() {
         return doanhThuRepository.getTongDoanhThu();
     }
 
-    // =========================
-    // LIST DOANH THU (ENTITY -> DTO luôn)
-    // =========================
     public List<HoaDonResponseDTO> layDanhSachDoanhThu() {
 
     List<HoaDon> list = hoaDonRepository.findAllWithPayments();
@@ -82,9 +76,6 @@ public class DoanhThuService {
     }).toList();
 }
 
-    // =========================
-    // CHI TIẾT HÓA ĐƠN (MODAL)
-    // =========================
     public HoaDonDetailDTO getChiTietHoaDon(Long hoaDonId) {
 
     HoaDon hd = hoaDonRepository.findDetailById(hoaDonId)

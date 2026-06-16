@@ -171,7 +171,7 @@ class MapViewModel : ViewModel() {
             val fullUrl = if (path.startsWith("http")) path else "${AppConfig.HTTP_BASE_URL}$path"
             android.util.Log.d("REALTIME_BUG", "📸 Đường dẫn tải Icon: $fullUrl")
 
-            val bmp = loadMarkerIcon(context, fullUrl, suCo.mucDoNghiemTrong)
+            val bmp = loadMarkerIcon(context, fullUrl, suCo.mucDoSuCo)
             if (bmp != null) {
                 val currentWithIcons = _suCoWithIcons.value.toMutableList()
                 currentWithIcons.removeAll { it.first.id == suCo.id }
@@ -267,7 +267,7 @@ class MapViewModel : ViewModel() {
             return
         }
 
-        loadMarkerIcon(context, fullUrl, suCo.mucDoNghiemTrong)?.let { bmp ->
+        loadMarkerIcon(context, fullUrl, suCo.mucDoSuCo)?.let { bmp ->
             val currentList = _suCoWithIcons.value.toMutableList()
             currentList.removeAll { it.first.id == suCo.id }
             currentList.add(suCo to bmp)
@@ -301,13 +301,15 @@ class MapViewModel : ViewModel() {
                     val canvas = Canvas(output)
                     val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-                    val strokeColor = when (mucDo?.uppercase()) {
-                        "HIGH" -> Color.RED
-                        "MEDIUM" -> Color.rgb(255, 165, 0) // Màu Cam chuẩn xác
-                        "LOW" -> Color.GREEN
-                        else -> Color.WHITE
+                    // 🌟 SỬA ĐỒNG BỘ MÀU SẮC VỚI WEB ADMIN: Thay đổi từ trắng sang xám cho trường hợp NONE
+                    val strokeColor = when (mucDo?.uppercase()?.trim()) {
+                        "HIGH" -> Color.RED                       // Đỏ nguy hiểm
+                        "MEDIUM" -> Color.rgb(241, 196, 15)      // Vàng/Cam sáng chuẩn (#f1c40f)
+                        "LOW" -> Color.rgb(46, 204, 113)         // Xanh lá mượt (#2ecc71)
+                        else -> Color.rgb(148, 163, 184)         // 🌟 MÀU XÁM chuẩn thương hiệu cho mức độ NONE (#94a3b8)
                     }
 
+                    // Tiến hành vẽ cái đuôi ghim nhọn chỉ xuống bản đồ
                     val path = Path().apply {
                         moveTo(centerX - 22f, size - 28f)
                         lineTo(centerX + 22f, size - 28f)
@@ -316,21 +318,28 @@ class MapViewModel : ViewModel() {
                     }
                     paint.color = strokeColor
                     canvas.drawPath(path, paint)
+
+                    // Vẽ vòng viền tròn ngoài ăn theo màu mức độ nguy hiểm
                     canvas.drawCircle(centerX, centerX, circleRadius + strokeThickness, paint)
+
+                    // Vẽ nền ruột trắng bên trong để làm nổi bật Icon sự cố giống hệt Web
                     paint.color = Color.WHITE
                     canvas.drawCircle(centerX, centerX, circleRadius, paint)
 
+                    // Đè icon png của sự cố (Ví dụ: icon ngập lụt, tai nạn) vào chính giữa vòng tròn
                     val innerSize = ((circleRadius - padding) * 2).toInt()
                     val left = (centerX - (innerSize / 2)).toInt()
                     val top = (centerX - (innerSize / 2)).toInt()
                     canvas.drawBitmap(originalBitmap, null, Rect(left, top, left + innerSize, top + innerSize), paint)
+
                     output
                 }
-            } catch (e: Exception) { null }
+            } catch (e: Exception) {
+                android.util.Log.e("REALTIME_BUG", "💥 Lỗi tại hàm dựng Canvas Bitmap: ${e.message}")
+                null
+            }
         }
     }
-
-
     // --- 8. LOGIC ĐIỀU HƯỚNG TÌM ĐƯỜNG OSRM COOP ---
 
     fun setTravelMode(mode: String) { _travelMode.value = mode }

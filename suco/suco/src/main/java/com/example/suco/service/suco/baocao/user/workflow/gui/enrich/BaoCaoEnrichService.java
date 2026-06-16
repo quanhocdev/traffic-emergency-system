@@ -37,9 +37,7 @@ public class BaoCaoEnrichService {
             String base64
     ) {
 
-        // =========================
-        // GEO ENRICHMENT
-        // =========================
+
         String address = geocodingService.getAddress(
                 report.getViDo(),
                 report.getKinhDo()

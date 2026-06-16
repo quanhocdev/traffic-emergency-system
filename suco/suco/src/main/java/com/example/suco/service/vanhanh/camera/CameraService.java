@@ -161,7 +161,6 @@ private static final Logger log = LoggerFactory.getLogger(CameraService.class);
     @Transactional
     public void deleteCamera(Long id) {
         cameraRepository.deleteById(id);
-        // 🔥 Bắn Socket thông báo xóa cho Android ẩn Marker
         messagingTemplate.convertAndSend("/topic/camera-delete", id);
     }
 
