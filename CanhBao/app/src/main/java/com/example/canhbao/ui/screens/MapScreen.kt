@@ -185,7 +185,7 @@ fun MapScreen(
 
         // Khởi chạy lại kết nối đàm thoại và socket nếu bị sập nửa chừng
         callViewModel.start(context, stompClient, webrtcViewModel)
-        mapViewModel.startRealtimeSocket(context, stompClient)
+        mapViewModel.startRealtimeSocket(context)
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
