@@ -257,25 +257,6 @@ fun ChiTietBaoCaoScreen(
                         }
                     }
                 }
-
-                // ================= NÚT HỦY BÁO CÁO SỰ CỐ =================
-                // Xuất hiện khi sự cố đang ở trạng thái chờ tiếp nhận xử lý
-                if (suCoDetail.trangThaiXuLy == "CHO_XU_LY" || suCoDetail.trangThaiXuLy == "PENDING") {
-                    OutlinedButton(
-                        onClick = {
-                            viewModel.cancelSuCo(suCoDetail.id) // Gọi hàm xóa/hủy sự cố tương tự SOS
-                            navController.popBackStack()
-                        },
-                        modifier = Modifier.fillMaxWidth().height(48.dp).padding(top = 8.dp),
-                        border = BorderStroke(1.5.dp, CancelRed),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = CancelRed),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Icon(Icons.Default.Delete, null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Hủy Báo Cáo Sự Cố", fontWeight = FontWeight.Bold)
-                    }
-                }
             }
         }
     }
