@@ -18,7 +18,7 @@ public class TheoDoiSuCoDetailResponseDTO {
 
     private String trangThaiXuLy;
 
-    private Integer doTinCay;
+    private Integer doTinCay;   
 
     private Long idTruSoTiepNhan;
 

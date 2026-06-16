@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.suco.baocao.TheoDoiBaoCaoResponseDTO
+import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoDetailResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
 import com.google.android.gms.tasks.Tasks
@@ -21,7 +21,7 @@ import ua.naiksoftware.stomp.StompClient
 sealed class TheoDoiBaoCaoUiState {
     object Loading : TheoDoiBaoCaoUiState()
     data class Success(
-        val data: List<TheoDoiBaoCaoResponseDTO>
+        val data: List<TheoDoiSuCoDetailResponseDTO>
     ) : TheoDoiBaoCaoUiState()
 
     data class Error(
@@ -86,35 +86,50 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
 
     @SuppressLint("CheckResult")
     private fun connectWebSocket() {
+        if (mStompClient?.isConnected == true) return
 
-        if (mStompClient?.isConnected == true)
-            return
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
 
         mStompClient = Stomp.over(
             Stomp.ConnectionProvider.OKHTTP,
-            "${AppConfig.WS_BASE_URL}/ws-suco/websocket"
+            "${AppConfig.WS_BASE_URL}/ws-suco"
         )
 
-        listOf(
-            "/topic/su-co",
-            "/topic/user/history"
-        ).forEach { topic ->
+        // 🌟 Lắng nghe vòng đời kết nối trước để đảm bảo an toàn đường truyền
+        mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
+            when (lifecycleEvent.type) {
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> {
+                    Log.d("WebSocket_BaoCao", "🟢 Kết nối thành công! Bắt đầu subscribe...")
 
-            mStompClient
-                ?.topic(topic)
-                ?.subscribe({
+                    // Kênh 1: Sự cố chung công khai trên bản đồ
+                    mStompClient?.topic("/topic/su-co")?.subscribe({
+                        Log.d("WebSocket_BaoCao", "🔄 Nhận tín hiệu sự cố chung -> Tải lại API")
+                        loadDataFromApi()
+                    }, {
+                        Log.e("WebSocket_BaoCao", "Lỗi kênh /topic/su-co: ${it.message}")
+                    })
 
-                    loadDataFromApi()
-
-                }, {
-
-                    Log.e(
-                        "WebSocket",
-                        "Error: ${it.message}"
-                    )
-                })
+                    // Kênh 2: Lịch sử cá nhân của người báo (Cần ghép UID động giống bên SOS)
+                    uid?.let { id ->
+                        mStompClient?.topic("/topic/user/$id/history")?.subscribe({
+                            Log.d("WebSocket_BaoCao", "🔄 Nhận tín hiệu lịch sử cá nhân -> Tải lại API")
+                            loadDataFromApi()
+                        }, {
+                            Log.e("WebSocket_BaoCao", "Lỗi kênh history cá nhân: ${it.message}")
+                        })
+                    }
+                }
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
+                    Log.e("WebSocket_BaoCao", "❌ Lỗi kết nối WebSocket: ${lifecycleEvent.exception?.message}")
+                }
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.CLOSED -> {
+                    Log.w("WebSocket_BaoCao", "🔌 Kết nối WebSocket đã đóng")
+                }
+                else -> {}
+            }
         }
 
+        // Kích hoạt kết nối sau khi đã thiết lập lắng nghe vòng đời
         mStompClient?.connect()
     }
 

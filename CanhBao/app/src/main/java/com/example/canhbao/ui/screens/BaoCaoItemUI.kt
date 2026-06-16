@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.canhbao.data.model.suco.baocao.TheoDoiBaoCaoResponseDTO
+import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoDetailResponseDTO
 import com.example.canhbao.data.network.AppConfig
 
 // Định nghĩa bảng màu Xanh nước biển chủ đạo cho phần Báo cáo
@@ -33,7 +33,7 @@ private val CancelRed = Color(0xFFDC2626)
 
 @Composable
 fun BaoCaoItemUI(
-    item: TheoDoiBaoCaoResponseDTO,
+    item: TheoDoiSuCoDetailResponseDTO,
     onCancelClick: () -> Unit
 ) {
     val displayDate = try {
@@ -199,7 +199,7 @@ fun BaoCaoItemUI(
             }
 
             // --- PHẦN 3: NÚT BẤM HÀNH ĐỘNG (NẾU CÓ) ---
-            if (item.trangThaiXuLy == "CHO_XU_LY" && item.trangThaiDuyet == "AI_APPROVED") {
+            if (item.trangThaiXuLy == "CHO_XU_LY" || item.trangThaiXuLy == "DA_TIEP_NHAN") {
                 Spacer(Modifier.height(14.dp))
 
                 OutlinedButton(

@@ -47,7 +47,13 @@ interface BaoCaoSuCoApi {
     @GET("/api/su-co/theo-doi")
     suspend fun getTheoDoiSuCo(
         @Header("Authorization") token: String
-    ): List<TheoDoiBaoCaoResponseDTO>
+    ): List<TheoDoiSuCoItemResponseDTO>
+
+    @GET("/api/su-co/theo-doi/{id}")
+    suspend fun getTheoDoiSuCoDetail(
+        @Header("Authorization") token: String,
+        @Path("id") id: Long
+    ): TheoDoiSuCoDetailResponseDTO
 
     @GET("/api/tru-so/all")
     suspend fun getAllTruSo(): List<TruSoMapDto>

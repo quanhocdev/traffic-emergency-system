@@ -93,17 +93,32 @@ class DoiTienViewModel : ViewModel() {
 
     private fun connectUserSocket(uid: String) {
         if (mStompClient?.isConnected == true) return
-        mStompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, "${AppConfig.WS_BASE_URL}/ws-suco/websocket")
 
-        // Lắng nghe điểm cá nhân
-        mStompClient?.topic("/topic/user-stats/$uid")?.subscribe { userDetail = Gson().fromJson(it.payload, SuCoUserDto::class.java) }
+        mStompClient = Stomp.over(
+            Stomp.ConnectionProvider.OKHTTP,
+            "${AppConfig.WS_BASE_URL}/ws-suco"
+        )
 
-        // Lắng nghe TỔNG QUỸ BIẾN ĐỘNG REALTIME
-        // Trong connectUserSocket
-        mStompClient?.topic("/topic/public-fund")?.subscribe {
-            // Gson sẽ tự động map JSON vào ThongKeQuyDto,
-            // bên trong đó lichSuVinhDanh sẽ là List<DoiTienDtoRealtime>
-            publicFundStats = Gson().fromJson(it.payload, ThongKeQuyDto::class.java)
+        mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
+            when (lifecycleEvent.type) {
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> {
+                    android.util.Log.d("WebSocket_DoiTien", "🟢 Đổi Tiền Connected! Đang đăng ký cổng...")
+
+                    // 1. Lắng nghe điểm cá nhân biến động
+                    mStompClient?.topic("/topic/user-stats/$uid")?.subscribe({ topicMessage ->
+                        userDetail = Gson().fromJson(topicMessage.payload, SuCoUserDto::class.java)
+                    }, { it.printStackTrace() })
+
+                    // 2. Lắng nghe TỔNG QUỸ BIẾN ĐỘNG REALTIME
+                    mStompClient?.topic("/topic/public-fund")?.subscribe({ topicMessage ->
+                        publicFundStats = Gson().fromJson(topicMessage.payload, ThongKeQuyDto::class.java)
+                    }, { it.printStackTrace() })
+                }
+                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
+                    android.util.Log.e("WebSocket_DoiTien", "❌ Lỗi mạng: ${lifecycleEvent.exception?.message}")
+                }
+                else -> {}
+            }
         }
 
         mStompClient?.connect()
