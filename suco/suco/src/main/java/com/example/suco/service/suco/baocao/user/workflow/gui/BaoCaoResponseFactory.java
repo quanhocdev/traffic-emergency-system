@@ -1,4 +1,4 @@
-package com.example.suco.service.suco.baocao.user.workflow.gui.response;
+package com.example.suco.service.suco.baocao.user.workflow.gui;
 
 import com.example.suco.dto.suco.baocao.ai.AiResponse;
 import com.example.suco.dto.suco.baocao.ai.AiVerifyResult;

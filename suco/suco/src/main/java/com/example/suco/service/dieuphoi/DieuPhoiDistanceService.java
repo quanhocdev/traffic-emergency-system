@@ -1,4 +1,4 @@
-package com.example.suco.service.dieuphoi.distance;
+package com.example.suco.service.dieuphoi;
 
 import org.springframework.stereotype.Service;
 

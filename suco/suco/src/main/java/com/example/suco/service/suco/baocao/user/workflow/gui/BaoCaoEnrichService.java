@@ -1,4 +1,4 @@
-package com.example.suco.service.suco.baocao.user.workflow.gui.enrich;
+package com.example.suco.service.suco.baocao.user.workflow.gui;
 
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;

@@ -1,12 +1,10 @@
-package com.example.suco.service.dieuphoi.engine;
+package com.example.suco.service.dieuphoi;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
 import com.example.suco.model.enums.TrangThaiHoatDongTruSo;
 import com.example.suco.model.enums.TrangThaiXuLy; 
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
-import com.example.suco.service.dieuphoi.distance.DieuPhoiDistanceService;
-import com.example.suco.service.dieuphoi.geohash.GeoHashService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

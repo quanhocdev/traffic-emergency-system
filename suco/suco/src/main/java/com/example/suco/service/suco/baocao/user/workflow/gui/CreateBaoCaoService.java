@@ -1,4 +1,4 @@
-package com.example.suco.service.suco.baocao.user.workflow.gui.create;
+package com.example.suco.service.suco.baocao.user.workflow.gui;
 
 import com.example.suco.dto.suco.baocao.user.SuCoRequestDTO;
 import com.example.suco.model.BaoCaoSuCo;
