@@ -123,7 +123,7 @@ fun TinHieuItemUI(
             )
         }
         // 4. Kiểm tra trạng thái để hiển thị nút Hủy SOS
-        if (item.trangThai == "CHO_XU_LY" || item.trangThai == "DA_TIEP_NHAN") {
+        if (item.trangThai == "DA_TIEP_NHAN") {
             Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedButton(

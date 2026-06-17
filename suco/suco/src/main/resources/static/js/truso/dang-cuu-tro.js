@@ -20,37 +20,30 @@ function formatTime(iso) {
   }
 }
 
-// --- HÀM FORMAT ITEM (BỊ THIẾU TRONG CODE CŨ CỦA BẠN) ---
 function formatItem(s, type) {
   const upperType = String(type).toUpperCase().trim();
   const timeRaw = s.thoiGianTao || s.createdAt || s.thoiGian;
+
   let statusRaw =
     upperType === "SOS"
       ? s.trangThai || s.trangThaiXuLy
       : s.trangThaiXuLy || s.trangThai;
-
   let statusClean = String(statusRaw || "")
     .toUpperCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/Đ/g, "D")
-    .trim()
-    .replace(/\s+/g, "_");
+    .trim();
 
-  // Quy chuẩn các trạng thái đang xử lý của SOS về DANG_XU_LY để bộ lọc render nhận diện được
-  if (
-    upperType === "SOS" &&
-    (statusClean === "DA_TIEP_NHAN" ||
-      statusClean === "DANG_CUU_TRO" ||
-      statusClean === "DANG_DI_CHUYEN")
-  ) {
-    statusClean = "DANG_XU_LY";
-  }
-
+  // 🌟 SỬA TẠI ĐÂY: Ưu tiên lấy trường VIP trực tiếp từ Object SOS của Backend trả về
   let isVipUser = false;
   if (upperType === "SOS") {
-    if (s.nguoiGui) isVipUser = s.nguoiGui.vip || s.nguoiGui.totalPoints >= 100;
-    else if (s.user) isVipUser = s.user.vip;
+    // Check xem Server trả về trường `isVip` hay `vip` (phớt lờ undefined)
+    if (s.isVip !== undefined) {
+      isVipUser = s.isVip;
+    } else if (s.vip !== undefined) {
+      isVipUser = s.vip;
+    } else if (s.user) {
+      // Phương án dự phòng nếu Backend bọc trong Object User
+      isVipUser = s.user.isVip || s.user.vip || false;
+    }
   }
 
   return {
@@ -64,15 +57,13 @@ function formatItem(s, type) {
         : s.moTa || "Sự cố đường bộ",
     trangThaiXuLy: statusClean,
     itemType: upperType,
-    isVip: isVipUser,
+    isVip: isVipUser, // <--- Lúc này biến này sẽ mang giá trị true/false chuẩn xác
     hoaDon: upperType === "SOS" ? s.hoaDon || null : null,
     thanhToan: upperType === "SOS" ? s.thanhToan || null : null,
     reporterUid:
       upperType === "SOS"
-        ? s.reporterUid || (s.nguoiGui ? s.nguoiGui.uid : null)
+        ? s.reporterUid || (s.user ? s.user.uid : null)
         : s.userUid || null,
-    userPoints:
-      upperType === "SOS" ? (s.nguoiGui ? s.nguoiGui.totalPoints : 0) : 0,
     _raw: s,
   };
 }
@@ -230,15 +221,20 @@ function closePayment() {
   document.getElementById("overlay").style.display = "none";
 }
 
-async function submitPayment(e) {
-  if (e) e.preventDefault();
+// SỬA LẠI HÀM TRONG FILE JS CỦA BẠN NHƯ SAU:
+async function submitPayment() {
+  // Đã bỏ hoàn toàn tham số e và e.preventDefault() để tránh lỗi chặn sự kiện ngầm
+
+  const amountInput = document.getElementById("pay-amount").value;
 
   const payload = {
-    sosId: currentSosId,
+    sosId: Number(currentSosId),
     noiDungXuLy: document.getElementById("pay-treatment").value,
-    giaThuCong: document.getElementById("pay-amount").value,
-    trusoId: TRUSO_ID,
+    giaThuCong: amountInput ? parseFloat(amountInput) : 0,
   };
+
+  console.log("Payload chuẩn bị gửi đi:", payload);
+
   try {
     const res = await fetch("/truso/hoa-don/tao", {
       method: "POST",
@@ -259,12 +255,14 @@ async function submitPayment(e) {
         renderData();
       }
       loadActiveRescues();
+    } else {
+      const errorText = await res.text();
+      alert(`Lỗi từ Server (${res.status}): ${errorText}`);
     }
   } catch (err) {
     console.error("Lỗi gửi hóa đơn:", err);
   }
 }
-
 function loadActiveRescues() {
   if (!TRUSO_ID || TRUSO_ID === 0) {
     console.error("❌ LỖI: TRUSO_ID chưa được khởi tạo hoặc bằng 0!", TRUSO_ID);
@@ -278,7 +276,26 @@ function loadActiveRescues() {
       return res.json();
     })
     .then((data) => {
+      // 🔽 CHÈN ĐOẠN LOG NÀY VÀO ĐỂ KIỂM TRA TRẠNG THÁI THỰC TẾ 🔽
       console.log("📦 Dữ liệu GỐC (Raw JSON) nhận từ API:", data);
+
+      if (Array.isArray(data)) {
+        console.log("🔍 DANH SÁCH TRẠNG THÁI THỰC TẾ TỪ SERVER:");
+        data.forEach((item) => {
+          console.log(
+            `--- SOS ID #${item.id}: trangThai gốc = "${item.trangThai}", trangThaiXuLy gốc = "${item.trangThaiXuLy}"`,
+          );
+        });
+        // Hiện dạng bảng trong Console cho bạn dễ nhìn tổng quan
+        console.table(
+          data.map((item) => ({
+            id: item.id,
+            trangThai: item.trangThai,
+            trangThaiXuLy: item.trangThaiXuLy,
+          })),
+        );
+      }
+      // 🔼 HẾT ĐOẠN LOG THÊM 🔼
 
       if (!Array.isArray(data)) {
         console.error(
@@ -314,7 +331,6 @@ function loadActiveRescues() {
       );
     });
 }
-
 function renderData() {
   console.log("=== 🛠️ BẮT ĐẦU CHẠY HÀM RENDERDATA ===");
   console.log("Current Filter (Tab đang chọn) =", currentFilter);
@@ -340,7 +356,7 @@ function renderData() {
     const st = String(item.trangThaiXuLy ?? "")
       .trim()
       .toUpperCase();
-    const hopLe = st === "DANG_XU_LY" || st.includes("XU_LY") || st === "";
+    const hopLe = st === "DANG_XU_LY";
 
     if (!hopLe) {
       console.warn(

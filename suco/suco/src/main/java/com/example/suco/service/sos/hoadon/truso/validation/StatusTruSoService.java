@@ -16,9 +16,10 @@ public class StatusTruSoService {
         throw new RuntimeException("SOS không thuộc trụ sở");
     }
 
-    if (!"DANG_XU_LY".equals(sos.getTrangThai())) {
-        throw new RuntimeException("SOS chưa ở trạng thái xử lý");
-    }
+    if (sos.getTrangThai() == null || 
+            !"DANG_XU_LY".equals(String.valueOf(sos.getTrangThai()).toUpperCase().trim())) {
+            throw new RuntimeException("SOS chưa ở trạng thái xử lý");
+        }
 }
 
 }

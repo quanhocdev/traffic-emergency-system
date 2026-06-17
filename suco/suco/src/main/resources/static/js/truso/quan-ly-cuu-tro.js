@@ -62,10 +62,10 @@ function renderSOSItem(sos) {
 
           <div class="btn-group-action d-flex mt-1">
             <button id="btn-accept-${sos.id}" onclick="confirmRescue(${sos.id})" class="btn btn-primary btn-sm shadow-sm me-1">
-              <i class="fa-solid fa-check"></i> Tiếp nhận
+              <i class="fa-solid fa-check"></i> Bắt đầu xử lý
             </button>
             <button id="btn-decline-${sos.id}" onclick="tuChoiTiepNhan(${sos.id})" class="btn btn-outline-secondary btn-sm">
-              <i class="fa-solid fa-xmark"></i> Không tiếp nhận
+              <i class="fa-solid fa-xmark"></i> Không Xử lý
             </button>
           </div>
 
@@ -788,7 +788,7 @@ function doiTrangThaiSuCo(id, status) {
   }
 
   if (status === "DANG_XU_LY") {
-    if (!confirm("Xác nhận Đội cứu trợ XUẤT PHÁT để xử lý sự cố này?")) return;
+    if (!confirm("Xác nhận xử lý sự cố này?")) return;
   } else {
     if (!confirm("Xác nhận sự cố này ĐÃ HOÀN THÀNH xử lý thực tế?")) return;
   }
@@ -865,8 +865,7 @@ function confirmRescue(id) {
     lng = card.getAttribute("data-lng");
   }
 
-  if (!confirm("Xác nhận tiếp nhận cứu trợ và XUẤT PHÁT xử lý ca SOS này?"))
-    return;
+  if (!confirm("Xác nhận xử lý SOS này?")) return;
 
   const btn = document.getElementById("btn-accept-" + id);
   if (btn) {

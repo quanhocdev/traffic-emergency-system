@@ -41,7 +41,7 @@ fun LichSuScreen(
     val mainTabs = listOf("SỰ CỐ", "SOS")
     var selectedStatusTab by remember { mutableIntStateOf(0) }
 
-    val statusFilters = listOf("Đã tiếp nhận", "Chờ xử lý", "Đang xử lý", "Đã xong", "Đã hủy")
+    val statusFilters = listOf("Đã tiếp nhận", "Đang di chuyển ", "Đang xử lý", "Đã xong", "Đã hủy")
 
     LaunchedEffect(Unit) {
         baoCaoViewModel.fetchData()
@@ -131,7 +131,7 @@ fun LichSuScreen(
                             val status = item.trangThaiXuLy?.trim() ?: ""
                             when (selectedStatusTab) {
                                 0 -> status == "Đã tiếp nhận"
-                                1 -> status == "Chờ xử lý"
+                                1 -> status == "Đang di chuyển"
                                 2 -> status == "Đang xử lý"
                                 3 -> status == "Đã hoàn thành" || status == "Đã xong"
                                 4 -> status == "Đã hủy"
@@ -167,7 +167,7 @@ fun LichSuScreen(
                         val filtered = state.data.filter { item ->
                             when (selectedStatusTab) {
                                 0 -> item.trangThai == "DA_TIEP_NHAN"
-                                1 -> item.trangThai == "CHO_XU_LY" || item.trangThai == "PENDING"
+                                1 -> item.trangThai == "DANG_DI_CHUYEN"
                                 2 -> item.trangThai == "DANG_XU_LY"
                                 3 -> item.trangThai == "HOAN_THANH"
                                 4 -> item.trangThai == "HUY_BO"
