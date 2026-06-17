@@ -1,4 +1,4 @@
-package com.example.suco.service.suco.baocao.user.workflow.gui.duplicate;
+package com.example.suco.service.suco.baocao.user.workflow.gui;
 
 import com.example.suco.dto.suco.baocao.ai.AiResponse;
 import com.example.suco.model.BaoCaoSuCo;
@@ -9,8 +9,6 @@ import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.reward.UserRewardService;
 import com.example.suco.service.suco.baocao.system.validation.TrungLapBaoCaoService;
-
-import com.example.suco.service.suco.baocao.user.workflow.gui.response.BaoCaoResponseFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

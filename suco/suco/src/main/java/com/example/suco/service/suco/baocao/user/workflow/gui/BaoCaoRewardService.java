@@ -1,4 +1,4 @@
-package com.example.suco.service.suco.baocao.user.workflow.gui.reward;
+package com.example.suco.service.suco.baocao.user.workflow.gui;
 
 import com.example.suco.model.BaoCaoSuCo;
 

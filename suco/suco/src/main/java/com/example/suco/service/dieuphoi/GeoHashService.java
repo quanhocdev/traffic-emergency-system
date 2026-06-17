@@ -1,4 +1,4 @@
-package com.example.suco.service.dieuphoi.geohash;
+package com.example.suco.service.dieuphoi;
 
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.vanhanh.TruSoRepository;
@@ -6,7 +6,6 @@ import com.example.suco.repository.vanhanh.TruSoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ch.hsr.geohash.GeoHash;
-import com.example.suco.service.dieuphoi.distance.DieuPhoiDistanceService;
 
 import java.util.*;
 import org.slf4j.Logger;

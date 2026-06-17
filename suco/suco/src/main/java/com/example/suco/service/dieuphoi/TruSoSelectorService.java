@@ -1,10 +1,9 @@
-package com.example.suco.service.dieuphoi.decision;
+package com.example.suco.service.dieuphoi;
 
 import com.example.suco.model.TruSo;
 import com.example.suco.model.enums.TrangThaiHoatDongTruSo;
 import com.example.suco.repository.vanhanh.TruSoRepository;
-import com.example.suco.service.dieuphoi.distance.DieuPhoiDistanceService;
-import com.example.suco.service.dieuphoi.geohash.GeoHashService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
