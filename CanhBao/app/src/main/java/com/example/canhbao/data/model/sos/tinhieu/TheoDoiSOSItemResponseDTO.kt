@@ -7,7 +7,7 @@ data class TheoDoiSOSItemResponseDTO (
 
     val trangThai: String?,
 
-    val tenTruSoTiepNhan: String?,
+    val tenTruSo: String?,
 
     val createdAt: String?
 

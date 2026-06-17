@@ -41,7 +41,7 @@ public class UserService {
 
     private void populatePackageInfo(List<User> users) {
         for (User user : users) {
-            // Tìm gói đang ACTIVE của user
+            // Tìm gói ACTIVE của user
             var activePackage = muaGoiRepository.findFirstByUserIdAndTrangThai(user.getUid(), "ACTIVE");
             if (activePackage.isPresent()) {
                 String tenGoi = goiRepository.findById(activePackage.get().getGoiId())
@@ -63,15 +63,8 @@ public class UserService {
             userRepository.save(user);
         });
     }
-    // Thêm hàm này vào UserService
 public User getUserInfo(String uid) {
     return userRepository.findById(uid).map(user -> {
-
-System.out.println("=== USER FROM DB ===");
-System.out.println("UID: " + user.getUid());
-System.out.println("POINTS: " + user.getTotalPoints());
-System.out.println("SPAM: " + user.getSpamCount());
-
         var activePackage = muaGoiRepository.findFirstByUserIdAndTrangThai(user.getUid(), "ACTIVE");
 
         if (activePackage.isPresent()) {

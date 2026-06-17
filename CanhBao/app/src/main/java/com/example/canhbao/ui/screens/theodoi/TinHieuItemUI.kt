@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
@@ -33,7 +34,8 @@ private val TextGray = Color(0xFF6B7280)
 @Composable
 fun TinHieuItemUI(
     item: TheoDoiSOSItemResponseDTO,
-    onDetailClick: (Long) -> Unit
+    onDetailClick: (Long) -> Unit,
+    onCancelClick: (Long) -> Unit
 ) {
     val itemId = item.id ?: return
 
@@ -95,7 +97,7 @@ fun TinHieuItemUI(
                     Icon(Icons.Default.Home, null, tint = TextGray, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(4.dp))
                     Text(
-                        text = "Trạm: ${item.tenTruSoTiepNhan ?: "Đang tìm kiếm..."}",
+                        text = "Trạm: ${item.tenTruSo ?: "Đang tìm kiếm..."}",
                         color = TextGray,
                         fontSize = 12.sp
                     )
@@ -119,6 +121,24 @@ fun TinHieuItemUI(
                 tint = Color.LightGray,
                 modifier = Modifier.size(16.dp).padding(end = 4.dp)
             )
+        }
+        // 4. Kiểm tra trạng thái để hiển thị nút Hủy SOS
+        if (item.trangThai == "CHO_XU_LY" || item.trangThai == "DA_TIEP_NHAN") {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = { onCancelClick(itemId) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(36.dp),
+                border = BorderStroke(1.dp, PrimaryRed),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = PrimaryRed),
+                shape = RoundedCornerShape(6.dp)
+            ) {
+                Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Hủy tín hiệu", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            }
         }
     }
 }
