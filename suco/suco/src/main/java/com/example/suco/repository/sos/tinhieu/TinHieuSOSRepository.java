@@ -60,4 +60,7 @@ public interface TinHieuSOSRepository extends JpaRepository<TinHieuSOS, Long> {
     default List<TinHieuSOS> findHistoryByTruSo(Long idTruSo) {
         return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.HOAN_THANH);
     }
+    default List<TinHieuSOS> findCancelByTruSo(Long idTruSo) {
+        return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.HUY_BO);
+    }
 }

@@ -33,23 +33,23 @@ public class PageTruSoController {
     }
 
     @GetMapping("/da-tiep-nhan")
-    public String sosDaTiepNhan(HttpSession session, Model model) {
+    public String daTiepNhan(HttpSession session, Model model) {
         if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
         Object truSo = session.getAttribute("currentTruSo");
         model.addAttribute("truSo", truSo);
         return "truso/da-tiep-nhan"; // Tab 1
     }
 
-    @GetMapping("/cho-xu-ly")
-    public String quanLyCuuTro(HttpSession session, Model model) {
+    @GetMapping("/dang-di-chuyen")
+    public String dangDiChuyen(HttpSession session, Model model) {
         if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
         Object truSo = session.getAttribute("currentTruSo");
         model.addAttribute("truSo", truSo);
-        return "truso/cho-xu-ly"; // Tab 2
+        return "truso/dang-di-chuyen"; // Tab 2
     }
 
     @GetMapping("/dang-xu-ly")
-    public String dangCuuTro(HttpSession session, Model model) {
+    public String dangXuLy(HttpSession session, Model model) {
         if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
         Object truSo = session.getAttribute("currentTruSo");
         model.addAttribute("truSo", truSo);
@@ -57,11 +57,18 @@ public class PageTruSoController {
     }
 
     @GetMapping("/da-xu-ly")
-    public String lichSuCuuTro(HttpSession session, Model model) {
+    public String lichSuXuLy(HttpSession session, Model model) {
         if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
         Object truSo = session.getAttribute("currentTruSo");
         model.addAttribute("truSo", truSo);
         return "truso/da-xu-ly"; // Tab 4
+    }
+    @GetMapping("/huy-xu-ly")
+    public String lichSuHuyXuLy(HttpSession session, Model model) {
+        if (session.getAttribute("currentTruSo") == null) return "redirect:/truso/login";
+        Object truSo = session.getAttribute("currentTruSo");
+        model.addAttribute("truSo", truSo);
+        return "truso/huy-xu-ly"; // Tab 5
     }
 
 }

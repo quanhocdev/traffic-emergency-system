@@ -33,8 +33,8 @@ public class PageSOSController {
                 .toList();
     }
 
-    @GetMapping("/api/sos/cho-xu-ly")
-    public List<TruSoSOSDetailResponseDTO> getSosChoCuuTro(HttpSession session) {
+    @GetMapping("/api/sos/dang-di-chuyen")
+    public List<TruSoSOSDetailResponseDTO> getSosDangDiChuyen(HttpSession session) {
         TruSo current = (TruSo) session.getAttribute("currentTruSo");
         if (current == null) return List.of();
         
@@ -46,7 +46,7 @@ public class PageSOSController {
     }
 
     @GetMapping("/api/sos/dang-xu-ly")
-    public List<TruSoSOSDetailResponseDTO> sosCuaToi(HttpSession session) {
+    public List<TruSoSOSDetailResponseDTO> getSosDangXuLy(HttpSession session) {
         TruSo current = (TruSo) session.getAttribute("currentTruSo");
         if (current == null) return List.of();
 
@@ -65,6 +65,17 @@ public class PageSOSController {
         List<TinHieuSOS> lichSuEntities = tinHieuSOSRepository.findHistoryByTruSo(current.getId());
         
         return lichSuEntities.stream()
+                .map(tinHieuMapper::toTruSoDetailDto)
+                .collect(Collectors.toList());
+    }
+    @GetMapping("/api/sos/huy-xu-ly")
+    public List<TruSoSOSDetailResponseDTO> getSosHuyXuLy(HttpSession session) {
+        TruSo current = (TruSo) session.getAttribute("currentTruSo");
+        if (current == null) return List.of();
+        
+        List<TinHieuSOS> huyXuLyEntities = tinHieuSOSRepository.findCancelByTruSo(current.getId());
+        
+        return huyXuLyEntities.stream()
                 .map(tinHieuMapper::toTruSoDetailDto)
                 .collect(Collectors.toList());
     }
