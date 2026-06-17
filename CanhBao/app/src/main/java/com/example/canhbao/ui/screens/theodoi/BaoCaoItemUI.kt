@@ -58,7 +58,6 @@ fun BaoCaoItemUI(
         border = BorderStroke(1.dp, BorderBlue),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
-        // Chuyển sang bọc Column bên ngoài để nếu có nút Hủy sẽ xếp xuống hàng dưới
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -140,7 +139,6 @@ fun BaoCaoItemUI(
 
              if (item.trangThaiXuLy == "Chờ xử lý" || item.trangThaiXuLy == "Đã tiếp nhận") {
                 Spacer(modifier = Modifier.height(8.dp))
-
                 OutlinedButton(
                     onClick = { onCancelClick(itemId) },
                     modifier = Modifier
@@ -152,7 +150,7 @@ fun BaoCaoItemUI(
                 ) {
                     Icon(Icons.Default.Delete, null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Hủy Báo Cáo", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text("Hủy báo cáo", fontWeight = FontWeight.Bold, fontSize = 13.sp)
                 }
             }
         }

@@ -132,7 +132,7 @@ fun LichSuScreen(
                             when (selectedStatusTab) {
                                 0 -> status == "Đã tiếp nhận"
                                 1 -> status == "Chờ xử lý"
-                                2 -> status == "Đang xử lý"  // 🎯 Khớp 100% với log "ID: 51 -> Trang thai thuc te: Đang xử lý"
+                                2 -> status == "Đang xử lý"
                                 3 -> status == "Đã hoàn thành" || status == "Đã xong"
                                 4 -> status == "Đã hủy"
                                 else -> true
@@ -148,10 +148,9 @@ fun LichSuScreen(
                                     BaoCaoItemUI(
                                         item = item,
                                         onDetailClick = { suCoId ->
-                                            navController.navigate("chi_tiet_bao_cao/$suCoId")
+                                            navController.navigate("Chi_tiet_bao_cao/$suCoId")
                                         },
                                         onCancelClick = { id ->
-                                            // Gọi hàm hủy từ viewModel giống như bạn làm ở màn chi tiết
                                             baoCaoViewModel.cancelSuCo(id)
                                         }
                                     )
@@ -182,7 +181,11 @@ fun LichSuScreen(
                                         item = item,
                                         onDetailClick = { sosId ->
                                             navController.navigate("chi_tiet_sos/$sosId")
+                                        },
+                                        onCancelClick = { id ->
+                                            tinHieuViewModel.cancelSOS(id)
                                         }
+
                                     )
                                 }
                             }
