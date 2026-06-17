@@ -32,18 +32,21 @@ function formatItem(s, type) {
     .toUpperCase()
     .trim();
 
-  // 🌟 SỬA TẠI ĐÂY: Ưu tiên lấy trường VIP trực tiếp từ Object SOS của Backend trả về
   let isVipUser = false;
-  if (upperType === "SOS") {
-    // Check xem Server trả về trường `isVip` hay `vip` (phớt lờ undefined)
-    if (s.isVip !== undefined) {
-      isVipUser = s.isVip;
-    } else if (s.vip !== undefined) {
-      isVipUser = s.vip;
-    } else if (s.user) {
-      // Phương án dự phòng nếu Backend bọc trong Object User
-      isVipUser = s.user.isVip || s.user.vip || false;
-    }
+  let userName = "Chưa rõ tên";
+  let userEmail = "Không có email";
+
+  // 🌟 ĐỒNG BỘ TRIỆT ĐỂ: B bóc tách đúng theo UserInfoResponseDTO mới từ Backend
+  const userData = s.user || null;
+
+  if (userData) {
+    isVipUser = userData.vip === true; // Thuộc tính 'vip' kiểu boolean từ DTO mới
+    userName = userData.name || "Ẩn danh";
+    userEmail = userData.email || "Không có email";
+  } else {
+    // Dự phòng nếu dữ liệu cũ nằm phẳng ở ngoài
+    isVipUser = s.isVip || s.vip || false;
+    userName = s.userName || "Ẩn danh";
   }
 
   return {
@@ -57,43 +60,34 @@ function formatItem(s, type) {
         : s.moTa || "Sự cố đường bộ",
     trangThaiXuLy: statusClean,
     itemType: upperType,
-    isVip: isVipUser, // <--- Lúc này biến này sẽ mang giá trị true/false chuẩn xác
+    isVip: isVipUser,
+    userName: userName,
+    userEmail: userEmail,
     hoaDon: upperType === "SOS" ? s.hoaDon || null : null,
     thanhToan: upperType === "SOS" ? s.thanhToan || null : null,
-    reporterUid:
-      upperType === "SOS"
-        ? s.reporterUid || (s.user ? s.user.uid : null)
-        : s.userUid || null,
+    // 🌟 LƯU Ý: Giữ lại trường s.userUid hoặc s.reporterUid gốc từ thực thể SOS (nếu có)
+    // để làm kênh định danh cuộc gọi WebRTC, tách biệt hoàn toàn khỏi Hóa Đơn DTO
+    reporterUid: s.reporterUid || s.userUid || s.userId || null,
     _raw: s,
   };
 }
 
-// 1. Sửa hàm render để hiển thị giao diện động chuẩn xác
 function renderRescueItem(sos) {
-  if (!sos.id) {
-    console.error("renderRescueItem: Missing ID!", sos);
-  }
+  if (!sos.id) console.error("renderRescueItem: Thiếu ID!", sos);
 
   const displayLocation =
     sos._raw?.diaChi || `${sos.viDo || ""}, ${sos.kinhDo || ""}`;
-  const points = sos.userPoints || 0;
   const userUid = sos.reporterUid;
 
-  // --- LOGIC NÚT GỌI ĐIỆN ---
-  let callBtn = "";
-  if (userUid) {
-    callBtn = `
-          <button class="btn btn-sm btn-primary mb-2 w-100" onclick="startCallWithUser('${userUid}')">
-              <i class="fa-solid fa-phone"></i> Gọi cho khách
-          </button>`;
-  } else {
-    callBtn = `
-          <button class="btn btn-sm btn-outline-secondary mb-2 w-100" disabled>
-              <i class="fa-solid fa-user-slash"></i> Ẩn danh
-          </button>`;
-  }
+  // Nút gọi đàm thoại WebRTC qua Android
+  let callBtn = userUid
+    ? `<button class="btn btn-sm btn-primary mb-2 w-100" onclick="startCallWithUser('${userUid}')">
+          <i class="fa-solid fa-phone"></i> Gọi đàm thoại
+       </button>`
+    : `<button class="btn btn-sm btn-outline-secondary mb-2 w-100" disabled>
+          <i class="fa-solid fa-user-slash"></i> Không có UID gọi
+       </button>`;
 
-  // --- LOGIC NÚT HÀNH ĐỘNG (XỬ LÝ / TẠO HÓA ĐƠN) ---
   let actionBtn = "";
   if (sos.itemType === "SUCO") {
     actionBtn = `
@@ -105,7 +99,10 @@ function renderRescueItem(sos) {
           </button>`;
   } else {
     if (sos.hoaDon) {
-      if (sos.hoaDon.trangThai === "PAID") {
+      if (
+        sos.hoaDon.trangThai === "PAID" ||
+        sos.hoaDon.trangThai === "SUCCESS"
+      ) {
         actionBtn = `
               <button class="btn btn-sm btn-primary w-100" onclick="completeRescue(${sos.id || 0}, '${sos.itemType}')">
                   <i class="fa-solid fa-check-double"></i> Hoàn thành
@@ -113,7 +110,7 @@ function renderRescueItem(sos) {
       } else {
         actionBtn = `
               <button class="btn btn-sm btn-outline-secondary w-100" disabled>
-                  <i class="fa-solid fa-hourglass-half fa-spin"></i> Đang đợi trả tiền
+                  <i class="fa-solid fa-hourglass-half fa-spin"></i> Chờ khách trả tiền
               </button>`;
       }
     } else {
@@ -124,23 +121,21 @@ function renderRescueItem(sos) {
     }
   }
 
-  const totalActions = callBtn + actionBtn;
-
+  // Giao diện thẻ hiển thị danh sách cứu hộ
   return `
       <div class="card-sos" id="rescue-${sos.id}" data-item-type="${sos.itemType}">
-          <span class="badge bg-warning text-dark me-2">
-              <i class="fa-solid fa-star"></i> ${points}
-              ${sos.isVip ? '<i class="fa-solid fa-crown text-danger ms-1"></i>' : ""}
-          </span>
+          <div class="mb-1">
+              ${sos.isVip ? '<span class="badge bg-danger"><i class="fa-solid fa-crown"></i> Hội viên VIP</span>' : '<span class="badge bg-secondary">Khách vãng lai</span>'}
+          </div>
           <div class="flex-grow-1 d-flex flex-column" style="overflow: hidden;">
-              <div class="text-truncate"><strong>Vị trí:</strong> ${displayLocation}</div>
+              <div class="text-truncate"><strong>Khách hàng:</strong> ${sos.userName}</div>
               <div class="text-truncate text-muted small">
-                  <strong>Ghi chú:</strong> ${sos.ghiChu}
+                  <strong>Vị trí:</strong> ${displayLocation}
                   <i class="fa-solid fa-circle-info ms-1" style="cursor: pointer; color: #0d6efd;" onclick="openDetailFromRow(${sos.id})"></i>
               </div>
           </div>
           <div class="ms-auto d-flex flex-column align-items-end" style="min-width: 140px;">
-              ${totalActions}
+              ${callBtn + actionBtn}
           </div>
       </div>`;
 }
@@ -200,16 +195,19 @@ function openPayment(id) {
   const statusArea = document.getElementById("status-area");
   const vipNote = document.getElementById("vip-note");
 
+  // 🌟 HIỂN THỊ TÊN ĐỘNG: Hiển thị đích danh tên khách hàng lên Form hóa đơn
   if (data.isVip) {
-    statusArea.innerHTML = `<span class="vip-badge"><i class="fa-solid fa-crown"></i> Khách hàng VIP (Hệ thống tự tính tiền)</span>`;
+    statusArea.innerHTML = `<span class="vip-badge" style="background-color: #FEF3C7; color: #92400E; padding: 6px 12px; border-radius: 6px; font-weight: bold;"><i class="fa-solid fa-crown"></i> Hội viên VIP: ${data.userName}</span>`;
     amountInput.value = 0;
     amountInput.readOnly = true;
-    vipNote.innerText = "Giá 0đ nếu < hạn mức km. Backend sẽ tự xử lý.";
+    vipNote.innerText =
+      "Giá 0đ do tài khoản thuộc diện miễn phí cứu hộ theo hạn mức.";
   } else {
-    statusArea.innerHTML = `<span class="normal-badge"><i class="fa-solid fa-user"></i> Khách hàng vãng lai</span>`;
+    statusArea.innerHTML = `<span class="normal-badge" style="background-color: #E5E7EB; color: #374151; padding: 6px 12px; border-radius: 6px; font-weight: bold;"><i class="fa-solid fa-user"></i> Khách vãng lai: ${data.userName}</span>`;
     amountInput.value = "";
     amountInput.readOnly = false;
-    vipNote.innerText = "Vui lòng nhập giá thỏa thuận với khách.";
+    vipNote.innerText =
+      "Vui lòng nhập giá chi phí thỏa thuận trực tiếp với khách hàng.";
   }
 
   document.getElementById("overlay").style.display = "block";
@@ -221,10 +219,7 @@ function closePayment() {
   document.getElementById("overlay").style.display = "none";
 }
 
-// SỬA LẠI HÀM TRONG FILE JS CỦA BẠN NHƯ SAU:
 async function submitPayment() {
-  // Đã bỏ hoàn toàn tham số e và e.preventDefault() để tránh lỗi chặn sự kiện ngầm
-
   const amountInput = document.getElementById("pay-amount").value;
 
   const payload = {
@@ -250,10 +245,43 @@ async function submitPayment() {
       const idx = allData.findIndex(
         (it) => it.id === currentSosId && it.itemType === "SOS",
       );
+
       if (idx !== -1) {
+        // 🌟 BẢO VỆ DỮ LIỆU: Giữ lại bản sao user đang chạy tốt ở Frontend
+        const backupUser = allData[idx].userName;
+        const backupEmail = allData[idx].userEmail;
+        const backupPoints = allData[idx].userPoints;
+        const backupIsVip = allData[idx].isVip;
+        const backupUid = allData[idx].reporterUid;
+
+        // Gán hóa đơn mới trả về vào phần tử dữ liệu chung
         allData[idx].hoaDon = hoaDonMoi;
+
+        // 🌟 Kiểm tra: Nếu object hoaDonMoi từ backend bị thiếu hoặc trống thông tin user bọc bên ngoài
+        if (hoaDonMoi.user) {
+          allData[idx].isVip =
+            hoaDonMoi.user.vip === true ||
+            hoaDonMoi.user.isVip === true ||
+            false;
+          allData[idx].userPoints = hoaDonMoi.user.totalPoints || 0;
+          allData[idx].userName =
+            hoaDonMoi.user.name || hoaDonMoi.user.hoTen || "N/A";
+          allData[idx].userEmail = hoaDonMoi.user.email || "N/A";
+          allData[idx].reporterUid =
+            hoaDonMoi.user.id || hoaDonMoi.user.uid || backupUid;
+        } else {
+          // Khôi phục lại bản sao cũ, không cho phép hiển thị đè thành vãng lai/ẩn danh
+          allData[idx].userName = backupUser;
+          allData[idx].userEmail = backupEmail;
+          allData[idx].userPoints = backupPoints;
+          allData[idx].isVip = backupIsVip;
+          allData[idx].reporterUid = backupUid;
+        }
+
         renderData();
       }
+
+      // Tải lại danh sách để đồng bộ trạng thái mới nhất tự động từ DB
       loadActiveRescues();
     } else {
       const errorText = await res.text();
@@ -263,6 +291,7 @@ async function submitPayment() {
     console.error("Lỗi gửi hóa đơn:", err);
   }
 }
+
 function loadActiveRescues() {
   if (!TRUSO_ID || TRUSO_ID === 0) {
     console.error("❌ LỖI: TRUSO_ID chưa được khởi tạo hoặc bằng 0!", TRUSO_ID);
@@ -276,17 +305,15 @@ function loadActiveRescues() {
       return res.json();
     })
     .then((data) => {
-      // 🔽 CHÈN ĐOẠN LOG NÀY VÀO ĐỂ KIỂM TRA TRẠNG THÁI THỰC TẾ 🔽
       console.log("📦 Dữ liệu GỐC (Raw JSON) nhận từ API:", data);
 
       if (Array.isArray(data)) {
         console.log("🔍 DANH SÁCH TRẠNG THÁI THỰC TẾ TỪ SERVER:");
         data.forEach((item) => {
           console.log(
-            `--- SOS ID #${item.id}: trangThai gốc = "${item.trangThai}", trangThaiXuLy gốc = "${item.trangThaiXuLy}"`,
+            `--- SOS ID #${item.id}: trangThai gốc = "${item.trangThai}", trangThaiXuLy gốc = "${item.trangThaiXuLy}"`,
           );
         });
-        // Hiện dạng bảng trong Console cho bạn dễ nhìn tổng quan
         console.table(
           data.map((item) => ({
             id: item.id,
@@ -295,7 +322,6 @@ function loadActiveRescues() {
           })),
         );
       }
-      // 🔼 HẾT ĐOẠN LOG THÊM 🔼
 
       if (!Array.isArray(data)) {
         console.error(
@@ -305,30 +331,14 @@ function loadActiveRescues() {
         return;
       }
 
-      const formattedSosList = data.map((item) => {
+      allData = data.map((item) => {
         return formatItem(item, "SOS");
       });
 
-      console.log(
-        "✨ Danh sách SOS sau khi chạy qua formatItem:",
-        formattedSosList,
-      );
-
-      const truocKhiGop = allData.length;
-      allData = allData
-        .filter((it) => it.itemType !== "SOS")
-        .concat(formattedSosList);
-      console.log(
-        `🔄 Đồng bộ allData: Trước gộp (${truocKhiGop} items) -> Sau khi gộp (${allData.length} items)`,
-      );
-
-      renderData();
+      renderData(); // Đảm bảo gọi hàm renderData() để vẽ lại danh sách sau khi map xong
     })
     .catch((err) => {
-      console.error(
-        "❌ LỖI hệ thống khi fetch /truso/api/sos/dang-xu-ly:",
-        err,
-      );
+      console.error("Lỗi khi tải dữ liệu cứu hộ:", err);
     });
 }
 function renderData() {
@@ -377,6 +387,7 @@ function renderData() {
     return;
   }
 
+  // Sắp xếp ưu tiên VIP lên đầu, sau đó đến thời gian tạo mới nhất
   filtered.sort((a, b) => {
     if (a.isVip !== b.isVip) return a.isVip ? -1 : 1;
     return new Date(b.createdAt) - new Date(a.createdAt);
@@ -417,16 +428,17 @@ function openDetailFromRow(id) {
   const body = document.getElementById("detail-body");
 
   if (!obj) {
-    body.innerHTML = '<div class="text-muted">Không có dữ liệu</div>';
+    body.innerHTML = '<div class="text-muted">Không có dữ liệu chi tiết</div>';
   } else {
     const realData = obj._raw || {};
     const imgPath = fixUrl(realData.hinhAnh || realData.hinhAnhUrl);
     const audioPath = fixUrl(realData.ghiAm);
-    const fullAddress = realData.diaChi || `${obj.viDo}, ${obj.kinhDo}`;
+    const fullAddress =
+      realData.diaChi || `${obj.viDo || ""}, ${obj.kinhDo || ""}`;
 
     const imgHtml = imgPath
       ? `<img src="${imgPath}" class="img-fluid rounded mb-3" style="width:100%; cursor:zoom-in; border:1px solid #ddd;" onclick="window.open(this.src)">`
-      : '<p class="text-muted small">Không có hình ảnh</p>';
+      : '<p class="text-muted small">Không có hình ảnh hiện trường</p>';
 
     const audioHtml = audioPath
       ? `<div class="mb-3">
@@ -444,7 +456,7 @@ function openDetailFromRow(id) {
             <i class="fa-solid fa-location-dot text-danger"></i> <strong>Địa chỉ:</strong><br>
             <span class="text-dark">${fullAddress}</span>
         </div>
-        <div class="mb-3 small"><strong>Nội dung:</strong> ${obj.ghiChu}</div>
+        <div class="mb-3 small"><strong>Nội dung ghi chú:</strong> ${obj.ghiChu}</div>
         <hr>
         ${imgHtml}
         ${audioHtml}
@@ -504,7 +516,12 @@ function connectWebSocket() {
         "/topic/truso/" + TRUSO_ID,
         function (messageOutput) {
           const data = JSON.parse(messageOutput.body);
-          if (data.trangThai === "PAID") {
+          // Chấp nhận đồng bộ khi trạng thái là PAID hoặc đang xử lý hóa đơn
+          if (
+            data.trangThai === "PAID" ||
+            data.trangThai === "SUCCESS" ||
+            data.id
+          ) {
             updateLocalDataAfterPaid(data);
           }
         },
@@ -519,13 +536,43 @@ function connectWebSocket() {
 }
 
 function updateLocalDataAfterPaid(paymentInfo) {
-  const idx = allData.findIndex((it) => it.id === paymentInfo.sosId);
+  // Xác định ID của ca cứu hộ đi kèm hóa đơn
+  const targetSosId =
+    paymentInfo.sosId || (paymentInfo._raw ? paymentInfo._raw.id : null);
+
+  const idx = allData.findIndex(
+    (it) =>
+      (it.id === targetSosId || it.id === paymentInfo.id) &&
+      it.itemType === "SOS",
+  );
+
   if (idx !== -1) {
+    // Giữ lại dữ liệu cũ để phòng hờ trường hợp dữ liệu socket bị khuyết
+    const backupUser = allData[idx].userName;
+    const backupEmail = allData[idx].userEmail;
+    const backupIsVip = allData[idx].isVip;
+
     if (!allData[idx].hoaDon) allData[idx].hoaDon = {};
-    allData[idx].hoaDon.trangThai = "PAID";
-    allData[idx].hoaDon.tongThanhToan = paymentInfo.tongThanhToan;
-    renderData();
+
+    allData[idx].hoaDon.id = paymentInfo.id;
+    allData[idx].hoaDon.trangThai = paymentInfo.trangThai || "PAID";
+    allData[idx].hoaDon.thanhTien =
+      paymentInfo.thanhTien || paymentInfo.tongThanhToan;
+
+    // 🌟 ĐỒNG BỘ: Cập nhật lại thông tin tài khoản dựa theo cấu trúc UserInfoResponseDTO mới nhận qua Socket
+    if (paymentInfo.user) {
+      allData[idx].isVip = paymentInfo.user.vip === true;
+      allData[idx].userName = paymentInfo.user.name || "Ẩn danh";
+      allData[idx].userEmail = paymentInfo.user.email || "Không có email";
+    } else {
+      allData[idx].userName = backupUser;
+      allData[idx].userEmail = backupEmail;
+      allData[idx].isVip = backupIsVip;
+    }
+
+    renderData(); // Vẽ lại màn hình ngay lập tức để cập nhật nút bấm/badge
   } else {
+    // Nếu không tìm thấy trong mảng hiện tại, chủ động tải lại toàn bộ danh sách active cho chắc chắn
     loadActiveRescues();
   }
 }
@@ -553,7 +600,7 @@ const configuration = {
 
 async function startCallWithUser(userUid) {
   targetUserId = userUid;
-  showCallPanel("Đang gọi Android...");
+  showCallPanel("Đang kết nối Android...");
   try {
     await initLocalStream();
     createPeerConnection();
@@ -566,8 +613,8 @@ async function startCallWithUser(userUid) {
       sdp: offer.sdp,
     });
   } catch (e) {
-    console.error("Lỗi khởi tạo gọi:", e);
-    alert("Không thể truy cập Microphone hoặc trình duyệt không hỗ trợ!");
+    console.error("Lỗi khởi tạo gọi WebRTC:", e);
+    alert("Không thể truy cập Microphone hoặc thiết bị phần cứng bị chặn!");
   }
 }
 
@@ -608,7 +655,7 @@ function setupCallSubscription() {
 }
 
 async function handleOffer(offer) {
-  showCallPanel("Cuộc gọi đến...");
+  showCallPanel("Cuộc gọi đến từ ứng dụng...");
   await initLocalStream();
   createPeerConnection();
   await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
@@ -638,7 +685,9 @@ function createPeerConnection() {
       remoteAudio.volume = 0.8;
       remoteAudio
         .play()
-        .catch((err) => console.error("Trình duyệt chặn phát âm thanh:", err));
+        .catch((err) =>
+          console.error("Trình duyệt chặn phát âm thanh tự động:", err),
+        );
     }
   };
 
@@ -670,7 +719,7 @@ async function initLocalStream() {
         video: false,
       });
     } catch (e) {
-      console.error("Không thể truy cập Mic:", e);
+      console.error("Không thể lấy quyền Microphone:", e);
       throw e;
     }
   }
@@ -681,7 +730,6 @@ function showCallPanel(status) {
   document.getElementById("call-status").innerText = status;
 }
 
-// Bổ sung từ khóa đóng/ngắt cuộc gọi
 function endCall() {
   if (targetUserId) {
     sendSignal({ type: "BYE", to: targetUserId, from: "TRU_SO_" + TRUSO_ID });
