@@ -12,12 +12,18 @@ import com.example.suco.model.User;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
-import com.example.suco.model.enums.TrangThaiXuLy; 
+import com.example.suco.model.enums.TrangThaiXuLy;
+import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 
 @Component
 public class TinHieuMapper {
+
+    @Autowired
+    private VipService vipService;
 
     private UserMiniDTO toUserMiniDTO(User user) {
         if (user == null) {
@@ -32,6 +38,22 @@ public class TinHieuMapper {
 
         return dto;
     }
+
+    private UserInfoResponseDTO toUserInfoResponseDTO(User user) {
+        if (user == null) {
+            return null;
+        }
+
+        UserInfoResponseDTO dto = new UserInfoResponseDTO();
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        dto.setVip(vipService.checkVip(user.getUid()));
+
+        return dto;
+    }
+
+  
+
 
     // Request DTO → Entity
     public TinHieuSOS toEntity(
@@ -93,7 +115,7 @@ public class TinHieuMapper {
         dto.setThoiGianTao(sos.getCreatedAt());
 
         // Map thông tin người gửi cứu hộ
-        dto.setNguoiGui(toUserMiniDTO(sos.getUser()));
+        dto.setUser(toUserInfoResponseDTO(sos.getUser()));
 
         if (sos.getHoaDon() != null) {
             HoaDonResponseDTO hdDto = new HoaDonResponseDTO();

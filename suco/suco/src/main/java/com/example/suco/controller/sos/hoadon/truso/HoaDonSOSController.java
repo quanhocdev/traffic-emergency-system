@@ -1,10 +1,11 @@
 package com.example.suco.controller.sos.hoadon.truso;
 
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonRequestDTO;
-import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonTruSoResponseDTO;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
+import com.example.suco.mapper.HoaDonCuuHoMapper; 
 import com.example.suco.service.sos.hoadon.truso.HoaDonCuuHoService;
 
 import jakarta.servlet.http.HttpSession;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -25,75 +28,67 @@ public class HoaDonSOSController {
     @Autowired
     private HoaDonCuuHoRepository hoaDonRepository;
     
+    @Autowired
+    private HoaDonCuuHoMapper hoaDonMapper; 
+
     @Autowired 
     private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/tao")
-public ResponseEntity<?> tao(
-        @RequestBody HoaDonRequestDTO request,
-        HttpSession session
-) {
+    public ResponseEntity<?> tao(
+            @RequestBody HoaDonRequestDTO request,
+            HttpSession session
+    ) {
+        try {
+            TruSo current = (TruSo) session.getAttribute("currentTruSo");
 
-    try {
+            if (current == null) {
+                return ResponseEntity.status(401)
+                        .body("Lỗi: Phiên đăng nhập hết hạn hoặc chưa đăng nhập.");
+            }
 
-        TruSo current =
-                (TruSo) session.getAttribute("currentTruSo");
-
-        if (current == null) {
-
-            return ResponseEntity.status(401)
-                    .body("Lỗi: Phiên đăng nhập hết hạn hoặc chưa đăng nhập.");
-        }
-
-        HoaDonResponseDTO response =
-                hoaDonService.taoHoaDon(
-                        request,
-                        current.getId()
-                );
-
-        messagingTemplate.convertAndSend(
-                "/topic/truso/" + current.getId(),
-                response
-        );
-
-        if (response.getUserId() != null) {
+            HoaDonTruSoResponseDTO response = hoaDonService.taoHoaDon(request, current.getId());
 
             messagingTemplate.convertAndSend(
-                    "/topic/user/" + response.getUserId() + "/invoice",
+                    "/topic/truso/" + current.getId(),
                     response
             );
+
+             if (response.getUser() != null && response.getUser().getEmail() != null) {
+                messagingTemplate.convertAndSend(
+                        "/topic/user/" + response.getUser().getEmail() + "/invoice",
+                        response
+                );
+            }
+
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi hệ thống: " + e.getMessage());
         }
-
-        return ResponseEntity.ok(response);
-
-    } catch (RuntimeException e) {
-
-        return ResponseEntity.badRequest()
-                .body(e.getMessage());
-
-    } catch (Exception e) {
-
-        return ResponseEntity.status(500)
-                .body("Lỗi hệ thống: " + e.getMessage());
     }
-}
 
-@GetMapping("/danh-sach")
-public ResponseEntity<?> getDanhSachHoaDonCuaTruSo(HttpSession session) {
-    try {
-        // 1. Lấy thông tin Trụ sở từ Session
-        TruSo current = (TruSo) session.getAttribute("currentTruSo");
-        if (current == null) {
-            return ResponseEntity.status(401).body("Lỗi: Bạn chưa đăng nhập trụ sở.");
+    @GetMapping("/danh-sach")
+    public ResponseEntity<?> getDanhSachHoaDonCuaTruSo(HttpSession session) {
+        try {
+            // 1. Lấy thông tin Trụ sở từ Session
+            TruSo current = (TruSo) session.getAttribute("currentTruSo");
+            if (current == null) {
+                return ResponseEntity.status(401).body("Lỗi: Bạn chưa đăng nhập trụ sở.");
+            }
+
+            List<HoaDon> danhSachEntity = hoaDonRepository.findByTrusoIdOrderByIdDesc(current.getId());
+
+            List<HoaDonTruSoResponseDTO> danhSachDto = new ArrayList<>();
+            for (HoaDon hd : danhSachEntity) {
+                danhSachDto.add(hoaDonMapper.toTruSoDTO(hd));
+            }
+
+            return ResponseEntity.ok(danhSachDto);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi: " + e.getMessage());
         }
-
-        // 2. Tìm tất cả hóa đơn dựa trên trusoId của người đang đăng nhập
-        // Bạn nên sắp xếp theo ID giảm dần để hóa đơn mới nhất hiện lên đầu
-        List<HoaDon> danhSach = hoaDonRepository.findByTrusoIdOrderByIdDesc(current.getId());
-
-        return ResponseEntity.ok(danhSach);
-    } catch (Exception e) {
-        return ResponseEntity.status(500).body("Lỗi: " + e.getMessage());
     }
-}
 }

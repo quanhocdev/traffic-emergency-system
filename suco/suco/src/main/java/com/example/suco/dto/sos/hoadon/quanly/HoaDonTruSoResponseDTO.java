@@ -2,11 +2,15 @@ package com.example.suco.dto.sos.hoadon.quanly;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
+
 public class HoaDonTruSoResponseDTO {
 
     private Long id;
 
     private String noiDungXuLy;
+
+    private UserInfoResponseDTO user;
 
     private BigDecimal thanhTien;
 
@@ -25,6 +29,12 @@ public class HoaDonTruSoResponseDTO {
     }
     public void setNoiDungXuLy(String noiDungXuLy) {
         this.noiDungXuLy = noiDungXuLy;
+    }
+    public UserInfoResponseDTO getUser() {
+        return user;
+    }
+    public void setUser(UserInfoResponseDTO user) {
+        this.user = user;
     }
     public BigDecimal getThanhTien() {
         return thanhTien;
