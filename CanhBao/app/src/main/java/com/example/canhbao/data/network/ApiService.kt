@@ -156,10 +156,6 @@ interface BaoCaoSuCoApi {
         @Body request: ThanhToanRequestDTO
     ): Response<ThanhToanResponseDTO>
 
-
-    // QUẢN LÝ QUỸ & ĐỔI TIỀN
-
-
     @POST("/api/doi-tien/thuc-hien")
     suspend fun thucHienDoiTien(
         @Body request: DoiTienDto

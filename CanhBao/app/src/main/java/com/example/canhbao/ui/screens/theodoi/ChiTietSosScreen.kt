@@ -250,8 +250,8 @@ fun ChiTietSosScreen(
                         sosDetail.trangThaiHoaDon?.let { status ->
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Text("Trạng thái hóa đơn:", fontSize = 14.sp)
-                                Box(Modifier.background(if(status == "SUCCESS") SuccessGreen else PrimaryRed, RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
-                                    Text(if(status == "SUCCESS") "ĐÃ THANH TOÁN" else "CHỜ GIAO DỊCH", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Box(Modifier.background(if(status == "PAID") SuccessGreen else PrimaryRed, RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
+                                    Text(if(status == "PAID") "ĐÃ THANH TOÁN" else "CHỜ GIAO DỊCH", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
 
@@ -265,18 +265,24 @@ fun ChiTietSosScreen(
                                 Text("${String.format("%,d", (sosDetail.thanhTien ?: 0.0).toLong())} VNĐ", color = PrimaryRed, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                             }
 
-                            if (status == "PENDING") {
+                            // --- TÌM VÀ SỬA LẠI NÚT TRONG BOX 4 CỦA CHITIETSOSSCREEN.KT ---
+
                                 Button(
-                                    onClick = { showPayDialog = true },
+                                    onClick = {
+                                        // Điều hướng đến trang Xem chi tiết hóa đơn trước
+                                        sosDetail.hoaDonId?.let { id ->
+                                            navController.navigate("chi_tiet_hoa_don/$id")
+                                        }
+                                    },
                                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryRed),
                                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                                     shape = RoundedCornerShape(8.dp)
                                 ) {
-                                    Icon(Icons.Default.Payment, null)
+                                    Icon(Icons.Default.ReceiptLong, null) // Đổi icon sang tờ hóa đơn cho hợp ngữ cảnh
                                     Spacer(Modifier.width(8.dp))
-                                    Text("Tiến hành thanh toán ví MOMO")
+                                    Text("Xem chi tiết hóa đơn") // Thay đổi dòng text hiển thị
                                 }
-                            }
+
                         } ?: Text("Hiện tại chưa phát sinh hóa đơn chi phí cho cuộc cứu hộ này.", fontSize = 13.sp, color = TextGray)
                     }
                 }

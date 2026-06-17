@@ -1,7 +1,5 @@
 package com.example.suco.controller.tienich.qua.user;
 
-import com.example.suco.repository.tienich.qua.TuiQuaRepository;
-import com.example.suco.repository.tienich.qua.QuaRepository;
 import com.example.suco.service.tienich.qua.user.DoiQuaService;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
@@ -11,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.List;  
 import java.util.Map;
 
 @RestController
