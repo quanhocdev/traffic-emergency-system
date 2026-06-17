@@ -36,7 +36,6 @@ function formatItem(s, type) {
   let userName = "Chưa rõ tên";
   let userEmail = "Không có email";
 
-  // 🌟 ĐỒNG BỘ TRIỆT ĐỂ: B bóc tách đúng theo UserInfoResponseDTO mới từ Backend
   const userData = s.user || null;
 
   if (userData) {

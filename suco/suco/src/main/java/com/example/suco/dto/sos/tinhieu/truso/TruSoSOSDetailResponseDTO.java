@@ -2,6 +2,8 @@ package com.example.suco.dto.sos.tinhieu.truso;
 
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 import java.time.LocalDateTime;
+
+import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
 import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 
 public class TruSoSOSDetailResponseDTO {
@@ -15,7 +17,7 @@ public class TruSoSOSDetailResponseDTO {
     private String ghiAmUrl;
     private LocalDateTime thoiGianTao;
     private String trangThai;
-    private UserMiniDTO nguoiGui;
+    private UserInfoResponseDTO user;
     
     private HoaDonResponseDTO hoaDon; 
 
@@ -48,6 +50,6 @@ public class TruSoSOSDetailResponseDTO {
     public void setThoiGianTao(LocalDateTime thoiGianTao) { this.thoiGianTao = thoiGianTao; }
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
-    public UserMiniDTO getNguoiGui() { return nguoiGui; }
-    public void setNguoiGui(UserMiniDTO nguoiGui) { this.nguoiGui = nguoiGui; }
+    public UserInfoResponseDTO getUser() { return user; }
+    public void setUser(UserInfoResponseDTO user) { this.user = user; }
 }
