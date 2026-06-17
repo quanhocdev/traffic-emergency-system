@@ -90,18 +90,24 @@ private FirebaseService firebaseService;
                         tongThanhToan
                 );
 
-        // Save
+        // Gán trạng thái thành công cho bản ghi giao dịch hiện tại
+        thanhToan.setTrangThai("SUCCESS");
+
+        // Save giao dịch thanh toán trước
         thanhToanHoaDonRepository.save(
                 thanhToan
         );
 
-        
+        hd.setTrangThai("PAID"); // Đổi trạng thái thực thể hóa đơn cha từ PENDING -> PAID
+        hoaDonRepository.save(hd); 
 
         // Entity -> Response
         return mapper.toDTO(
                 thanhToan
         );
     }
+
+
     public ThanhToanResponseDTO getChiTietThanhToan(
         Long hoaDonId,
         String authHeader

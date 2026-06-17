@@ -82,7 +82,7 @@ fun ChiTietHoaDonScreen(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
                             ),
-                            modifier = Modifier.padding(end = 48.dp) // Cân bằng khoảng trống với nút back
+                            modifier = Modifier.padding(end = 48.dp)
                         )
                     }
                 },
@@ -192,7 +192,7 @@ fun ChiTietHoaDonScreen(
                                 ) {
                                     Text(text = "Trạng thái", color = TextGray, fontSize = 14.sp)
 
-                                    val isSuccess = hoaDon!!.trangThai == "SUCCESS"
+                                    val isSuccess = hoaDon!!.trangThai == "PAID"
                                     Box(
                                         modifier = Modifier
                                             .background(

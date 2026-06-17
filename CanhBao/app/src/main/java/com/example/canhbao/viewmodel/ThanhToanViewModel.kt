@@ -84,12 +84,13 @@ class ThanhToanViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 loading = true
-                paymentSuccess = false
+                paymentSuccess = false // Luôn reset về false khi bắt đầu bấm nút
                 errorMessage = null
 
-                val success = withContext(Dispatchers.IO) {
+                val response = withContext(Dispatchers.IO) {
                     val token = getToken()
 
+                    // Thay đổi: Gọi lấy nguyên đối tượng Response thay vì chỉ lấy .isSuccessful
                     api.confirmPayment(
                         token,
                         ThanhToanRequestDTO(
@@ -97,14 +98,28 @@ class ThanhToanViewModel : ViewModel() {
                             quaId = quaId,
                             phuongThucThanhToan = phuongThuc
                         )
-                    ).isSuccessful
+                    )
                 }
 
-                paymentSuccess = success
+                if (response.isSuccessful) {
+                    // CỰC KỲ QUAN TRỌNG: Chỉ bật true khi thực sự thành công
+                    paymentSuccess = true
+                } else {
+                    // THẤT BẠI: Giữ nguyên success là false và đọc nội dung lỗi từ Spring Boot
+                    paymentSuccess = false
+                    val errorBodyString = response.errorBody()?.string()
+                    errorMessage = if (!errorBodyString.isNullOrBlank()) {
+                        errorBodyString
+                    } else {
+                        "Thanh toán thất bại (Mã lỗi: ${response.code()})"
+                    }
+                    Log.e("ThanhToanVM", "Backend trả về lỗi công việc: $errorMessage")
+                }
 
             } catch (e: Exception) {
-                errorMessage = e.message
-                Log.e("ThanhToanVM", e.message ?: "")
+                paymentSuccess = false
+                errorMessage = "Lỗi kết nối: ${e.localizedMessage}"
+                Log.e("ThanhToanVM", "Lỗi ngoại lệ hệ thống", e)
             } finally {
                 loading = false
             }
