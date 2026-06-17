@@ -29,7 +29,7 @@ public enum TrangThaiXuLy {
 
     public boolean canBeCancelledByUser() {
         // Cập nhật lại biến ở đây
-        return this == DA_TIEP_NHAN || this == DANG_DI_CHUYEN;
+        return this == CHO_ADMIN || this == DA_TIEP_NHAN;
     }
 
     public boolean isFinalState() {

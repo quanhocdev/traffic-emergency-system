@@ -137,7 +137,7 @@ fun BaoCaoItemUI(
                 )
             }
 
-             if (item.trangThaiXuLy == "Chờ xử lý" || item.trangThaiXuLy == "Đã tiếp nhận") {
+             if (item.trangThaiXuLy == "Đã tiếp nhận") {
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedButton(
                     onClick = { onCancelClick(itemId) },
