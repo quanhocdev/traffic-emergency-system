@@ -24,8 +24,8 @@ public class PageSuCoController {
         return suCoTruSoRepository.findNewAssignedByTruSo(current.getId());
     }
 
-    @GetMapping("/api/su-co/cho-xu-ly")
-    public List<BaoCaoSuCo> getSuCoChoXuLy(HttpSession session) {
+    @GetMapping("/api/su-co/dang-di-chuyen")
+    public List<BaoCaoSuCo> getSuCoDangDiChuyen(HttpSession session) {
         TruSo current = (TruSo) session.getAttribute("currentTruSo");
         if (current == null) return List.of();
         return suCoTruSoRepository.findPendingByTruSo(current.getId());
@@ -43,6 +43,12 @@ public class PageSuCoController {
         TruSo current = (TruSo) session.getAttribute("currentTruSo");
         if (current == null) return List.of();
         return suCoTruSoRepository.findHistoryByTruSo(current.getId());
+    }
+    @GetMapping("/api/su-co/huy-xu-ly")
+    public List<BaoCaoSuCo> getSuCoHuyXuLy(HttpSession session) {
+        TruSo current = (TruSo) session.getAttribute("currentTruSo");
+        if (current == null) return List.of();
+        return suCoTruSoRepository.findCancelByTruSo(current.getId());
     }
 
 }

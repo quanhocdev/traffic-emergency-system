@@ -89,7 +89,7 @@ function appendSOS(sos) {
 function loadPendingSOS() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
 
-  fetch("/truso/api/sos/cho-xu-ly")
+  fetch("/truso/api/sos/dang-di-chuyen")
     .then((res) => res.json())
     .then((data) => {
       console.log(" Dữ liệu SOS ĐANG DI CHUYỂN (DANG_DI_CHUYEN) =", data);
@@ -193,7 +193,7 @@ function loadPendingSuCo() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
 
   // Sửa URL cho đúng với Spring Boot Controller và truyền param status
-  fetch(`/su-co/danh-sach-hien-tai?status=DANG_DI_CHUYEN`)
+  fetch(`/truso/api/su-co/dang-di-chuyen`)
     .then((res) => {
       if (!res.ok) throw new Error("Mã lỗi: " + res.status);
       return res.json();

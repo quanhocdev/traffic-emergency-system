@@ -39,4 +39,7 @@ default List<BaoCaoSuCo> findNewAssignedByTruSo(Long idTruSo) {
     default List<BaoCaoSuCo> findHistoryByTruSo(Long idTruSo) {
         return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.HOAN_THANH);
     }
+    default List<BaoCaoSuCo> findCancelByTruSo(Long idTruSo) {
+        return findByTruSoAndStatus(idTruSo, TrangThaiXuLy.HUY_BO);
+    }
 }

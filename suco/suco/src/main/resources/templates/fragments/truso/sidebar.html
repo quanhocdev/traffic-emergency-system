@@ -45,11 +45,11 @@
       </a>
 
       <a
-        href="/truso/cho-xu-ly"
+        href="/truso/dang-di-chuyen"
         th:class="${activePage == 'pending'} ? 'nav-item active' : 'nav-item'"
       >
         <i class="fa-solid fa-clock-rotate-left"></i>
-        <span>Đang chờ cứu trợ</span>
+        <span>Đang di chuyển</span>
       </a>
 
       <a
@@ -57,7 +57,7 @@
         th:class="${activePage == 'doing'} ? 'nav-item active' : 'nav-item'"
       >
         <i class="fa-solid fa-truck-medical"></i>
-        <span>Đang cứu trợ</span>
+        <span>Đang cứu hộ</span>
       </a>
 
       <a
@@ -65,7 +65,14 @@
         th:class="${activePage == 'history'} ? 'nav-item active' : 'nav-item'"
       >
         <i class="fa-solid fa-list-check"></i>
-        <span>Lịch sử cứu trợ</span>
+        <span>Lịch sử cứu hộ</span>
+      </a>
+      <a
+        href="/truso/huy-xu-ly"
+        th:class="${activePage == 'cancel'} ? 'nav-item active' : 'nav-item'"
+      >
+        <i class="fa-solid fa-list-check"></i>
+        <span>Lịch sử hủy xử lý</span>
       </a>
 
       <button
