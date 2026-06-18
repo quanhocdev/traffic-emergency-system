@@ -150,7 +150,7 @@ async function completeRescue(id, type) {
   try {
     const url =
       type === "SOS"
-        ? `/api/tin-hieu-sos/cap-nhat-trang-thai/${id}`
+        ? `/sos/cap-nhat-trang-thai/${id}`
         : `/su-co/cap-nhat-trang-thai/${id}`;
 
     const res = await fetch(url, {

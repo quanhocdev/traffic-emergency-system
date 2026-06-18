@@ -154,4 +154,13 @@ public class TrangThaiService {
 
         return tinHieuMapper.toTruSoDetailDto(sos);
     }
+    public List<TruSoSOSDetailResponseDTO> layLichSuSOSChoTruSo(Long truSoId) {
+
+    List<TinHieuSOS> danhSachEntity = tinHieuSOSRepository.findHistoryByTruSo(truSoId);
+    
+    // 2. Stream và map thẳng qua hàm toTruSoDetailDto của TinHieuMapper
+    return danhSachEntity.stream()
+            .map(tinHieuMapper::toTruSoDetailDto)
+            .toList();
+}
 }
