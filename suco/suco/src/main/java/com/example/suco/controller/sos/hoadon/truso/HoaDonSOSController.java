@@ -1,7 +1,9 @@
 package com.example.suco.controller.sos.hoadon.truso;
 
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonDetailDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonRequestDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonTruSoResponseDTO;
+import com.example.suco.dto.sos.hoadon.payment.ThanhToanResponseDTO; 
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
@@ -91,4 +93,9 @@ public class HoaDonSOSController {
             return ResponseEntity.status(500).body("Lỗi: " + e.getMessage());
         }
     }
+    @GetMapping("/{id}/chi-tiet-tong-hop")
+public ResponseEntity<?> getChiTietHoaDonTongHop(@PathVariable Long id) {
+    HoaDonDetailDTO detailDTO = hoaDonService.layChiTietTongHop(id);
+    return ResponseEntity.ok(detailDTO);
+}
 }

@@ -16,6 +16,7 @@ function formatTime(iso) {
   const d = new Date(iso);
   return d.toLocaleString("vi-VN");
 }
+
 async function loadHistory() {
   try {
     const [sosRes, sucoRes] = await Promise.all([
@@ -29,7 +30,6 @@ async function loadHistory() {
       ...s,
       itemType: "SOS",
       status: s.trangThai,
-      // Kiểm tra cả 2 trường thời gian phổ biến
       time: s.createdAt || s.thoiGianTao,
       isVip: s.isVip === true,
       points: s.user?.totalPoints || 0,
@@ -53,7 +53,6 @@ async function loadHistory() {
 
     allHistoryData = [...sosMapped, ...sucoMapped];
 
-    // Sắp xếp an toàn: Nếu không có time thì cho xuống cuối
     allHistoryData.sort((a, b) => {
       const timeA = a.time ? new Date(a.time) : 0;
       const timeB = b.time ? new Date(b.time) : 0;
@@ -86,36 +85,31 @@ function renderHistory() {
   }
   noData.style.display = "none";
 
-  // --- RENDER HEADER ---
   if (currentFilter === "sos") {
     header.innerHTML = `<th>Phân loại</th><th>Thời gian</th><th>Địa chỉ</th><th>Hình ảnh</th><th>Ghi chú</th><th>Giá tiền</th><th>Trạng thái</th>`;
   } else {
-    // Thêm cột Mức độ trước cột Trạng thái
     header.innerHTML = `<th>Thời gian</th><th>Loại sự cố</th><th>Địa chỉ</th><th>Hình ảnh</th><th>Ghi chú</th><th>Mức độ</th><th>Trạng thái</th>`;
   }
 
-  // --- RENDER BODY ---
   filtered.forEach((item) => {
     const row = document.createElement("tr");
     const displayAddress = item.diaChi || `${item.viDo}, ${item.kinhDo}`;
 
     if (currentFilter === "sos") {
-      // Ưu tiên hiển thị tongThanhToan (Số tiền thực trả sau giảm giá)
       const actualPrice = item.hoaDon
         ? item.hoaDon.tongThanhToan !== undefined
           ? item.hoaDon.tongThanhToan
           : item.hoaDon.thanhTien
         : 0;
 
-      // Tìm đoạn sinh priceHtml trong `if (currentFilter === "sos")` và thay bằng:
       const priceHtml = item.hoaDon
         ? `<div class="d-flex flex-column align-items-start">
-      <strong class="text-danger">${new Intl.NumberFormat("vi-VN").format(actualPrice)} đ</strong>
-      <button class="btn btn-xs btn-outline-primary py-0 px-2 mt-1" style="font-size: 11px;" 
-              onclick="viewInvoice(${item.id}, ${item.hoaDon.id})">
-         <i class="fa-solid fa-eye"></i> Xem hóa đơn
-      </button>
-     </div>`
+            <strong class="text-danger">${new Intl.NumberFormat("vi-VN").format(actualPrice)} đ</strong>
+            <button class="btn btn-xs btn-outline-primary py-0 px-2 mt-1" style="font-size: 11px;" 
+                    onclick="viewInvoice(${item.id}, ${item.hoaDon.id})">
+               <i class="fa-solid fa-eye"></i> Xem hóa đơn
+            </button>
+           </div>`
         : `<span class="text-muted">Miễn phí</span>`;
 
       row.innerHTML = `
@@ -128,8 +122,6 @@ function renderHistory() {
                 <td><span class="badge bg-success">Hoàn thành</span></td>
             `;
     } else {
-      // Logic hiển thị Mức độ với Badge màu
-      // Tìm đoạn render mức độ và sửa lại giá trị khớp với DB của bạn
       let mucDoHtml = "";
       if (item.mucDo === "HIGH" || item.mucDo === "CAO") {
         mucDoHtml = '<span class="badge bg-danger">Cao</span>';
@@ -154,7 +146,6 @@ function renderHistory() {
   });
 }
 
-// ĐĂNG KÝ SỰ KIỆN CLICK CHO NÚT BẤM (QUAN TRỌNG)
 document.addEventListener("DOMContentLoaded", () => {
   const btnSuCo = document.getElementById("btn-filter-su-co");
   const btnSos = document.getElementById("btn-filter-sos");
@@ -176,51 +167,62 @@ document.addEventListener("DOMContentLoaded", () => {
   loadHistory();
 });
 
-// Hàm hiển thị Modal Hóa đơn đẹp mắt bằng cách ghép cả dữ liệu HoaDon và ThanhToan
+// 🌟 SỬA ĐOẠN NÀY: Hàm hiển thị dữ liệu lấy từ HoaDonDetailDTO (1 API duy nhất)
 async function viewInvoice(sosId, hoaDonId) {
   try {
-    // 1. Tìm thông tin SOS và Hóa đơn cục bộ từ allHistoryData
-    const sosItem = allHistoryData.find(
-      (it) => it.id === sosId && it.itemType === "SOS",
+    // Gọi API tổng hợp trả về HoaDonDetailDTO
+    const response = await fetch(
+      `/truso/hoa-don/${hoaDonId}/chi-tiet-tong-hop`,
     );
-    if (!sosItem || !sosItem.hoaDon) {
-      alert("Không tìm thấy dữ liệu hóa đơn!");
-      return;
-    }
-    const hoaDon = sosItem.hoaDon;
+    if (!response.ok)
+      throw new Error("Không thể tải chi tiết hóa đơn tổng hợp từ hệ thống");
 
-    // 2. Gọi API để lấy nốt dữ liệu đối tác ThanhToanResponseDTO bằng hoaDonId
-    // (Ông nhớ cấu hình endpoint này ở Controller bên Back-end nhé)
-    const paymentRes = await fetch(`/api/thanh-toan/hoa-don/${hoaDonId}`);
-    if (!paymentRes.ok) throw new Error("Không thể tải thông tin thanh toán");
-    const payment = await paymentRes.json(); // Nhận về ThanhToanResponseDTO
+    const data = await response.json(); // Nhận về dạng { hoaDon: {...}, thanhToans: [...] }
+    const hoaDon = data.hoaDon;
+    const thanhToans = data.thanhToans || [];
 
-    // 3. Đổ dữ liệu lên màn hình Modal thật đẹp
+    // Đổ dữ liệu cơ bản của hóa đơn
     document.getElementById("inv-id").innerText = `#HD-${hoaDon.id}`;
     document.getElementById("inv-time").innerText = formatTime(
-      hoaDon.createdAt || payment.createdAt,
+      hoaDon.createdAt,
     );
     document.getElementById("inv-content").innerText =
       hoaDon.noiDungXuLy || "Cứu hộ và di chuyển phương tiện khẩn cấp.";
 
-    // Tiền nong định dạng chuẩn VND
     const formatter = new Intl.NumberFormat("vi-VN");
-    document.getElementById("inv-base").innerText =
-      `${formatter.format(payment.thanhTien || hoaDon.thanhTien)} đ`;
-    document.getElementById("inv-discount").innerText =
-      `-${formatter.format(payment.soTienGiam || 0)} đ`;
-    document.getElementById("inv-total").innerText =
-      `${formatter.format(payment.tongThanhToan || hoaDon.thanhTien)} đ`;
 
-    // Giao dịch thông tin
-    document.getElementById("inv-method").innerText =
-      payment.phuongThucThanhToan || "Tiền mặt";
-    document.getElementById("inv-transaction").innerText =
-      payment.maGiaoDich || "N/A";
-    document.getElementById("inv-status").innerText =
-      payment.trangThai || "ĐÃ THANH TOÁN";
+    // Nếu mảng thanhToans có phần tử (Đã có lịch sử xử lý giao dịch)
+    if (thanhToans.length > 0) {
+      const activePayment = thanhToans[0]; // Lấy transaction mới nhất do repo sắp xếp Desc rồi
 
-    // Mở popup hiển thị lên
+      document.getElementById("inv-base").innerText =
+        `${formatter.format(activePayment.thanhTien)} đ`;
+      document.getElementById("inv-discount").innerText =
+        `-${formatter.format(activePayment.soTienGiam || 0)} đ`;
+      document.getElementById("inv-total").innerText =
+        `${formatter.format(activePayment.tongThanhToan)} đ`;
+
+      document.getElementById("inv-method").innerText =
+        activePayment.phuongThucThanhToan || "Thẻ/Ví điện tử";
+      document.getElementById("inv-transaction").innerText =
+        activePayment.maGiaoDich || "N/A";
+      document.getElementById("inv-status").innerText =
+        activePayment.trangThai || "SUCCESS";
+    } else {
+      // Trường hợp dự phòng nếu chưa phát sinh transaction thanh toán nào ngoài DB
+      document.getElementById("inv-base").innerText =
+        `${formatter.format(hoaDon.thanhTien)} đ`;
+      document.getElementById("inv-discount").innerText = "0 đ";
+      document.getElementById("inv-total").innerText =
+        `${formatter.format(hoaDon.thanhTien)} đ`;
+
+      document.getElementById("inv-method").innerText = "Chưa thanh toán";
+      document.getElementById("inv-transaction").innerText = "N/A";
+      document.getElementById("inv-status").innerText =
+        hoaDon.trangThai || "PENDING";
+    }
+
+    // Mở màn hình đẹp đẽ lên
     document.getElementById("invoice-modal").style.display = "flex";
   } catch (err) {
     console.error("Lỗi xem hóa đơn:", err);

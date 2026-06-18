@@ -51,7 +51,6 @@ public class HoaDonCuuHoMapper {
         return dto;
     }
 
-    // 🌟 SỬA ĐỔI TẠI ĐÂY: Trả về cấu trúc UserInfoResponseDTO gọn nhẹ, không chứa ID/UID phiền toái
     public HoaDonTruSoResponseDTO toTruSoDTO(HoaDon hd) {
         if (hd == null) return null;
 

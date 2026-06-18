@@ -1,22 +1,27 @@
 package com.example.suco.service.sos.hoadon.truso;
-
 import com.example.suco.model.*;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
+import com.example.suco.repository.sos.hoadon.ThanhToanHoaDonRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.repository.vanhanh.TruSoRepository;
+import com.example.suco.repository.sos.hoadon.ThanhToanHoaDonRepository; 
 import com.example.suco.service.sos.hoadon.truso.validation.StatusTruSoService;
 import com.example.suco.service.sos.hoadon.truso.validation.VipSOSService;
 import com.example.suco.service.sos.hoadon.truso.validation.total.TotalService;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonRequestDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonTruSoResponseDTO;
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonDetailDTO; 
+import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO; 
+import com.example.suco.dto.sos.hoadon.payment.ThanhToanResponseDTO; 
 import com.example.suco.mapper.HoaDonCuuHoMapper;
+import com.example.suco.mapper.ThanhToanCuuHoMapper; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
-
 @Service
 public class HoaDonCuuHoService {
 
@@ -27,6 +32,9 @@ public class HoaDonCuuHoService {
     @Autowired private HoaDonCuuHoMapper hoaDonMapper;
     @Autowired private TotalService totalAmountService;
     @Autowired private StatusTruSoService statusService;
+
+    @Autowired private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
+    @Autowired private ThanhToanCuuHoMapper thanhToanCuuHoMapper;
 
     @Transactional
     public HoaDonTruSoResponseDTO taoHoaDon(HoaDonRequestDTO req, Long trusoId) {
@@ -65,4 +73,27 @@ public class HoaDonCuuHoService {
 
         return hoaDonMapper.toTruSoDTO(saved);
     }
+    public HoaDonDetailDTO layChiTietTongHop(Long hoaDonId) {
+    // 1. Tìm hóa đơn trong DB
+    HoaDon hoaDon = hoaDonRepository.findById(hoaDonId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy hóa đơn với ID: " + hoaDonId));
+
+    // 2. Map sang HoaDonResponseDTO
+    HoaDonResponseDTO hdDto = hoaDonMapper.toDTO(hoaDon);
+
+    // 3. Gọi đúng hàm lấy tất cả transaction đã sắp xếp Descending từ repo của ông
+    List<ThanhToanHoaDon> danhSachThanhToan = thanhToanHoaDonRepository.findByHoaDonIdOrderByIdDesc(hoaDonId);
+
+    // 4. Map danh sách sang DTO
+    List<ThanhToanResponseDTO> listThanhToanDto = danhSachThanhToan.stream()
+            .map(thanhToanCuuHoMapper::toDTO)
+            .toList();
+
+    // 5. Đóng gói vào DTO tổng hợp
+    HoaDonDetailDTO detailDTO = new HoaDonDetailDTO();
+    detailDTO.setHoaDon(hdDto);
+    detailDTO.setThanhToans(listThanhToanDto);
+
+    return detailDTO;
+}
 }
