@@ -24,3 +24,65 @@ html {
   color: #374151;
   line-height: 1.4;
 }
+/* Styles cho Modal Hóa Đơn */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.invoice-box {
+  background: #fff;
+  width: 100%;
+  max-width: 450px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  padding: 24px;
+  position: relative;
+  animation: slideDown 0.3s ease-out;
+}
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px dashed #e9ecef;
+  padding-bottom: 12px;
+  margin-bottom: 15px;
+}
+.btn-close-invoice {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #aaa;
+  cursor: pointer;
+}
+.btn-close-invoice:hover {
+  color: #333;
+}
+.invoice-section h5 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+}
+.invoice-meta p {
+  margin-bottom: 4px;
+  font-size: 14px;
+}

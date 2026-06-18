@@ -50,5 +50,81 @@
     </main>
     <script th:src="@{/js/truso/lich-su-cuu-tro.js}"></script>
     <script th:src="@{/js/fragments/truso/sidebar.js}"></script>
+    <div id="invoice-modal" class="modal-overlay" style="display: none">
+      <div class="invoice-box">
+        <div class="invoice-header">
+          <div class="logo-area">
+            <i
+              class="fa-solid fa-file-invoice-dollar fa-2x text-danger me-2"
+            ></i>
+            <h4>HÓA ĐƠN CỨU HỘ KHẨN CẤP</h4>
+          </div>
+          <button class="btn-close-invoice" onclick="closeInvoiceModal()">
+            &times;
+          </button>
+        </div>
+
+        <div class="invoice-body">
+          <div class="invoice-meta mb-3">
+            <p><strong>Mã hóa đơn:</strong> <span id="inv-id">#N/A</span></p>
+            <p>
+              <strong>Thời gian tạo:</strong> <span id="inv-time">N/A</span>
+            </p>
+          </div>
+          <hr />
+          <div class="invoice-section">
+            <h5><i class="fa-solid fa-circle-info"></i> Nội dung xử lý</h5>
+            <div
+              id="inv-content"
+              class="p-2 border rounded bg-light text-muted"
+            ></div>
+          </div>
+
+          <div class="invoice-section mt-3">
+            <h5><i class="fa-solid fa-credit-card"></i> Chi tiết thanh toán</h5>
+            <table class="table table-sm table-borderless">
+              <tr>
+                <td>Chi phí gốc:</td>
+                <td class="text-end" id="inv-base">0 đ</td>
+              </tr>
+              <tr>
+                <td class="text-success">Hội viên giảm giá:</td>
+                <td class="text-end text-success" id="inv-discount">-0 đ</td>
+              </tr>
+              <tr class="border-top font-weight-bold">
+                <td><strong>Thực tế thanh toán:</strong></td>
+                <td class="text-end text-danger">
+                  <strong id="inv-total">0 đ</strong>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="invoice-section mt-2 p-2 rounded bg-light border">
+            <p class="mb-1">
+              <strong>Phương thức:</strong>
+              <span id="inv-method" class="badge bg-primary">N/A</span>
+            </p>
+            <p class="mb-1">
+              <strong>Mã giao dịch:</strong>
+              <small id="inv-transaction" class="text-muted">N/A</small>
+            </p>
+            <p class="mb-0">
+              <strong>Trạng thái:</strong>
+              <span id="inv-status" class="badge bg-success">N/A</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="invoice-footer text-center mt-4">
+          <button
+            class="btn btn-secondary btn-sm"
+            onclick="closeInvoiceModal()"
+          >
+            Đóng cửa sổ
+          </button>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
