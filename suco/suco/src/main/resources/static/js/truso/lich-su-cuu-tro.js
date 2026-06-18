@@ -107,11 +107,15 @@ function renderHistory() {
           : item.hoaDon.thanhTien
         : 0;
 
+      // Tìm đoạn sinh priceHtml trong `if (currentFilter === "sos")` và thay bằng:
       const priceHtml = item.hoaDon
-        ? `<div class="d-flex flex-column">
-        <strong class="text-danger">${new Intl.NumberFormat("vi-VN").format(actualPrice)} đ</strong>
-        ${item.hoaDon.soTienGiam > 0 ? `<small class="text-muted text-decoration-line-through">${new Intl.NumberFormat("vi-VN").format(item.hoaDon.thanhTien)} đ</small>` : ""}
-       </div>`
+        ? `<div class="d-flex flex-column align-items-start">
+      <strong class="text-danger">${new Intl.NumberFormat("vi-VN").format(actualPrice)} đ</strong>
+      <button class="btn btn-xs btn-outline-primary py-0 px-2 mt-1" style="font-size: 11px;" 
+              onclick="viewInvoice(${item.id}, ${item.hoaDon.id})">
+         <i class="fa-solid fa-eye"></i> Xem hóa đơn
+      </button>
+     </div>`
         : `<span class="text-muted">Miễn phí</span>`;
 
       row.innerHTML = `
@@ -171,3 +175,59 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadHistory();
 });
+
+// Hàm hiển thị Modal Hóa đơn đẹp mắt bằng cách ghép cả dữ liệu HoaDon và ThanhToan
+async function viewInvoice(sosId, hoaDonId) {
+  try {
+    // 1. Tìm thông tin SOS và Hóa đơn cục bộ từ allHistoryData
+    const sosItem = allHistoryData.find(
+      (it) => it.id === sosId && it.itemType === "SOS",
+    );
+    if (!sosItem || !sosItem.hoaDon) {
+      alert("Không tìm thấy dữ liệu hóa đơn!");
+      return;
+    }
+    const hoaDon = sosItem.hoaDon;
+
+    // 2. Gọi API để lấy nốt dữ liệu đối tác ThanhToanResponseDTO bằng hoaDonId
+    // (Ông nhớ cấu hình endpoint này ở Controller bên Back-end nhé)
+    const paymentRes = await fetch(`/api/thanh-toan/hoa-don/${hoaDonId}`);
+    if (!paymentRes.ok) throw new Error("Không thể tải thông tin thanh toán");
+    const payment = await paymentRes.json(); // Nhận về ThanhToanResponseDTO
+
+    // 3. Đổ dữ liệu lên màn hình Modal thật đẹp
+    document.getElementById("inv-id").innerText = `#HD-${hoaDon.id}`;
+    document.getElementById("inv-time").innerText = formatTime(
+      hoaDon.createdAt || payment.createdAt,
+    );
+    document.getElementById("inv-content").innerText =
+      hoaDon.noiDungXuLy || "Cứu hộ và di chuyển phương tiện khẩn cấp.";
+
+    // Tiền nong định dạng chuẩn VND
+    const formatter = new Intl.NumberFormat("vi-VN");
+    document.getElementById("inv-base").innerText =
+      `${formatter.format(payment.thanhTien || hoaDon.thanhTien)} đ`;
+    document.getElementById("inv-discount").innerText =
+      `-${formatter.format(payment.soTienGiam || 0)} đ`;
+    document.getElementById("inv-total").innerText =
+      `${formatter.format(payment.tongThanhToan || hoaDon.thanhTien)} đ`;
+
+    // Giao dịch thông tin
+    document.getElementById("inv-method").innerText =
+      payment.phuongThucThanhToan || "Tiền mặt";
+    document.getElementById("inv-transaction").innerText =
+      payment.maGiaoDich || "N/A";
+    document.getElementById("inv-status").innerText =
+      payment.trangThai || "ĐÃ THANH TOÁN";
+
+    // Mở popup hiển thị lên
+    document.getElementById("invoice-modal").style.display = "flex";
+  } catch (err) {
+    console.error("Lỗi xem hóa đơn:", err);
+    alert("Có lỗi xảy ra: " + err.message);
+  }
+}
+
+function closeInvoiceModal() {
+  document.getElementById("invoice-modal").style.display = "none";
+}
