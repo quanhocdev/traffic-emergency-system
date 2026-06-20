@@ -11,21 +11,16 @@ public class DoiQua {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Người đổi quà
     private String userId;
 
-    // Quà được đổi
     private Long quaId;
 
-    // Số lượng đổi
     @Column(name = "so_luong")
     private Integer soLuong;
 
-    // Tổng điểm đã trừ ở lần đổi này
     @Column(name = "diem_da_tru")
     private Integer diemDaTru;
 
-    // Thời gian đổi
     @Column(name = "ngay_doi")
     private LocalDateTime ngayDoi;
 

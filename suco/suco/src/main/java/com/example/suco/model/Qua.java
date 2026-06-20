@@ -20,8 +20,8 @@ public class Qua {
     private String moTa;
     private Integer diem;
     private String hinhAnh;
-    private Integer giaTriGiamPercent; // % giảm giá
-@Column(precision = 15, scale = 2) // Định nghĩa độ chính xác trong DB
+    private Integer giaTriGiamPercent;
+    @Column(precision = 15, scale = 2) 
     private BigDecimal giaTriToiDa;
     public enum LoaiQua {
         SAN_PHAM, VOUCHER

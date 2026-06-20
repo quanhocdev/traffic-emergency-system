@@ -4,9 +4,7 @@ public class DoiQuaRequestDTO {
     private Long quaId;
     private Integer soLuong;
 
-  public DoiQuaRequestDTO() {}
-
-
+    public DoiQuaRequestDTO() {}
 
     public Long getQuaId() { return quaId; }
     public void setQuaId(Long quaId) { this.quaId = quaId; }
