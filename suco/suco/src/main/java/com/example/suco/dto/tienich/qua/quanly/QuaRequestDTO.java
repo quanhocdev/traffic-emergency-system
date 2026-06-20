@@ -15,7 +15,6 @@ public class QuaRequestDTO {
     private String moTa;
     private Integer diem;
     
-    // Giữ MultipartFile để Admin upload ảnh lên controller
     private MultipartFile hinhAnh; 
     
     private Integer giaTriGiamPercent; 

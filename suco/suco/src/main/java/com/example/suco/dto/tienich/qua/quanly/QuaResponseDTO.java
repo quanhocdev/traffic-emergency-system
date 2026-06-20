@@ -8,16 +8,16 @@ import java.time.LocalDateTime;
 
 public class QuaResponseDTO {
 
-    private Long id; // Bắt buộc phải có để Client xử lý
+    private Long id; 
     private String ten;
     private LoaiQua loai;
     private String moTa;
     private Integer diem;
-    private String hinhAnh; // Trả về dạng URL chuỗi sạch đẹp cho client hiển thị
+    private String hinhAnh;
     private Integer giaTriGiamPercent;
     private BigDecimal giaTriToiDa;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") // Định dạng đẹp mắt khi hiển thị ở Client
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime ngayKetThuc;
     
     private TrangThai trangThai;

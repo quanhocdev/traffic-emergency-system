@@ -36,11 +36,9 @@ public class DoiQuaMapper {
         DoiQuaResponseDTO dto = new DoiQuaResponseDTO();
 
         dto.setId(doiQua.getId());
-        dto.setQuaId(qua.getId());
-        dto.setTenQua(qua.getTen());
+        dto.setQua(QuaMapper.toResponseDTO(qua));
         dto.setSoLuong(doiQua.getSoLuong());
         dto.setDiemDaTru(doiQua.getDiemDaTru());
-        dto.setLoai(qua.getLoai().name());
         dto.setNgayDoi(doiQua.getNgayDoi());
 
         return dto;
@@ -52,15 +50,8 @@ public class DoiQuaMapper {
             Qua qua) {
 
         TuiQuaResponseDTO dto = new TuiQuaResponseDTO();
-
-        dto.setQuaId(qua.getId());
-        dto.setTenQua(qua.getTen());
         dto.setSoLuong(tuiQua.getSoLuong());
-        dto.setLoai(qua.getLoai().name());
-        dto.setNgayKetThuc(qua.getNgayKetThuc());
-
+        dto.setQua(QuaMapper.toResponseDTO(qua));
         return dto;
     }
-
-  
 }
