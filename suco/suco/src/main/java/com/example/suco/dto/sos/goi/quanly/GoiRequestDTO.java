@@ -26,7 +26,4 @@ public class GoiRequestDTO {
     public String getUuDai() { return uuDai; }
     public void setUuDai(String uuDai) { this.uuDai = uuDai; }
 
-    
-
-    
 }
