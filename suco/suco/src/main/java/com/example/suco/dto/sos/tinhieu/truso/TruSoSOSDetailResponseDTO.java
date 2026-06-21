@@ -4,7 +4,6 @@ import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 import java.time.LocalDateTime;
 
 import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
-import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 
 public class TruSoSOSDetailResponseDTO {
 

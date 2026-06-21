@@ -1,5 +1,4 @@
 package com.example.suco.dto.sos.hoadon.quanly;
-import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 

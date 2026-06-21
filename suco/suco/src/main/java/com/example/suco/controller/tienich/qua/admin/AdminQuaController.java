@@ -28,6 +28,7 @@ public class AdminQuaController {
         model.addAttribute("loaiQua", Qua.LoaiQua.values());
         model.addAttribute("activePage", "quan-ly-qua");
 
+        
         return "admin/quan-ly-qua";
     }
 
