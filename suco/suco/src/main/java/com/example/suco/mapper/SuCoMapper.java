@@ -11,15 +11,18 @@ import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoItemResponseDTO;
 import com.example.suco.dto.suco.baocao.user.UserSuCoDetailResponseDTO;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.model.BaoCaoSuCo;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SuCoMapper {
 
-
+        @Autowired
+        private InfoTruSoMapper infoTruSoMapper;
 
         public BaoCaoSuCo toEntity(
-            SuCoRequestDTO dto){
+        SuCoRequestDTO dto){
                 BaoCaoSuCo entity = new BaoCaoSuCo();
                 entity.setViDo(dto.getViDo());
                 entity.setKinhDo(dto.getKinhDo());
@@ -32,7 +35,7 @@ public class SuCoMapper {
                 entity.setHinhAnhUrl(dto.getHinhAnhUrl());
 
                 return entity;
-            }
+        }
         
         public SuCoMapResponseDTO toMapDto(BaoCaoSuCo b) {
                 SuCoMapResponseDTO dto = new SuCoMapResponseDTO();
@@ -41,55 +44,47 @@ public class SuCoMapper {
                 dto.setKinhDo(b.getKinhDo());
                 dto.setIconUrl( b.getLoaiSuCo() != null ? b.getLoaiSuCo().getIconUrl() : null);
                 dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
-                
                 dto.setMucDoSuCo(
-    b.getMucDoSuCo() != null ? b.getMucDoSuCo().name() : null
-);
+                        b.getMucDoSuCo() != null ? b.getMucDoSuCo().name() : null
+                );
                 dto.setTruSoId(b.getTruSoTiepNhan() != null ? b.getTruSoTiepNhan().getId() : null);
                 return dto;
         }
 
-    public AdminSuCoDetailResponseDTO toAdminDetailDto(BaoCaoSuCo b) {
+        public AdminSuCoDetailResponseDTO toAdminDetailDto(BaoCaoSuCo b) {
 
-    AdminSuCoDetailResponseDTO dto =
-            new AdminSuCoDetailResponseDTO();
+        AdminSuCoDetailResponseDTO dto = new AdminSuCoDetailResponseDTO();
 
-            
-    dto.setId(b.getId());
-    dto.setViDo(b.getViDo());
-    dto.setKinhDo(b.getKinhDo());
-    dto.setReporterUid(
+        dto.setId(b.getId());
+        dto.setViDo(b.getViDo());
+        dto.setKinhDo(b.getKinhDo());
+        dto.setReporterUid(
         b.getReporter() != null
                 ? b.getReporter().getUid()
                 : null
-);
-    dto.setMoTa(b.getMoTa());
+        );
+        dto.setMoTa(b.getMoTa());
 
-    dto.setTenLoai(
-            b.getLoaiSuCo() != null
-                    ? b.getLoaiSuCo().getTen()
-                    : null
-    );
+        dto.setTenLoai(
+                b.getLoaiSuCo() != null
+                        ? b.getLoaiSuCo().getTen()
+                        : null
+        );
 
-    dto.setIconUrl(
-            b.getLoaiSuCo() != null
-                    ? b.getLoaiSuCo().getIconUrl()
-                    : null
-    );
-    dto.setTenNguoiBao(
-            b.getReporter() != null
-                    ? b.getReporter().getName()
-                    : "Người dân báo"
-    );
+        dto.setIconUrl(
+                b.getLoaiSuCo() != null
+                        ? b.getLoaiSuCo().getIconUrl()
+                        : null
+        );
+        dto.setTenNguoiBao(
+                b.getReporter() != null
+                        ? b.getReporter().getName()
+                        : "Người dân báo"
+        );
 
 
-if (b.getTruSoTiepNhan() != null) {
-    TruSoMiniDTO truSoTiepNhan = new TruSoMiniDTO();
-    truSoTiepNhan.setId(b.getTruSoTiepNhan().getId());
-    truSoTiepNhan.setTenTruSo(b.getTruSoTiepNhan().getTenTruSo());
+    dto.setTruSoTiepNhan(infoTruSoMapper.toMiniDto(b.getTruSoTiepNhan()));
 
-    dto.setTruSoTiepNhan(truSoTiepNhan);
-}
 
     dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
 
@@ -140,13 +135,7 @@ public TruSoSuCoDetailResponseDTO toTruSoDetailDto(BaoCaoSuCo b) {
                     : "Người dân báo"
     );
 
-if (b.getTruSoTiepNhan() != null) {
-    TruSoMiniDTO truSoTiepNhan = new TruSoMiniDTO();
-    truSoTiepNhan.setId(b.getTruSoTiepNhan().getId());
-    truSoTiepNhan.setTenTruSo(b.getTruSoTiepNhan().getTenTruSo());
-
-    dto.setTruSoTiepNhan(truSoTiepNhan);
-}
+        dto.setTruSoTiepNhan(infoTruSoMapper.toMiniDto(b.getTruSoTiepNhan()));
 
     dto.setTrangThaiXuLy(b.getTrangThaiXuLy() != null ? b.getTrangThaiXuLy().getLabel() : null);
 

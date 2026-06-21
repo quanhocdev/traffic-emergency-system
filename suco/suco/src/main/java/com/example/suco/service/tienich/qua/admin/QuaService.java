@@ -9,15 +9,10 @@ import com.example.suco.service.tienich.qua.admin.validation.ValidateService;
 import com.example.suco.service.tienich.qua.admin.storage.FileStorageQuaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.IOException;
-import java.nio.file.*;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,12 +25,13 @@ public class QuaService {
     private QuaRepository quaRepository;
 
     @Autowired
-private ValidateService validateService;
+    private ValidateService validateService;
 
-@Autowired
-private FileStorageQuaService fileStorageService;
+    @Autowired
+    private FileStorageQuaService fileStorageService;
 
-
+    @Autowired
+    private QuaMapper quaMapper;
 
     /**
      * Lấy tất cả quà
@@ -43,7 +39,7 @@ private FileStorageQuaService fileStorageService;
     public List<QuaResponseDTO> getAllQua() {
         return quaRepository.findAll()
                 .stream()
-                .map(QuaMapper::toResponseDTO)
+                .map(quaMapper::toResponseDTO) 
                 .collect(Collectors.toList());
     }
 
@@ -55,7 +51,7 @@ private FileStorageQuaService fileStorageService;
                 .orElseThrow(() ->
                         new RuntimeException("Không tìm thấy quà với id = " + id));
 
-        return QuaMapper.toResponseDTO(qua);
+        return quaMapper.toResponseDTO(qua);
     }
 
     /**
@@ -71,7 +67,7 @@ private FileStorageQuaService fileStorageService;
         // Validate
         validateService.validateCreate(requestDTO);
 
-        Qua qua = QuaMapper.toEntity(requestDTO);
+        Qua qua = quaMapper.toEntity(requestDTO); 
 
         // Mặc định trạng thái
         if (qua.getTrangThai() == null) {
@@ -81,12 +77,12 @@ private FileStorageQuaService fileStorageService;
         // Upload ảnh
         String fileName = "default.png";
 
-if (requestDTO.getHinhAnh() != null
-        && !requestDTO.getHinhAnh().isEmpty()) {
+        if (requestDTO.getHinhAnh() != null
+                && !requestDTO.getHinhAnh().isEmpty()) {
 
-    fileName = fileStorageService.saveFile(
-            requestDTO.getHinhAnh());
-}
+            fileName = fileStorageService.saveFile(
+                    requestDTO.getHinhAnh());
+        }
 
         qua.setHinhAnh(fileName);
 
@@ -109,7 +105,7 @@ if (requestDTO.getHinhAnh() != null
 
         log.info("Tạo quà thành công ID={}", savedQua.getId());
 
-        return QuaMapper.toResponseDTO(savedQua);
+        return quaMapper.toResponseDTO(savedQua); // 2. Sửa cách gọi
     }
 
     /**
@@ -139,9 +135,9 @@ if (requestDTO.getHinhAnh() != null
 
         validateService.validateUpdate(requestDTO);
 
-if (requestDTO.getDiem() != null) {
-    qua.setDiem(requestDTO.getDiem());
-}
+        if (requestDTO.getDiem() != null) {
+            qua.setDiem(requestDTO.getDiem());
+        }
 
         if (requestDTO.getNgayKetThuc() != null) {
             qua.setNgayKetThuc(
@@ -155,14 +151,14 @@ if (requestDTO.getDiem() != null) {
 
         // Upload ảnh mới
         if (requestDTO.getHinhAnh() != null
-        && !requestDTO.getHinhAnh().isEmpty()) {
+                && !requestDTO.getHinhAnh().isEmpty()) {
 
-    String fileName =
-            fileStorageService.saveFile(
-                    requestDTO.getHinhAnh());
+            String fileName =
+                    fileStorageService.saveFile(
+                            requestDTO.getHinhAnh());
 
-    qua.setHinhAnh(fileName);
-}
+            qua.setHinhAnh(fileName);
+        }
 
         // Logic voucher
         if (requestDTO.getLoai() != null) {
@@ -195,7 +191,7 @@ if (requestDTO.getDiem() != null) {
 
         log.info("Cập nhật thành công ID={}", id);
 
-        return QuaMapper.toResponseDTO(updatedQua);
+        return quaMapper.toResponseDTO(updatedQua); // 2. Sửa cách gọi
     }
 
     /**
@@ -213,9 +209,7 @@ if (requestDTO.getDiem() != null) {
         log.info("Đã xóa quà ID={}", id);
     }
 
-    /**
-     * Đổi trạng thái
-     */
+     // Đổi trạng thái
     public void updateStatus(
             Long id,
             Qua.TrangThai trangThai) {

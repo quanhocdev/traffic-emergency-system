@@ -3,11 +3,13 @@ package com.example.suco.mapper;
 import com.example.suco.dto.tienich.qua.quanly.QuaRequestDTO;
 import com.example.suco.dto.tienich.qua.quanly.QuaResponseDTO;
 import com.example.suco.model.Qua;
+import org.springframework.stereotype.Component;
 
+@Component 
 public class QuaMapper {
 
-        // Request DTO -> Entity 
-    public static Qua toEntity(QuaRequestDTO requestDTO) {
+    // Request DTO -> Entity
+    public Qua toEntity(QuaRequestDTO requestDTO) {
         if (requestDTO == null) {
             return null;
         }
@@ -23,13 +25,13 @@ public class QuaMapper {
         // Nếu request không truyền trạng thái, mặc định là HOAT_DONG
         if (requestDTO.getTrangThai() != null) {
             qua.setTrangThai(requestDTO.getTrangThai());
-        }
+        } 
 
         return qua;
     }
 
-     // Entity -> Response DTO (dữ liệu về cho Client công khai)
-    public static QuaResponseDTO toResponseDTO(Qua qua) {
+    // Entity -> Response DTO 
+    public QuaResponseDTO toResponseDTO(Qua qua) {
         if (qua == null) {
             return null;
         }

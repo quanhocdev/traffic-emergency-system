@@ -29,78 +29,80 @@ public class DoiQuaService {
     @Autowired
     private TuiQuaRepository tuiQuaRepository;
 
-@Transactional
-public boolean thucHienDoiQua(String uid, DoiQuaRequestDTO dto) {
+    @Autowired
+    private DoiQuaMapper doiQuaMapper;
 
-    LocalDateTime now = LocalDateTime.now();
+    @Transactional
+    public boolean thucHienDoiQua(String uid, DoiQuaRequestDTO dto) {
 
-    User user = userRepository.findById(uid)
-            .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+        LocalDateTime now = LocalDateTime.now();
 
-    Qua qua = quaRepository.findById(dto.getQuaId())
-            .orElseThrow(() -> new RuntimeException("Quà không tồn tại"));
+        User user = userRepository.findById(uid)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 
-    // 1. Check trạng thái
-    if (qua.getTrangThai() != Qua.TrangThai.HOAT_DONG) {
-        throw new RuntimeException("Quà không còn khả dụng");
+        Qua qua = quaRepository.findById(dto.getQuaId())
+                .orElseThrow(() -> new RuntimeException("Quà không tồn tại"));
+
+        // 1. Check trạng thái
+        if (qua.getTrangThai() != Qua.TrangThai.HOAT_DONG) {
+            throw new RuntimeException("Quà không còn khả dụng");
+        }
+
+        // 2. Check hết hạn
+        if (qua.getNgayKetThuc() != null && now.isAfter(qua.getNgayKetThuc())) {
+            throw new RuntimeException("Quà đã hết thời gian");
+        }
+
+        // 4. Trừ điểm
+        int tongDiem = qua.getDiem() * dto.getSoLuong();
+
+        // Check đủ điểm
+        if (user.getTotalPoints() < tongDiem){
+            throw new RuntimeException("Không đủ điểm để đổi số lượng này");
+        }
+        user.setTotalPoints(user.getTotalPoints() - tongDiem);
+        userRepository.save(user);
+
+        // 5. GỘP QUÀ
+        Optional<TuiQua> existing =
+                tuiQuaRepository.findByUserIdAndQuaId(uid, dto.getQuaId());
+
+        if (existing.isPresent()) {
+            TuiQua item = existing.get();
+            item.setSoLuong(
+                item.getSoLuong() + dto.getSoLuong()
+            );
+            tuiQuaRepository.save(item);
+
+        } else {
+            TuiQua newItem = new TuiQua();
+            newItem.setUserId(uid);
+            newItem.setQuaId(dto.getQuaId());
+            newItem.setSoLuong(dto.getSoLuong());
+
+            tuiQuaRepository.save(newItem);
+        }
+
+        DoiQua lichSu = doiQuaMapper.toDoiQuaEntity(
+                dto,
+                uid,
+                qua.getDiem() * dto.getSoLuong()
+        );
+
+        doiQuaRepository.save(lichSu);
+
+        return true;
     }
 
-    // 2. Check hết hạn
-    if (qua.getNgayKetThuc() != null && now.isAfter(qua.getNgayKetThuc())) {
-        throw new RuntimeException("Quà đã hết thời gian");
+    public List<TuiQuaResponseDTO> getMyGifts(String uid) {
+        return tuiQuaRepository.getMyGiftsWithQua(uid)
+            .stream()
+            .map(obj -> {
+                TuiQua t = (TuiQua) obj[0];
+                Qua q = (Qua) obj[1];
+                
+                return doiQuaMapper.toTuiQuaResponse(t, q);
+            })
+            .toList();
     }
-
-    // 4. Trừ điểm
-    int tongDiem = qua.getDiem() * dto.getSoLuong();
-
-    // Check đủ điểm
-    if (user.getTotalPoints() < tongDiem){
-        throw new RuntimeException("Không đủ điểm để đổi số lượng này");
-    }
-    user.setTotalPoints(user.getTotalPoints() - tongDiem);
-    userRepository.save(user);
-
-    // 5. GỘP QUÀ
-    Optional<TuiQua> existing =
-            tuiQuaRepository.findByUserIdAndQuaId(uid, dto.getQuaId());
-
-    if (existing.isPresent()) {
-        TuiQua item = existing.get();
-        item.setSoLuong(
-        item.getSoLuong() + dto.getSoLuong()
-);
-        tuiQuaRepository.save(item);
-
-    } else {
-        TuiQua newItem = new TuiQua();
-        newItem.setUserId(uid);
-        newItem.setQuaId(dto.getQuaId());
-        newItem.setSoLuong(dto.getSoLuong());
-
-        tuiQuaRepository.save(newItem);
-    }
-
-    // 6. Lưu lịch sử đổi quà
-    DoiQua lichSu = DoiQuaMapper.toDoiQuaEntity(
-        dto,
-        uid,
-        qua.getDiem() * dto.getSoLuong()
-);
-
-doiQuaRepository.save(lichSu);
-
-    return true;
-}
-public List<TuiQuaResponseDTO> getMyGifts(String uid)
-{
-
-    return tuiQuaRepository.getMyGiftsWithQua(uid)
-        .stream()
-        .map(obj -> {
-            TuiQua t = (TuiQua) obj[0];
-            Qua q = (Qua) obj[1];
-            return DoiQuaMapper.toTuiQuaResponse(t, q);
-        })
-        .toList();
-}
 }
