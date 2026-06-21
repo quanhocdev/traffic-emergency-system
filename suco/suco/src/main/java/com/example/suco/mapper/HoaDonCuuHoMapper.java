@@ -5,8 +5,9 @@ import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonTruSoResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonUserResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
-import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO; // 🌟 ĐÃ ĐỔI SANG DTO MỚI SẠCH SẼ
-import com.example.suco.dto.sos.tinhieu.UserMiniDTO; // Giữ lại nếu toUserDTO vẫn cần dùng, nếu không có thể xóa
+import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO; 
+import com.example.suco.dto.sos.tinhieu.UserMiniDTO; 
+import com.example.suco.mapper.InfoUserMapper;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.vanhanh.UserRepository;
@@ -24,6 +25,12 @@ public class HoaDonCuuHoMapper {
 
     @Autowired
     private VipService vipService;
+
+    @Autowired
+    private InfoUserMapper infoUserMapper;
+
+    @Autowired
+    private InfoTruSoMapper infoTruSoMapper;
 
     // Chuyển đổi từ DTO HoaDonRequestDTO sang entity HoaDon
     public HoaDon toEntity(HoaDonRequestDTO req, Long trusoId, String userId, BigDecimal gia) {
@@ -64,14 +71,7 @@ public class HoaDonCuuHoMapper {
         if (hd.getUserId() != null) {
             User userEntity = userRepository.findByUid(hd.getUserId()).orElse(null);
             if (userEntity != null) {
-                UserInfoResponseDTO userInfo = new UserInfoResponseDTO();
-                userInfo.setName(userEntity.getName());
-                userInfo.setEmail(userEntity.getEmail());
-                
-                // Quét trạng thái VIP động từ DB
-                boolean tinhTrangVip = vipService.checkVip(userEntity.getUid());
-                userInfo.setVip(tinhTrangVip); 
-
+                UserInfoResponseDTO userInfo = infoUserMapper.toUserInfoResponseDTO(userEntity);
                 dto.setUser(userInfo);
             }
         }
@@ -79,31 +79,13 @@ public class HoaDonCuuHoMapper {
         return dto;
     }
 
-    // Chuyển đổi từ entity HoaDon sang DTO HoaDonUserResponseDTO
+    // Chuyển đổi từ entity HoaDon sang DTO HoaDonUserResponseDTO (Dùng UserMiniDTO - Kế thừa)
     public HoaDonUserResponseDTO toUserDTO(HoaDon hd, User userEntity, TruSo truSoEntity) {
         HoaDonUserResponseDTO dto = new HoaDonUserResponseDTO();
         dto.setId(hd.getId());
 
-        // TRỤ SỞ
-        TruSoMiniDTO truSo = null;
-        if (truSoEntity != null) {
-            truSo = new TruSoMiniDTO();
-            truSo.setId(truSoEntity.getId());
-            truSo.setTenTruSo(truSoEntity.getTenTruSo());
-        }
-        dto.setTruSo(truSo);
-
-        // USER (Giữ nguyên logic cũ cho App User hoặc hệ thống quản lý nếu cần)
-        UserMiniDTO user = null;
-        if (userEntity != null) {
-            user = new UserMiniDTO();
-            user.setId(userEntity.getUid());
-            user.setName(userEntity.getName());
-            user.setEmail(userEntity.getEmail());
-            user.setTotalPoints(userEntity.getTotalPoints());
-            user.setVip(vipService.checkVip(userEntity.getUid()));
-        }
-        dto.setUser(user);
+        dto.setTruSo(infoTruSoMapper.toMiniDto(truSoEntity));
+        dto.setUser(infoUserMapper.toUserMiniDTO(userEntity));
 
         dto.setNoiDungXuLy(hd.getNoiDungXuLy());
         dto.setThanhTien(hd.getThanhTien());

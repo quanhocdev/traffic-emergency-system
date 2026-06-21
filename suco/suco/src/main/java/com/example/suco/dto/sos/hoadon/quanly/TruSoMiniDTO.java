@@ -4,6 +4,14 @@ public class TruSoMiniDTO {
     private Long id;
     private String tenTruSo;
 
+
+    public TruSoMiniDTO() {
+    }
+    public TruSoMiniDTO(Long id, String tenTruSo) {
+        this.id = id;
+        this.tenTruSo = tenTruSo;
+    }
+
     // getter/setter
     public Long getId() {
         return id;

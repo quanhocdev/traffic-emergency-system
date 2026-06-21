@@ -2,7 +2,6 @@ package com.example.suco.mapper;
 
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
 import com.example.suco.dto.sos.tinhieu.SOSMapResponseDTO;
-import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 import com.example.suco.dto.sos.tinhieu.admin.AdminSOSDetailResponseDTO;
 import com.example.suco.dto.sos.tinhieu.truso.TruSoSOSDetailResponseDTO;
 import com.example.suco.dto.sos.tinhieu.user.TheoDoiSOSDetailResponseDTO;
@@ -13,8 +12,6 @@ import com.example.suco.model.TinHieuSOS;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
 import com.example.suco.model.enums.TrangThaiXuLy;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
-import com.example.suco.mapper.InfoUserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
