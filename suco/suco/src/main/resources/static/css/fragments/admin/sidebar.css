@@ -1,13 +1,14 @@
 /* 2. SIDEBAR (Giống hệt các trang khác) */
 #sidebar {
   width: var(--sidebar-width);
-  background: var(--primary-color);
+  background: #1a1a1a !important;
   color: white;
   transition: width 0.3s ease;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   z-index: 1001;
+  height: 100vh;
 }
 
 #sidebar.collapsed {

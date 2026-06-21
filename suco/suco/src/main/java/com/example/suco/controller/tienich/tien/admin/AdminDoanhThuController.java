@@ -35,8 +35,8 @@ public class AdminDoanhThuController {
 
     // ===== MODAL DETAIL API =====
     @GetMapping("/hoa-don/{id}")
-@ResponseBody
-public ResponseEntity<HoaDonDetailDTO> getChiTiet(@PathVariable Long id) {
-    return ResponseEntity.ok(doanhThuService.getChiTietHoaDon(id));
-}
+    @ResponseBody
+    public ResponseEntity<HoaDonDetailDTO> getChiTiet(@PathVariable Long id) {
+        return ResponseEntity.ok(doanhThuService.getChiTietHoaDon(id));
+    }
 }
