@@ -31,65 +31,70 @@ public class SoHuuGoiService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    // 1. Tiêm MuaGoiMapper component vào đây
+    @Autowired
+    private MuaGoiMapper muaGoiMapper;
 
     // Đăng ký gói mới cho người dùng
-   public MuaGoi dangKyGoi(String userId, MuaGoiRequestDTO request) {
+    public MuaGoi dangKyGoi(String userId, MuaGoiRequestDTO request) {
 
-    List<MuaGoi> existing = muaGoiRepository.findByUserId(userId);
+        List<MuaGoi> existing = muaGoiRepository.findByUserId(userId);
 
-    for (MuaGoi mg : existing) {
-        statusService.validateCanBuy(mg);
+        for (MuaGoi mg : existing) {
+            statusService.validateCanBuy(mg);
+        }
+
+        Goi goi = goiRepository.findById(request.getGoiId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy gói"));
+
+        // 2. Sửa thành gọi qua instance cụ thể
+        MuaGoi entity = muaGoiMapper.toEntity(request, userId, goi);
+
+        MuaGoi saved = muaGoiRepository.save(entity);
+
+        messagingTemplate.convertAndSend(
+                "/topic/package-status/" + userId,
+                "Bạn đã đăng ký gói thành công"
+        );
+
+        return saved;
     }
 
-    Goi goi = goiRepository.findById(request.getGoiId())
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy gói"));
-
-    MuaGoi entity = MuaGoiMapper.toEntity(request, userId, goi);
-
-    MuaGoi saved = muaGoiRepository.save(entity);
-
-    messagingTemplate.convertAndSend(
-            "/topic/package-status/" + userId,
-            "Bạn đã đăng ký gói thành công"
-    );
-
-    return saved;
-}
     // Lấy danh sách gói đã mua của người dùng
     public List<MuaGoiResponseDTO> getGoiByUserId(String userId) {
 
-    List<MuaGoi> list = muaGoiRepository.findByUserId(userId);
+        List<MuaGoi> list = muaGoiRepository.findByUserId(userId);
 
-    return list.stream().map(mg -> {
+        return list.stream().map(mg -> {
 
-        String tenGoi = goiRepository.findById(mg.getGoiId())
-                .map(g -> g.getTen())
-                .orElse("Không xác định");
+            String tenGoi = goiRepository.findById(mg.getGoiId())
+                    .map(g -> g.getTen())
+                    .orElse("Không xác định");
 
-        return MuaGoiMapper.toResponse(mg, tenGoi);
+            // 2. Sửa thành gọi qua instance cụ thể
+            return muaGoiMapper.toResponse(mg, tenGoi);
 
-    }).collect(Collectors.toList());
-}
-
-
-    // Hủy gói đã mua (Chỉ hủy khi chưa ACTIVE)
-   public void huyGoi(Long id, String userId) {
-
-    MuaGoi mg = muaGoiRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Không tìm thấy gói"));
-
-    if (!mg.getUserId().equals(userId)) {
-        throw new RuntimeException("Không có quyền");
+        }).collect(Collectors.toList());
     }
 
-    statusService.validateCanCancel(mg);
+    // Hủy gói đã mua (Chỉ hủy khi chưa ACTIVE)
+    public void huyGoi(Long id, String userId) {
 
-    mg.setTrangThai("CANCELLED");
-    muaGoiRepository.save(mg);
+        MuaGoi mg = muaGoiRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy gói"));
 
-    messagingTemplate.convertAndSend(
-            "/topic/package-status/" + userId,
-            "REFRESH"
-    );
-}
+        if (!mg.getUserId().equals(userId)) {
+            throw new RuntimeException("Không có quyền");
+        }
+
+        statusService.validateCanCancel(mg);
+
+        mg.setTrangThai("CANCELLED");
+        muaGoiRepository.save(mg);
+
+        messagingTemplate.convertAndSend(
+                "/topic/package-status/" + userId,
+                "REFRESH"
+        );
+    }
 }
