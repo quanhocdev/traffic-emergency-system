@@ -1,4 +1,4 @@
-package com.example.suco.mapper;
+package com.example.suco.mapper.hoadon;
 
 import com.example.suco.dto.sos.hoadon.payment.ThanhToanRequestDTO;
 import com.example.suco.dto.sos.hoadon.payment.ThanhToanResponseDTO;

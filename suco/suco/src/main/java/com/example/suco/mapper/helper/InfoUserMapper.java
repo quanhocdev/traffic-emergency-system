@@ -1,4 +1,4 @@
-package com.example.suco.mapper;
+package com.example.suco.mapper.helper;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

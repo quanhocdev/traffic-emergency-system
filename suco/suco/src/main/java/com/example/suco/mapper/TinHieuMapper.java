@@ -10,6 +10,7 @@ import com.example.suco.dto.sos.tinhieu.user.TinHieuSOSRequestDTO;
 import com.example.suco.model.User;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
+import com.example.suco.mapper.helper.InfoUserMapper;
 import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
 import com.example.suco.model.enums.TrangThaiXuLy;
 import org.springframework.beans.factory.annotation.Autowired;

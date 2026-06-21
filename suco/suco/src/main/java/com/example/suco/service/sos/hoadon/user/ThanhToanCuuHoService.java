@@ -2,7 +2,7 @@ package com.example.suco.service.sos.hoadon.user;
 
 import com.example.suco.dto.sos.hoadon.payment.ThanhToanRequestDTO;
 import com.example.suco.dto.sos.hoadon.payment.ThanhToanResponseDTO;
-import com.example.suco.mapper.ThanhToanCuuHoMapper;
+import com.example.suco.mapper.hoadon.ThanhToanCuuHoMapper;
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.ThanhToanHoaDon;

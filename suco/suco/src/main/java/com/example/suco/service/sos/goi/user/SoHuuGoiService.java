@@ -31,7 +31,6 @@ public class SoHuuGoiService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    // 1. Tiêm MuaGoiMapper component vào đây
     @Autowired
     private MuaGoiMapper muaGoiMapper;
 

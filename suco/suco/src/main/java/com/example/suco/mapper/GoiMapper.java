@@ -3,14 +3,18 @@ package com.example.suco.mapper;
 import com.example.suco.dto.sos.goi.quanly.GoiRequestDTO;
 import com.example.suco.dto.sos.goi.quanly.GoiResponseDTO;
 import com.example.suco.model.Goi;
+import org.springframework.stereotype.Component;
 
+@Component 
 public class GoiMapper {
 
     // RequestDTO -> Entity
-    public static Goi toEntity(GoiRequestDTO dto) {
+    public Goi toEntity(GoiRequestDTO dto) {
+        if (dto == null) {
+            return null;
+        }
 
         Goi goi = new Goi();
-
         goi.setTen(dto.getTen());
         goi.setGia(dto.getGia());
         goi.setThoiHan(dto.getThoiHan());
@@ -20,8 +24,11 @@ public class GoiMapper {
         return goi;
     }
 
-        // Update Entity with RequestDTO 
-    public static void updateEntity(Goi goi, GoiRequestDTO dto) {
+    // Update Entity with RequestDTO 
+    public void updateEntity(Goi goi, GoiRequestDTO dto) {
+        if (goi == null || dto == null) {
+            return;
+        }
 
         if (dto.getTen() != null) {
             goi.setTen(dto.getTen());
@@ -44,11 +51,13 @@ public class GoiMapper {
         }
     }
 
-    // Entity -> ResponseDTO
-    public static GoiResponseDTO toResponseDTO(Goi goi) {
+    // Entity -> ResponseDTO 
+    public GoiResponseDTO toResponseDTO(Goi goi) {
+        if (goi == null) {
+            return null;
+        }
 
         GoiResponseDTO dto = new GoiResponseDTO();
-
         dto.setId(goi.getId());
         dto.setTen(goi.getTen());
         dto.setGia(goi.getGia());

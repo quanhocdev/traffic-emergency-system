@@ -14,7 +14,7 @@ public class MuaGoiMapper {
     // REQUEST -> ENTITY
     public MuaGoi toEntity(MuaGoiRequestDTO dto, String userId, Goi goi) {
         if (dto == null || goi == null) {
-            return null; // Null-check an toàn
+            return null;
         }
         
         MuaGoi entity = new MuaGoi();

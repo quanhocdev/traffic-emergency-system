@@ -10,6 +10,7 @@ import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoItemResponseDTO;
 import com.example.suco.dto.suco.baocao.user.UserSuCoDetailResponseDTO;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
+import com.example.suco.mapper.helper.InfoTruSoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 
 import org.springframework.beans.factory.annotation.Autowired;

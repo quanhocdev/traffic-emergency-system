@@ -12,9 +12,10 @@ import com.example.suco.dto.sos.hoadon.quanly.HoaDonRequestDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonTruSoResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonDetailDTO; 
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO; 
-import com.example.suco.dto.sos.hoadon.payment.ThanhToanResponseDTO; 
-import com.example.suco.mapper.HoaDonCuuHoMapper;
-import com.example.suco.mapper.ThanhToanCuuHoMapper; 
+import com.example.suco.dto.sos.hoadon.payment.ThanhToanResponseDTO;
+import com.example.suco.mapper.hoadon.HoaDonCuuHoMapper;
+import com.example.suco.mapper.hoadon.ThanhToanCuuHoMapper;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
