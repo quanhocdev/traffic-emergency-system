@@ -2,8 +2,6 @@ package com.example.canhbao.data.model.qua
 
 import java.math.BigDecimal
 
-
-
 data class QuaResponseDTO(
     val id: Long,
     val ten: String,
