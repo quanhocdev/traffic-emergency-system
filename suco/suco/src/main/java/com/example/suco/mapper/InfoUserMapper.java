@@ -1,26 +1,43 @@
 package com.example.suco.mapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.stereotype.Component;
 import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
+import com.example.suco.dto.sos.tinhieu.UserMiniDTO; // Nhớ import thêm class con vào bạn nhé
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
 import com.example.suco.model.User;
 
+@Component
 public class InfoUserMapper {
     
     @Autowired
     private VipService vipService;
 
-
+    // 1. Map ra DTO cha (UserInfoResponseDTO) - Dùng constructor 
     public UserInfoResponseDTO toUserInfoResponseDTO(User user) {
         if (user == null) {
             return null;
         }
-        UserInfoResponseDTO dto = new UserInfoResponseDTO();
-        dto.setName(user.getName());
-        dto.setEmail(user.getEmail());
-        dto.setVip(vipService.checkVip(user.getUid()));
-        return dto;
+        
+        return new UserInfoResponseDTO(
+            user.getName(),
+            user.getEmail(),
+            vipService.checkVip(user.getUid())
+        );
     }
 
+    // 2. Map ra DTO con (UserMiniDTO) - Cũng gọi constructor 1 dòng nhờ tính kế thừa super()
+    public UserMiniDTO toUserMiniDTO(User user) {
+        if (user == null) {
+            return null;
+        }
+
+        return new UserMiniDTO(
+            user.getUid(),
+            user.getName(),
+            user.getEmail(),
+            vipService.checkVip(user.getUid()),
+            user.getTotalPoints()
+        );
+    }
 }

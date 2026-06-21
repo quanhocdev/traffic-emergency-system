@@ -7,6 +7,12 @@ public class UserInfoResponseDTO {
 
     public UserInfoResponseDTO() {}
 
+public UserInfoResponseDTO(String name, String email, boolean vip) {
+    this.name = name;
+    this.email = email;
+    this.vip = vip;
+}
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
