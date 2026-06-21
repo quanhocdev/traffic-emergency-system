@@ -2,7 +2,7 @@ package com.example.suco.service.sos.goi.user;
 
 import com.example.suco.dto.sos.goi.dangky.MuaGoiRequestDTO;
 import com.example.suco.dto.sos.goi.dangky.MuaGoiResponseDTO;
-import com.example.suco.mapper.MuaGoiMapper;
+import com.example.suco.mapper.goi.MuaGoiMapper;
 import com.example.suco.model.Goi;
 import com.example.suco.model.MuaGoi;
 import com.example.suco.repository.sos.goi.CRUDGoiRepository;
@@ -31,7 +31,6 @@ public class SoHuuGoiService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
-    // 1. Tiêm MuaGoiMapper component vào đây
     @Autowired
     private MuaGoiMapper muaGoiMapper;
 

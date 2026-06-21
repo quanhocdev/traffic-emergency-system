@@ -1,7 +1,7 @@
 package com.example.suco.service.sos.hoadon.user;
 
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonUserResponseDTO;
-import com.example.suco.mapper.HoaDonCuuHoMapper;
+import com.example.suco.mapper.hoadon.HoaDonCuuHoMapper;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;

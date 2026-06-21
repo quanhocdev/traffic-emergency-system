@@ -2,7 +2,7 @@ package com.example.suco.service.tienich.qua.admin;
 
 import com.example.suco.dto.tienich.qua.quanly.QuaRequestDTO;
 import com.example.suco.dto.tienich.qua.quanly.QuaResponseDTO;
-import com.example.suco.mapper.QuaMapper;
+import com.example.suco.mapper.qua.QuaMapper;
 import com.example.suco.model.Qua;
 import com.example.suco.repository.tienich.qua.QuaRepository;
 import com.example.suco.service.tienich.qua.admin.validation.ValidateService;

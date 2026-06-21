@@ -1,4 +1,4 @@
-package com.example.suco.mapper;
+package com.example.suco.mapper.helper;
 
 import org.springframework.stereotype.Component;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;

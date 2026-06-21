@@ -1,4 +1,4 @@
-package com.example.suco.mapper;
+package com.example.suco.mapper.goi;
 
 import com.example.suco.dto.sos.goi.dangky.MuaGoiRequestDTO;
 import com.example.suco.dto.sos.goi.dangky.MuaGoiResponseDTO;
@@ -14,7 +14,7 @@ public class MuaGoiMapper {
     // REQUEST -> ENTITY
     public MuaGoi toEntity(MuaGoiRequestDTO dto, String userId, Goi goi) {
         if (dto == null || goi == null) {
-            return null; // Null-check an toàn
+            return null;
         }
         
         MuaGoi entity = new MuaGoi();
