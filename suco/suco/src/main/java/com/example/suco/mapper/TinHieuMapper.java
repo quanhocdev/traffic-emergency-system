@@ -14,7 +14,7 @@ import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
 import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
-
+import com.example.suco.mapper.InfoUserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
@@ -23,37 +23,7 @@ import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 public class TinHieuMapper {
 
     @Autowired
-    private VipService vipService;
-
-    private UserMiniDTO toUserMiniDTO(User user) {
-        if (user == null) {
-            return null;
-        }
-
-        UserMiniDTO dto = new UserMiniDTO();
-        dto.setId(user.getUid());
-        dto.setName(user.getName());
-        dto.setEmail(user.getEmail());
-        dto.setTotalPoints(user.getTotalPoints());
-
-        return dto;
-    }
-
-    private UserInfoResponseDTO toUserInfoResponseDTO(User user) {
-        if (user == null) {
-            return null;
-        }
-
-        UserInfoResponseDTO dto = new UserInfoResponseDTO();
-        dto.setName(user.getName());
-        dto.setEmail(user.getEmail());
-        dto.setVip(vipService.checkVip(user.getUid()));
-
-        return dto;
-    }
-
-  
-
+    private InfoUserMapper infoUserMapper;
 
     // Request DTO → Entity
     public TinHieuSOS toEntity(
@@ -115,7 +85,7 @@ public class TinHieuMapper {
         dto.setThoiGianTao(sos.getCreatedAt());
 
         // Map thông tin người gửi cứu hộ
-        dto.setUser(toUserInfoResponseDTO(sos.getUser()));
+        dto.setUser(infoUserMapper.toUserInfoResponseDTO(sos.getUser()));
 
         if (sos.getHoaDon() != null) {
             HoaDonResponseDTO hdDto = new HoaDonResponseDTO();
@@ -152,10 +122,11 @@ public class TinHieuMapper {
         dto.setThoiGianTao(sos.getCreatedAt());
         
         dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
-        dto.setUser(toUserInfoResponseDTO(sos.getUser()));
-                if (sos.getHoaDon() != null) {
+        dto.setUser(infoUserMapper.toUserInfoResponseDTO(sos.getUser()));
+        
+        if (sos.getHoaDon() != null) {
             HoaDonResponseDTO hdDto = new HoaDonResponseDTO();
-            
+
             hdDto.setId(sos.getHoaDon().getId());
             hdDto.setSosId(sos.getHoaDon().getSosId());
             hdDto.setTrusoId(sos.getHoaDon().getTrusoId());
@@ -167,6 +138,7 @@ public class TinHieuMapper {
             
             dto.setHoaDon(hdDto);
         }
+
         dto.setTruSoTiepNhan(truSoDto);
         return dto;
     }

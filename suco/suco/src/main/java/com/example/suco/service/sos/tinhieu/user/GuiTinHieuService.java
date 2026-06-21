@@ -16,7 +16,7 @@ import com.example.suco.model.User;
 @Service
 public class GuiTinHieuService {
 
-     @Autowired
+        @Autowired
     private TinHieuSOSRepository tinHieuSOSRepository;
        
     @Autowired

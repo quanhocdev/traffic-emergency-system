@@ -26,13 +26,10 @@ public class HuyTinHieuService {
             throw new RuntimeException("Bạn không có quyền hủy yêu cầu này.");
         }
 
-        // Sử dụng hàm Helper canBeCancelledByUser() của Enum để check thay vì check chuỗi cứng
-        // User chỉ được hủy khi trạng thái là CHO_ADMIN, DA_TIEP_NHAN hoặc DANG_DI_CHUYEN (Tùy bạn cấu hình trong Enum)
         if (sos.getTrangThai() == null || !sos.getTrangThai().canBeCancelledByUser()) {
             throw new RuntimeException("Không thể hủy vì yêu cầu đang xử lý thực tế hoặc đã kết thúc.");
         }
 
-        // 1. Update DB bằng Enum chuẩn chỉnh
         sos.setTrangThai(TrangThaiXuLy.HUY_BO);
         tinHieuSOSRepository.save(sos);
 
