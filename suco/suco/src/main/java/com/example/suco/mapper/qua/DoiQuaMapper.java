@@ -1,4 +1,4 @@
-package com.example.suco.mapper;
+package com.example.suco.mapper.qua;
 
 import java.time.LocalDateTime;
 

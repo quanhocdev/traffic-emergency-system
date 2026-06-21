@@ -1,4 +1,4 @@
-package com.example.suco.mapper;
+package com.example.suco.mapper.goi;
 
 import com.example.suco.dto.sos.goi.dangky.MuaGoiRequestDTO;
 import com.example.suco.dto.sos.goi.dangky.MuaGoiResponseDTO;

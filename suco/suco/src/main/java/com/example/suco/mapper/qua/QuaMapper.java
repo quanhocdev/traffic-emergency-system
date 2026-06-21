@@ -1,4 +1,4 @@
-package com.example.suco.mapper;
+package com.example.suco.mapper.qua;
 
 import com.example.suco.dto.tienich.qua.quanly.QuaRequestDTO;
 import com.example.suco.dto.tienich.qua.quanly.QuaResponseDTO;

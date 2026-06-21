@@ -1,7 +1,7 @@
 package com.example.suco.service.tienich.qua.user;
 
 import com.example.suco.dto.tienich.qua.quydoi.TuiQuaResponseDTO;
-import com.example.suco.mapper.DoiQuaMapper;
+import com.example.suco.mapper.qua.DoiQuaMapper;
 import com.example.suco.model.*;
 import com.example.suco.repository.tienich.qua.TuiQuaRepository;
 import com.example.suco.repository.tienich.qua.DoiQuaRepository;
