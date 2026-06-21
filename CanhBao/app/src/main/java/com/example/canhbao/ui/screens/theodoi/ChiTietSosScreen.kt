@@ -252,7 +252,7 @@ fun ChiTietSosScreen(
                                 Text("Trạng thái hóa đơn:", fontSize = 14.sp)
                                 Box(Modifier.background(if(status == "PAID") SuccessGreen else PrimaryRed, RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
                                     Text(if(status == "PAID") "ĐÃ THANH TOÁN" else "CHỜ GIAO DỊCH", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                                }
+                                }   
                             }
 
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

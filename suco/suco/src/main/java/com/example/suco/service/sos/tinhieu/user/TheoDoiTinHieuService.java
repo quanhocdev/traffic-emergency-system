@@ -7,7 +7,7 @@ import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
 import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
 import com.example.suco.dto.sos.tinhieu.user.TheoDoiSOSDetailResponseDTO;
 import com.example.suco.dto.sos.tinhieu.user.TheoDoiSOSItemResponseDTO;
-
+import com.example.suco.mapper.InfoUserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -20,6 +20,9 @@ public class TheoDoiTinHieuService {
 
     @Autowired
     private TinHieuMapper tinHieuMapper;
+
+    @Autowired
+    private InfoUserMapper infoUserMapper;
 
     @Autowired
 private TruSoService truSoService;
@@ -85,18 +88,7 @@ public TheoDoiSOSDetailResponseDTO layChiTiet(Long id) {
         }
     }
 
-    // Lấy thông tin user
-    UserInfoResponseDTO userInfo = new UserInfoResponseDTO();
-
-    userInfo.setName(sos.getUser().getName());
-
-    userInfo.setEmail(sos.getUser().getEmail());
-
-    userInfo.setVip(
-            vipService.checkVip(
-                    sos.getUserId()
-            )
-    );
+UserInfoResponseDTO userInfo = infoUserMapper.toUserInfoResponseDTO(sos.getUser());
 
     return tinHieuMapper.toTheoDoiDto(
             sos,
