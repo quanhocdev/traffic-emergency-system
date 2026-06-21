@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quản lý Tín hiệu SOS</title>
+    <title>Hệ thống Admin - Quản lý Tín hiệu SOS toàn cục</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -15,7 +15,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link rel="stylesheet" th:href="@{/css/admin/loai-su-co.css}" />
+    <link rel="stylesheet" th:href="@{/css/admin/quan-ly-sos.css}" />
     <link rel="stylesheet" th:href="@{/css/fragments/admin/sidebar.css}" />
   </head>
   <body>
@@ -23,121 +23,212 @@
       <div th:replace="fragments/admin/sidebar :: sidebar"></div>
 
       <div class="main-content">
-        <h2 class="header-title">Quản Lý Tín Hiệu SOS</h2>
+        <h2 class="header-title">
+          <i
+            class="fa-solid fa-triangle-exclamation"
+            style="color: #ef4444"
+          ></i>
+          Hệ Thống Quản Lý Tín Hiệu SOS Toàn Hệ Thống
+        </h2>
 
-        <div class="form-card">
-          <form
-            id="createForm"
-            enctype="multipart/form-data"
-            class="form-inline"
+        <div class="admin-tab-nav">
+          <a
+            th:href="@{/admin/quan-ly-sos(tab='tat-ca-active')}"
+            class="tab-link"
+            th:classappend="${currentTab == 'tat-ca-active' || currentTab == null} ? 'active' : ''"
           >
-            <div class="input-group">
-              <label>Tên loại sự cố</label>
-              <input
-                type="text"
-                name="ten"
-                placeholder="Ví dụ: Cháy nổ, Ngập lụt..."
-                required
-              />
-            </div>
-
-            <div class="input-group">
-              <label>Icon hiển thị</label>
-              <input type="file" name="iconFile" accept="image/*" />
-            </div>
-          </form>
+            Tín hiệu đang mở (Tổng hợp)
+          </a>
+          <a
+            th:href="@{/admin/quan-ly-sos(tab='tiep-nhan')}"
+            class="tab-link"
+            th:classappend="${currentTab == 'tiep-nhan'} ? 'active' : ''"
+          >
+            Mới tiếp nhận
+          </a>
+          <a
+            th:href="@{/admin/quan-ly-sos(tab='di-chuyen')}"
+            class="tab-link"
+            th:classappend="${currentTab == 'di-chuyen'} ? 'active' : ''"
+          >
+            Đang di chuyển
+          </a>
+          <a
+            th:href="@{/admin/quan-ly-sos(tab='dang-xu-ly')}"
+            class="tab-link"
+            th:classappend="${currentTab == 'dang-xu-ly'} ? 'active' : ''"
+          >
+            Đang ứng cứu
+          </a>
+          <a
+            th:href="@{/admin/quan-ly-sos(tab='hoan-thanh')}"
+            class="tab-link"
+            th:classappend="${currentTab == 'hoan-thanh'} ? 'active' : ''"
+          >
+            Đã hoàn thành
+          </a>
+          <a
+            th:href="@{/admin/quan-ly-sos(tab='huy-bo')}"
+            class="tab-link"
+            th:classappend="${currentTab == 'huy-bo'} ? 'active' : ''"
+          >
+            Lịch sử huỷ
+          </a>
         </div>
 
         <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th style="width: 80px">ID</th>
-                <th>Tên tín hiệu</th>
-                <th style="width: 120px; text-align: center">Icon</th>
-                <th style="width: 150px; text-align: center">Thao tác</th>
+                <th style="width: 70px">Mã SOS</th>
+                <th>Thông tin tài khoản</th>
+                <th>Vị trí & Địa chỉ</th>
+                <th>Nội dung sự cố</th>
+                <th style="text-align: center; width: 100px">Đính kèm</th>
+                <th style="text-align: center; width: 130px">Trạng thái</th>
+                <th style="text-align: center; width: 150px">Đơn vị xử lý</th>
+                <th style="text-align: center; width: 120px">Thao tác</th>
               </tr>
             </thead>
             <tbody>
               <tr th:each="item : ${list}">
                 <td
                   th:text="'#' + ${item.id}"
-                  style="font-weight: 600; color: #94a3b8"
+                  style="font-weight: bold; color: #94a3b8"
                 ></td>
-                <td th:text="${item.ten}" style="font-weight: 600"></td>
-                <td style="text-align: center">
-                  <img
-                    th:if="${item.iconUrl != null}"
-                    th:src="@{${item.iconUrl}}"
-                    alt="icon"
-                    class="icon-preview"
-                  />
-                  <span
-                    th:unless="${item.iconUrl != null}"
-                    style="color: #cbd5e1"
-                    >N/A</span
+                <td>
+                  <div th:if="${item.user != null}">
+                    <span
+                      th:text="${item.user.name}"
+                      style="font-weight: 600"
+                    ></span>
+                    <span th:if="${item.user.vip}" class="badge badge-vip"
+                      >VIP</span
+                    >
+                    <br />
+                    <small
+                      style="color: #64748b"
+                      th:text="${item.user.email}"
+                    ></small>
+                  </div>
+                  <span th:unless="${item.user != null}" style="color: #94a3b8"
+                    >Ẩn danh (Vãng lai)</span
                   >
+                </td>
+                <td>
+                  <span
+                    th:text="${item.diaChi != null ? item.diaChi : 'Chưa cập nhật địa chỉ'}"
+                  ></span
+                  ><br />
+                  <small style="color: #2563eb; font-weight: 500">
+                    <i class="fa-solid fa-map-pin"></i> Tọa độ:
+                    [[${item.viDo}]], [[${item.kinhDo}]]
+                  </small>
+                </td>
+                <td th:text="${item.ghiChu}"></td>
+                <td style="text-align: center">
+                  <a
+                    th:if="${item.hinhAnhUrl != null}"
+                    th:href="${item.hinhAnhUrl}"
+                    target="_blank"
+                    style="margin-right: 8px"
+                    title="Xem ảnh"
+                  >
+                    <i
+                      class="fa-solid fa-image fa-lg"
+                      style="color: #475569"
+                    ></i>
+                  </a>
+                  <a
+                    th:if="${item.ghiAmUrl != null}"
+                    th:href="${item.ghiAmUrl}"
+                    target="_blank"
+                    title="Nghe ghi âm"
+                  >
+                    <i
+                      class="fa-solid fa-microphone-lines fa-lg"
+                      style="color: #475569"
+                    ></i>
+                  </a>
+                  <span
+                    th:if="${item.hinhAnhUrl == null && item.ghiAmUrl == null}"
+                    style="color: #cbd5e1"
+                    >-</span
+                  >
+                </td>
+                <td style="text-align: center">
+                  <span
+                    th:class="'badge badge-' + ${item.trangThai}"
+                    th:text="${item.trangThai}"
+                  ></span>
+                </td>
+                <td style="text-align: center">
+                  <div th:if="${item.truSoTiepNhan != null}">
+                    <span
+                      th:text="${item.truSoTiepNhan.tenTruSo != null ? item.truSoTiepNhan.tenTruSo : 'Trụ sở ID: ' + item.truSoTiepNhan.id}"
+                    ></span>
+                  </div>
+                  <span
+                    th:unless="${item.truSoTiepNhan != null}"
+                    class="no-unit"
+                  >
+                    <i class="fa-solid fa-triangle-exclamation"></i> Chưa điều
+                    phối
+                  </span>
                 </td>
                 <td style="text-align: center">
                   <button
                     type="button"
                     class="btn-edit"
-                    th:attr=" data-id=${item.id},
-                              data-ten=${item.ten},
-                              data-icon=${item.iconUrl} "
-                    onclick="openEdit(this)"
+                    th:attr="data-id=${item.id}, data-trangthai=${item.trangThai}"
+                    onclick="openAdminModal(this)"
                   >
-                    <i class="fa-solid fa-pen"></i> Sửa
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-delete"
-                    th:onclick="'deleteSuCo(' + ${item.id} + ')'"
-                  >
-                    <i class="fa-solid fa-trash-can"></i> Xóa
+                    <i class="fa-solid fa-gear"></i> Xử lý
                   </button>
                 </td>
               </tr>
             </tbody>
           </table>
-          <div
-            th:if="${#lists.isEmpty(list)}"
-            style="padding: 40px; text-align: center; color: #94a3b8"
-          >
-            Chưa có loại sự cố nào được tạo.
+
+          <div th:if="${#lists.isEmpty(list)}" class="empty-state">
+            <i class="fa-solid fa-folder-open fa-2x"></i><br />
+            Không có tín hiệu SOS nào thuộc danh mục lọc này.
           </div>
         </div>
       </div>
     </div>
 
-    <div id="editModal" class="modal">
+    <div id="adminSosModal" class="modal">
       <div class="modal-content">
-        <h3>Chỉnh sửa loại sự cố</h3>
-
-        <input type="hidden" id="editId" />
-
-        <div class="input-group">
-          <label>Tên loại sự cố</label>
-          <input type="text" id="editTen" />
-        </div>
+        <h3>
+          <i class="fa-solid fa-user-shield"></i> Can thiệp tín hiệu SOS (Quyền
+          Admin)
+        </h3>
+        <input type="hidden" id="adminSosId" />
 
         <div class="input-group">
-          <label>Đổi icon</label>
-          <input type="file" id="editFile" accept="image/*" />
+          <label for="adminSosStatus"
+            >Chuyển đổi trạng thái xử lý hệ thống</label
+          >
+          <select id="adminSosStatus">
+            <option
+              th:each="stt : ${cacTrangThai}"
+              th:value="${stt.name()}"
+              th:text="${stt.name()}"
+            ></option>
+          </select>
         </div>
 
-        <img
-          id="previewIcon"
-          style="width: 60px; margin-top: 10px; display: none"
-        />
-
-        <div style="margin-top: 20px; text-align: right">
-          <button onclick="closeEdit()" class="btn-delete">Hủy</button>
-          <button onclick="submitEdit()" class="btn-create">Lưu</button>
+        <div class="modal-actions">
+          <button onclick="closeAdminModal()" class="btn-cancel">Hủy bỏ</button>
+          <button onclick="submitAdminUpdate()" class="btn-submit">
+            Cập nhật hệ thống
+          </button>
         </div>
       </div>
     </div>
-    <script th:src="@{/js/admin/loai-su-co.js}"></script>
+
+    <script th:src="@{/js/admin/quan-ly-sos.js}"></script>
     <script th:src="@{/js/fragments/admin/sidebar.js}"></script>
   </body>
 </html>
