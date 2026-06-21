@@ -30,7 +30,6 @@ public class AdminSuCoDetailResponseDTO {
 
     public AdminSuCoDetailResponseDTO() {}
 
-    // GETTERS
     public Long getId() { return id; }
     public Double getViDo() { return viDo; }
     public Double getKinhDo() { return kinhDo; }

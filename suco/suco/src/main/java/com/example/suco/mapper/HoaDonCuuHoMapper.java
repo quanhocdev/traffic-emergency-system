@@ -64,7 +64,6 @@ public class HoaDonCuuHoMapper {
         if (hd.getUserId() != null) {
             User userEntity = userRepository.findByUid(hd.getUserId()).orElse(null);
             if (userEntity != null) {
-                // Khởi tạo DTO mới tinh theo yêu cầu của bạn
                 UserInfoResponseDTO userInfo = new UserInfoResponseDTO();
                 userInfo.setName(userEntity.getName());
                 userInfo.setEmail(userEntity.getEmail());
@@ -73,7 +72,6 @@ public class HoaDonCuuHoMapper {
                 boolean tinhTrangVip = vipService.checkVip(userEntity.getUid());
                 userInfo.setVip(tinhTrangVip); 
 
-                // Đổ vào object HoaDonTruSoResponseDTO đã đổi kiểu dữ liệu thành UserInfoResponseDTO
                 dto.setUser(userInfo);
             }
         }

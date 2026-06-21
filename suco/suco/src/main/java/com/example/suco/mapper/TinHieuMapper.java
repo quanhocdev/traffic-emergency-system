@@ -152,9 +152,21 @@ public class TinHieuMapper {
         dto.setThoiGianTao(sos.getCreatedAt());
         
         dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
-        dto.setUserId(sos.getUserId());
-        dto.setNguoiGui(toUserMiniDTO(sos.getUser()));
-
+        dto.setUser(toUserInfoResponseDTO(sos.getUser()));
+                if (sos.getHoaDon() != null) {
+            HoaDonResponseDTO hdDto = new HoaDonResponseDTO();
+            
+            hdDto.setId(sos.getHoaDon().getId());
+            hdDto.setSosId(sos.getHoaDon().getSosId());
+            hdDto.setTrusoId(sos.getHoaDon().getTrusoId());
+            hdDto.setUserId(sos.getHoaDon().getUserId());
+            hdDto.setNoiDungXuLy(sos.getHoaDon().getNoiDungXuLy());
+            hdDto.setThanhTien(sos.getHoaDon().getThanhTien());
+            hdDto.setCreatedAt(sos.getHoaDon().getCreatedAt());
+            hdDto.setTrangThai(sos.getHoaDon().getTrangThai());
+            
+            dto.setHoaDon(hdDto);
+        }
         dto.setTruSoTiepNhan(truSoDto);
         return dto;
     }
