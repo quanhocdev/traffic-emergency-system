@@ -6,7 +6,7 @@ import com.example.suco.model.TruSo;
 import com.example.suco.model.User;
 import com.example.suco.model.enums.MucDoSuCo;
 import com.example.suco.model.enums.TrangThaiXuLy;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.repository.suco.loai.LoaiSuCoRepository;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.repository.vanhanh.UserRepository;
@@ -28,7 +28,7 @@ import com.example.suco.service.location.GeocodingService;
 public class AdminBaoCaoService {
 
     @Autowired
-    private BaoCaoSuCoRepository reportRepository;
+    private SuCoAdminRepository reportRepository;
 
     @Autowired
     private UserRepository userRepository;

@@ -3,7 +3,7 @@ package com.example.suco.controller.suco.baocao.system;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.enums.TrangThaiXuLy;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.service.suco.baocao.system.validation.RoleDetailService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import java.util.List;
 public class MapSuCoController {
 
     @Autowired
-    private BaoCaoSuCoRepository repo;
+    private SuCoAdminRepository repo;
 
     @Autowired
 private SuCoMapper suCoMapper;

@@ -20,7 +20,7 @@ import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Spam;
 import com.example.suco.model.enums.TrangThaiXuLy;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.repository.suco.baocao.SpamRepository;
 
 @Controller
@@ -28,7 +28,7 @@ import com.example.suco.repository.suco.baocao.SpamRepository;
 public class BaoCaoSuCoAdminController {
 
     @Autowired
-    private BaoCaoSuCoRepository reportRepository;
+    private SuCoAdminRepository reportRepository;
 
     @Autowired
     private SpamRepository spamRepository;

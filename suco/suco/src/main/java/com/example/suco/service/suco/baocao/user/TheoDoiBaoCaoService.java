@@ -5,7 +5,7 @@ import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoItemResponseDTO;
 import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.mapper.SuCoMapper;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import java.util.List;
 public class TheoDoiBaoCaoService {
 
     @Autowired
-    private BaoCaoSuCoRepository baoCaoSuCoRepository;
+    private SuCoAdminRepository baoCaoSuCoRepository;
 
     @Autowired
     private SuCoMapper suCoMapper;

@@ -7,7 +7,7 @@ import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.service.suco.baocao.system.validation.QuyenHanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class HuyBaoCaoService {
     private static final Logger log = LoggerFactory.getLogger(HuyBaoCaoService.class);
     @Autowired
-    private BaoCaoSuCoRepository reportRepository;
+    private SuCoAdminRepository reportRepository;
     @Autowired
     private QuyenHanService quyenHanService;
     @Autowired

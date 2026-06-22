@@ -57,6 +57,7 @@ fun ChiTietSosScreen(
     // Lấy dữ liệu chi tiết từ Map lưu trữ trong ViewModel
     val sosDetailNullable = viewModel.detailUiStateMap[sosId]
 
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -323,7 +324,7 @@ fun ChiTietSosScreen(
                 confirmButton = {
                     Button(onClick = {
                         val hoaDonId = sosDetail.hoaDonId ?: return@Button
-                        viewModel.confirmPayment(hoaDonId, selectedVoucher?.quaId)
+                        viewModel.confirmPayment(hoaDonId, selectedVoucher?.qua?.id)
                         showPayDialog = false
                         selectedVoucher = null
                     }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))) {
@@ -345,8 +346,8 @@ fun ChiTietSosScreen(
                         Spacer(Modifier.height(16.dp))
                         Text("Áp dụng Voucher giảm giá", fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.Start))
 
-                        viewModel.listTuiQua.filter { it.loai == "VOUCHER" && (it.soLuong ?: 0) > 0 }.forEach { voucher ->
-                            val isSelected = selectedVoucher?.quaId == voucher.quaId
+                        viewModel.listTuiQua.filter { it.qua?.loai == "VOUCHER" && (it.soLuong ?: 0) > 0 }.forEach { voucher ->
+                            val isSelected = selectedVoucher?.qua?.id == voucher.qua?.id
                             OutlinedCard(
                                 onClick = { selectedVoucher = if (isSelected) null else voucher },
                                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
@@ -356,7 +357,7 @@ fun ChiTietSosScreen(
                                     RadioButton(selected = isSelected, onClick = null)
                                     Spacer(Modifier.width(8.dp))
                                     Column {
-                                        Text(voucher.tenQua, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text(voucher.qua?.ten?:"Không có tên", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                         Text("Số lượng hiện có: ${voucher.soLuong}", fontSize = 11.sp, color = Color(0xFF2E7D32))
                                     }
                                 }

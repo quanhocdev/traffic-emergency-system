@@ -3,7 +3,7 @@ package com.example.suco.service.suco.baocao.system.validation;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.BaoCaoTrungLap;
 import com.example.suco.model.enums.TrangThaiXuLy;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.repository.suco.baocao.BaoCaoTrungLapRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,7 @@ import java.util.List;
 public class TrungLapBaoCaoService {
 
     @Autowired
-    private BaoCaoSuCoRepository reportRepository;
+    private SuCoAdminRepository reportRepository;
 
     @Autowired
     private BaoCaoTrungLapRepository baoCaoTrungLapRepository;

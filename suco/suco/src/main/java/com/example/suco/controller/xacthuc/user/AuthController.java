@@ -17,9 +17,8 @@ public class AuthController {
 
 
     private final UserRepository userRepository;
-    private final UserService userService; // 1. Thêm UserService vào đây
+    private final UserService userService; 
 
-    // 2. Cập nhật Constructor để Inject UserService
     public AuthController(UserRepository userRepository, UserService userService) {
         this.userRepository = userRepository;
         this.userService = userService;
@@ -41,20 +40,10 @@ public ResponseEntity<?> sync(@RequestBody AuthRequest request) {
         String email;
         String name;
 
-        // --- CƠ CHẾ BYPASS ĐỂ TEST BẰNG POSTMAN ---
-        if ("dev-token".equals(request.getToken())) {
-            // fake token dùng cho Postman, sẽ tạo user tạm thời với thông tin cứng
-    uid = "test-user";
-    email = "test@gmail.com";
-    name = "Test User";
-} else {
-            // Luồng thật dùng cho App Android
             FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(request.getToken());
             uid = decodedToken.getUid();
             email = decodedToken.getEmail();
             name = (String) decodedToken.getClaims().get("name");
-        }
-        // ------------------------------------------
 
         User user = userRepository.findById(uid).orElse(new User());
         
@@ -65,7 +54,7 @@ public ResponseEntity<?> sync(@RequestBody AuthRequest request) {
 
         userRepository.save(user);
 
-        // Trả về thông tin đầy đủ (kèm gói cứu trợ nếu có)
+        // Trả về thông tin đầy đủ
         User userWithPackage = userService.getUserInfo(uid);
         return ResponseEntity.ok(userWithPackage);
 
