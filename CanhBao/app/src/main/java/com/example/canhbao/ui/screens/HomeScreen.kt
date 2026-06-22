@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.canhbao.data.model.SuCoUserDto
+import com.example.canhbao.data.model.suco.baocao.SuCoUserDto
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.example.canhbao.viewmodel.HomeViewModel
 

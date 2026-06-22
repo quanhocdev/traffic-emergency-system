@@ -3,9 +3,9 @@ package com.example.canhbao.viewmodel.goi
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.GoiDto
-import com.example.canhbao.data.model.MuaGoiDto
-import com.example.canhbao.data.model.MuaGoiRequest
+import com.example.canhbao.data.model.sos.goi.GoiDto
+import com.example.canhbao.data.model.sos.goi.MuaGoiDto
+import com.example.canhbao.data.model.sos.goi.MuaGoiRequest
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoApi
 import com.google.firebase.auth.FirebaseAuth

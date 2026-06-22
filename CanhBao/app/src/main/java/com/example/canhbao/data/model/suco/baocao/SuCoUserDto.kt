@@ -1,7 +1,6 @@
-package com.example.canhbao.data.model
+package com.example.canhbao.data.model.suco.baocao
 
 import com.google.gson.annotations.SerializedName
-
 
 data class SuCoUserDto(
     val uid: String,
@@ -15,4 +14,3 @@ data class SuCoUserDto(
     val spamCount: Int,
     val tenGoi: String? = null
 )
-

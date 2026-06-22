@@ -5,7 +5,7 @@ import android.content.Context
 import android.media.AudioManager
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import com.example.canhbao.dto.CallSignalDto
+import com.example.canhbao.data.model.call.CallSignalDto
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

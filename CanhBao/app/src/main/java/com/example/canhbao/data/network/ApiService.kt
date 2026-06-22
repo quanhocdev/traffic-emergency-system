@@ -1,12 +1,16 @@
 package com.example.canhbao.data.network
 
 import com.example.canhbao.data.model.*
+import com.example.canhbao.data.model.camera.CameraMapDto
 import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import com.example.canhbao.data.model.qua.QuaResponseDTO
 import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
+import com.example.canhbao.data.model.sos.goi.GoiDto
+import com.example.canhbao.data.model.sos.goi.MuaGoiDto
+import com.example.canhbao.data.model.sos.goi.MuaGoiRequest
 import com.example.canhbao.data.model.sos.tinhieu.SOSMapResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSDetailResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSItemResponseDTO
@@ -14,6 +18,9 @@ import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequestDTO
 import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSResponse
 import com.example.canhbao.data.model.suco.baocao.*
 import com.example.canhbao.data.model.suco.loai.LoaiSuCo
+import com.example.canhbao.data.model.tien.DoiTienDto
+import com.example.canhbao.data.model.tien.ThongKeQuyDto
+import com.example.canhbao.data.model.truso.TruSoMapDto
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -178,9 +185,4 @@ interface BaoCaoSuCoApi {
         @Header("Authorization") token: String
     ): SuCoUserDto
 
-    @GET("/api/lich-su/all")
-    suspend fun getAllHistory(
-        @Header("Authorization") token: String,
-        @Query("type") type: String? = null
-    ): List<LichSuDto>
 }

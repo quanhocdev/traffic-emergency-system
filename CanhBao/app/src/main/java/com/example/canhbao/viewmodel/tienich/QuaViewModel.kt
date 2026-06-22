@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.SuCoUserDto
+import com.example.canhbao.data.model.suco.baocao.SuCoUserDto
 import com.example.canhbao.data.model.qua.QuaResponseDTO
 import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO

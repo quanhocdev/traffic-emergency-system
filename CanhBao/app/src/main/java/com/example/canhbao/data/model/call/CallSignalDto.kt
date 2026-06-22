@@ -1,8 +1,5 @@
-package com.example.canhbao.dto // Thay package cho đúng project của bạn
+package com.example.canhbao.data.model.call
 
-/**
- * DTO đại diện cho tín hiệu đàm thoại WebRTC
- */
 data class CallSignalDto(
     val type: String,           // OFFER, ANSWER, hoặc CANDIDATE
     val from: String,           // ID người gửi (ví dụ: TRU_SO_1 hoặc UID người dùng)

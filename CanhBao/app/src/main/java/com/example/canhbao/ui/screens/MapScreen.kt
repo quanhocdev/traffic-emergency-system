@@ -42,7 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import android.graphics.BitmapFactory
 import com.example.canhbao.R
-import com.example.canhbao.data.model.CameraMapDto
+import com.example.canhbao.data.model.camera.CameraMapDto
 import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
 import com.example.canhbao.data.model.suco.baocao.UserSuCoDetailResponseDTO
 import com.example.canhbao.data.network.AppConfig
@@ -68,6 +68,7 @@ import kotlinx.coroutines.launch
 import ua.naiksoftware.stomp.StompClient
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.Lifecycle
+import com.example.canhbao.data.model.truso.TruSoMapDto
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,7 +102,7 @@ fun MapScreen(
     var selectedSuCo by remember { mutableStateOf<SuCoMapResponseDTO?>(null) }
     // Đổi kiểu dữ liệu từ SuCoMapResponseDTO sang UserSuCoDetailResponseDTO
     var selectedSuCoDetail by remember { mutableStateOf<UserSuCoDetailResponseDTO?>(null) }
-    var selectedTruSo by remember { mutableStateOf<com.example.canhbao.data.model.TruSoMapDto?>(null) } // Thay thế chính xác package Dto của bạn
+    var selectedTruSo by remember { mutableStateOf<TruSoMapDto?>(null) } // Thay thế chính xác package Dto của bạn
     var selectedCamera by remember { mutableStateOf<CameraMapDto?>(null) }
 
     // Thu thập State từ MapViewModel

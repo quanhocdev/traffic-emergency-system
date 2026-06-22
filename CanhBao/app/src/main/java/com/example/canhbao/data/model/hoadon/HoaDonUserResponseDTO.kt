@@ -1,6 +1,6 @@
 package com.example.canhbao.data.model.hoadon
 
-import com.example.canhbao.data.model.TruSoMiniDTO
+import com.example.canhbao.data.model.truso.TruSoMiniDTO
 import java.math.BigDecimal
 import com.example.canhbao.data.model.sos.tinhieu.UserMiniDTO
 data class HoaDonUserResponseDTO(

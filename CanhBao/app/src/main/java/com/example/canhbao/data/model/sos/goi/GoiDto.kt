@@ -1,4 +1,4 @@
-package com.example.canhbao.data.model
+package com.example.canhbao.data.model.sos.goi
 import java.math.BigDecimal
 
 data class GoiDto(
