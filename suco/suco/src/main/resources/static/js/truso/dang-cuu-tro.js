@@ -35,6 +35,7 @@ function formatItem(s, type) {
   let isVipUser = false;
   let userName = "Chưa rõ tên";
   let userEmail = "Không có email";
+  let userUid = null;
 
   const userData = s.user || null;
 
@@ -42,6 +43,7 @@ function formatItem(s, type) {
     isVipUser = userData.vip === true; // Thuộc tính 'vip' kiểu boolean từ DTO mới
     userName = userData.name || "Ẩn danh";
     userEmail = userData.email || "Không có email";
+    userUid = userData.uid || null;
   } else {
     // Dự phòng nếu dữ liệu cũ nằm phẳng ở ngoài
     isVipUser = s.isVip || s.vip || false;
@@ -64,9 +66,7 @@ function formatItem(s, type) {
     userEmail: userEmail,
     hoaDon: upperType === "SOS" ? s.hoaDon || null : null,
     thanhToan: upperType === "SOS" ? s.thanhToan || null : null,
-    // 🌟 LƯU Ý: Giữ lại trường s.userUid hoặc s.reporterUid gốc từ thực thể SOS (nếu có)
-    // để làm kênh định danh cuộc gọi WebRTC, tách biệt hoàn toàn khỏi Hóa Đơn DTO
-    reporterUid: s.reporterUid || s.userUid || s.userId || null,
+    reporterUid: userUid || s.reporterUid || s.userUid || s.userId || null,
     _raw: s,
   };
 }
@@ -246,7 +246,6 @@ async function submitPayment() {
       );
 
       if (idx !== -1) {
-        // 🌟 BẢO VỆ DỮ LIỆU: Giữ lại bản sao user đang chạy tốt ở Frontend
         const backupUser = allData[idx].userName;
         const backupEmail = allData[idx].userEmail;
         const backupPoints = allData[idx].userPoints;
@@ -256,7 +255,6 @@ async function submitPayment() {
         // Gán hóa đơn mới trả về vào phần tử dữ liệu chung
         allData[idx].hoaDon = hoaDonMoi;
 
-        // 🌟 Kiểm tra: Nếu object hoaDonMoi từ backend bị thiếu hoặc trống thông tin user bọc bên ngoài
         if (hoaDonMoi.user) {
           allData[idx].isVip =
             hoaDonMoi.user.vip === true ||
@@ -266,8 +264,7 @@ async function submitPayment() {
           allData[idx].userName =
             hoaDonMoi.user.name || hoaDonMoi.user.hoTen || "N/A";
           allData[idx].userEmail = hoaDonMoi.user.email || "N/A";
-          allData[idx].reporterUid =
-            hoaDonMoi.user.id || hoaDonMoi.user.uid || backupUid;
+          allData[idx].reporterUid = hoaDonMoi.user.uid || backupUid;
         } else {
           // Khôi phục lại bản sao cũ, không cho phép hiển thị đè thành vãng lai/ẩn danh
           allData[idx].userName = backupUser;
@@ -563,6 +560,8 @@ function updateLocalDataAfterPaid(paymentInfo) {
       allData[idx].isVip = paymentInfo.user.vip === true;
       allData[idx].userName = paymentInfo.user.name || "Ẩn danh";
       allData[idx].userEmail = paymentInfo.user.email || "Không có email";
+      allData[idx].reporterUid =
+        paymentInfo.user.uid || allData[idx].reporterUid;
     } else {
       allData[idx].userName = backupUser;
       allData[idx].userEmail = backupEmail;

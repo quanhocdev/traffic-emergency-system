@@ -3,7 +3,7 @@ package com.example.suco.mapper.helper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
-import com.example.suco.dto.sos.tinhieu.UserMiniDTO; // Nhớ import thêm class con vào bạn nhé
+import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
 import com.example.suco.model.User;
 

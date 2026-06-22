@@ -37,22 +37,20 @@ public class SecurityConfig {
             .authenticationEntryPoint(customAuthEntryPoint)
         )
             .authorizeHttpRequests(auth -> auth
+    // PUBLIC HOÀN TOÀN
+    .requestMatchers("/admin/login").permitAll()
+    .requestMatchers("/api/auth/**").permitAll()
+    .requestMatchers("/api/su-co/map", "/api/sos/map").permitAll()
 
-                // PUBLIC
-                .requestMatchers("/admin/login").permitAll()
+    // ADMIN ONLY
+    .requestMatchers("/admin/**").hasRole("ADMIN")
+    .requestMatchers("/api/goi/**").hasRole("ADMIN")
 
-                // ADMIN ONLY
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/goi/**").hasRole("ADMIN")
+    // AUTH SYNC USER
+    .requestMatchers("/api/map/**").authenticated()
 
-                // USER + ADMIN đều vào được (có auth Firebase)
-
-                // AUTH SYNC USER
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/map/**").authenticated()
-
-                .anyRequest().permitAll()
-            )
+    .anyRequest().permitAll()
+)
 
             // JWT ADMIN chạy trước
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

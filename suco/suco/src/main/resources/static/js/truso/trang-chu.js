@@ -118,7 +118,7 @@ function showSOSDetail(item) {
   if (!panel || !content) return;
   panel.style.display = "flex";
 
-  const user = item.nguoiGui || {};
+  const user = item.user || {};
   const userName = user.name || "Khách vãng lai";
   const userEmail = user.email || "Không có email";
   const isPriority = user.vip === true;
@@ -950,9 +950,13 @@ function loadExistingSuCo() {
 }
 
 function loadExistingSOS() {
-  return fetch("/sos/hoat-dong")
-    .then((res) => res.json())
+  return fetch("/api/sos/map")
+    .then((res) => {
+      if (!res.ok) throw new Error("API SOS lỗi với status: " + res.status);
+      return res.json();
+    })
     .then((data) => {
+      // Xóa các marker SOS cũ
       Object.keys(activeMarkers).forEach((id) => {
         if (
           activeMarkers[id] &&
@@ -964,12 +968,15 @@ function loadExistingSOS() {
         }
       });
 
-      data.forEach((item) => {
-        addSOSMarker(item, "SOS");
-        if (typeof addNotiItem === "function") {
-          addNotiItem(item, "SOS", true);
-        }
-      });
+      // Kiểm tra mảng an toàn trước khi chạy vòng lặp
+      if (Array.isArray(data)) {
+        data.forEach((item) => {
+          addSOSMarker(item, "SOS");
+          if (typeof addNotiItem === "function") {
+            addNotiItem(item, "SOS", true);
+          }
+        });
+      }
     })
     .catch((err) => console.error("Lỗi khi load danh sách SOS:", err));
 }
