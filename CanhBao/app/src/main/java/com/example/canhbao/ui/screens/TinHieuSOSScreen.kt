@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import com.example.canhbao.viewmodel.TinHieuSOSViewModel
+import com.example.canhbao.viewmodel.tinhieu.TinHieuSOSViewModel
 import java.io.File
 import com.google.firebase.auth.FirebaseAuth
 @OptIn(ExperimentalMaterial3Api::class)

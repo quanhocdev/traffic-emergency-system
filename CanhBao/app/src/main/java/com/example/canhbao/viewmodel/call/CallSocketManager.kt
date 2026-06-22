@@ -1,8 +1,7 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.call
 
 import org.json.JSONObject
 import ua.naiksoftware.stomp.StompClient
-
 
 class CallSocketManager {
     fun listen(

@@ -33,7 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.canhbao.data.network.AppConfig
-import com.example.canhbao.viewmodel.BaoCaoSuCoViewModel
+import com.example.canhbao.viewmodel.suco.BaoCaoSuCoViewModel
 import com.google.android.gms.location.LocationServices
 
 @OptIn(ExperimentalMaterial3Api::class)

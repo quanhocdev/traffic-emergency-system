@@ -19,7 +19,7 @@ import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.canhbao.viewmodel.QuaViewModel
+import com.example.canhbao.viewmodel.tienich.QuaViewModel
 import androidx.compose.foundation.shape.CircleShape
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 

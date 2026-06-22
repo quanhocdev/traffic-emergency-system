@@ -1,5 +1,9 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.tinhieu
 
+import android.content.Context
+import android.graphics.Bitmap
+import android.location.Geocoder
+import android.util.Base64
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -7,15 +11,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequestDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
 import java.io.File
-import android.location.Geocoder
-import android.content.Context
-import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 
 class TinHieuSOSViewModel : ViewModel() {
@@ -48,7 +51,7 @@ class TinHieuSOSViewModel : ViewModel() {
 
     private suspend fun fileToBase64(file: File): String =
         withContext(Dispatchers.IO) {
-            android.util.Base64.encodeToString(file.readBytes(), android.util.Base64.NO_WRAP)
+            Base64.encodeToString(file.readBytes(), Base64.NO_WRAP)
         }
 
     private fun getToken(onResult: (String?) -> Unit) {
@@ -66,7 +69,7 @@ class TinHieuSOSViewModel : ViewModel() {
         context: Context,
         lat: Double,
         lng: Double,
-        imageBitmap: android.graphics.Bitmap,
+        imageBitmap: Bitmap,
         onComplete: (Boolean) -> Unit
     ) {
         viewModelScope.launch {
@@ -92,15 +95,15 @@ class TinHieuSOSViewModel : ViewModel() {
                         e.printStackTrace()
                     }
 
-                    val output = java.io.ByteArrayOutputStream()
+                    val output = ByteArrayOutputStream()
                     imageBitmap.compress(
-                        android.graphics.Bitmap.CompressFormat.JPEG,
+                        Bitmap.CompressFormat.JPEG,
                         60,
                         output
                     )
 
                     val base64Image =
-                        android.util.Base64.encodeToString(output.toByteArray(), android.util.Base64.NO_WRAP)
+                        Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP)
 
                     val base64Audio = recordedFile?.let {
                         if (it.exists()) fileToBase64(it) else null

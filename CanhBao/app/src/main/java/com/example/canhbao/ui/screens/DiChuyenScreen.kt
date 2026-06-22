@@ -28,7 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.canhbao.ui.components.PlaceAutocompleteTextField
 import com.example.canhbao.viewmodel.MapViewModel
-import com.example.canhbao.viewmodel.SearchViewModel
+import com.example.canhbao.viewmodel.helper.SearchViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.mapbox.geojson.Point

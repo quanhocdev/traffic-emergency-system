@@ -1,12 +1,12 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.call
 
 import android.content.Context
 import android.provider.Settings
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.example.canhbao.viewmodel.call.CallSocketManager
 import com.google.firebase.auth.FirebaseAuth
 import ua.naiksoftware.stomp.StompClient
-import org.json.JSONObject
 
 class CallViewModel : ViewModel() {
 

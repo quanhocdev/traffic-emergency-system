@@ -1,4 +1,4 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.helper
 
 import android.content.Context
 import android.util.Log

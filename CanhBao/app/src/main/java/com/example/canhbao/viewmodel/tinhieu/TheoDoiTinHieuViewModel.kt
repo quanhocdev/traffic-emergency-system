@@ -1,4 +1,4 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.tinhieu
 
 import android.annotation.SuppressLint
 import android.media.MediaPlayer
@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
+import ua.naiksoftware.stomp.dto.LifecycleEvent
 
 sealed class TheoDoiTinHieuUiState {
 
@@ -226,7 +227,7 @@ class TheoDoiTinHieuViewModel : ViewModel() {
         // 🌟 Bọc toàn bộ các lệnh subscribe vào bên trong sự kiện OPENED
         mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
             when (lifecycleEvent.type) {
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> {
+                LifecycleEvent.Type.OPENED -> {
                     Log.d("WebSocket_TinHieu", "🟢 Kết nối SOS thành công! Đang đăng ký các kênh...")
 
                     // 1. SOS status user-specific
@@ -271,7 +272,7 @@ class TheoDoiTinHieuViewModel : ViewModel() {
                         Log.e("WebSocket", "Invoice error: ${it.message}")
                     })
                 }
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
+                LifecycleEvent.Type.ERROR -> {
                     Log.e("WebSocket_TinHieu", "❌ Lỗi luồng: ${lifecycleEvent.exception?.message}")
                 }
                 else -> {}
@@ -416,7 +417,7 @@ class TheoDoiTinHieuViewModel : ViewModel() {
                 }
 
             } catch (e: Exception) {
-                android.util.Log.e("TheoDoiTinHieuViewModel", "Lỗi tải chi tiết SOS #$sosId: ${e.message}")
+                Log.e("TheoDoiTinHieuViewModel", "Lỗi tải chi tiết SOS #$sosId: ${e.message}")
                 // Bạn có thể bổ sung xử lý UI tại đây nếu muốn, ví dụ: gán một trạng thái lỗi để tắt vòng xoay
             }
         }

@@ -21,8 +21,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.canhbao.R
-import com.example.canhbao.viewmodel.AuthViewModel
-import com.example.canhbao.viewmodel.LoginUiState
+import com.example.canhbao.viewmodel.xacthuc.AuthViewModel
+import com.example.canhbao.viewmodel.xacthuc.LoginUiState
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException

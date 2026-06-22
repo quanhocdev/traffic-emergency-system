@@ -1,8 +1,10 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.suco
 
 import android.graphics.Bitmap
 import android.util.Base64
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.suco.baocao.SuCoRequestDTO

@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
-import com.example.canhbao.viewmodel.ThanhToanViewModel
+import com.example.canhbao.viewmodel.hoadon.ThanhToanViewModel
 
 private val PrimaryRed = Color(0xFFDC2626)
 private val LightRedBg = Color(0xFFFEF2F2)
@@ -78,26 +78,21 @@ fun ThanhToanScreen(
     var selectedVoucher by remember { mutableStateOf<TuiQuaResponseDTO?>(null) }
     var paymentMethod by remember { mutableStateOf("MOMO") }
 
-    // BẮT CHƯỚC: Lấy thông tin hóa đơn thực tế từ ViewModel
     val hoaDon by remember {
-        derivedStateOf { viewModel.hoaDonDetail } // Đảm bảo trong ThanhToanViewModel có biến hoaDonDetail nhé
+        derivedStateOf { viewModel.hoaDonDetail }
     }
 
-    // BẮT CHƯỚC: Load chi tiết hóa đơn đồng thời với load Voucher
     LaunchedEffect(hoaDonId) {
         viewModel.resetPayment()
         viewModel.loadVoucher()
-        viewModel.loadHoaDonDetail(hoaDonId) // Thêm hàm load này vào ThanhToanViewModel của bạn
+        viewModel.loadHoaDonDetail(hoaDonId)
     }
 
-    // 1. Lấy giaGoc từ BigDecimal đổi sang Double an toàn
     val giaGoc = hoaDon?.thanhTien?.toDouble() ?: 0.0
 
-// 2. Tính toán số tiền giảm dựa theo % của voucher (Giữ nguyên)
     val phanTramGiam = (selectedVoucher?.qua?.giaTriGiamPercent ?: 0) / 100.0
     val soTienGiam = giaGoc * phanTramGiam
 
-// 3. Tính tổng thanh toán thực tế
     val tongThanhToanHienTai = (giaGoc - soTienGiam).coerceAtLeast(0.0)
 
     LaunchedEffect(Unit) {
@@ -152,7 +147,6 @@ fun ThanhToanScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // --- BẢNG TÍNH TIỀN ĐÃ ĐƯỢC ĐỔI THÀNH GIÁ ĐỘNG THỰC TẾ ---
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -197,7 +191,6 @@ fun ThanhToanScreen(
                         }
                     }
 
-                    // --- NÚT BẤM XÁC NHẬN THANH TOÁN ---
                     Button(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -243,7 +236,6 @@ fun ThanhToanScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            // --- MỤC VOUCHER GIẢM GIÁ ---
             Text(
                 text = "Voucher giảm giá",
                 style = MaterialTheme.typography.titleMedium.copy(
@@ -390,7 +382,6 @@ fun ThanhToanScreen(
                 }
             }
 
-            // --- HIỂN THỊ TRẠNG THÁI ---
             Spacer(Modifier.height(20.dp))
 
             if (viewModel.loading) {
@@ -418,7 +409,7 @@ fun ThanhToanScreen(
                     Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = Color(0xFF10B981))
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        text = "Thanh toán thành công ✅",
+                        text = "Thanh toán thành công!",
                         color = Color(0xFF10B981),
                         fontWeight = FontWeight.Bold
                     )

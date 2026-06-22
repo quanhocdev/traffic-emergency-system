@@ -74,7 +74,7 @@ class HomeViewModel : ViewModel() {
                     )
                 }
                 ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
-                    android.util.Log.e("WebSocket_Home", "❌ Lỗi mạng: ${lifecycleEvent.exception?.message}")
+                    android.util.Log.e("WebSocket_Home", "Lỗi mạng: ${lifecycleEvent.exception?.message}")
                 }
                 else -> {}
             }

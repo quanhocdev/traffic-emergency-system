@@ -1,4 +1,4 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.tinhieu
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
