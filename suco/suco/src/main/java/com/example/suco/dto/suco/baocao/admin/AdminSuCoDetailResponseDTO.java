@@ -1,6 +1,7 @@
 package com.example.suco.dto.suco.baocao.admin;
 
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
+import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 import java.time.LocalDateTime;
 
 public class AdminSuCoDetailResponseDTO {
@@ -20,8 +21,7 @@ public class AdminSuCoDetailResponseDTO {
 
     private Integer doTinCay;
 
-    private String tenNguoiBao;
-    private String reporterUid;
+    private UserMiniDTO reporter;
 
     private TruSoMiniDTO truSoTiepNhan;
 
@@ -40,8 +40,7 @@ public class AdminSuCoDetailResponseDTO {
     public String getMucDoSuCo() { return mucDoSuCo; }
     public String getHinhAnhUrl() { return hinhAnhUrl; }
     public Integer getDoTinCay() { return doTinCay; }
-    public String getTenNguoiBao() { return tenNguoiBao; }
-    public String getReporterUid() { return reporterUid; }
+    public UserMiniDTO getReporter() { return reporter; }
     public TruSoMiniDTO getTruSoTiepNhan() { return truSoTiepNhan; }
     public String getDiaChi() { return diaChi; }
     public LocalDateTime getThoiGianTao() { return thoiGianTao; }
@@ -57,8 +56,7 @@ public class AdminSuCoDetailResponseDTO {
     public void setMucDoSuCo(String mucDoSuCo) { this.mucDoSuCo = mucDoSuCo; }
     public void setHinhAnhUrl(String hinhAnhUrl) { this.hinhAnhUrl = hinhAnhUrl; }
     public void setDoTinCay(Integer doTinCay) { this.doTinCay = doTinCay; }
-    public void setTenNguoiBao(String tenNguoiBao) { this.tenNguoiBao = tenNguoiBao; }
-    public void setReporterUid(String reporterUid) { this.reporterUid = reporterUid; }
+    public void setReporter(UserMiniDTO reporter) { this.reporter = reporter; }
     public void setTruSoTiepNhan(TruSoMiniDTO truSoTiepNhan) { this.truSoTiepNhan = truSoTiepNhan; }
     public void setDiaChi(String diaChi) { this.diaChi = diaChi; }
     public void setThoiGianTao(LocalDateTime thoiGianTao) { this.thoiGianTao = thoiGianTao; }
