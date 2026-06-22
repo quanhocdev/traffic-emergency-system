@@ -22,7 +22,8 @@ public class InfoUserMapper {
         return new UserInfoResponseDTO(
             user.getName(),
             user.getEmail(),
-            vipService.checkVip(user.getUid())
+            vipService.checkVip(user.getUid()),
+            user.getTotalPoints()
         );
     }
 
