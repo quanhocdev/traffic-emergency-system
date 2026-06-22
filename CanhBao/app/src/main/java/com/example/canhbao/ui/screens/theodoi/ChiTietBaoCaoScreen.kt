@@ -106,7 +106,6 @@ fun ChiTietBaoCaoScreen(
 
                         Divider(color = Color(0xFFF3F4F6))
 
-                        // Khớp an toàn với đối tượng user? (UserInfoResponseDTO) bên trong DTO Chi tiết sự cố
                         Text(text = "👤 Họ và tên: ${suCoDetail.user?.name ?: "Không rõ"}", fontSize = 14.sp, color = TextDark)
                         Text(text = "📧 Email liên hệ: ${suCoDetail.user?.email ?: "Chưa cập nhật"}", fontSize = 14.sp, color = TextDark)
 
