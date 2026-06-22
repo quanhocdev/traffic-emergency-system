@@ -1,11 +1,8 @@
 package com.example.canhbao.ui.screens
 
 import android.app.DatePickerDialog
-import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,10 +22,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.canhbao.data.model.DoiTienDtoRealtime
-import com.example.canhbao.viewmodel.DoiTienViewModel
+import com.example.canhbao.viewmodel.tienich.DoiTienViewModel
+import com.example.canhbao.viewmodel.tienich.FilterMode
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -159,9 +156,9 @@ fun DoiTienScreen(
                         Box {
                             TextButton(onClick = { expandedMenu = true }) {
                                 val label = when(viewModel.filterMode) {
-                                    com.example.canhbao.viewmodel.FilterMode.DAY -> "Ngày"
-                                    com.example.canhbao.viewmodel.FilterMode.MONTH -> "Tháng"
-                                    com.example.canhbao.viewmodel.FilterMode.YEAR -> "Năm"
+                                    FilterMode.DAY -> "Ngày"
+                                    FilterMode.MONTH -> "Tháng"
+                                    FilterMode.YEAR -> "Năm"
                                 }
                                 Text(label, fontWeight = FontWeight.ExtraBold, color = Color(0xFF1976D2))
                                 Icon(Icons.Default.KeyboardArrowDown, null, tint = Color(0xFF1976D2))
@@ -169,15 +166,15 @@ fun DoiTienScreen(
                             DropdownMenu(expanded = expandedMenu, onDismissRequest = { expandedMenu = false }) {
                                 DropdownMenuItem(
                                     text = { Text("Theo Ngày") },
-                                    onClick = { viewModel.filterMode = com.example.canhbao.viewmodel.FilterMode.DAY; expandedMenu = false }
+                                    onClick = { viewModel.filterMode = FilterMode.DAY; expandedMenu = false }
                                 )
                                 DropdownMenuItem(
                                     text = { Text("Theo Tháng") },
-                                    onClick = { viewModel.filterMode = com.example.canhbao.viewmodel.FilterMode.MONTH; expandedMenu = false }
+                                    onClick = { viewModel.filterMode = FilterMode.MONTH; expandedMenu = false }
                                 )
                                 DropdownMenuItem(
                                     text = { Text("Theo Năm") },
-                                    onClick = { viewModel.filterMode = com.example.canhbao.viewmodel.FilterMode.YEAR; expandedMenu = false }
+                                    onClick = { viewModel.filterMode = FilterMode.YEAR; expandedMenu = false }
                                 )
                             }
                         }
@@ -212,9 +209,9 @@ fun DoiTienScreen(
                                 Icon(Icons.Default.CalendarMonth, null, modifier = Modifier.size(16.dp), tint = Color.Gray)
                                 Spacer(Modifier.width(8.dp))
                                 val timeText = when(viewModel.filterMode) {
-                                    com.example.canhbao.viewmodel.FilterMode.DAY -> viewModel.selectedDate.format(dateFormatter)
-                                    com.example.canhbao.viewmodel.FilterMode.MONTH -> "Tháng " + viewModel.selectedDate.format(DateTimeFormatter.ofPattern("MM / yyyy"))
-                                    com.example.canhbao.viewmodel.FilterMode.YEAR -> "Năm " + viewModel.selectedDate.year.toString()
+                                    FilterMode.DAY -> viewModel.selectedDate.format(dateFormatter)
+                                    FilterMode.MONTH -> "Tháng " + viewModel.selectedDate.format(DateTimeFormatter.ofPattern("MM / yyyy"))
+                                    FilterMode.YEAR -> "Năm " + viewModel.selectedDate.year.toString()
                                 }
                                 Text(timeText, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
                             }

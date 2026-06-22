@@ -5,10 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import com.example.canhbao.navigation.NavGraph
-import com.example.canhbao.viewmodel.AuthViewModel
-import com.google.android.libraries.places.api.Places
+import com.example.canhbao.viewmodel.xacthuc.AuthViewModel
 import com.mapbox.common.MapboxOptions
-import com.example.canhbao.BuildConfig
+
 class MainActivity : ComponentActivity() {
 
     private val authViewModel: AuthViewModel by viewModels()

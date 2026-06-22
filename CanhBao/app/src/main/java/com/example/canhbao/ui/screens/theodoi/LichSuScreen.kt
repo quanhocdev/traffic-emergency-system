@@ -22,10 +22,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.canhbao.ui.components.BaoCaoItemUI
 import com.example.canhbao.ui.components.TinHieuItemUI
-import com.example.canhbao.viewmodel.TheoDoiBaoCaoUiState
-import com.example.canhbao.viewmodel.TheoDoiBaoCaoViewModel
-import com.example.canhbao.viewmodel.TheoDoiTinHieuUiState
-import com.example.canhbao.viewmodel.TheoDoiTinHieuViewModel
+import com.example.canhbao.viewmodel.suco.TheoDoiBaoCaoUiState
+import com.example.canhbao.viewmodel.suco.TheoDoiBaoCaoViewModel
+import com.example.canhbao.viewmodel.tinhieu.TheoDoiTinHieuUiState
+import com.example.canhbao.viewmodel.tinhieu.TheoDoiTinHieuViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

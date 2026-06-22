@@ -24,6 +24,18 @@ import com.example.canhbao.ui.screens.theodoi.ChiTietBaoCaoScreen
 import com.example.canhbao.ui.screens.theodoi.ChiTietSosScreen
 import com.example.canhbao.ui.screens.theodoi.LichSuScreen
 import com.example.canhbao.viewmodel.*
+import com.example.canhbao.viewmodel.call.CallViewModel
+import com.example.canhbao.viewmodel.call.WebRTCViewModel
+import com.example.canhbao.viewmodel.goi.GoiViewModel
+import com.example.canhbao.viewmodel.helper.AlertViewModel
+import com.example.canhbao.viewmodel.helper.SearchViewModel
+import com.example.canhbao.viewmodel.suco.TheoDoiBaoCaoViewModel
+import com.example.canhbao.viewmodel.tienich.DoiTienViewModel
+import com.example.canhbao.viewmodel.tienich.QuaViewModel
+import com.example.canhbao.viewmodel.tinhieu.SOSViewModel
+import com.example.canhbao.viewmodel.tinhieu.TheoDoiTinHieuViewModel
+import com.example.canhbao.viewmodel.tinhieu.TinHieuSOSViewModel
+import com.example.canhbao.viewmodel.xacthuc.AuthViewModel
 import ua.naiksoftware.stomp.Stomp
 
 @Composable
@@ -59,7 +71,6 @@ fun NavGraph(authViewModel: AuthViewModel) {
     val callViewModel: CallViewModel = viewModel()
 
     val tinhHieuSosViewModel: TinHieuSOSViewModel = viewModel()
-    val lichSuViewModel: LichSuViewModel = viewModel()
 
     // 💡 KHỞI TẠO CHUNG: Để màn hình Lịch Sử và màn Chi Tiết dùng chung Instance dữ liệu thời gian thực
     val theoDoiBaoCaoViewModel: TheoDoiBaoCaoViewModel = viewModel()
@@ -209,7 +220,6 @@ fun NavGraph(authViewModel: AuthViewModel) {
             )
         }
 
-        // 📝 THÊM ROUTE MỚI: Màn hình hiển thị thông tin chi tiết của Item SOS được chọn
         composable(
             route = "chi_tiet_sos/{sosId}",
             arguments = listOf(navArgument("sosId") { type = NavType.LongType })

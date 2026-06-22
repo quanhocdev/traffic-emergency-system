@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.canhbao.data.network.AppConfig
-import com.example.canhbao.viewmodel.QuaViewModel
+import com.example.canhbao.viewmodel.tienich.QuaViewModel
 import android.util.Log
 import com.example.canhbao.data.model.qua.QuaResponseDTO
 

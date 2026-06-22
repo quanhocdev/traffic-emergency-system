@@ -1,7 +1,6 @@
 package com.example.canhbao.ui.screens.theodoi
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -23,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.canhbao.data.network.AppConfig
-import com.example.canhbao.viewmodel.TheoDoiBaoCaoViewModel // Giả định tên ViewModel quản lý Báo cáo của bạn
+import com.example.canhbao.viewmodel.suco.TheoDoiBaoCaoViewModel // Giả định tên ViewModel quản lý Báo cáo của bạn
 
 // Định nghĩa bảng màu Xanh nước biển chủ đạo cho phần Chi tiết Báo cáo Sự cố
 private val PrimaryBlue = Color(0xFF1976D2)

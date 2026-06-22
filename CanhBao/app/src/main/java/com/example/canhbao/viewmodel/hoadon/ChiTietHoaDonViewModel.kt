@@ -1,4 +1,4 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.hoadon
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -7,11 +7,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
-import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
+import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
-import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -81,7 +80,7 @@ class ChiTietHoaDonViewModel : ViewModel() {
                             "STEP 4 - Calling getHoaDonDetail"
                         )
 
-                        api.getHoaDonDetail(
+                        BaoCaoSuCoRetrofit.api.getHoaDonDetail(
                             token,
                             hoaDonId
                         )

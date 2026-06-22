@@ -1,4 +1,4 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.suco
 
 import android.annotation.SuppressLint
 import android.util.Log
@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
+import ua.naiksoftware.stomp.dto.LifecycleEvent
 
 sealed class TheoDoiBaoCaoUiState {
     object Loading : TheoDoiBaoCaoUiState()
@@ -131,7 +132,7 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
 
         mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
             when (lifecycleEvent.type) {
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> {
+                LifecycleEvent.Type.OPENED -> {
                     Log.d("WebSocket_BaoCao", "🟢 Kết nối thành công! Bắt đầu subscribe...")
 
                     // Kênh 1: Có sự cố mới công cộng chung
@@ -158,10 +159,10 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
                         })
                     }
                 }
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
+                LifecycleEvent.Type.ERROR -> {
                     Log.e("WebSocket_BaoCao", "❌ Lỗi kết nối WebSocket: ${lifecycleEvent.exception?.message}")
                 }
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.CLOSED -> {
+                LifecycleEvent.Type.CLOSED -> {
                     Log.w("WebSocket_BaoCao", "🔌 Kết nối WebSocket đã đóng")
                 }
                 else -> {}

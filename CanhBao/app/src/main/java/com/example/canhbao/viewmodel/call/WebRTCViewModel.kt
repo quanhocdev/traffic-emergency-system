@@ -1,6 +1,8 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.call
 
 import android.app.Application
+import android.content.Context
+import android.media.AudioManager
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import com.example.canhbao.dto.CallSignalDto
@@ -8,11 +10,20 @@ import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.json.JSONObject
-import org.webrtc.*
-import android.content.Context
-import android.media.AudioManager
+import org.webrtc.AudioSource
+import org.webrtc.AudioTrack
+import org.webrtc.DataChannel
+import org.webrtc.IceCandidate
+import org.webrtc.MediaConstraints
+import org.webrtc.MediaStream
+import org.webrtc.PeerConnection
+import org.webrtc.PeerConnectionFactory
+import org.webrtc.RtpReceiver
+import org.webrtc.SdpObserver
+import org.webrtc.SessionDescription
 import org.webrtc.audio.JavaAudioDeviceModule
 import ua.naiksoftware.stomp.StompClient
+import kotlin.collections.get
 
 class WebRTCViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -85,7 +96,12 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
                 peerConnection?.setLocalDescription(SimpleSdpObserver(), sdp)
 
                 // Thay thế đoạn cũ bằng:
-                val signal = CallSignalDto(type = "offer", to = targetId, from = myId, sdp = sdp?.description)
+                val signal = CallSignalDto(
+                    type = "offer",
+                    to = targetId,
+                    from = myId,
+                    sdp = sdp?.description
+                )
                 sendSignalSafely(stompClient, signal)
             }
         }, constraints)
@@ -170,7 +186,12 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
                 peerConnection?.setLocalDescription(SimpleSdpObserver(), sdp)
 
                 // Thay thế đoạn cũ bằng:
-                val signal = CallSignalDto(type = "answer", to = currentTargetId, from = myId, sdp = sdp?.description)
+                val signal = CallSignalDto(
+                    type = "answer",
+                    to = currentTargetId,
+                    from = myId,
+                    sdp = sdp?.description
+                )
                 sendSignalSafely(stompClient, signal)
             }
         }, MediaConstraints())
@@ -201,7 +222,12 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
             override fun onIceCandidate(candidate: IceCandidate?) {
                 candidate?.let {
                     val iceMap = mapOf("sdpMid" to it.sdpMid, "sdpMLineIndex" to it.sdpMLineIndex, "candidate" to it.sdp)
-                    val signal = CallSignalDto(type = "candidate", to = targetId, from = myId, candidate = iceMap)
+                    val signal = CallSignalDto(
+                        type = "candidate",
+                        to = targetId,
+                        from = myId,
+                        candidate = iceMap
+                    )
                     // Dùng hàm an toàn ở đây
                     sendSignalSafely(stompClient, signal)
                 }

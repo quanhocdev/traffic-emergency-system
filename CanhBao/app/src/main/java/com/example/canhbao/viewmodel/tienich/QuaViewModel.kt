@@ -1,4 +1,4 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.tienich
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -7,12 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.SuCoUserDto
 import com.example.canhbao.data.model.qua.QuaResponseDTO
+import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
+import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoApi
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
-import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 
 class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
 
@@ -46,7 +46,6 @@ class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
         }
     }
 
-    // ================== ĐỔI QUÀ ==================
     fun thucHienDoiQua(
         qua: QuaResponseDTO,
         onResult: (Boolean, String) -> Unit
@@ -81,7 +80,6 @@ class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
         }
     }
 
-    // ================== FILTER ==================
     fun filterQua(loai: String) {
         selectedTab = loai
         filteredQua = if (loai == "TẤT CẢ") {
@@ -91,7 +89,6 @@ class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
         }
     }
 
-    // ================== TÚI QUÀ ==================
     fun loadTuiQua() {
         viewModelScope.launch {
             isTuiLoading = true

@@ -29,7 +29,7 @@ import androidx.navigation.NavController
 import com.example.canhbao.R
 import com.example.canhbao.data.model.GoiDto
 import com.example.canhbao.data.model.MuaGoiDto
-import com.example.canhbao.viewmodel.GoiViewModel
+import com.example.canhbao.viewmodel.goi.GoiViewModel
 import kotlinx.coroutines.delay
 import java.time.Duration
 import java.time.LocalDateTime

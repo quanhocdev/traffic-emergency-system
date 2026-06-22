@@ -1,5 +1,6 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.tienich
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,6 +16,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
+import ua.naiksoftware.stomp.dto.LifecycleEvent
+import java.time.LocalDate
 
 enum class FilterMode { DAY, MONTH, YEAR }
 
@@ -36,7 +39,7 @@ class DoiTienViewModel : ViewModel() {
 
     // Khai báo các biến state mới cho việc lọc
     var filterMode by mutableStateOf(FilterMode.DAY)
-    var selectedDate by mutableStateOf(java.time.LocalDate.now())
+    var selectedDate by mutableStateOf(LocalDate.now())
 
     // Logic lọc danh sách (Dùng get() để nó tự cập nhật khi publicFundStats thay đổi)
     val filteredVinhDanh get() = publicFundStats.lichSuVinhDanh.filter { item ->
@@ -101,8 +104,8 @@ class DoiTienViewModel : ViewModel() {
 
         mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
             when (lifecycleEvent.type) {
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> {
-                    android.util.Log.d("WebSocket_DoiTien", "🟢 Đổi Tiền Connected! Đang đăng ký cổng...")
+                LifecycleEvent.Type.OPENED -> {
+                    Log.d("WebSocket_DoiTien", "🟢 Đổi Tiền Connected! Đang đăng ký cổng...")
 
                     // 1. Lắng nghe điểm cá nhân biến động
                     mStompClient?.topic("/topic/user-stats/$uid")?.subscribe({ topicMessage ->
@@ -114,8 +117,8 @@ class DoiTienViewModel : ViewModel() {
                         publicFundStats = Gson().fromJson(topicMessage.payload, ThongKeQuyDto::class.java)
                     }, { it.printStackTrace() })
                 }
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
-                    android.util.Log.e("WebSocket_DoiTien", "❌ Lỗi mạng: ${lifecycleEvent.exception?.message}")
+                LifecycleEvent.Type.ERROR -> {
+                    Log.e("WebSocket_DoiTien", "❌ Lỗi mạng: ${lifecycleEvent.exception?.message}")
                 }
                 else -> {}
             }

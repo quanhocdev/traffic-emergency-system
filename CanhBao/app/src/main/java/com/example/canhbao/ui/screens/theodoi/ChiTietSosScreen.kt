@@ -27,7 +27,7 @@ import coil.compose.AsyncImage
 import com.example.canhbao.R
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.data.network.AppConfig
-import com.example.canhbao.viewmodel.TheoDoiTinHieuViewModel
+import com.example.canhbao.viewmodel.tinhieu.TheoDoiTinHieuViewModel
 import kotlin.collections.get
 
 private val PrimaryRed = Color(0xFFDC2626)

@@ -1,4 +1,4 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.hoadon
 
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
-import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
+import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
@@ -58,7 +58,7 @@ class ThanhToanViewModel : ViewModel() {
                     val token = getToken()
                     Log.d("VOUCHER", "TOKEN = $token")   // 👈 LOG 1
 
-                    val res = api.getMyGifts(token)
+                    val res = BaoCaoSuCoRetrofit.api.getMyGifts(token)
 
                     Log.d("VOUCHER", "RAW RESULT = $res") // 👈 LOG 2
 
@@ -88,14 +88,13 @@ class ThanhToanViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 loading = true
-                paymentSuccess = false // Luôn reset về false khi bắt đầu bấm nút
+                paymentSuccess = false
                 errorMessage = null
 
                 val response = withContext(Dispatchers.IO) {
                     val token = getToken()
 
-                    // Thay đổi: Gọi lấy nguyên đối tượng Response thay vì chỉ lấy .isSuccessful
-                    api.confirmPayment(
+                    BaoCaoSuCoRetrofit.api.confirmPayment(
                         token,
                         ThanhToanRequestDTO(
                             hoaDonId = hoaDonId,
@@ -106,10 +105,8 @@ class ThanhToanViewModel : ViewModel() {
                 }
 
                 if (response.isSuccessful) {
-                    // CỰC KỲ QUAN TRỌNG: Chỉ bật true khi thực sự thành công
                     paymentSuccess = true
                 } else {
-                    // THẤT BẠI: Giữ nguyên success là false và đọc nội dung lỗi từ Spring Boot
                     paymentSuccess = false
                     val errorBodyString = response.errorBody()?.string()
                     errorMessage = if (!errorBodyString.isNullOrBlank()) {
@@ -132,10 +129,7 @@ class ThanhToanViewModel : ViewModel() {
     fun resetPayment() {
         paymentSuccess = false
     }
-    // --- THÊM BIẾN NÀY VÀO THANHTOANVIEWMODEL ---
 
-
-    // --- THÊM HÀM NÀY VÀO THANHTOANVIEWMODEL ---
     fun loadHoaDonDetail(hoaDonId: Long) {
         viewModelScope.launch {
             try {
@@ -144,13 +138,12 @@ class ThanhToanViewModel : ViewModel() {
 
                 // Gọi API lấy chi tiết hóa đơn y hệt bên ChiTietHoaDonViewModel
                 val result = withContext(Dispatchers.IO) {
-                    api.getHoaDonDetail(token, hoaDonId)
+                    BaoCaoSuCoRetrofit.api.getHoaDonDetail(token, hoaDonId)
                 }
 
                 hoaDonDetail = result
             } catch (e: Exception) {
                 Log.e("ThanhToanVM", "LỖI TẢI CHI TIẾT HÓA ĐƠN", e)
-                // Không gán errorMessage trùng vào đây để tránh đè lên lỗi của Voucher/Thanh toán
             }
         }
     }

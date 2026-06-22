@@ -1,4 +1,4 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.helper
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

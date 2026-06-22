@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.canhbao.viewmodel.ChiTietHoaDonViewModel
+import com.example.canhbao.viewmodel.hoadon.ChiTietHoaDonViewModel
 
 // Thống nhất bảng màu Đỏ - Trắng chủ đạo
 private val PrimaryRed = Color(0xFFDC2626)

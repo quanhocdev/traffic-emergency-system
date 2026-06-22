@@ -1,7 +1,6 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.helper
 
 import android.location.Location
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
