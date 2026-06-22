@@ -6,9 +6,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.DoiTienDto
-import com.example.canhbao.data.model.SuCoUserDto
-import com.example.canhbao.data.model.ThongKeQuyDto
+import com.example.canhbao.data.model.tien.DoiTienDto
+import com.example.canhbao.data.model.suco.baocao.SuCoUserDto
+import com.example.canhbao.data.model.tien.ThongKeQuyDto
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.google.gson.Gson

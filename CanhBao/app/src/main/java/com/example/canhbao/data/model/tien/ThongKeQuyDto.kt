@@ -1,4 +1,4 @@
-package com.example.canhbao.data.model
+package com.example.canhbao.data.model.tien
 
 import com.google.gson.annotations.SerializedName
 

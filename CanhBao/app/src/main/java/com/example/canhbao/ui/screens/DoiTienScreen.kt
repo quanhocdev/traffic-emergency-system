@@ -21,7 +21,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.canhbao.data.model.DoiTienDtoRealtime
+import com.example.canhbao.data.model.tien.DoiTienDtoRealtime
 import com.example.canhbao.viewmodel.tienich.DoiTienViewModel
 import com.example.canhbao.viewmodel.tienich.FilterMode
 import java.time.LocalDate

@@ -1,6 +1,5 @@
-package com.example.canhbao.data.model
+package com.example.canhbao.data.model.truso
 
-// DTO cho Trụ sở SOS
 data class TruSoMapDto(
     val id: Long,
     val tenTruSo: String,

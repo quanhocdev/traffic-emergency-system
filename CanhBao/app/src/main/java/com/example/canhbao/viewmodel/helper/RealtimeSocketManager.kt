@@ -2,7 +2,7 @@ package com.example.canhbao.viewmodel.helper
 
 import android.content.Context
 import android.util.Log
-import com.example.canhbao.data.model.CameraMapDto
+import com.example.canhbao.data.model.camera.CameraMapDto
 import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
