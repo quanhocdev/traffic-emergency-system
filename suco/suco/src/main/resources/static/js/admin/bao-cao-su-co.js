@@ -8,6 +8,7 @@ stompClient.connect({}, function (frame) {
 
   stompClient.subscribe("/topic/su-co", function (message) {
     const suCoDto = JSON.parse(message.body);
+    console.log(" DỮ LIỆU REALTIME NHẬN ĐƯỢC:", suCoDto); // <-- THÊM DÒNG NÀY
     const id = suCoDto.id;
 
     let tableRow = document.getElementById("report-" + id);
@@ -25,9 +26,6 @@ stompClient.connect({}, function (frame) {
   });
 });
 
-/**
- * Hàm Sinh Dòng Mới - Đã cấu trúc lại 10 cột tách biệt đồng bộ DTO
- */
 function renderNewRow(dto) {
   const tableBody = document.getElementById("table-body-main");
   if (!tableBody || document.getElementById("report-" + dto.id)) return;
@@ -55,6 +53,14 @@ function renderNewRow(dto) {
     }
   }
 
+  // SỬA TẠI ĐÂY: Trích xuất an toàn từ Object reporter và truSoTiepNhan giống như Backend gửi qua
+  const reporterName =
+    dto.reporter && dto.reporter.name ? dto.reporter.name : "Người dân";
+  const reporterEmail =
+    dto.reporter && dto.reporter.email
+      ? dto.reporter.email
+      : "Ẩn danh / Không email";
+
   row.innerHTML = `
     <td class="row-id-cell">${dto.id}</td>
     <td>
@@ -65,8 +71,8 @@ function renderNewRow(dto) {
       <small class="badge-level ${dto.mucDoSuCo || "NONE"}">${dto.mucDoSuCo || "NONE"}</small>
     </td>
     <td>
-      <div style="font-weight: 500;">${dto.tenNguoiBao || "Người dân"}</div>
-      <div class="reporter-email">${dto.reporterUid || "Ẩn danh"}</div>
+      <div style="font-weight: 500;">${reporterName}</div>
+      <div class="reporter-email">${reporterEmail}</div>
     </td>
     <td>
       <div class="address-text">${dto.diaChi || "Không xác định"}</div>
