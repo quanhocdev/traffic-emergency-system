@@ -83,7 +83,7 @@ public class TinHieuMapper {
         dto.setThoiGianTao(sos.getCreatedAt());
 
         // Map thông tin người gửi cứu hộ
-        dto.setUser(infoUserMapper.toUserInfoResponseDTO(sos.getUser()));
+        dto.setUser(infoUserMapper.toUserMiniDTO(sos.getUser()));
 
         if (sos.getHoaDon() != null) {
             HoaDonResponseDTO hdDto = new HoaDonResponseDTO();
@@ -120,7 +120,7 @@ public class TinHieuMapper {
         dto.setThoiGianTao(sos.getCreatedAt());
         
         dto.setTrangThai(sos.getTrangThai() != null ? sos.getTrangThai().name() : null);
-        dto.setUser(infoUserMapper.toUserInfoResponseDTO(sos.getUser()));
+        dto.setUser(infoUserMapper.toUserMiniDTO(sos.getUser()));
         
         if (sos.getHoaDon() != null) {
             HoaDonResponseDTO hdDto = new HoaDonResponseDTO();

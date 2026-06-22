@@ -27,6 +27,12 @@ protected void doFilterInternal(HttpServletRequest request,
                                 FilterChain filterChain)
         throws ServletException, IOException {
 
+            String path = request.getRequestURI();
+if (path.equals("/api/su-co/map") || path.equals("/api/sos/map")) {
+    filterChain.doFilter(request, response);
+    return;
+}
+
                 String contentType = request.getContentType();
     if (contentType != null && contentType.startsWith("multipart/")) {
         filterChain.doFilter(request, response);

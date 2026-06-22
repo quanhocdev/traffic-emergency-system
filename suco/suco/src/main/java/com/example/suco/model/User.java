@@ -1,49 +1,36 @@
 package com.example.suco.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
 public class User {
 
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
-private Long id;        
-
-@Column(name = "uid", unique = true, nullable = false)
-private String uid;      
+    @Id 
+    @Column(name = "uid", length = 128, nullable = false)
+    private String uid;      
 
     private String email;
     
-
-@Column(name = "password")
-private String password;
+    @Column(name = "password")
+    private String password;
     private String name;
     private String provider;
 
-    // Bổ sung các trường mới
     @Column(name = "total_points")
-private int totalPoints;
+    private int totalPoints;
 
-@Column(name = "spam_count")
-private int spamCount; // Số lần bị Admin đánh dấu báo cáo sai
+    @Column(name = "spam_count")
+    private int spamCount;
 
-@Column(name = "role")
-private String role; // USER / ADMIN
+    @Column(name = "role")
+    private String role; // USER / ADMIN
 
     @Transient 
     private String tenGoi;
 
-    public User() {
-    }
+    public User() {}
 
-    // ===== Getter & Setter =====
     public String getUid() { return uid; }
     public void setUid(String uid) { this.uid = uid; }
 

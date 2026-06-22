@@ -3,7 +3,7 @@ import java.time.LocalDateTime;
 
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
-import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
+import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 
 public class AdminSOSDetailResponseDTO {
 
@@ -25,7 +25,7 @@ public class AdminSOSDetailResponseDTO {
 
     private String trangThai;
 
-    private UserInfoResponseDTO user;
+    private UserMiniDTO user;
     
     private HoaDonResponseDTO hoaDon; 
 
@@ -51,8 +51,8 @@ public class AdminSOSDetailResponseDTO {
     public void setThoiGianTao(LocalDateTime thoiGianTao) { this.thoiGianTao = thoiGianTao; }
     public String getTrangThai() { return trangThai; }
     public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
-    public UserInfoResponseDTO getUser() { return user; }
-    public void setUser(UserInfoResponseDTO user) { this.user = user; }
+    public UserMiniDTO getUser() { return user; }
+    public void setUser(UserMiniDTO user) { this.user = user; }
     public HoaDonResponseDTO getHoaDon() { return hoaDon; }
     public void setHoaDon(HoaDonResponseDTO hoaDon) { this.hoaDon = hoaDon; }
     public TruSoMiniDTO getTruSoTiepNhan() { return truSoTiepNhan; }
