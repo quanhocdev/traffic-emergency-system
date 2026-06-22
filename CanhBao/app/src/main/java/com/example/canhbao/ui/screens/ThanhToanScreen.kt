@@ -42,6 +42,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,8 +66,8 @@ private val LightRedBg = Color(0xFFFEF2F2)
 private val BorderRed = Color(0xFFFCA5A5)
 private val TextDark = Color(0xFF1F2937)
 private val TextGray = Color(0xFF4B5563)
-
 private val SuccessGreen = Color(0xFF10B981)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ThanhToanScreen(
@@ -77,23 +78,35 @@ fun ThanhToanScreen(
     var selectedVoucher by remember { mutableStateOf<TuiQuaResponseDTO?>(null) }
     var paymentMethod by remember { mutableStateOf("MOMO") }
 
-    LaunchedEffect(Unit) {
-        viewModel.resetPayment()
-        viewModel.loadVoucher()
+    // BẮT CHƯỚC: Lấy thông tin hóa đơn thực tế từ ViewModel
+    val hoaDon by remember {
+        derivedStateOf { viewModel.hoaDonDetail } // Đảm bảo trong ThanhToanViewModel có biến hoaDonDetail nhé
     }
 
-    // Sửa lại đoạn này trong ThanhToanScreen.kt
+    // BẮT CHƯỚC: Load chi tiết hóa đơn đồng thời với load Voucher
+    LaunchedEffect(hoaDonId) {
+        viewModel.resetPayment()
+        viewModel.loadVoucher()
+        viewModel.loadHoaDonDetail(hoaDonId) // Thêm hàm load này vào ThanhToanViewModel của bạn
+    }
+
+    // 1. Lấy giaGoc từ BigDecimal đổi sang Double an toàn
+    val giaGoc = hoaDon?.thanhTien?.toDouble() ?: 0.0
+
+// 2. Tính toán số tiền giảm dựa theo % của voucher (Giữ nguyên)
+    val phanTramGiam = (selectedVoucher?.qua?.giaTriGiamPercent ?: 0) / 100.0
+    val soTienGiam = giaGoc * phanTramGiam
+
+// 3. Tính tổng thanh toán thực tế
+    val tongThanhToanHienTai = (giaGoc - soTienGiam).coerceAtLeast(0.0)
+
     LaunchedEffect(Unit) {
         snapshotFlow { viewModel.paymentSuccess }
             .collect { success ->
-                // CHỈ XỬ LÝ khi biến thực sự chuyển sang TRUE (người dùng bấm nút thành công)
                 if (success) {
-                    // Chờ 1.5 giây để người dùng kịp nhìn thấy thông báo thành công xanh lá trên màn hình
                     kotlinx.coroutines.delay(1500)
-
                     viewModel.resetPayment()
                     navController.navigate("chi_tiet_hoa_don/$hoaDonId") {
-                        // Xóa màn hình thanh toán khỏi Backstack để không bị lặp vòng
                         popUpTo("thanh_toan/$hoaDonId") { inclusive = true }
                     }
                 }
@@ -128,34 +141,42 @@ fun ThanhToanScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryRed)
             )
         },
-        // --- ĐƯA NÚT BẤM VÀO ĐÂY ĐỂ CỐ ĐỊNH DƯỚI ĐÁY MÀN HÌNH ---
-        // --- ĐƯA NÚT BẤM VÀO ĐÂY ĐỂ CỐ ĐỊNH DƯỚI ĐÁY MÀN HÌNH ---
         bottomBar = {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White) // Nền trắng che phần nội dung cuộn phía sau
+                    .background(Color.White)
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                // Sử dụng Column ngoài cùng để xếp: Bảng tính tiền trước -> Nút bấm sau
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp) // Khoảng cách giữa bảng tính tiền và nút
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // --- BẢNG TÍNH TIỀN (ĐÃ ĐƯỢC ĐƯA RA NGOÀI BUTTON) ---
+                    // --- BẢNG TÍNH TIỀN ĐÃ ĐƯỢC ĐỔI THÀNH GIÁ ĐỘNG THỰC TẾ ---
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("Giá gốc:", color = TextGray, fontSize = 14.sp)
-                            Text("100.000 VNĐ", fontWeight = FontWeight.Medium, color = TextDark, fontSize = 14.sp) // Có thể thay bằng dữ liệu thực tế sau
+                            // Hiện giá gốc từ API
+                            Text(
+                                text = "${String.format("%,d", giaGoc.toLong())} VNĐ",
+                                fontWeight = FontWeight.Medium,
+                                color = TextDark,
+                                fontSize = 14.sp
+                            )
                         }
 
-                        if (selectedVoucher != null) {
+                        if (selectedVoucher != null && soTienGiam > 0) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Text("Giảm giá (Voucher):", color = SuccessGreen, fontSize = 14.sp)
-                                Text("-10.000 VNĐ", color = SuccessGreen, fontSize = 14.sp)
+                                // Hiện số tiền giảm thực tế dựa vào % Voucher
+                                Text(
+                                    text = "-${String.format("%,d", soTienGiam.toLong())} VNĐ",
+                                    color = SuccessGreen,
+                                    fontSize = 14.sp
+                                )
                             }
                         }
 
@@ -166,8 +187,9 @@ fun ThanhToanScreen(
 
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("Tổng thanh toán:", fontWeight = FontWeight.Bold, color = TextDark, fontSize = 15.sp)
+                            // Hiện tổng tiền sau giảm giá thực tế
                             Text(
-                                text = if (selectedVoucher != null) "90.000 VNĐ" else "100.000 VNĐ",
+                                text = "${String.format("%,d", tongThanhToanHienTai.toLong())} VNĐ",
                                 color = PrimaryRed,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp
@@ -175,7 +197,7 @@ fun ThanhToanScreen(
                         }
                     }
 
-                    // --- NÚT BẤM XÁC NHẬN THANH TOÁN THỰC TẾ ---
+                    // --- NÚT BẤM XÁC NHẬN THANH TOÁN ---
                     Button(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -184,7 +206,7 @@ fun ThanhToanScreen(
                         onClick = {
                             viewModel.thanhToan(
                                 hoaDonId = hoaDonId,
-                                quaId = selectedVoucher?.quaId,
+                                quaId = selectedVoucher?.qua?.id,
                                 phuongThuc = paymentMethod
                             )
                         },
@@ -233,7 +255,7 @@ fun ThanhToanScreen(
             Spacer(Modifier.height(10.dp))
 
             val vouchers = viewModel.listVoucher.filter {
-                it.loai == "VOUCHER" && (it.soLuong ?: 0) > 0
+                it.qua?.loai == "VOUCHER" && (it.soLuong ?: 0) > 0
             }
 
             LazyRow(
@@ -241,7 +263,7 @@ fun ThanhToanScreen(
                 contentPadding = PaddingValues(vertical = 4.dp)
             ) {
                 items(vouchers) { voucher ->
-                    val selected = selectedVoucher?.quaId == voucher.quaId
+                    val selected = selectedVoucher?.qua?.id == voucher.qua?.id
 
                     Card(
                         onClick = { selectedVoucher = if (selected) null else voucher },
@@ -263,7 +285,7 @@ fun ThanhToanScreen(
                             verticalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = voucher.tenQua,
+                                text = voucher.qua?.ten ?: "Không có tên",
                                 color = TextDark,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 14.sp,

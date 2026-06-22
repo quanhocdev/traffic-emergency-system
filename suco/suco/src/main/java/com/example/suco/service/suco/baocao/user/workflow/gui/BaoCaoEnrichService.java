@@ -1,7 +1,7 @@
 package com.example.suco.service.suco.baocao.user.workflow.gui;
 
 import com.example.suco.model.BaoCaoSuCo;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.service.location.GeocodingService;
 import com.example.suco.service.suco.baocao.system.file.ImageStorageService;
@@ -21,7 +21,7 @@ public class BaoCaoEnrichService {
     private ImageStorageService imageStorageService;
 
     @Autowired
-    private BaoCaoSuCoRepository reportRepository;
+    private SuCoAdminRepository reportRepository;
 
     @Autowired
     private TrungLapBaoCaoService trungLapBaoCaoService;

@@ -6,7 +6,7 @@ import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.TruSo;
 import com.example.suco.model.enums.MucDoSuCo;
 import com.example.suco.model.enums.TrangThaiXuLy;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ public class MucDoSuCoService {
             LoggerFactory.getLogger(MucDoSuCoService.class);
 
     @Autowired
-    private BaoCaoSuCoRepository reportRepository;
+    private SuCoAdminRepository reportRepository;
 
     @Autowired
     private BaoCaoRealtimeService realtimeService;

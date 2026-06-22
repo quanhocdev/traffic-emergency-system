@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.suco.dto.vanhanh.camera.CameraMapDto;
 import com.example.suco.model.BaoCaoSuCo;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.service.vanhanh.camera.CameraService;
 
 import java.util.List;
@@ -21,16 +21,14 @@ public class CameraApiController {
     private CameraService cameraService;
 
     @Autowired
-private BaoCaoSuCoRepository baoCaoSuCoRepository;
+private SuCoAdminRepository baoCaoSuCoRepository;
 
     @GetMapping("/all")
     public List<CameraMapDto> getAllCamera() {
         return cameraService.getAllCameraForMap();
     }
-   @GetMapping("/near-by-incident/{id}")
-public List<CameraMapDto> getCameraByIncident(@PathVariable Long id) {
-
-        System.out.println("🔥 API CALLED: near-by-incident " + id);
+    @GetMapping("/near-by-incident/{id}")
+    public List<CameraMapDto> getCameraByIncident(@PathVariable Long id) {
 
     BaoCaoSuCo report = baoCaoSuCoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy sự cố"));

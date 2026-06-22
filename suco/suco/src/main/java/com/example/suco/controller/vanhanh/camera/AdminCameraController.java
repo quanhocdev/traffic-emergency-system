@@ -14,11 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.example.suco.dto.vanhanh.camera.CameraMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Camera;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.repository.vanhanh.CameraRepository;
 import com.example.suco.service.vanhanh.camera.CameraService;
 
@@ -33,7 +32,7 @@ public class AdminCameraController {
     private CameraRepository cameraRepository;
 
     @Autowired
-    private BaoCaoSuCoRepository baoCaoSuCoRepository;
+    private SuCoAdminRepository baoCaoSuCoRepository;
 
     @GetMapping
     public String hienThiDanhSach(Model model) {
@@ -100,7 +99,6 @@ public class AdminCameraController {
         }
     }
 
-    // THÊM MỚI: API này để hàm loadCameraMarkers() trong JS gọi lấy dữ liệu
     @GetMapping("/all-json")
     @ResponseBody
     public List<Camera> getAllCameraJson() {
@@ -144,8 +142,6 @@ public ResponseEntity<String> xoaCamera(@PathVariable Long id) {
 @GetMapping("/near-by-incident/{id}")
 @ResponseBody
 public List<CameraMapDto> getCameraByIncident(@PathVariable Long id) {
-
-        System.out.println("🔥 API CALLED: near-by-incident " + id);
 
     BaoCaoSuCo report = baoCaoSuCoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy sự cố"));

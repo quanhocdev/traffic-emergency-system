@@ -47,16 +47,16 @@ fun TuiScreen(viewModel: QuaViewModel, uid: String, onBack: () -> Unit) {
         viewModel.loadTuiQua()
     }
 
-    // Logic lọc danh sách dựa trên Tab
+    // FIX TẠI ĐÂY: Lọc danh sách thông qua object 'item.qua?.loai'
     val filteredList = if (tabs[selectedTabIdx] == "TẤT CẢ") {
         viewModel.listTuiQua
     } else {
-        viewModel.listTuiQua.filter { it.loai == tabs[selectedTabIdx] }
+        viewModel.listTuiQua.filter { it.qua?.loai == tabs[selectedTabIdx] }
     }
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar( // Dùng CenterAligned để tiêu đề ở chính giữa
+            CenterAlignedTopAppBar(
                 title = {
                     Text(
                         "TÚI QUÀ CỦA TÔI",
@@ -80,7 +80,6 @@ fun TuiScreen(viewModel: QuaViewModel, uid: String, onBack: () -> Unit) {
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding).background(Color(0xFFF8F9FA))) {
-            // TabBar lọc loại quà phong cách hiện đại
             TabRow(
                 selectedTabIndex = selectedTabIdx,
                 containerColor = Color.White,
@@ -125,7 +124,8 @@ fun TuiScreen(viewModel: QuaViewModel, uid: String, onBack: () -> Unit) {
                 ) {
                     items(filteredList) { item ->
                         TuiItemRow(item) {
-                            selectedItemName = item.tenQua
+                            // FIX TẠI ĐÂY: item.tenQua -> item.qua?.ten
+                            selectedItemName = item.qua?.ten ?: "Quà không tên"
                             showForm = true
                         }
                     }
@@ -168,7 +168,6 @@ fun TuiScreen(viewModel: QuaViewModel, uid: String, onBack: () -> Unit) {
                 confirmButton = {
                     Button(
                         onClick = {
-                            // Tạm thời để tĩnh, chỉ đóng dialog
                             showForm = false
                         }
                     ) { Text("Xác nhận gửi") }
@@ -183,9 +182,12 @@ fun TuiScreen(viewModel: QuaViewModel, uid: String, onBack: () -> Unit) {
 
 @Composable
 fun TuiItemRow(item: TuiQuaResponseDTO, onNhanNgayClick: () -> Unit) {
-    val isVoucher = item.loai == "VOUCHER"
-    val isExpired = item.ngayKetThuc != null &&
-            java.time.LocalDateTime.parse(item.ngayKetThuc)
+    // FIX TẠI ĐÂY: Truy cập gián tiếp qua object 'qua' bên trong
+    val isVoucher = item.qua?.loai == "VOUCHER"
+
+    // Kiểm tra hạn sử dụng an toàn từ item.qua?.ngayKetThuc
+    val isExpired = item.qua?.ngayKetThuc != null &&
+            java.time.LocalDateTime.parse(item.qua.ngayKetThuc)
                 .isBefore(java.time.LocalDateTime.now())
 
     Card(
@@ -219,12 +221,14 @@ fun TuiItemRow(item: TuiQuaResponseDTO, onNhanNgayClick: () -> Unit) {
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = item.tenQua ?: "",
+                        // FIX TẠI ĐÂY: item.tenQua -> item.qua?.ten
+                        text = item.qua?.ten ?: "",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = Color(0xFF333333)
                     )
-                    if (item.soLuong > 1) {
+                    // Ép kiểu an toàn từ Integer sang Int để so sánh
+                    if ((item.soLuong?.toInt() ?: 0) > 1) {
                         Text(
                             text = " x${item.soLuong}",
                             color = Color(0xFFF57C00),
@@ -240,7 +244,8 @@ fun TuiItemRow(item: TuiQuaResponseDTO, onNhanNgayClick: () -> Unit) {
                         fontWeight = FontWeight.Bold
                     )
                 } else {
-                    item.ngayKetThuc?.let {
+                    // FIX TẠI ĐÂY: item.ngayKetThuc -> item.qua?.ngayKetThuc
+                    item.qua?.ngayKetThuc?.let {
                         Text(
                             "HSD: ${it.take(16).replace("T", " ")}",
                             fontSize = 11.sp,

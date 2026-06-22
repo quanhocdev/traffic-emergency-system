@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
@@ -27,6 +28,9 @@ class ThanhToanViewModel : ViewModel() {
         private set
 
     var errorMessage by mutableStateOf<String?>(null)
+        private set
+
+    var hoaDonDetail by mutableStateOf<HoaDonUserResponseDTO?>(null)
         private set
 
     private suspend fun getToken(): String {
@@ -127,5 +131,27 @@ class ThanhToanViewModel : ViewModel() {
     }
     fun resetPayment() {
         paymentSuccess = false
+    }
+    // --- THÊM BIẾN NÀY VÀO THANHTOANVIEWMODEL ---
+
+
+    // --- THÊM HÀM NÀY VÀO THANHTOANVIEWMODEL ---
+    fun loadHoaDonDetail(hoaDonId: Long) {
+        viewModelScope.launch {
+            try {
+                errorMessage = null
+                val token = withContext(Dispatchers.IO) { getToken() }
+
+                // Gọi API lấy chi tiết hóa đơn y hệt bên ChiTietHoaDonViewModel
+                val result = withContext(Dispatchers.IO) {
+                    api.getHoaDonDetail(token, hoaDonId)
+                }
+
+                hoaDonDetail = result
+            } catch (e: Exception) {
+                Log.e("ThanhToanVM", "LỖI TẢI CHI TIẾT HÓA ĐƠN", e)
+                // Không gán errorMessage trùng vào đây để tránh đè lên lỗi của Voucher/Thanh toán
+            }
+        }
     }
 }

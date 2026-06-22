@@ -12,7 +12,7 @@ import com.example.suco.service.suco.baocao.user.workflow.gui.BaoCaoResponseFact
 import com.example.suco.service.suco.baocao.user.workflow.gui.BaoCaoRewardService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.CreateBaoCaoService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.DuplicateBaoCaoService;
-import com.example.suco.repository.suco.baocao.BaoCaoSuCoRepository;
+import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,7 +39,7 @@ public class GuiBaoCaoService {
     private BaoCaoResponseFactory baoCaoResponseFactory;
 
     @Autowired
-    private BaoCaoSuCoRepository reportRepository;
+    private SuCoAdminRepository reportRepository;
 
 @Autowired
     private TruSoSelectorService truSoSelectorService;

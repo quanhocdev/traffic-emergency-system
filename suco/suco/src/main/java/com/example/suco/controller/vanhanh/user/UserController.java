@@ -41,14 +41,12 @@ public class UserController {
         return "admin/quan-ly-user";
     }
 
-    // ===================== JSON API =====================
     @GetMapping("/danh-sach")
     @ResponseBody
     public ResponseEntity<List<User>> getAllUsersApi() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    // ===================== DELETE USER =====================
     @DeleteMapping("/delete/{uid}")
     @ResponseBody
     public ResponseEntity<?> deleteUserApi(@PathVariable String uid) {
@@ -76,7 +74,6 @@ public class UserController {
         ));
     }
 
-    // ===================== RESET SPAM =====================
     @GetMapping("/reset-spam/{uid}")
     public String resetSpam(@PathVariable String uid) {
         userService.resetSpamCount(uid);

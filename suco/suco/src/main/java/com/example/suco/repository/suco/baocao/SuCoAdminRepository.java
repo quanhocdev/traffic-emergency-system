@@ -7,9 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
 
-public interface BaoCaoSuCoRepository extends JpaRepository<BaoCaoSuCo, Long> {
+public interface SuCoAdminRepository extends JpaRepository<BaoCaoSuCo, Long> {
 
-    // 1. CÂU QUERY GỐC: Tối ưu hiệu năng, lấy đầy đủ thông tin liên kết và sắp xếp mới nhất lên đầu
+    // 1. Tối ưu hiệu năng, lấy đầy đủ thông tin liên kết và sắp xếp mới nhất lên đầu
     @Query("""
         SELECT DISTINCT b FROM BaoCaoSuCo b
         LEFT JOIN FETCH b.loaiSuCo
@@ -30,9 +30,6 @@ public interface BaoCaoSuCoRepository extends JpaRepository<BaoCaoSuCo, Long> {
     """)
     List<BaoCaoSuCo> findAllForAdminDashboard();
 
-    // ========================================================
-    // 🔥 Các hàm tự đặt tên (Default Methods) gọi từ Query gốc
-    // ========================================================
     
     default List<BaoCaoSuCo> findNewAssigned() {
         return findByStatus(TrangThaiXuLy.DA_TIEP_NHAN);
@@ -54,6 +51,5 @@ public interface BaoCaoSuCoRepository extends JpaRepository<BaoCaoSuCo, Long> {
         return findByStatus(TrangThaiXuLy.HUY_BO);
     }
 
-    // Các hàm phụ trợ khác giữ nguyên nếu cần
     List<BaoCaoSuCo> findByReporterUid(String uid);
 }
