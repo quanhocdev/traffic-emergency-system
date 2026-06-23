@@ -20,9 +20,6 @@ public class TruSo {
 
     private String tenTruSo;
 
-    /**
-     * Vị trí hoạt động
-     */
     private double kinhDo;
 
     private double viDo;
@@ -32,19 +29,12 @@ public class TruSo {
     @Column(length = 12)
     private String geohash;
 
-    /**
-     * Trạng thái hoạt động realtime
-     */
     @Enumerated(EnumType.STRING)
     @Column(name = "trang_thai_hoat_dong")
     private TrangThaiHoatDongTruSo trangThaiHoatDong =
             TrangThaiHoatDongTruSo.SAN_SANG;
 
     public TruSo() {}
-
-    // =========================
-    // Getter & Setter
-    // =========================
 
     public Long getId() {
         return id;

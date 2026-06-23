@@ -122,7 +122,6 @@ fun NavGraph(
                 alertViewModel = alertViewModel,
                 searchViewModel = searchViewModel,
                 sosViewModel = sosViewModel,
-                callViewModel = callViewModel,
                 stompClient = stompClient, // Gắn cổng socket tập trung
                 isLoggedIn = currentUser != null,
                 onReportClick = { navController.navigate("bao_cao_su_co") }

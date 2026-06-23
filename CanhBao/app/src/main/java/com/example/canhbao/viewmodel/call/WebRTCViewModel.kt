@@ -5,10 +5,12 @@ import android.content.Context
 import android.media.AudioManager
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.call.CallSignalDto
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
@@ -123,9 +125,10 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
                 audioManager.mode = AudioManager.MODE_NORMAL
             }
             "OFFER" -> {
-                targetUserId = fromUser // 1. Lưu ID người gọi lại ở đây
+                targetUserId = fromUser
                 setupAudioConfig()
-                _callerName.value = fromUser.replace("TRU_SO_", "Trụ sở ").replace("_", " ")
+
+                fetchAndSetTruSoName(fromUser)
 
                 _callState.value = "INCOMING"
                 val sdp = SessionDescription(SessionDescription.Type.OFFER, signal.sdp)
@@ -136,14 +139,11 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
                 peerConnection?.setRemoteDescription(object : SimpleSdpObserver() {
                     override fun onSetSuccess() {
                         Log.d("WebRTC", "Đã nhận OFFER, đang chờ người dùng nhấc máy...")
-                        // Thêm các candidate đã nhận trước đó vào
                         pendingCandidates.forEach { peerConnection?.addIceCandidate(it) }
                         pendingCandidates.clear()
-                        // TUYỆT ĐỐI KHÔNG gọi createAnswer ở đây
                     }
                 }, sdp)
             }
-
             "ANSWER" -> {
                 val sdp = SessionDescription(SessionDescription.Type.ANSWER, signal.sdp)
                 peerConnection?.setRemoteDescription(SimpleSdpObserver(), sdp)
@@ -289,6 +289,7 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
         localAudioTrack?.setEnabled(!isMuted)
         Log.d("WebRTC", "Trạng thái Micro: ${if (isMuted) "ĐÃ TẮT" else "ĐANG MỞ"}")
     }
+
     fun endCall(stompClient: StompClient? = null, myId: String? = null) {
         val currentTarget = targetUserId
 
@@ -312,6 +313,7 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
         peerConnection = null
         targetUserId = null
         _callState.value = "IDLE"
+        _callerName.value = "Trụ sở cứu hộ"
 
         // 3. Trả Audio về chế độ bình thường
         val audioManager = getApplication<Application>().getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -348,5 +350,33 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
         audioSource?.dispose()
         peerConnectionFactory?.dispose()
         super.onCleared()
+    }
+    private fun fetchAndSetTruSoName(fromUser: String) {
+        if (fromUser.startsWith("TRU_SO_")) {
+            val truSoId = fromUser.substringAfter("TRU_SO_").toLongOrNull()
+            if (truSoId != null) {
+                viewModelScope.launch {
+                    try {
+                        // Gọi endpoint lấy tất cả trụ sở đang có từ Database Backend
+                        val listTruSo = com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api.getAllTruSo()
+
+                        // Tìm trụ sở trùng ID
+                        val targetTruSo = listTruSo.find { it.id == truSoId }
+
+                        if (targetTruSo != null && !targetTruSo.tenTruSo.isNullOrBlank()) {
+                            // hiển thị đúng tên trụ sở từ DB lên màn hình (Ví dụ: "Trụ sở Công an Quận 1")
+                            _callerName.value = targetTruSo.tenTruSo
+                        } else {
+                            _callerName.value = "Trụ sở tiếp nhận số $truSoId"
+                        }
+                    } catch (e: Exception) {
+                        Log.e("WebRTC_API", "Lỗi tra cứu tên trụ sở: ${e.message}")
+                        _callerName.value = "Trụ sở số $truSoId"
+                    }
+                }
+            }
+        } else {
+            _callerName.value = fromUser
+        }
     }
 }
