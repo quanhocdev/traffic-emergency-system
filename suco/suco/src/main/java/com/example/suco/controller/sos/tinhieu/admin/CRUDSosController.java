@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class CRUDSosController {
 
     @Autowired
-    private AdminTinHieuSOSRepository adminTinHieuSOSRepository; // Sử dụng repo dành riêng cho Admin
+    private AdminTinHieuSOSRepository adminTinHieuSOSRepository; 
 
     @Autowired
     private TinHieuMapper tinHieuMapper;
@@ -35,7 +35,6 @@ public class CRUDSosController {
 
         List<TinHieuSOS> danhSachEntity;
         
-        // Gọi các hàm default cực kỳ tường minh và sạch sẽ
         switch (tab) {
             case "tiep-nhan":
                 danhSachEntity = adminTinHieuSOSRepository.findAdminNewAssigned();

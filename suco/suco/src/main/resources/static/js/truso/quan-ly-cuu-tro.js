@@ -15,7 +15,6 @@ function formatTime(iso) {
   }
 }
 
-// IDs of SOS this client just accepted (ignore realtime echo)
 const handledSOS = new Set();
 
 function renderSOSItem(sos) {
@@ -192,7 +191,6 @@ function renderSuCoItem(suCo) {
 function loadPendingSuCo() {
   if (!TRUSO_ID || TRUSO_ID === 0) return;
 
-  // Sửa URL cho đúng với Spring Boot Controller và truyền param status
   fetch(`/truso/api/su-co/dang-di-chuyen`)
     .then((res) => {
       if (!res.ok) throw new Error("Mã lỗi: " + res.status);
@@ -230,7 +228,6 @@ function loadPendingSuCo() {
     });
 }
 
-// Toggle between views: 'sos' or 'suco'
 function setActiveView(view) {
   CURRENT_VIEW = view;
   // Dọn dẹp tất cả các bộ đếm ngược đang chạy khi chuyển view
@@ -314,15 +311,12 @@ function handleRealtimeSOS(sos) {
       // Phát âm thanh
       const audio = new Audio("/assets/sounds/alert.mp3");
       audio.play().catch((e) => {
-        // Thay vì chỉ console.log, bạn có thể hiển thị một Toast thông báo
-        // để người dùng click vào, từ đó "kích hoạt" quyền phát âm thanh.
         console.warn(
           "Âm thanh bị chặn bởi trình duyệt. Cần tương tác người dùng.",
         );
       });
     }
   } else if (status !== "DANG_DI_CHUYEN") {
-    // Nếu trạng thái thay đổi sang cái khác, xóa card đó đi
     const card = document.getElementById("sos-card-" + sos.id);
     if (card) {
       dungDemNguocInline(sos.id);
@@ -361,11 +355,11 @@ function connectRealtime() {
     {},
     function (frame) {
       stompClient.subscribe("/topic/truso/" + TRUSO_ID, function (message) {
-        console.log("🔥 RAW MESSAGE =", message.body);
+        console.log("RAW MESSAGE =", message.body);
 
         try {
           const sos = JSON.parse(message.body);
-          console.log("🔥 PARSED SOS =", sos);
+          console.log("PARSED SOS =", sos);
           handleRealtimeSOS(sos);
         } catch (e) {
           console.error("Invalid SOS message", e, message.body);
@@ -463,7 +457,7 @@ function hienThiThongBaoSOS(idSos, viTri, tongSo) {
   } catch (e) {}
 
   // Có thể thêm toast notification ở đây
-  console.log(`🚨 SOS mới! Bạn là trụ sở thứ ${viTri}/${tongSo} nhận tin này.`);
+  console.log(`SOS mới! Bạn là trụ sở thứ ${viTri}/${tongSo} nhận tin này.`);
 }
 
 /* Detail panel for list page + overlay */

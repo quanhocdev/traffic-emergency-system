@@ -167,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadHistory();
 });
 
-// 🌟 SỬA ĐOẠN NÀY: Hàm hiển thị dữ liệu lấy từ HoaDonDetailDTO (1 API duy nhất)
+// Hàm hiển thị dữ liệu lấy từ HoaDonDetailDTO (1 API duy nhất)
 async function viewInvoice(sosId, hoaDonId) {
   try {
     // Gọi API tổng hợp trả về HoaDonDetailDTO
@@ -222,7 +222,6 @@ async function viewInvoice(sosId, hoaDonId) {
         hoaDon.trangThai || "PENDING";
     }
 
-    // Mở màn hình đẹp đẽ lên
     document.getElementById("invoice-modal").style.display = "flex";
   } catch (err) {
     console.error("Lỗi xem hóa đơn:", err);
