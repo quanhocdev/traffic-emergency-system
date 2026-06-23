@@ -1,4 +1,4 @@
-package com.example.canhbao.ui.screens
+package com.example.canhbao.ui.screens.theodoi.hoadon
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -60,6 +60,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.viewmodel.hoadon.ThanhToanViewModel
+import kotlinx.coroutines.delay
 
 private val PrimaryRed = Color(0xFFDC2626)
 private val LightRedBg = Color(0xFFFEF2F2)
@@ -99,7 +100,7 @@ fun ThanhToanScreen(
         snapshotFlow { viewModel.paymentSuccess }
             .collect { success ->
                 if (success) {
-                    kotlinx.coroutines.delay(1500)
+                    delay(1500)
                     viewModel.resetPayment()
                     navController.navigate("chi_tiet_hoa_don/$hoaDonId") {
                         popUpTo("thanh_toan/$hoaDonId") { inclusive = true }

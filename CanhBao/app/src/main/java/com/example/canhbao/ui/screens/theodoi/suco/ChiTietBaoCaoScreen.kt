@@ -1,4 +1,4 @@
-package com.example.canhbao.ui.screens.theodoi
+package com.example.canhbao.ui.screens.theodoi.suco
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
@@ -24,7 +24,6 @@ import coil.compose.AsyncImage
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.viewmodel.suco.TheoDoiBaoCaoViewModel // Giả định tên ViewModel quản lý Báo cáo của bạn
 
-// Định nghĩa bảng màu Xanh nước biển chủ đạo cho phần Chi tiết Báo cáo Sự cố
 private val PrimaryBlue = Color(0xFF1976D2)
 private val LightBlueBg = Color(0xFFE3F2FD)
 private val TextDark = Color(0xFF1F2937)
@@ -40,11 +39,11 @@ private val LightRedBg = Color(0xFFFEF2F2)
 fun ChiTietBaoCaoScreen(
     suCoId: Long,
     navController: NavController,
-    viewModel: TheoDoiBaoCaoViewModel // Đã chuyển sang dùng ViewModel của luồng Sự cố
+    viewModel: TheoDoiBaoCaoViewModel
 ) {
     // Tự động load dữ liệu chi tiết của Sự cố từ API khi mở màn hình
     LaunchedEffect(suCoId) {
-        viewModel.fetchDetailSuCo(suCoId) // Tên hàm giả định, cấu trúc i chang SOS
+        viewModel.fetchDetailSuCo(suCoId)
     }
 
     // Lấy dữ liệu chi tiết từ Map lưu trữ trong ViewModel sự cố

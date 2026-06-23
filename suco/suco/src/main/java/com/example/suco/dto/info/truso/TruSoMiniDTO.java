@@ -1,4 +1,4 @@
-package com.example.suco.dto.sos.hoadon.quanly;
+package com.example.suco.dto.info.truso;
 
 public class TruSoMiniDTO {
     private Long id;

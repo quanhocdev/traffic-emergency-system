@@ -1,14 +1,14 @@
 package com.example.suco.mapper.hoadon;
 
+import com.example.suco.dto.info.truso.TruSoMiniDTO;
+import com.example.suco.dto.info.user.UserInfoResponseDTO;
+import com.example.suco.dto.info.user.UserMiniDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonRequestDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonTruSoResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonUserResponseDTO;
-import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
-import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO; 
-import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
-import com.example.suco.mapper.helper.InfoTruSoMapper;
-import com.example.suco.mapper.helper.InfoUserMapper;
+import com.example.suco.mapper.info.InfoTruSoMapper;
+import com.example.suco.mapper.info.InfoUserMapper;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.vanhanh.UserRepository;

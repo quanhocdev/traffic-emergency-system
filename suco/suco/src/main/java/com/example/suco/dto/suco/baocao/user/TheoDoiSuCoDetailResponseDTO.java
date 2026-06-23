@@ -2,8 +2,8 @@ package com.example.suco.dto.suco.baocao.user;
 
 import java.time.LocalDateTime;
 
-import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
-import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
+import com.example.suco.dto.info.truso.TruSoMapDto;
+import com.example.suco.dto.info.user.UserInfoResponseDTO;
 
 public class TheoDoiSuCoDetailResponseDTO {
 

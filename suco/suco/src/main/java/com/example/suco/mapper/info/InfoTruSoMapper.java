@@ -1,8 +1,9 @@
-package com.example.suco.mapper.helper;
+package com.example.suco.mapper.info;
 
 import org.springframework.stereotype.Component;
-import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
-import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
+
+import com.example.suco.dto.info.truso.TruSoMapDto;
+import com.example.suco.dto.info.truso.TruSoMiniDTO;
 import com.example.suco.model.TruSo;
 
 @Component

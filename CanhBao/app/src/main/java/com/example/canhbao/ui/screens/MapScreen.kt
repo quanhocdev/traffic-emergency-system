@@ -9,11 +9,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -42,14 +38,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import android.graphics.BitmapFactory
 import com.example.canhbao.R
-import com.example.canhbao.data.model.camera.CameraMapDto
-import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
+import com.example.canhbao.data.model.info.camera.CameraMapDto
 import com.example.canhbao.data.model.suco.baocao.UserSuCoDetailResponseDTO
-import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.viewmodel.helper.AlertViewModel
-import com.example.canhbao.viewmodel.call.CallViewModel
 import com.example.canhbao.viewmodel.MapViewModel
-import com.example.canhbao.viewmodel.helper.RealtimeSocketManager
 import com.example.canhbao.viewmodel.tinhieu.SOSViewModel
 import com.example.canhbao.viewmodel.helper.SearchViewModel
 import com.example.canhbao.viewmodel.call.WebRTCViewModel
@@ -68,7 +60,7 @@ import kotlinx.coroutines.launch
 import ua.naiksoftware.stomp.StompClient
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.Lifecycle
-import com.example.canhbao.data.model.truso.TruSoMapDto
+import com.example.canhbao.data.model.info.truso.TruSoMapDto
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

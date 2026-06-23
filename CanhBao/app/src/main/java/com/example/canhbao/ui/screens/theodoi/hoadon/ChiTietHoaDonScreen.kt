@@ -1,4 +1,4 @@
-package com.example.canhbao.ui.screens
+package com.example.canhbao.ui.screens.theodoi.hoadon
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

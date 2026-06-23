@@ -342,9 +342,7 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
 
 
     override fun onCleared() {
-        // Không truyền stompClient vào đây vì thường lúc này socket đã bị ngắt
-        // hoặc không còn context an toàn để gửi tin.
-        // Chỉ dọn dẹp tài nguyên local để giải phóng bộ nhớ.
+
         endCall(null, null)
 
         audioSource?.dispose()
@@ -364,7 +362,6 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
                         val targetTruSo = listTruSo.find { it.id == truSoId }
 
                         if (targetTruSo != null && !targetTruSo.tenTruSo.isNullOrBlank()) {
-                            // hiển thị đúng tên trụ sở từ DB lên màn hình (Ví dụ: "Trụ sở Công an Quận 1")
                             _callerName.value = targetTruSo.tenTruSo
                         } else {
                             _callerName.value = "Trụ sở tiếp nhận số $truSoId"

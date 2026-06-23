@@ -1,7 +1,7 @@
 package com.example.canhbao.data.model.suco.baocao
 
-import com.example.canhbao.data.model.truso.TruSoMapDto
-import com.example.canhbao.data.model.sos.tinhieu.UserInfoResponseDTO
+import com.example.canhbao.data.model.info.truso.TruSoMapDto
+import com.example.canhbao.data.model.info.user.UserInfoResponseDTO
 data class TheoDoiSuCoDetailResponseDTO(
     val id: Long,
     val tenLoai: String?,

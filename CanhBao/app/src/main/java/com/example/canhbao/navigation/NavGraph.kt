@@ -20,9 +20,11 @@ import androidx.navigation.navArgument
 import com.example.canhbao.data.network.SocketClientProvider // 🌟 Dùng chung lớp Provider tập trung
 import com.example.canhbao.ui.screens.*
 import com.example.canhbao.ui.screens.call.CallScreen
-import com.example.canhbao.ui.screens.theodoi.ChiTietBaoCaoScreen
-import com.example.canhbao.ui.screens.theodoi.ChiTietSosScreen
+import com.example.canhbao.ui.screens.theodoi.suco.ChiTietBaoCaoScreen
+import com.example.canhbao.ui.screens.theodoi.tinhieu.ChiTietSosScreen
 import com.example.canhbao.ui.screens.theodoi.LichSuScreen
+import com.example.canhbao.ui.screens.theodoi.hoadon.ChiTietHoaDonScreen
+import com.example.canhbao.ui.screens.theodoi.hoadon.ThanhToanScreen
 import com.example.canhbao.viewmodel.*
 import com.example.canhbao.viewmodel.call.CallViewModel
 import com.example.canhbao.viewmodel.call.WebRTCViewModel

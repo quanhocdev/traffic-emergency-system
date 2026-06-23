@@ -1,4 +1,4 @@
-package com.example.canhbao.data.model.sos.tinhieu
+package com.example.canhbao.data.model.info.user
 
 data class UserInfoResponseDTO(
     val name: String?,

@@ -1,4 +1,4 @@
-package com.example.canhbao.data.model.camera
+package com.example.canhbao.data.model.info.camera
 
 data class CameraMapDto(
     val id: Long,

@@ -1,7 +1,6 @@
 package com.example.canhbao.data.network
 
-import com.example.canhbao.data.model.*
-import com.example.canhbao.data.model.camera.CameraMapDto
+import com.example.canhbao.data.model.info.camera.CameraMapDto
 import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
@@ -20,7 +19,7 @@ import com.example.canhbao.data.model.suco.baocao.*
 import com.example.canhbao.data.model.suco.loai.LoaiSuCo
 import com.example.canhbao.data.model.tien.DoiTienDto
 import com.example.canhbao.data.model.tien.ThongKeQuyDto
-import com.example.canhbao.data.model.truso.TruSoMapDto
+import com.example.canhbao.data.model.info.truso.TruSoMapDto
 import retrofit2.Response
 import retrofit2.http.*
 
