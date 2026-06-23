@@ -10,8 +10,8 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import com.example.canhbao.data.network.SocketClientProvider
 import coil.request.SuccessResult
-import com.example.canhbao.data.model.camera.CameraMapDto
-import com.example.canhbao.data.model.truso.TruSoMapDto
+import com.example.canhbao.data.model.info.camera.CameraMapDto
+import com.example.canhbao.data.model.info.truso.TruSoMapDto
 import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoApi
@@ -27,7 +27,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
-import ua.naiksoftware.stomp.StompClient
 
 class MapViewModel : ViewModel() {
 

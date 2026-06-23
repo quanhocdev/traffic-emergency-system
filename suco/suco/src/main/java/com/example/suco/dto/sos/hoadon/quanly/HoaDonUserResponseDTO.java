@@ -3,7 +3,8 @@ package com.example.suco.dto.sos.hoadon.quanly;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
+import com.example.suco.dto.info.truso.TruSoMiniDTO;
+import com.example.suco.dto.info.user.UserMiniDTO;
 
 public class HoaDonUserResponseDTO {
 

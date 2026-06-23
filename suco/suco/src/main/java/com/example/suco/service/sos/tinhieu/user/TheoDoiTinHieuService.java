@@ -1,11 +1,11 @@
 package com.example.suco.service.sos.tinhieu.user;
-import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.mapper.TinHieuMapper;
-import com.example.suco.mapper.helper.InfoUserMapper;
+import com.example.suco.mapper.info.InfoUserMapper;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.xacthuc.truso.TruSoService;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
-import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
+import com.example.suco.dto.info.truso.TruSoMapDto;
+import com.example.suco.dto.info.user.UserInfoResponseDTO;
 import com.example.suco.dto.sos.tinhieu.user.TheoDoiSOSDetailResponseDTO;
 import com.example.suco.dto.sos.tinhieu.user.TheoDoiSOSItemResponseDTO;
 

@@ -1,9 +1,9 @@
 package com.example.suco.dto.sos.tinhieu.admin;
 import java.time.LocalDateTime;
 
+import com.example.suco.dto.info.truso.TruSoMiniDTO;
+import com.example.suco.dto.info.user.UserMiniDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
-import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
-import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
 
 public class AdminSOSDetailResponseDTO {
 

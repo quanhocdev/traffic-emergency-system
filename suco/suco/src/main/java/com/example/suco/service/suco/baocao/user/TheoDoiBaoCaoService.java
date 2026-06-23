@@ -1,9 +1,9 @@
 package com.example.suco.service.suco.baocao.user;
 
-import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
+import com.example.suco.dto.info.truso.TruSoMapDto;
+import com.example.suco.dto.info.user.UserInfoResponseDTO;
 import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoItemResponseDTO;
-import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;

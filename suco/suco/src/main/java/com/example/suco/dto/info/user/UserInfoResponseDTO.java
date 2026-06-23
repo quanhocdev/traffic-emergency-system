@@ -1,4 +1,4 @@
-package com.example.suco.dto.sos.tinhieu;
+package com.example.suco.dto.info.user;
 
 public class UserInfoResponseDTO {
     private String name;

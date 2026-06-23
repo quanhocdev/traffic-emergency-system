@@ -2,8 +2,9 @@ package com.example.suco.dto.sos.tinhieu.user;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
-import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
+
+import com.example.suco.dto.info.truso.TruSoMapDto;
+import com.example.suco.dto.info.user.UserInfoResponseDTO;
 
 public class TheoDoiSOSDetailResponseDTO {
 

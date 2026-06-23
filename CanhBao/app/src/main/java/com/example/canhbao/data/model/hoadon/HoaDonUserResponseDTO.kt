@@ -1,7 +1,7 @@
 package com.example.canhbao.data.model.hoadon
 
-import com.example.canhbao.data.model.sos.tinhieu.UserInfoResponseDTO
-import com.example.canhbao.data.model.truso.TruSoMiniDTO
+import com.example.canhbao.data.model.info.user.UserInfoResponseDTO
+import com.example.canhbao.data.model.info.truso.TruSoMiniDTO
 import java.math.BigDecimal
 data class HoaDonUserResponseDTO(
     val id: Long? = null,

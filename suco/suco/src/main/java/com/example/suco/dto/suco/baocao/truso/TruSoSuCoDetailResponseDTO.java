@@ -1,7 +1,8 @@
 package com.example.suco.dto.suco.baocao.truso;
 
-import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
 import java.time.LocalDateTime;
+
+import com.example.suco.dto.info.truso.TruSoMiniDTO;
 
 public class TruSoSuCoDetailResponseDTO {
 

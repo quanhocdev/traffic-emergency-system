@@ -1,9 +1,10 @@
-package com.example.suco.mapper.helper;
+package com.example.suco.mapper.info;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
-import com.example.suco.dto.sos.tinhieu.UserMiniDTO;
+
+import com.example.suco.dto.info.user.UserInfoResponseDTO;
+import com.example.suco.dto.info.user.UserMiniDTO;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
 import com.example.suco.model.User;
 

@@ -1,4 +1,4 @@
-package com.example.canhbao.data.model.truso
+package com.example.canhbao.data.model.info.truso
 
 data class TruSoMapDto(
     val id: Long,

@@ -1,6 +1,4 @@
-package com.example.suco.dto.vanhanh.truso;
-
-import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
+package com.example.suco.dto.info.truso;
 
 public class TruSoMapDto extends TruSoMiniDTO {
 

@@ -1,7 +1,8 @@
 package com.example.suco.mapper;
 import com.example.suco.model.LoaiSuCo;
-import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
-import com.example.suco.dto.sos.tinhieu.UserInfoResponseDTO;
+import com.example.suco.dto.info.truso.TruSoMapDto;
+import com.example.suco.dto.info.truso.TruSoMiniDTO;
+import com.example.suco.dto.info.user.UserInfoResponseDTO;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.dto.suco.baocao.admin.AdminSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.truso.TruSoSuCoDetailResponseDTO;
@@ -9,10 +10,8 @@ import com.example.suco.dto.suco.baocao.user.SuCoRequestDTO;
 import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoItemResponseDTO;
 import com.example.suco.dto.suco.baocao.user.UserSuCoDetailResponseDTO;
-import com.example.suco.dto.vanhanh.truso.TruSoMapDto;
-import com.example.suco.mapper.helper.InfoTruSoMapper;
-import com.example.suco.mapper.helper.InfoUserMapper;
-
+import com.example.suco.mapper.info.InfoTruSoMapper;
+import com.example.suco.mapper.info.InfoUserMapper;
 import com.example.suco.model.BaoCaoSuCo;
 
 import org.springframework.beans.factory.annotation.Autowired;

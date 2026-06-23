@@ -2,7 +2,7 @@ package com.example.canhbao.viewmodel.camera
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.camera.CameraMapDto
+import com.example.canhbao.data.model.info.camera.CameraMapDto
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch

@@ -1,4 +1,4 @@
-package com.example.canhbao.ui.screens.theodoi
+package com.example.canhbao.ui.screens.theodoi.tinhieu
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke

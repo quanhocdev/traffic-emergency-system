@@ -1,6 +1,6 @@
 package com.example.suco.dto.sos.tinhieu;
 
-import com.example.suco.dto.sos.hoadon.quanly.TruSoMiniDTO;
+import com.example.suco.dto.info.truso.TruSoMiniDTO;
 
 public class SOSMapResponseDTO {
 
