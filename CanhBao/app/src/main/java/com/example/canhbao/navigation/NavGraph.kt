@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -18,8 +17,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.canhbao.data.network.AppConfig
+import com.example.canhbao.data.network.SocketClientProvider // 🌟 Dùng chung lớp Provider tập trung
 import com.example.canhbao.ui.screens.*
+import com.example.canhbao.ui.screens.call.CallScreen
 import com.example.canhbao.ui.screens.theodoi.ChiTietBaoCaoScreen
 import com.example.canhbao.ui.screens.theodoi.ChiTietSosScreen
 import com.example.canhbao.ui.screens.theodoi.LichSuScreen
@@ -36,49 +36,54 @@ import com.example.canhbao.viewmodel.tinhieu.SOSViewModel
 import com.example.canhbao.viewmodel.tinhieu.TheoDoiTinHieuViewModel
 import com.example.canhbao.viewmodel.tinhieu.TinHieuSOSViewModel
 import com.example.canhbao.viewmodel.xacthuc.AuthViewModel
-import ua.naiksoftware.stomp.Stomp
 
 @Composable
-fun NavGraph(authViewModel: AuthViewModel) {
-    val webrtcViewModel: WebRTCViewModel = viewModel()
+fun NavGraph(
+    authViewModel: AuthViewModel,
+    webrtcViewModel: WebRTCViewModel // 🌟 1. SỬA TẠI ĐÂY: Mở cổng nhận tham số webrtcViewModel từ MainActivity truyền xuống
+) {
     val navController = rememberNavController()
     val context = LocalContext.current
 
-    // 1. Khởi tạo StompClient kết nối đến máy chủ Backend Realtime
-    val stompClient = remember {
-        val baseUrl = AppConfig.WS_BASE_URL
-        val fullWsUrl = if (baseUrl.endsWith("/")) "${baseUrl}ws/websocket" else "$baseUrl/ws/websocket"
+    // 🌟 2. SỬA TẠI ĐÂY: Lấy instance duy nhất tập trung của toàn app, loại bỏ đoạn khởi tạo cục bộ cũ lãng phí bộ nhớ
+    val stompClient = SocketClientProvider.stompClient
 
-        android.util.Log.d("NavGraph", "🔌 Đang kết nối STOMP đến thiết bị thật: $fullWsUrl")
-        Stomp.over(Stomp.ConnectionProvider.OKHTTP, fullWsUrl)
+    // Bộ lắng nghe trạng thái cuộc gọi toàn cục
+    val callState by webrtcViewModel.callState.collectAsState()
+
+    // 🌟 3. THÊM MỚI: Tự động chuyển hướng sang màn hình đàm thoại khi có cuộc gọi tới bất kể đang ở màn hình nào
+    LaunchedEffect(callState) {
+        if (callState == "INCOMING") {
+            navController.navigate("call_screen") {
+                launchSingleTop = true // Tránh mở chồng nhiều màn hình khi nhận candidate liên tục
+            }
+        }
     }
 
+    // Tiến hành phát lệnh kết nối tập trung nếu chưa mở cổng mạng
     LaunchedEffect(stompClient) {
         try {
             if (!stompClient.isConnected) {
                 stompClient.connect()
-                android.util.Log.d("NavGraph", "🟢 Đã phát lệnh kết nối STOMP thành công.")
+                android.util.Log.d("NavGraph", "🟢 Đã phát lệnh kết nối STOMP hệ thống thành công.")
             }
         } catch (e: Exception) {
             android.util.Log.e("NavGraph", "🔴 Lỗi khi cố gắng kết nối STOMP: ${e.message}")
         }
     }
 
-    // 2. Khởi tạo các ViewModel hệ thống
+    // Khởi tạo các ViewModel hệ thống
     val mapViewModel: MapViewModel = viewModel()
     val sosViewModel: SOSViewModel = viewModel()
     val searchViewModel: SearchViewModel = viewModel()
     val callViewModel: CallViewModel = viewModel()
-
     val tinhHieuSosViewModel: TinHieuSOSViewModel = viewModel()
 
-    // 💡 KHỞI TẠO CHUNG: Để màn hình Lịch Sử và màn Chi Tiết dùng chung Instance dữ liệu thời gian thực
     val theoDoiBaoCaoViewModel: TheoDoiBaoCaoViewModel = viewModel()
     val theoDoiTinHieuViewModel: TheoDoiTinHieuViewModel = viewModel()
 
     val apiService = com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
 
-    // Khởi tạo GoiViewModel bằng Factory
     val goiViewModel: GoiViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -95,10 +100,7 @@ fun NavGraph(authViewModel: AuthViewModel) {
         }
     )
 
-    // 3. Theo dõi User
     val currentUser by authViewModel.user.collectAsState()
-
-    // Xác định trang bắt đầu
     val startDest = if (currentUser != null) "map" else "login"
 
     NavHost(navController = navController, startDestination = startDest) {
@@ -116,39 +118,38 @@ fun NavGraph(authViewModel: AuthViewModel) {
             MapScreen(
                 navController = navController,
                 mapViewModel = mapViewModel,
-                webrtcViewModel = webrtcViewModel,
+                webrtcViewModel = webrtcViewModel, // Dùng chung instance
                 alertViewModel = alertViewModel,
                 searchViewModel = searchViewModel,
                 sosViewModel = sosViewModel,
                 callViewModel = callViewModel,
-                stompClient = stompClient,
+                stompClient = stompClient, // Gắn cổng socket tập trung
                 isLoggedIn = currentUser != null,
                 onReportClick = { navController.navigate("bao_cao_su_co") }
             )
         }
 
-        composable("goi_screen") {
-            GoiScreen(
-                viewModel = goiViewModel,
-                navController = navController
+        // 🌟 4. CẬP NHẬT ROUTE: Đăng ký màn hình đàm thoại độc lập
+        composable("call_screen") {
+            CallScreen(
+                navController = navController,
+                webrtcViewModel = webrtcViewModel,
+                stompClient = stompClient
             )
+        }
+
+        composable("goi_screen") {
+            GoiScreen(viewModel = goiViewModel, navController = navController)
         }
 
         composable("qua_screen") {
             Spacer(modifier = Modifier.height(1.dp))
-            QuaScreen(
-                viewModel = quaViewModel,
-                navController = navController
-            )
+            QuaScreen(viewModel = quaViewModel, navController = navController)
         }
 
         composable("doitien_screen") {
             val doiTienVM: DoiTienViewModel = viewModel()
-            DoiTienScreen(
-                navController = navController,
-                uid = currentUser?.uid,
-                viewModel = doiTienVM
-            )
+            DoiTienScreen(navController = navController, uid = currentUser?.uid, viewModel = doiTienVM)
         }
 
         composable("home") {
@@ -205,19 +206,11 @@ fun NavGraph(authViewModel: AuthViewModel) {
         }
 
         composable("tui_screen") {
-            TuiScreen(
-                viewModel = quaViewModel,
-                uid = currentUser?.uid ?: "",
-                onBack = { navController.popBackStack() }
-            )
+            TuiScreen(viewModel = quaViewModel, uid = currentUser?.uid ?: "", onBack = { navController.popBackStack() })
         }
 
         composable("lich_su") {
-            LichSuScreen(
-                navController = navController,
-                baoCaoViewModel = theoDoiBaoCaoViewModel,
-                tinHieuViewModel = theoDoiTinHieuViewModel
-            )
+            LichSuScreen(navController = navController, baoCaoViewModel = theoDoiBaoCaoViewModel, tinHieuViewModel = theoDoiTinHieuViewModel)
         }
 
         composable(
@@ -225,29 +218,19 @@ fun NavGraph(authViewModel: AuthViewModel) {
             arguments = listOf(navArgument("sosId") { type = NavType.LongType })
         ) { backStackEntry ->
             val sosId = backStackEntry.arguments?.getLong("sosId") ?: 0L
-            ChiTietSosScreen(
-                sosId = sosId,
-                navController = navController,
-                viewModel = theoDoiTinHieuViewModel
-            )
+            ChiTietSosScreen(sosId = sosId, navController = navController, viewModel = theoDoiTinHieuViewModel)
         }
+
         composable(
             route = "chi_tiet_bao_cao/{suCoId}",
             arguments = listOf(navArgument("suCoId") { type = NavType.LongType })
         ) { backStackEntry ->
             val suCoId = backStackEntry.arguments?.getLong("suCoId") ?: 0L
-            ChiTietBaoCaoScreen(
-                suCoId = suCoId,
-                navController = navController,
-                viewModel = theoDoiBaoCaoViewModel
-            )
+            ChiTietBaoCaoScreen(suCoId = suCoId, navController = navController, viewModel = theoDoiBaoCaoViewModel)
         }
 
         composable("bao_cao_su_co") {
-            BaoCaoSuCoScreen(
-                onBack = { navController.popBackStack() },
-                navController = navController
-            )
+            BaoCaoSuCoScreen(onBack = { navController.popBackStack() }, navController = navController)
         }
 
         composable("di_chuyen") {
