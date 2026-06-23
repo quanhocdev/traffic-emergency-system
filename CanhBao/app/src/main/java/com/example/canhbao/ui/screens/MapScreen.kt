@@ -79,7 +79,6 @@ fun MapScreen(
     alertViewModel: AlertViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel(),
     sosViewModel: SOSViewModel = viewModel(),
-    callViewModel: CallViewModel = viewModel(),
     stompClient: StompClient,
     isLoggedIn: Boolean,
     onReportClick: () -> Unit
@@ -99,10 +98,8 @@ fun MapScreen(
     // --- STATE QUẢN LÝ DETAIL BOTTOM SHEET ---
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedMarkerType by remember { mutableStateOf("") } // "SU_CO", "TRU_SO", "CAMERA"
-    var selectedSuCo by remember { mutableStateOf<SuCoMapResponseDTO?>(null) }
-    // Đổi kiểu dữ liệu từ SuCoMapResponseDTO sang UserSuCoDetailResponseDTO
     var selectedSuCoDetail by remember { mutableStateOf<UserSuCoDetailResponseDTO?>(null) }
-    var selectedTruSo by remember { mutableStateOf<TruSoMapDto?>(null) } // Thay thế chính xác package Dto của bạn
+    var selectedTruSo by remember { mutableStateOf<TruSoMapDto?>(null) }
     var selectedCamera by remember { mutableStateOf<CameraMapDto?>(null) }
 
     // Thu thập State từ MapViewModel
@@ -143,7 +140,6 @@ fun MapScreen(
     var cameraManager: PointAnnotationManager? by remember { mutableStateOf(null) }
 
     var userHeading by remember { mutableStateOf(0f) }
-    var isMicroMuted by remember { mutableStateOf(false) }
 
     val tts = remember {
         android.speech.tts.TextToSpeech(context) { status ->
@@ -160,13 +156,6 @@ fun MapScreen(
         }
     }
 
-    val callerName by webrtcViewModel.callerName.collectAsState()
-    val ringtonePlayer = remember {
-        val notification = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE)
-        android.media.RingtoneManager.getRingtone(context, notification)
-    }
-
-    // Đặt đoạn code này bên trong MapScreen.kt
     LaunchedEffect(callState) {
         if (callState == "INCOMING") {
             // Chuyển hướng ngay sang màn hình CallScreen mà không cần user bấm chọn
@@ -174,7 +163,7 @@ fun MapScreen(
         }
     }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        android.util.Log.d("MAP_DEBUG", "🔄 Màn hình Map được mở lại - Tiến hành đồng bộ làm sạch dữ liệu...")
+        android.util.Log.d("MAP_DEBUG", "Màn hình Map được mở lại - Tiến hành đồng bộ làm sạch dữ liệu...")
 
         // Luôn gọi API làm mới danh sách sự cố để loại bỏ những gì đã bị xóa/hủy dưới DB
         mapViewModel.loadSuCoForMap(context)
@@ -261,7 +250,6 @@ fun MapScreen(
     LaunchedEffect(suCoWithIcons, pointManager, showSuCo) {
         val manager = pointManager ?: return@LaunchedEffect
         try {
-            // 💡 BƯỚC 1: Xóa sạch bách toàn bộ marker cũ trên bản đồ trước để giải phóng bộ nhớ Native
             manager.deleteAll()
 
             // Nếu bộ lọc đang bật và danh sách thực sự có phần tử thì mới vẽ mới
@@ -272,11 +260,9 @@ fun MapScreen(
                         .withIconImage(bmp)
                 }
 
-                // 💡 BƯỚC 2: Tạo mới hoàn toàn dựa trên danh sách đã được loại bỏ phần tử xóa
                 manager.create(optionsList)
             }
 
-            // 💡 BƯỚC 3: Ép buộc Mapbox phải vẽ lại view ngay lập tức trong chu kỳ frame này
             mapView?.invalidate()
 
         } catch (e: Exception) {
@@ -307,10 +293,8 @@ fun MapScreen(
 
     DisposableEffect(Unit) {
         onDispose {
-            // 1. Tắt giọng nói nói chung (Code cũ của bạn)
             tts.shutdown()
 
-            // 2. ✅ THÊM VÀO ĐÂY: Khai tử luồng định vị ngầm ngay khi thoát màn hình Map!
             try {
                 mapViewModel.stopLocationUpdates()
                 android.util.Log.w("GPS_DEBUG", "🧹 Đã giải phóng luồng GPS đồng thời với TTS thành công!")
@@ -356,16 +340,14 @@ fun MapScreen(
 
                             pointManager?.addClickListener(OnPointAnnotationClickListener { annotation ->
                                 suCoWithIcons.find { it.first.kinhDo == annotation.point.longitude() && it.first.viDo == annotation.point.latitude() }?.first?.let { mapSuCo ->
-                                    // 🔍 Tìm phần tử trong suCoList có ID trùng với marker vừa click
                                     val foundSuCo = suCoList.find { it.id == mapSuCo.id } ?: mapSuCo
 
-                                    // ✅ Chuyển đổi tường minh sang UserSuCoDetailResponseDTO để gán vào State
                                     selectedSuCoDetail = UserSuCoDetailResponseDTO(
                                         id = foundSuCo.id,
                                         viDo = foundSuCo.viDo,
                                         kinhDo = foundSuCo.kinhDo,
-                                        moTa = "Không có mô tả chi tiết", // Dữ liệu mặc định vì DTO này không có mô tả
-                                        tenLoai = "Sự cố giao thông",      // Gán tên tạm thời cho tiêu đề sheet
+                                        moTa = "Không có mô tả chi tiết",
+                                        tenLoai = "Sự cố giao thông",
                                         iconUrl = foundSuCo.iconUrl,
                                         trangThaiXuLy = foundSuCo.trangThaiXuLy,
                                         mucDoNghiemTrong = foundSuCo.mucDoSuCo,
@@ -737,7 +719,6 @@ fun MapScreen(
                                         Text(text = camera.moTa, color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(vertical = 4.dp))
                                     }
 
-                                    // ✅ ĐÃ SỬA: Kiểm tra trạng thái hoạt động dựa vào sự tồn tại của luồng videoUrl
                                     val isLiveAvailable = !camera.videoUrl.isNullOrBlank()
                                     val statusColor = if (isLiveAvailable) Color(0xFF4CAF50) else Color.Red
                                     val statusText = if (isLiveAvailable) "Đang hoạt động (Sẵn sàng kết nối)" else "Ngoại tuyến (Không có luồng phát)"
@@ -892,20 +873,8 @@ fun InfoDetailContent(
         }
     }
 }
-
-@Composable
-fun ActionCallButton(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, color: Color, onClick: () -> Unit) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        IconButton(onClick = onClick, modifier = Modifier.size(64.dp).background(color, CircleShape)) {
-            Icon(icon, null, tint = Color.White, modifier = Modifier.size(32.dp))
-        }
-        Spacer(Modifier.height(8.dp))
-        Text(label, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-    }
-}
 @Composable
 fun RouteInfoUI(mode: String, icon: androidx.compose.ui.graphics.vector.ImageVector, duration: String, distance: String, onBack: () -> Unit, onStartNav: () -> Unit) {
-    // Đặt component thiết kế route cũ của bạn ở đây nếu cần thiết
 }
 
 fun createCameraIcon(context: Context): Bitmap {

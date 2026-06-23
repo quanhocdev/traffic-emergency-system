@@ -1,5 +1,7 @@
 package com.example.canhbao.ui.screens.call
 
+import android.media.Ringtone
+import android.media.RingtoneManager
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,6 +44,35 @@ fun CallScreen(
         android.provider.Settings.Secure.getString(context.contentResolver, android.provider.Settings.Secure.ANDROID_ID)
     }
 
+    DisposableEffect(callState) {
+        var ringtone: Ringtone? = null
+
+        if (callState == "INCOMING") {
+            try {
+                // Lấy đường dẫn nhạc chuông cuộc gọi tiêu chuẩn của hệ thống Android
+                val ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+                ringtone = RingtoneManager.getRingtone(context, ringtoneUri)
+
+                // Bật vòng lặp chuông liên tục nếu chạy Android 9 trở lên, hoặc play thông thường
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                    ringtone?.isLooping = true
+                }
+                ringtone?.play()
+                android.util.Log.d("CallSound", "🎵 Đang đổ chuông cuộc gọi khẩn cấp...")
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        // Tự động tắt chuông ngay khi chuyển trạng thái (Bấm nghe / Cúp máy / Thoát trang)
+        onDispose {
+            if (ringtone?.isPlaying == true) {
+                ringtone?.stop()
+                android.util.Log.w("CallSound", "🔇 Đã tắt chuông cuộc gọi.")
+            }
+        }
+    }
+
     // TỰ ĐỘNG THOÁT MÀN HÌNH
     LaunchedEffect(callState) {
         if (callState == "IDLE") {
@@ -70,11 +101,10 @@ fun CallScreen(
         label = "RippleAlpha"
     )
 
-    // Tạo nền Gradient chuyển màu mượt mà theo trạng thái cuộc gọi
     val backgroundBrush = remember(callState) {
         val baseColors = when (callState) {
-            "INCOMING" -> listOf(Color(0xFF1F1C18), Color(0xFF121212)) // Hơi cam tối khi chờ máy
-            "CONNECTED" -> listOf(Color(0xFF111E16), Color(0xFF121212)) // Hơi xanh rêu khi đàm thoại
+            "INCOMING" -> listOf(Color(0xFF1F1C18), Color(0xFF121212))
+            "CONNECTED" -> listOf(Color(0xFF111E16), Color(0xFF121212))
             else -> listOf(Color(0xFF1C1D21), Color(0xFF121212))
         }
         Brush.verticalGradient(baseColors)
@@ -91,7 +121,6 @@ fun CallScreen(
                 .background(backgroundBrush)
                 .padding(vertical = 60.dp, horizontal = 24.dp)
         ) {
-            // --- 1. THÔNG TIN TRẠNG THÁI TRÊN CÙNG ---
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(top = 20.dp)
@@ -126,8 +155,6 @@ fun CallScreen(
                     fontWeight = FontWeight.Bold
                 )
             }
-
-            // --- 2. KHU VỰC AVATAR HIỆU ỨNG RIPPLE CHUYỂN ĐỘNG ---
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(240.dp)
@@ -161,7 +188,6 @@ fun CallScreen(
                     )
                 }
 
-                // Khối Avatar chính ở tâm đám sóng
                 Box(
                     modifier = Modifier
                         .size(130.dp)
@@ -178,7 +204,6 @@ fun CallScreen(
                 }
             }
 
-            // --- 3. HÀNG NÚT ĐIỀU KHIỂN CHUYÊN NGHIỆP ---
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E).copy(alpha = 0.9f)),
                 shape = RoundedCornerShape(32.dp),

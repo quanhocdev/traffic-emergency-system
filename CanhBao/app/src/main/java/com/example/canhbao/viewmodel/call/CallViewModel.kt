@@ -17,7 +17,7 @@ class CallViewModel : ViewModel() {
         stompClient: StompClient,
         webrtcViewModel: WebRTCViewModel
     ) {
-        // Thêm Log này để kiểm tra xem hàm này thực sự có chạy qua khi Socket đã mở chưa
+        // Log kiểm tra xem hàm này có chạy qua khi Socket đã mở chưa
         Log.d("WebRTC_Debug", "Hàm start() được gọi. Trạng thái kết nối Socket: ${stompClient.isConnected}")
 
         if (isListening && stompClient.isConnected) {
@@ -27,7 +27,6 @@ class CallViewModel : ViewModel() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
             ?: Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
 
-        // 🌟 IN LOG MÀU VÀNG CẢNH BÁO ĐỂ THEO DÕI TRÊN LOGCAT
         Log.w("WebRTC_Debug", "Android bắt đầu SUBSCRIBE đường dẫn: /topic/user/$userId/call")
 
         socket.listen(stompClient, userId) { json ->
