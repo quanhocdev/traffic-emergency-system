@@ -166,14 +166,11 @@ fun MapScreen(
         android.media.RingtoneManager.getRingtone(context, notification)
     }
 
+    // Đặt đoạn code này bên trong MapScreen.kt
     LaunchedEffect(callState) {
         if (callState == "INCOMING") {
-            ringtonePlayer.play()
-            val textToSpeak = "${callerName ?: "Trụ sở cứu hộ"} đang gọi tới. Nhắc lại, ${callerName ?: "Trụ sở cứu hộ"} đang gọi tới."
-            tts.speak(textToSpeak, android.speech.tts.TextToSpeech.QUEUE_ADD, null, "RingtoneTTS")
-        } else {
-            if (ringtonePlayer.isPlaying) ringtonePlayer.stop()
-            if (callState == "IDLE") isMicroMuted = false
+            // Chuyển hướng ngay sang màn hình CallScreen mà không cần user bấm chọn
+            navController.navigate("call_screen")
         }
     }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
@@ -183,9 +180,6 @@ fun MapScreen(
         mapViewModel.loadSuCoForMap(context)
         mapViewModel.loadTruSoData(context)
         mapViewModel.loadCameraData(context)
-
-        // Khởi chạy lại kết nối đàm thoại và socket nếu bị sập nửa chừng
-        callViewModel.start(context, stompClient, webrtcViewModel)
         mapViewModel.startRealtimeSocket(context)
     }
 
@@ -608,37 +602,6 @@ fun MapScreen(
                 Text(text = if (isPressingSOS) "THẢ ĐỂ GỬI" else "SOS", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = if (isPressingSOS) 10.sp else 18.sp)
             }
 
-            if (callState != "IDLE") {
-                Box(
-                    modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.85f)).zIndex(10f).pointerInput(Unit) { detectTapGestures {} },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                        val infiniteTransition = rememberInfiniteTransition(label = "Pulse")
-                        val pulseScale by infiniteTransition.animateFloat(initialValue = 1f, targetValue = 1.25f, animationSpec = infiniteRepeatable(tween(1200), RepeatMode.Reverse), label = "Scale")
-
-                        Box(contentAlignment = Alignment.Center) {
-                            Box(Modifier.size(140.dp).scale(pulseScale).background(if (callState == "CONNECTED") Color.Green.copy(0.2f) else Color.Red.copy(0.2f), CircleShape))
-                            Surface(shape = CircleShape, color = if (callState == "CONNECTED") Color(0xFF4CAF50) else Color(0xFFFF9800), modifier = Modifier.size(100.dp), shadowElevation = 10.dp) {
-                                Icon(imageVector = if (callState == "CONNECTED") Icons.Default.Call else Icons.Default.RingVolume, contentDescription = null, modifier = Modifier.padding(25.dp).size(50.dp), tint = Color.White)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(32.dp))
-                        Text(text = (callerName ?: "TRỤ SỞ CỨU HỘ").uppercase(), color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = 2.sp)
-                        Text(text = when(callState) { "INCOMING" -> "CUỘC GỌI ĐẾN..."; "CONNECTED" -> "ĐANG ĐÀM THOẠI"; else -> "ĐANG KẾT NỐI" }, color = Color.White.copy(alpha = 0.7f), fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                        Spacer(modifier = Modifier.height(80.dp))
-
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                            ActionCallButton(icon = Icons.Default.CallEnd, label = if (callState == "INCOMING") "Từ chối" else "Kết thúc", color = Color.Red, onClick = { webrtcViewModel.endCall(stompClient, maThietBi) })
-                        }
-                    }
-                }
-            }
-
-            // =========================================================================
-            // ✅ THÀNH PHẦN CHÍNH: MODAL BOTTOM SHEET PHÂN LOẠI CHI TIẾT (MATERIAL 3)
-            // =========================================================================
             if (showBottomSheet) {
                 ModalBottomSheet(
                     onDismissRequest = { showBottomSheet = false },
@@ -672,10 +635,8 @@ fun MapScreen(
                                     }
                                     Spacer(modifier = Modifier.height(12.dp))
 
-                                    // ✅ ĐÃ SỬA: Dùng suCo.tenLoai thay cho loaiSuCo cũ bị lỗi
                                     Text(text = suCo.tenLoai ?: "Sự cố không xác định", fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
 
-                                    // ✅ ĐÃ SỬA: Trường moTa đã tồn tại hợp lệ trong UserSuCoDetailResponseDTO
                                     Text(text = "Mô tả: ${suCo.moTa ?: "Không có mô tả chi tiết từ người dân."}", color = Color.DarkGray, fontSize = 15.sp, modifier = Modifier.padding(vertical = 4.dp))
 
                                     Spacer(modifier = Modifier.height(6.dp))
@@ -886,7 +847,6 @@ fun SearchUI(
     }
 }
 
-// --- COMPOSE UI COMPONENT CHI TIẾT SỰ CỐ NHẬN USER_SUCO_DETAIL_RESPONSE_DTO ---
 @Composable
 fun InfoDetailContent(
     data: UserSuCoDetailResponseDTO,
