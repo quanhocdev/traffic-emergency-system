@@ -8,7 +8,7 @@ import com.example.canhbao.data.model.qua.QuaResponseDTO
 import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.data.model.sos.goi.GoiResponseDto
-import com.example.canhbao.data.model.sos.goi.MuaGoiDto
+import com.example.canhbao.data.model.sos.goi.MuaGoiUserResponseDto
 import com.example.canhbao.data.model.sos.goi.MuaGoiRequestDTO
 import com.example.canhbao.data.model.sos.tinhieu.SOSMapResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSDetailResponseDTO
@@ -110,7 +110,7 @@ interface BaoCaoSuCoApi {
     @GET("/api/mua-goi/my-packages")
     suspend fun getGoiCuaToi(
         @Header("Authorization") token: String
-    ): List<MuaGoiDto>
+    ): List<MuaGoiUserResponseDto>
 
     @POST("/api/mua-goi/cancel/{id}")
     suspend fun cancelMuaGoi(

@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.canhbao.R
 import com.example.canhbao.data.model.sos.goi.GoiResponseDto
-import com.example.canhbao.data.model.sos.goi.MuaGoiDto
+import com.example.canhbao.data.model.sos.goi.MuaGoiUserResponseDto
 import com.example.canhbao.viewmodel.goi.GoiViewModel
 import kotlinx.coroutines.delay
 import java.time.Duration
@@ -112,7 +112,7 @@ fun GoiScreen(
                 // Danh sách gói tích hợp
                 items(dsGoi, key = { it.id }) { goi ->
                     // Tìm xem gói này có đang được người dùng sở hữu (Active/Pending) không
-                    val userPackage = myPackages.find { it.goiId == goi.id && it.trangThai != "CANCELLED" }
+                    val userPackage = myPackages.find { it.goi.id == goi.id && it.trangThai != "CANCELLED" }
 
                     ModernGoiCard(
                         goi = goi,
@@ -124,11 +124,10 @@ fun GoiScreen(
                         // Trong GoiScreen.kt
                         onCancelClick = {
                             userPackage?.let { pkg ->
-                                viewModel.huyGoi(pkg.id) { success, message -> // Thêm 'message' ở đây
+                                viewModel.huyGoi(pkg.goi.id) { success, message ->
                                     if (success) {
                                         Toast.makeText(context, "Đã hủy yêu cầu thành công", Toast.LENGTH_SHORT).show()
                                     } else {
-                                        // Tận dụng cái message trả về từ Backend để hiện thông báo lỗi thực tế
                                         Toast.makeText(context, message ?: "Không thể hủy gói", Toast.LENGTH_SHORT).show()
                                     }
                                 }
@@ -215,7 +214,7 @@ fun GoiScreen(
 @Composable
 fun ModernGoiCard(
     goi: GoiResponseDto,
-    userPkg: MuaGoiDto?,
+    userPkg: MuaGoiUserResponseDto?,
     onBuyClick: () -> Unit,
     onCancelClick: () -> Unit
 ) {

@@ -244,7 +244,6 @@ fun TuiItemRow(item: TuiQuaResponseDTO, onNhanNgayClick: () -> Unit) {
                         fontWeight = FontWeight.Bold
                     )
                 } else {
-                    // FIX TẠI ĐÂY: item.ngayKetThuc -> item.qua?.ngayKetThuc
                     item.qua?.ngayKetThuc?.let {
                         Text(
                             "HSD: ${it.take(16).replace("T", " ")}",

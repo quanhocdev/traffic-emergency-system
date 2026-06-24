@@ -1,10 +1,7 @@
 package com.example.canhbao.data.model.sos.goi
 
-data class MuaGoiDto(
-    val id: Long,
-    val userId: String,
-    val goiId: Long,
-    val tenGoi: String,
+data class MuaGoiUserResponseDto(
+    val goi: GoiResponseDto,
     val ngayMua: String,
     val ngayHetHan: String,
     val trangThai: String
