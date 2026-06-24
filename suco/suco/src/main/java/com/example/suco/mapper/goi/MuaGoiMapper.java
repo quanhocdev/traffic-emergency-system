@@ -1,15 +1,22 @@
 package com.example.suco.mapper.goi;
 
 import com.example.suco.dto.sos.goi.dangky.MuaGoiRequestDTO;
-import com.example.suco.dto.sos.goi.dangky.MuaGoiResponseDTO;
+import com.example.suco.dto.sos.goi.dangky.MuaGoiUserResponseDTO;
+import com.example.suco.dto.sos.goi.quanly.GoiResponseDTO;
+
 import com.example.suco.model.Goi;
 import com.example.suco.model.MuaGoi;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
 @Component 
 public class MuaGoiMapper {
+
+    @Autowired
+    private GoiMapper goimapper;
 
     // REQUEST -> ENTITY
     public MuaGoi toEntity(MuaGoiRequestDTO dto, String userId, Goi goi) {
@@ -33,15 +40,17 @@ public class MuaGoiMapper {
         return entity;
     }
 
-    // ENTITY -> RESPONSE 
-    public MuaGoiResponseDTO toResponse(MuaGoi entity, String tenGoi) {
+    // ENTITY -> RESPONSE user 
+    public MuaGoiUserResponseDTO toResponse(MuaGoi entity, Goi goi) {
+
         if (entity == null) {
-            return null; // Null-check an toàn
+            return null;
         }
-        
-        return new MuaGoiResponseDTO(
-                entity.getUserId(),
-                tenGoi,
+
+        GoiResponseDTO goiResponse = goimapper.toResponseDTO(goi);
+
+        return new MuaGoiUserResponseDTO(
+                goiResponse,
                 entity.getNgayMua(),
                 entity.getNgayHetHan(),
                 entity.getTrangThai()

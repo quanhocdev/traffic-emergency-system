@@ -1,7 +1,7 @@
 package com.example.canhbao.data.model.sos.goi
 import java.math.BigDecimal
 
-data class GoiDto(
+data class GoiResponseDto(
     val id: Long,
     val ten: String,
     val thoiHan: Int,
@@ -10,6 +10,3 @@ data class GoiDto(
     val uuDai: String
 )
 
-data class MuaGoiRequest(
-    val goiId: Long
-)

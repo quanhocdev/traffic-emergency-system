@@ -1,7 +1,7 @@
 package com.example.suco.service.sos.goi.user;
 
 import com.example.suco.dto.sos.goi.dangky.MuaGoiRequestDTO;
-import com.example.suco.dto.sos.goi.dangky.MuaGoiResponseDTO;
+import com.example.suco.dto.sos.goi.dangky.MuaGoiUserResponseDTO;
 import com.example.suco.mapper.goi.MuaGoiMapper;
 import com.example.suco.model.Goi;
 import com.example.suco.model.MuaGoi;
@@ -60,23 +60,22 @@ public class SoHuuGoiService {
     }
 
     // Lấy danh sách gói đã mua của người dùng
-    public List<MuaGoiResponseDTO> getGoiByUserId(String userId) {
+    public List<MuaGoiUserResponseDTO> getGoiByUserId(String userId) {
 
         List<MuaGoi> list = muaGoiRepository.findByUserId(userId);
 
         return list.stream().map(mg -> {
 
-            String tenGoi = goiRepository.findById(mg.getGoiId())
-                    .map(g -> g.getTen())
-                    .orElse("Không xác định");
+            Goi goi = goiRepository.findById(mg.getGoiId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy gói"));
 
             // 2. Sửa thành gọi qua instance cụ thể
-            return muaGoiMapper.toResponse(mg, tenGoi);
+            return muaGoiMapper.toResponse(mg, goi);
 
         }).collect(Collectors.toList());
     }
 
-    // Hủy gói đã mua (Chỉ hủy khi chưa ACTIVE)
+    // Hủy gói đã mua (Chỉ hủy khi chưa ACTIVE) 
     public void huyGoi(Long id, String userId) {
 
         MuaGoi mg = muaGoiRepository.findById(id)
