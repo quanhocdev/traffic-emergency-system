@@ -51,10 +51,11 @@ public class SoHuuGoiService {
 
         MuaGoi saved = muaGoiRepository.save(entity);
 
-        messagingTemplate.convertAndSend(
-                "/topic/package-status/" + userId,
-                "Bạn đã đăng ký gói thành công"
-        );
+        messagingTemplate.convertAndSendToUser(
+        userId,                   // Đích danh uid của user nhận (Được lấy từ Firebase Token lúc connect)
+        "/queue/package-status",  // Điểm đến cụ thể (Spring tự động map thành /user/queue/package-status)
+        "Bạn đã đăng ký gói thành công"
+);
 
         return saved;
     }
@@ -90,8 +91,9 @@ public class SoHuuGoiService {
         mg.setTrangThai("CANCELLED");
         muaGoiRepository.save(mg);
 
-        messagingTemplate.convertAndSend(
-                "/topic/package-status/" + userId,
+        messagingTemplate.convertAndSendToUser(
+                userId,
+                "/queue/package-status",
                 "REFRESH"
         );
     }
