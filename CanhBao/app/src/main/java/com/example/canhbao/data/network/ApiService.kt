@@ -7,9 +7,9 @@ import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import com.example.canhbao.data.model.qua.QuaResponseDTO
 import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
-import com.example.canhbao.data.model.sos.goi.GoiDto
+import com.example.canhbao.data.model.sos.goi.GoiResponseDto
 import com.example.canhbao.data.model.sos.goi.MuaGoiDto
-import com.example.canhbao.data.model.sos.goi.MuaGoiRequest
+import com.example.canhbao.data.model.sos.goi.MuaGoiRequestDTO
 import com.example.canhbao.data.model.sos.tinhieu.SOSMapResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSDetailResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSItemResponseDTO
@@ -99,12 +99,12 @@ interface BaoCaoSuCoApi {
     // MUA GÓI CỨU TRỢ (RESCUE PACKAGES)
 
     @GET("/api/mua-goi/danh-sach")
-    suspend fun getDanhSachGoi(): List<GoiDto>
+    suspend fun getDanhSachGoi(): List<GoiResponseDto>
 
     @POST("/api/mua-goi/dang-ky")
     suspend fun dangKyMuaGoi(
         @Header("Authorization") token: String,
-        @Body request: MuaGoiRequest
+        @Body request: MuaGoiRequestDTO
     ): Response<Map<String, Any>>
 
     @GET("/api/mua-goi/my-packages")

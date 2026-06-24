@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.canhbao.R
-import com.example.canhbao.data.model.sos.goi.GoiDto
+import com.example.canhbao.data.model.sos.goi.GoiResponseDto
 import com.example.canhbao.data.model.sos.goi.MuaGoiDto
 import com.example.canhbao.viewmodel.goi.GoiViewModel
 import kotlinx.coroutines.delay
@@ -43,7 +43,7 @@ fun GoiScreen(
     val myPackages by viewModel.myPackages.collectAsState()
     val socketError by viewModel.socketErrorMessage.collectAsState()
 
-    var selectedGoiToBuy by remember { mutableStateOf<GoiDto?>(null) }
+    var selectedGoiToBuy by remember { mutableStateOf<GoiResponseDto?>(null) }
     var showQR by remember { mutableStateOf(false) }
 
     // Đồng bộ dữ liệu khi khởi chạy
@@ -214,7 +214,7 @@ fun GoiScreen(
 
 @Composable
 fun ModernGoiCard(
-    goi: GoiDto,
+    goi: GoiResponseDto,
     userPkg: MuaGoiDto?,
     onBuyClick: () -> Unit,
     onCancelClick: () -> Unit

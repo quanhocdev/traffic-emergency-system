@@ -3,7 +3,7 @@ package com.example.canhbao.viewmodel.goi
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.sos.goi.GoiDto
+import com.example.canhbao.data.model.sos.goi.GoiResponseDto
 import com.example.canhbao.data.model.sos.goi.MuaGoiDto
 import com.example.canhbao.data.model.sos.goi.MuaGoiRequest
 import com.example.canhbao.data.network.AppConfig
@@ -16,8 +16,8 @@ import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
 
 class GoiViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
-    private val _goiList = MutableStateFlow<List<GoiDto>>(emptyList())
-    val goiList: StateFlow<List<GoiDto>> = _goiList
+    private val _goiList = MutableStateFlow<List<GoiResponseDto>>(emptyList())
+    val goiList: StateFlow<List<GoiResponseDto>> = _goiList
 
     private val _myPackages = MutableStateFlow<List<MuaGoiDto>>(emptyList())
     val myPackages: StateFlow<List<MuaGoiDto>> = _myPackages
