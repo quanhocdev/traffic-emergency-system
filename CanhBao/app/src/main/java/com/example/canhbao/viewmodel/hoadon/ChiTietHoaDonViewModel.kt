@@ -13,6 +13,11 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.annotation.SuppressLint
+import com.example.canhbao.data.network.AppConfig
+import ua.naiksoftware.stomp.Stomp
+import ua.naiksoftware.stomp.StompClient
+import ua.naiksoftware.stomp.dto.LifecycleEvent
 
 class ChiTietHoaDonViewModel : ViewModel() {
 
@@ -25,6 +30,11 @@ class ChiTietHoaDonViewModel : ViewModel() {
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
+    private var mStompClient: StompClient? = null
+
+    private var currentHoaDonId: Long? = null
+
+    private var subscribed = false
     private suspend fun getToken(): String {
 
         val user =
@@ -40,9 +50,73 @@ class ChiTietHoaDonViewModel : ViewModel() {
         return "Bearer ${tokenResult.token}"
     }
 
+    @SuppressLint("CheckResult")
+    private fun connectWebSocket() {
+
+        if (mStompClient?.isConnected == true)
+            return
+
+        mStompClient = Stomp.over(
+            Stomp.ConnectionProvider.OKHTTP,
+            "${AppConfig.WS_BASE_URL}/ws-suco"
+        )
+
+        mStompClient?.lifecycle()?.subscribe { event ->
+
+            when (event.type) {
+
+                LifecycleEvent.Type.OPENED -> {
+
+                    Log.d(
+                        "HoaDonSocket",
+                        "Connected"
+                    )
+
+                    if (subscribed) return@subscribe
+
+                    subscribed = true
+
+                    mStompClient?.topic(
+                        "/user/queue/new-invoice"
+                    )?.subscribe({
+
+                        Log.d(
+                            "HoaDonSocket",
+                            "Nhận hóa đơn mới"
+                        )
+
+                        currentHoaDonId?.let {
+                            loadHoaDonDetail(it)
+                        }
+
+                    }, {
+
+                        Log.e(
+                            "HoaDonSocket",
+                            it.message ?: ""
+                        )
+                    })
+                }
+
+                else -> {}
+            }
+        }
+
+        mStompClient?.connect()
+    }
+    override fun onCleared() {
+        super.onCleared()
+        mStompClient?.disconnect()
+    }
     fun loadHoaDonDetail(
         hoaDonId: Long
     ) {
+
+        currentHoaDonId = hoaDonId
+
+        if (mStompClient?.isConnected != true) {
+            connectWebSocket()
+        }
 
         viewModelScope.launch {
 
