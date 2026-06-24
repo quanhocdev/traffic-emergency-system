@@ -228,28 +228,26 @@ class TheoDoiTinHieuViewModel : ViewModel() {
         mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
             when (lifecycleEvent.type) {
                 LifecycleEvent.Type.OPENED -> {
-                    Log.d("WebSocket_TinHieu", "🟢 Kết nối SOS thành công! Đang đăng ký các kênh...")
+                    Log.d("WebSocket_TinHieu", "🟢 Kết nối SOS thành công! Đang đăng ký các kênh bảo mật...")
 
-                    // 1. SOS status user-specific
-                    uid?.let { id ->
-                        mStompClient?.topic("/topic/user/$id/sos-status")?.subscribe({
-                            loadDataFromApi()
-                        }, {
-                            Log.e("WebSocket", "SOS error: ${it.message}")
-                        })
-                    }
+                    // 1. SỬA KÊNH TRẠNG THÁI SOS: Ẩn danh hóa hoàn toàn, không cộng chuỗi UID nữa
+                    mStompClient?.topic("/user/queue/sos-status")?.subscribe({
+                        Log.d("WebSocket", "Nhận cập nhật trạng thái SOS riêng tư")
+                        loadDataFromApi()
+                    }, {
+                        Log.e("WebSocket", "SOS error: ${it.message}")
+                    })
 
-                    // 2. History
-                    uid?.let { id ->
-                        mStompClient?.topic("/topic/user/$id/history")?.subscribe({
-                            loadDataFromApi()
-                        }, {
-                            Log.e("WebSocket", "History error: ${it.message}")
-                        })
-                    }
+                    // 2. SỬA KÊNH LỊCH SỬ (HISTORY): Ẩn danh hóa hoàn toàn
+                    mStompClient?.topic("/user/queue/history")?.subscribe({
+                        Log.d("WebSocket", "Nhận tín hiệu làm mới lịch sử (REFRESH)")
+                        loadDataFromApi()
+                    }, {
+                        Log.e("WebSocket", "History error: ${it.message}")
+                    })
 
-                    // 3. Invoice
-                    mStompClient?.topic("/topic/user/invoice")?.subscribe({ topicMessage ->
+                    // 3. SỬA KÊNH HÓA ĐƠN (INVOICE): Chuyển từ /topic dùng chung sang kênh riêng tư bảo mật
+                    mStompClient?.topic("/user/queue/invoice")?.subscribe({ topicMessage ->
                         val thanhToan = Gson().fromJson(
                             topicMessage.payload,
                             ThanhToanResponseDTO::class.java

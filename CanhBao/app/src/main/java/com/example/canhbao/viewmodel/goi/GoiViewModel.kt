@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
+import ua.naiksoftware.stomp.dto.StompHeader
 
 class GoiViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
     private val _goiList = MutableStateFlow<List<GoiResponseDto>>(emptyList())
@@ -24,33 +25,44 @@ class GoiViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
 
     private var stompClient: StompClient? = null
 
-    // Hàm kết nối Socket
-    fun connectSocket() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-
-        val url = "${AppConfig.WS_BASE_URL}/ws-suco/websocket"
-        if (stompClient?.isConnected == true) return
-
-        stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, url)
-        stompClient?.connect()
-
-        stompClient?.topic("/topic/package-status/$uid")?.subscribe({
-            val payload = it.payload
-
-            viewModelScope.launch {
-                if (payload == "REFRESH") {
-                    fetchMyPackages()
-                } else {
-                    _socketErrorMessage.value = payload
-                }
-            }
-        }, { it.printStackTrace() })
-    }
     private val _socketErrorMessage = MutableStateFlow<String?>(null)
     val socketErrorMessage: StateFlow<String?> = _socketErrorMessage
 
+    // Hàm kết nối Socket bảo mật mới
+    fun connectSocket() {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        if (stompClient?.isConnected == true) return
+
+        // Lấy Firebase Token không đồng bộ để đính kèm vào Header kết nối
+        user.getIdToken(false).addOnSuccessListener { result ->
+            val token = result.token ?: return@addOnSuccessListener
+            val url = "${AppConfig.WS_BASE_URL}/ws-suco/websocket"
+
+            stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, url)
+
+            // 1. THÊM HEADER XÁC THỰC: Đưa Token vào lệnh CONNECT
+            val headers = listOf(StompHeader("Authorization", "Bearer $token"))
+            stompClient?.connect(headers)
+
+            // 2. Nghe kênh bảo mật chung, bỏ hoàn toàn phần cộng chuỗi $uid
+            stompClient?.topic("/user/queue/package-status")?.subscribe({ it ->
+                val payload = it.payload
+
+                viewModelScope.launch {
+                    if (payload == "REFRESH") {
+                        fetchMyPackages()
+                    } else {
+                        _socketErrorMessage.value = payload
+                    }
+                }
+            }, { it.printStackTrace() })
+
+        }.addOnFailureListener {
+            Log.e("SocketAuth", "Lấy Firebase Token thất bại: ${it.message}")
+        }
+    }
+
     override fun onCleared() {
-        // Fix lỗi crash Not Connected khi tắt ViewModel
         try {
             if (stompClient != null && stompClient!!.isConnected) {
                 stompClient?.disconnect()
@@ -61,7 +73,6 @@ class GoiViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
         super.onCleared()
     }
 
-    // Các hàm fetch dữ liệu
     fun fetchGoi() {
         viewModelScope.launch {
             try {
@@ -91,7 +102,6 @@ class GoiViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
         viewModelScope.launch {
             try {
                 val user = FirebaseAuth.getInstance().currentUser ?: return@launch
-                val uid = user.uid
                 val token = user.getIdToken(false).result?.token ?: ""
 
                 val response = api.dangKyMuaGoi(
