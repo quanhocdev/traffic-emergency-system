@@ -4,7 +4,6 @@ import com.example.suco.dto.sos.hoadon.quanly.HoaDonDetailDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonRequestDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonTruSoResponseDTO;
 import com.example.suco.mapper.hoadon.HoaDonCuuHoMapper;
-import com.example.suco.dto.sos.hoadon.payment.ThanhToanResponseDTO; 
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;

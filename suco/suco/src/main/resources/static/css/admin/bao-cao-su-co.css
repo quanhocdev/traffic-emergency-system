@@ -283,7 +283,6 @@ body {
   flex-wrap: wrap;
 }
 
-/* Đã đồng bộ style camera từ file cũ của bạn */
 .camera-badge-flex div {
   background: #f1f5f9;
   border: 1px solid #cbd5e1;
@@ -303,7 +302,6 @@ body {
   border-color: #94a3b8;
   transform: translateY(-1px);
 }
-/* Style định dạng text địa chỉ và tọa độ phụ */
 .address-text {
   font-weight: 500;
   color: #1e293b;
@@ -323,7 +321,7 @@ body {
 }
 
 .coordinate-subtext i {
-  color: #ef4444; /* Màu icon map pin định vị đỏ nổi bật */
+  color: #ef4444;
 }
 
 /* Định dạng cột thời gian tạo */

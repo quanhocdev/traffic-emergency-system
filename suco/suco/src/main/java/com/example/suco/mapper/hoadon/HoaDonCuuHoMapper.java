@@ -1,8 +1,6 @@
 package com.example.suco.mapper.hoadon;
 
-import com.example.suco.dto.info.truso.TruSoMiniDTO;
 import com.example.suco.dto.info.user.UserInfoResponseDTO;
-import com.example.suco.dto.info.user.UserMiniDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonRequestDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonResponseDTO;
 import com.example.suco.dto.sos.hoadon.quanly.HoaDonTruSoResponseDTO;

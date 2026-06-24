@@ -85,7 +85,7 @@ public ResponseEntity<String> xoaTruSo(@PathVariable Long id) {
             return "redirect:/admin/quan-ly-tru-so";
         }
         model.addAttribute("truSo", truSo);
-        return "admin/gan-toa-do-tru-so"; // Tạo file này ở templates/admin/
+        return "admin/gan-toa-do-tru-so"; 
     }
 
     @PostMapping("/gan-toa-do/{id}")

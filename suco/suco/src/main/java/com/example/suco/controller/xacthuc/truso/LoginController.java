@@ -52,7 +52,7 @@ public ResponseEntity<?> login(@RequestParam String username,
          session.setAttribute("currentTruSo", t);
 
     var auth = new UsernamePasswordAuthenticationToken(
-                t, // principal
+                t,
                 null,
                 List.of() 
         );

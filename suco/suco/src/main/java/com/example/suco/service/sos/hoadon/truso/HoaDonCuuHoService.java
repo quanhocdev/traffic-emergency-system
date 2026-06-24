@@ -4,7 +4,6 @@ import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
 import com.example.suco.repository.sos.hoadon.ThanhToanHoaDonRepository;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.repository.vanhanh.TruSoRepository;
-import com.example.suco.repository.sos.hoadon.ThanhToanHoaDonRepository; 
 import com.example.suco.service.sos.hoadon.truso.validation.StatusTruSoService;
 import com.example.suco.service.sos.hoadon.truso.validation.VipSOSService;
 import com.example.suco.service.sos.hoadon.truso.validation.total.TotalService;
@@ -82,7 +81,7 @@ public class HoaDonCuuHoService {
     // 2. Map sang HoaDonResponseDTO
     HoaDonResponseDTO hdDto = hoaDonMapper.toDTO(hoaDon);
 
-    // 3. Gọi đúng hàm lấy tất cả transaction đã sắp xếp Descending từ repo của ông
+    // 3. Gọi hàm lấy tất cả transaction đã sắp xếp Descending
     List<ThanhToanHoaDon> danhSachThanhToan = thanhToanHoaDonRepository.findByHoaDonIdOrderByIdDesc(hoaDonId);
 
     // 4. Map danh sách sang DTO

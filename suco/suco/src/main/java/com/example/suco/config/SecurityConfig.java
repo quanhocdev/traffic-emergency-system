@@ -29,7 +29,7 @@ public class SecurityConfig {
 
         http
             .csrf(csrf -> csrf.disable())
-            // Sessio
+            // Session
             .securityContext(context -> context
         .requireExplicitSave(false)
     )
@@ -37,7 +37,7 @@ public class SecurityConfig {
             .authenticationEntryPoint(customAuthEntryPoint)
         )
             .authorizeHttpRequests(auth -> auth
-    // PUBLIC HOÀN TOÀN
+    // PUBLIC
     .requestMatchers("/admin/login").permitAll()
     .requestMatchers("/api/auth/**").permitAll()
     .requestMatchers("/api/su-co/map", "/api/sos/map").permitAll()
