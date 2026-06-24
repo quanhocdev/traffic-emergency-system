@@ -15,7 +15,13 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
+import android.annotation.SuppressLint
+import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
+import com.example.canhbao.data.network.AppConfig
+import com.google.gson.Gson
+import ua.naiksoftware.stomp.Stomp
+import ua.naiksoftware.stomp.StompClient
+import ua.naiksoftware.stomp.dto.LifecycleEvent
 class ThanhToanViewModel : ViewModel() {
 
     var listVoucher by mutableStateOf<List<TuiQuaResponseDTO>>(emptyList())
@@ -33,6 +39,11 @@ class ThanhToanViewModel : ViewModel() {
     var hoaDonDetail by mutableStateOf<HoaDonUserResponseDTO?>(null)
         private set
 
+    private var mStompClient: StompClient? = null
+
+    var paymentInfo by mutableStateOf<ThanhToanResponseDTO?>(null)
+        private set
+
     private suspend fun getToken(): String {
 
         val user =
@@ -46,6 +57,59 @@ class ThanhToanViewModel : ViewModel() {
             )
 
         return "Bearer ${tokenResult.token}"
+    }
+    @SuppressLint("CheckResult")
+    private fun connectWebSocket() {
+
+        if (mStompClient?.isConnected == true)
+            return
+
+        mStompClient = Stomp.over(
+            Stomp.ConnectionProvider.OKHTTP,
+            "${AppConfig.WS_BASE_URL}/ws-suco"
+        )
+
+        mStompClient?.lifecycle()?.subscribe { event ->
+
+            when (event.type) {
+
+                LifecycleEvent.Type.OPENED -> {
+
+                    mStompClient?.topic(
+                        "/user/queue/invoice"
+                    )?.subscribe({ msg ->
+
+                        val response =
+                            Gson().fromJson(
+                                msg.payload,
+                                ThanhToanResponseDTO::class.java
+                            )
+
+                        paymentInfo = response
+
+                        loadVoucher()
+
+                    }, {
+
+                        Log.e(
+                            "ThanhToanSocket",
+                            it.message ?: ""
+                        )
+                    })
+                }
+
+                else -> {}
+            }
+        }
+
+        mStompClient?.connect()
+    }
+    override fun onCleared() {
+        super.onCleared()
+        mStompClient?.disconnect()
+    }
+    fun startSocket() {
+        connectWebSocket()
     }
 
     fun loadVoucher() {

@@ -48,11 +48,6 @@ class TheoDoiTinHieuViewModel : ViewModel() {
     var listTuiQua by mutableStateOf<List<TuiQuaResponseDTO>>(emptyList())
         private set
 
-    var pendingInvoicesMap by mutableStateOf<Map<Long, ThanhToanResponseDTO>>(emptyMap())
-        private set
-
-    var selectedPayment by mutableStateOf<ThanhToanResponseDTO?>(null)
-        private set
     private var mStompClient: StompClient? = null
 
     private var mediaPlayer: MediaPlayer? = null
@@ -246,29 +241,7 @@ class TheoDoiTinHieuViewModel : ViewModel() {
                         Log.e("WebSocket", "History error: ${it.message}")
                     })
 
-                    // 3. SỬA KÊNH HÓA ĐƠN (INVOICE): Chuyển từ /topic dùng chung sang kênh riêng tư bảo mật
-                    mStompClient?.topic("/user/queue/invoice")?.subscribe({ topicMessage ->
-                        val thanhToan = Gson().fromJson(
-                            topicMessage.payload,
-                            ThanhToanResponseDTO::class.java
-                        )
-                        viewModelScope.launch {
-                            val hoaDonId = thanhToan.hoaDonId ?: return@launch
-                            val currentMap = pendingInvoicesMap.toMutableMap()
 
-                            if (thanhToan.trangThai == "SUCCESS") {
-                                currentMap.remove(hoaDonId)
-                            } else {
-                                currentMap[hoaDonId] = thanhToan
-                            }
-
-                            pendingInvoicesMap = currentMap
-                            loadDataFromApi()
-                            loadTuiQua()
-                        }
-                    }, {
-                        Log.e("WebSocket", "Invoice error: ${it.message}")
-                    })
                 }
                 LifecycleEvent.Type.ERROR -> {
                     Log.e("WebSocket_TinHieu", "❌ Lỗi luồng: ${lifecycleEvent.exception?.message}")
@@ -280,18 +253,6 @@ class TheoDoiTinHieuViewModel : ViewModel() {
         mStompClient?.connect()
     }
 
-    fun clearInvoice(
-        hoaDonId: Long
-    ) {
-
-        val currentMap =
-            pendingInvoicesMap.toMutableMap()
-
-        currentMap.remove(hoaDonId)
-
-        pendingInvoicesMap =
-            currentMap
-    }
 
     fun playRecording(
         url: String,
@@ -360,40 +321,7 @@ class TheoDoiTinHieuViewModel : ViewModel() {
         mStompClient?.disconnect()
         stopPlayback()
     }
-    fun loadPaymentDetail(
-        hoaDonId: Long
-    ) {
 
-        viewModelScope.launch {
-
-            try {
-
-                val result =
-                    withContext(Dispatchers.IO) {
-
-                        val token = getToken()
-
-                        api.getChiTietThanhToan(
-                            token,
-                            hoaDonId
-                        )
-                    }
-
-                selectedPayment = result
-
-            } catch (e: Exception) {
-
-                Log.e(
-                    "TheoDoiTinHieu",
-                    "load payment detail error: ${e.message}"
-                )
-            }
-        }
-    }
-    fun clearSelectedPayment() {
-        selectedPayment = null
-    }
-    // --- Thêm vào bên trong class TheoDoiTinHieuViewModel ---
 
     var detailUiStateMap by mutableStateOf<Map<Long, TheoDoiSOSDetailResponseDTO>>(emptyMap())
         private set

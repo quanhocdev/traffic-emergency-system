@@ -10,6 +10,8 @@ public class HoaDonTruSoResponseDTO {
 
     private String noiDungXuLy;
 
+    private String userId;
+
     private UserInfoResponseDTO user;
 
     private BigDecimal thanhTien;
@@ -29,6 +31,12 @@ public class HoaDonTruSoResponseDTO {
     }
     public void setNoiDungXuLy(String noiDungXuLy) {
         this.noiDungXuLy = noiDungXuLy;
+    }
+    public String getUserId() {
+        return userId;
+    }
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
     public UserInfoResponseDTO getUser() {
         return user;

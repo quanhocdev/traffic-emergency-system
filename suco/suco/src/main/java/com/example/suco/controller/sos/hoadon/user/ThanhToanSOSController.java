@@ -62,33 +62,33 @@ public ResponseEntity<?> xacNhanThanhToan(
         String token = authHeader.replace("Bearer ", "");
         String uid;
 
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-            uid = decodedToken.getUid();
+        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
+        uid = decodedToken.getUid();
         
+        // 2. Xử lý thanh toán dịch vụ
+        ThanhToanResponseDTO response = thanhToanSOSService.thanhToanHoaDon(uid, request);
 
-        // 2. Tìm hóa đơn
-       ThanhToanResponseDTO response =
-        thanhToanSOSService.thanhToanHoaDon(
-                uid,
-                request
+        // Kênh thông báo cho Trụ sở cứu hộ (Giữ nguyên phát Broadcast công cộng)
+        messagingTemplate.convertAndSend(
+                "/topic/truso/" + response.getTrusoId(),
+                response
         );
 
-messagingTemplate.convertAndSend(
-        "/topic/truso/" + response.getTrusoId(),
-        response
-);
+        // Ẩn danh hóa kênh thông báo Hóa đơn thành công
+        messagingTemplate.convertAndSendToUser(
+                uid,               // UID người nhận
+                "/queue/invoice",  // Đường dẫn tĩnh phụ
+                response
+        );
 
-messagingTemplate.convertAndSend(
-        "/topic/user/" + uid + "/invoice",
-        response
-);
+        // Ẩn danh hóa kênh làm mới Lịch sử
+        messagingTemplate.convertAndSendToUser(
+                uid,               // UID người nhận
+                "/queue/history",  // Đường dẫn tĩnh phụ
+                "REFRESH"
+        );
 
-messagingTemplate.convertAndSend(
-        "/topic/user/" + uid + "/history",
-        "REFRESH"
-);
-
-return ResponseEntity.ok(response);
+        return ResponseEntity.ok(response);
 
     } catch (FirebaseAuthException e) {
         return ResponseEntity.status(401)

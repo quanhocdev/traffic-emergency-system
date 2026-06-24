@@ -62,6 +62,7 @@ public class HoaDonCuuHoMapper {
 
         HoaDonTruSoResponseDTO dto = new HoaDonTruSoResponseDTO();
         dto.setId(hd.getId());
+        dto.setUserId(hd.getUserId()); 
         dto.setNoiDungXuLy(hd.getNoiDungXuLy());
         dto.setThanhTien(hd.getThanhTien());
         dto.setTrangThai(hd.getTrangThai());
