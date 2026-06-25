@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
+import jakarta.validation.Valid;
+import com.example.suco.dto.vanhanh.truso.TruSoCreateRequestDTO;
+import com.example.suco.dto.vanhanh.truso.TruSoResponseDTO;
 import com.example.suco.dto.info.truso.TruSoMapDto;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.vanhanh.TruSoRepository;
@@ -44,27 +46,20 @@ public class AdminTruSoController {
         return truSoService.getAllTruSoForMap();
     }
 
- @PostMapping(
+@PostMapping(
     value = "/them",
     consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE
 )
 @ResponseBody
-public ResponseEntity<?> themTruSo(@ModelAttribute TruSo truSo,
-                                    HttpServletRequest request) {
-    truSoService.saveTruSo(truSo);
+public ResponseEntity<?> themTruSo(
+        @Valid @ModelAttribute TruSoCreateRequestDTO createDTO, // 🌟 1. Đổi sang DTO & Bật @Valid kiểm tra
+        HttpServletRequest request) {
+    
+    // 🌟 2. Truyền DTO vào Service xử lý nghiệp vụ (Cần cập nhật lại tham số nhận vào ở TruSoService)
+    TruSoResponseDTO response = truSoService.createTruSo(createDTO); 
 
-    return ResponseEntity.ok(
-        java.util.Map.of(
-            "message", "Thêm trụ sở thành công!",
-            "id", truSo.getId(),
-            "tenDangNhap", truSo.getTenDangNhap(),
-            "tenTruSo", truSo.getTenTruSo(),
-            "kinhDo", truSo.getKinhDo(),
-            "viDo", truSo.getViDo(),
-            "diaChi", truSo.getDiaChi(),
-            "geohash", truSo.getGeohash()
-        )
-    );
+    // 🌟 3. Trả về object DTO sạch sẽ gọn gàng, không cần map thủ công nữa
+    return ResponseEntity.ok(response);
 }
 @DeleteMapping("/delete/{id}")
 @ResponseBody

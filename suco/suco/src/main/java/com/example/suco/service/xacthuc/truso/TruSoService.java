@@ -9,6 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.suco.service.location.GeocodingService;
 import com.example.suco.dto.info.truso.TruSoMapDto;
+import com.example.suco.dto.vanhanh.truso.TruSoCreateRequestDTO;
+import com.example.suco.dto.vanhanh.truso.TruSoResponseDTO;
+import com.example.suco.mapper.info.InfoTruSoMapper;
+import com.example.suco.mapper.vanhanh.truso.TruSoMapper;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.vanhanh.TruSoRepository;
 
@@ -17,6 +21,12 @@ import ch.hsr.geohash.GeoHash;
 @Service
 public class TruSoService {
 
+
+    @Autowired
+private TruSoMapper truSoMapper;
+
+    @Autowired
+    private InfoTruSoMapper infoTruSoMapper;
     @Autowired
     private TruSoRepository truSoRepository;
 
@@ -26,88 +36,99 @@ public class TruSoService {
     @Autowired
     private GeocodingService geocodingService;
 
+    @Autowired
+    private ValidationInfoTruSoService validationInfoTruSoService;
+
+    @Autowired
+    private TruSoRealtimeService truSoRealtimeService;
+
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Transactional
-    public TruSo saveTruSo(TruSo truSo) {
-        String gh = GeoHash.withCharacterPrecision(truSo.getViDo(), truSo.getKinhDo(), 6).toBase32();
-        truSo.setGeohash(gh);
-        truSo.setDiaChi(
+public TruSoResponseDTO createTruSo(TruSoCreateRequestDTO dto) {
+
+    TruSo truSo = truSoMapper.toEntity(dto);
+
+    TruSo saved = saveTruSo(truSo);
+
+    return truSoMapper.toResponseDTO(saved);
+}
+
+@Transactional
+public TruSo saveTruSo(TruSo truSo) {
+
+    String gh = GeoHash.withCharacterPrecision(
+            truSo.getViDo(),
+            truSo.getKinhDo(),
+            6
+    ).toBase32();
+
+    truSo.setGeohash(gh);
+
+    truSo.setDiaChi(
             geocodingService.getAddress(
-                truSo.getViDo(),
-                truSo.getKinhDo()
+                    truSo.getViDo(),
+                    truSo.getKinhDo()
             )
-        );
+    );
 
+    validationInfoTruSoService.validateUsername(truSo);
 
-        // ================= VALIDATE USERNAME =================
-String username = truSo.getTenDangNhap();
+    TruSo saved;
 
-if (username == null 
-    || username.length() < 5 
-    || username.length() > 20 
-    || username.contains(" ")) {
-    throw new RuntimeException("Tên đăng nhập phải 5-20 ký tự, không chứa khoảng trắng");
-}
+    if (truSo.getId() != null) {
 
-// CHECK TRÙNG USERNAME
-boolean isDuplicate = truSoRepository.existsByTenDangNhap(username);
+        saved = truSoRepository.findById(truSo.getId())
+                .map(existing -> {
 
-if (truSo.getId() == null) {
-    // CREATE
-    if (isDuplicate) {
-        throw new RuntimeException("Tên đăng nhập đã tồn tại");
-    }
-} else {
-    // UPDATE
-    TruSo existing = truSoRepository.findById(truSo.getId())
-        .orElseThrow(() -> new RuntimeException("Không tìm thấy trụ sở"));
+                    existing.setKinhDo(truSo.getKinhDo());
+                    existing.setViDo(truSo.getViDo());
+                    existing.setGeohash(gh);
 
-    if (!existing.getTenDangNhap().equals(username) && isDuplicate) {
-        throw new RuntimeException("Tên đăng nhập đã tồn tại");
-    }
-}
+                    if (truSo.getTenTruSo() != null) {
+                        existing.setTenTruSo(truSo.getTenTruSo());
+                    }
 
-// ================= VALIDATE PASSWORD =================
-String password = truSo.getMatKhau();
-String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$";
+                    if (truSo.getMatKhau() != null
+                            && !truSo.getMatKhau().isBlank()) {
 
-if (truSo.getId() == null || (password != null && !password.isBlank())) {
-    if (password == null || !password.matches(regex)) {
-        throw new RuntimeException("Mật khẩu phải lớn hơn hoặc bằng 8 ký tự, gồm hoa, thường, số và ký tự đặc biệt");
-    }
-}
-        TruSo saved;
-        if (truSo.getId() != null) {
-            saved = truSoRepository.findById(truSo.getId())
-                    .map(existing -> {
-                        existing.setKinhDo(truSo.getKinhDo());
-                        existing.setViDo(truSo.getViDo());
-                        existing.setGeohash(gh);
-                        if (truSo.getTenTruSo() != null) existing.setTenTruSo(truSo.getTenTruSo());
-                        // Chỉ mã hóa nếu mật khẩu mới KHÁC với mật khẩu đã lưu (tức là mật khẩu thô mới)
-                        if (truSo.getMatKhau() != null && !truSo.getMatKhau().isBlank() 
-                            && !truSo.getMatKhau().equals(existing.getMatKhau())) {
-                            existing.setMatKhau(passwordEncoder.encode(truSo.getMatKhau()));
-                        }
-                        return truSoRepository.save(existing);
-                    })
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy trụ sở ID: " + truSo.getId()));
-        } else {
-            if (truSo.getMatKhau() != null && !truSo.getMatKhau().isBlank()) {
-                truSo.setMatKhau(passwordEncoder.encode(truSo.getMatKhau()));
-            }
-            saved = truSoRepository.save(truSo);
+                        existing.setMatKhau(
+                                passwordEncoder.encode(
+                                        truSo.getMatKhau()
+                                )
+                        );
+                    }
+
+                    return truSoRepository.save(existing);
+                })
+                .orElseThrow(() ->
+                        new RuntimeException(
+                                "Không tìm thấy trụ sở ID: "
+                                        + truSo.getId()));
+
+    } else {
+
+        if (truSo.getMatKhau() != null
+                && !truSo.getMatKhau().isBlank()) {
+
+            truSo.setMatKhau(
+                    passwordEncoder.encode(
+                            truSo.getMatKhau()
+                    )
+            );
         }
 
-        messagingTemplate.convertAndSend("/topic/tru-so", new TruSoMapDto(saved.getId(), saved.getTenTruSo(), saved.getKinhDo(), saved.getViDo(), saved.getDiaChi()));
-        return saved;
+        saved = truSoRepository.save(truSo);
     }
 
+    truSoRealtimeService.sendTruSoUpdated(saved);
+
+    return saved;
+}
     public List<TruSoMapDto> getAllTruSoForMap() {
         return truSoRepository.findAll().stream()
-                .map(ts -> new TruSoMapDto(ts.getId(), ts.getTenTruSo(), ts.getKinhDo(), ts.getViDo(), ts.getDiaChi()))
+                .map(infoTruSoMapper::toMapDto)
                 .collect(Collectors.toList());
     }
 
