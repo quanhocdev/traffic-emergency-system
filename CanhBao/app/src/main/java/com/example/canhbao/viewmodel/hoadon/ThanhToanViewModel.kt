@@ -120,24 +120,24 @@ class ThanhToanViewModel : ViewModel() {
                 val result = withContext(Dispatchers.IO) {
 
                     val token = getToken()
-                    Log.d("VOUCHER", "TOKEN = $token")   // 👈 LOG 1
+                    Log.d("VOUCHER", "TOKEN = $token")   // LOG 1
 
                     val res = BaoCaoSuCoRetrofit.api.getMyGifts(token)
 
-                    Log.d("VOUCHER", "RAW RESULT = $res") // 👈 LOG 2
+                    Log.d("VOUCHER", "RAW RESULT = $res") // LOG 2
 
                     res
                 }
 
                 listVoucher = result
 
-                Log.d("VOUCHER", "LIST SIZE = ${listVoucher.size}") // 👈 LOG 3
+                Log.d("VOUCHER", "LIST SIZE = ${listVoucher.size}") // LOG 3
 
             } catch (e: Exception) {
 
                 errorMessage = e.message
 
-                Log.e("VOUCHER", "ERROR LOAD VOUCHER", e) // 👈 LOG 4
+                Log.e("VOUCHER", "ERROR LOAD VOUCHER", e) // LOG 4
 
             } finally {
                 loading = false

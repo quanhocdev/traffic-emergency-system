@@ -8,16 +8,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import coil.request.ImageRequest
-import com.example.canhbao.data.network.SocketClientProvider
 import coil.request.SuccessResult
+import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.data.model.info.camera.CameraMapDto
 import com.example.canhbao.data.model.info.truso.TruSoMapDto
 import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoApi
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
-import com.example.canhbao.ui.screens.createCameraIcon
-import com.example.canhbao.ui.screens.createTruSoMarkerBitmap
 import com.example.canhbao.viewmodel.helper.RealtimeSocketManager
 import com.mapbox.geojson.Point
 import kotlinx.coroutines.Dispatchers
@@ -62,15 +60,9 @@ class MapViewModel : ViewModel() {
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
 
-    // --- 2. DỮ LIỆU MARKER ĐÃ ĐÈ MÀU (DÙNG CHO UI MAP VẼ) ---
+    // --- 2. DỮ LIỆU MARKER ĐÃ ĐÈ MÀU (CHỈ CÒN SỰ CỐ) ---
     private val _suCoWithIcons = MutableStateFlow<List<Pair<SuCoMapResponseDTO, Bitmap>>>(emptyList())
     val suCoWithIcons = _suCoWithIcons.asStateFlow()
-
-    private val _truSoWithIcons = MutableStateFlow<List<Pair<TruSoMapDto, Bitmap>>>(emptyList())
-    val truSoWithIcons = _truSoWithIcons.asStateFlow()
-
-    private val _cameraWithIcons = MutableStateFlow<List<Pair<CameraMapDto, Bitmap>>>(emptyList())
-    val cameraWithIcons = _cameraWithIcons.asStateFlow()
 
 
     // --- 3. DANH SÁCH GỐC PHỤC VỤ CLICK & ĐO KHOẢNG CÁCH ---
@@ -78,15 +70,9 @@ class MapViewModel : ViewModel() {
     val suCoList = _suCoList.asStateFlow()
 
 
-    // --- 4. TRẠNG THÁI BỘ LỌC (FILTER ON/OFF) ---
+    // --- 4. TRẠNG THÁI BỘ LỌC (CHỈ GIỮ LẠI SỰ CỐ) ---
     private val _showSuCo = MutableStateFlow(true)
     val showSuCo = _showSuCo.asStateFlow()
-
-    private val _showTruSo = MutableStateFlow(true)
-    val showTruSo = _showTruSo.asStateFlow()
-
-    private val _showCamera = MutableStateFlow(true)
-    val showCamera = _showCamera.asStateFlow()
 
 
     // --- 5. CÁC HÀM TẢI DỮ LIỆU BAN ĐẦU TỪ API ---
@@ -94,18 +80,11 @@ class MapViewModel : ViewModel() {
     fun loadSuCoForMap(context: Context) {
         viewModelScope.launch {
             try {
-                // 💡 BƯỚC CHÍ MẠNG: Ép buộc dọn sạch danh sách hiển thị cũ trên UI State
-                // Nếu biến lưu icon của bạn tên là _suCoWithIcons, hãy xóa trắng nó ở đây:
                 _suCoWithIcons.value = emptyList()
                 _suCoList.value = emptyList()
 
-                // Gọi API lấy danh sách mới nhất từ Database về
                 val list = suCoApi.getSuCoForMap()
-
-                // Cập nhật danh sách mới
                 _suCoList.value = list
-
-                // Nạp lại icon dựa trên danh sách mới sạch sẽ hoàn toàn
                 loadAllIcons(context, list)
 
                 android.util.Log.d("MAP_DEBUG", "✅ Đã đồng bộ mới danh sách sự cố thành công. Số lượng: ${list.size}")
@@ -115,38 +94,14 @@ class MapViewModel : ViewModel() {
         }
     }
 
-    fun loadTruSoData(context: Context) {
-        viewModelScope.launch {
-            try {
-                val list = suCoApi.getAllTruSo()
-                val icon = createTruSoMarkerBitmap(context)
-                _truSoWithIcons.value = list.map { it to icon }
-                Log.d("MapViewModel", "🏠 Load API: Đã lấy ${list.size} trụ sở")
-            } catch (e: Exception) { e.printStackTrace() }
-        }
-    }
-
-    fun loadCameraData(context: Context) {
-        viewModelScope.launch {
-            try {
-                val list = suCoApi.getAllCamera()
-                val icon = createCameraIcon(context)
-                _cameraWithIcons.value = list.map { it to icon }
-                Log.d("MapViewModel", "📸 Đã load ${list.size} camera.")
-            } catch (e: Exception) { Log.e("MapViewModel", "❌ Lỗi load camera: ${e.message}") }
-        }
-    }
-
     fun toggleFilter(type: String) {
-        when(type) {
-            "SU_CO" -> _showSuCo.value = !_showSuCo.value
-            "TRU_SO" -> _showTruSo.value = !_showTruSo.value
-            "CAMERA" -> _showCamera.value = !_showCamera.value
+        if (type == "SU_CO") {
+            _showSuCo.value = !_showSuCo.value
         }
     }
 
 
-    // --- 6. XỬ LÝ ĐỒNG BỘ REALTIME TỪ SOCKET MANAGER BẮN QUA (TỐI ƯU LUỒNG) ---
+    // --- 6. XỬ LÝ ĐỒNG BỘ REALTIME TỪ SOCKET MANAGER BẮN QUA ---
 
     fun updateSuCoFromSocket(context: Context, suCo: SuCoMapResponseDTO) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -169,7 +124,6 @@ class MapViewModel : ViewModel() {
 
             val path = suCo.iconUrl ?: ""
             val fullUrl = if (path.startsWith("http")) path else "${AppConfig.HTTP_BASE_URL}$path"
-            android.util.Log.d("REALTIME_BUG", "📸 Đường dẫn tải Icon: $fullUrl")
 
             val bmp = loadMarkerIcon(context, fullUrl, suCo.mucDoSuCo)
             if (bmp != null) {
@@ -180,44 +134,40 @@ class MapViewModel : ViewModel() {
                 withContext(Dispatchers.Main) {
                     _suCoWithIcons.value = currentWithIcons.toList()
                 }
-                android.util.Log.d("REALTIME_BUG", "✅ Vẽ đè Icon thành công! Đã đẩy vào StateFlow hiển thị. Tổng số Marker hiện tại: ${currentWithIcons.size}")
-            } else {
-                android.util.Log.e("REALTIME_BUG", "💥 LỖI: Tải hoặc xử lý tạo Bitmap cho Icon thất bại!")
+                android.util.Log.d("REALTIME_BUG", "✅ Vẽ đè Icon thành công! Đã đẩy vào StateFlow.")
             }
         }
     }
 
-    // 🌟 CHỈ GIỮ LẠI DUY NHẤT 1 BIẾN QUAN LÝ Ở ĐÂY
+    fun removeSuCoFromSocket(id: Long) {
+        viewModelScope.launch(Dispatchers.Main) {
+            val updatedList = _suCoList.value.filter { it.id != id }
+            _suCoList.value = updatedList
+
+            val updatedWithIcons = _suCoWithIcons.value.filter { it.first.id != id }
+            _suCoWithIcons.value = updatedWithIcons
+
+            android.util.Log.d("REALTIME_BUG", "🔥 Đã xóa sự cố $id khỏi State.")
+        }
+    }
+
     private var realtimeSocketManager: RealtimeSocketManager? = null
 
-    fun startRealtimeSocket(context: Context) {
+    fun startRealtimeSocket(
+        context: Context,
+        truSoViewModel: TruSoViewModel,
+        cameraViewModel: CameraViewModel
+    ) {
         val currentClient = SocketClientProvider.stompClient
-
-        if (realtimeSocketManager != null && currentClient.isConnected) {
-            android.util.Log.d(
-                "REALTIME_BUG",
-                "✅ WebSocket đang hoạt động ổn định. Không cần kết nối lại."
-            )
-            return
-        }
-
-        android.util.Log.w(
-            "REALTIME_BUG",
-            "⚠️ Phát hiện mất kết nối hoặc khởi tạo lần đầu. Đang thiết lập đường truyền sạch..."
-        )
+        if (realtimeSocketManager != null && currentClient.isConnected) return
 
         realtimeSocketManager = null
-
         SocketClientProvider.initNewClient()
         val activeClient = SocketClientProvider.stompClient
 
         realtimeSocketManager = RealtimeSocketManager(context, activeClient).apply {
             subscribe(object : RealtimeSocketManager.Callback {
                 override fun onSuCoUpdate(suCo: SuCoMapResponseDTO) {
-                    android.util.Log.d(
-                        "REALTIME_BUG",
-                        "📥 Nhận sự cố Realtime thành công (ID: ${suCo.id})"
-                    )
                     updateSuCoFromSocket(context, suCo)
                 }
 
@@ -225,87 +175,36 @@ class MapViewModel : ViewModel() {
                     removeSuCoFromSocket(id)
                 }
 
-                override fun onTruSoRemove(id: Long) {
-                    val updatedTruSo = _truSoWithIcons.value.filter { it.first.id != id }
-                    _truSoWithIcons.value = updatedTruSo
-                    android.util.Log.w(
-                        "REALTIME_BUG",
-                        "🔥 Đã xóa trụ sở ID = $id theo thời gian thực"
-                    )
+                // ỦY QUYỀN TRỌN GÓI SANG CHO TRUSO_VIEWMODEL
+                override fun onTruSoUpdate(truSo: TruSoMapDto) {
+                    truSoViewModel.updateTruSoFromSocket(context, truSo)
                 }
 
-                override fun onCameraUpdate(camera: CameraMapDto) {}
+                override fun onTruSoRemove(id: Long) {
+                    truSoViewModel.removeTruSoFromSocket(id)
+                }
+
+                // ỦY QUYỀN TRỌN GÓI SANG CHO CAMERA_VIEWMODEL
+                override fun onCameraUpdate(camera: CameraMapDto) {
+                    cameraViewModel.updateCameraFromSocket(context, camera)
+                }
+
                 override fun onCameraRemove(id: Long) {
-                    removeCameraFromSocket(id)
+                    cameraViewModel.removeCameraFromSocket(id)
                 }
             })
         }
-
-        activeClient.lifecycle().subscribe { lifecycleEvent ->
-            when (lifecycleEvent.type) {
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.OPENED -> {
-                    android.util.Log.i(
-                        "REALTIME_BUG",
-                        "🟢 WEBSOCKET ĐÃ ĐẾN TRẠNG THÁI OPENED! Thông suốt đường truyền mạng LAN."
-                    )
-                }
-
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.ERROR -> {
-                    android.util.Log.e(
-                        "REALTIME_BUG",
-                        "🔴 LỖI KẾT NỐI SOCKET: ",
-                        lifecycleEvent.exception
-                    )
-                }
-
-                ua.naiksoftware.stomp.dto.LifecycleEvent.Type.CLOSED -> {
-                    android.util.Log.w("REALTIME_BUG", "🔌 Mạng WebSocket đã đóng.")
-                }
-
-                else -> {}
-            }
-        }
-
-        android.util.Log.d("REALTIME_BUG", "⚡ Đang gửi gói tin Handshake lên Spring Boot...")
         activeClient.connect()
     }
 
 
-    fun removeSuCoFromSocket(id: Long) {
-        viewModelScope.launch(Dispatchers.Main) { // Chạy thẳng trên Main thread cho an toàn với UI State
-            // 1. Cập nhật danh sách tracking nền
-            val updatedList = _suCoList.value.filter { it.id != id }
-            _suCoList.value = updatedList
-
-            // 2. Cập nhật danh sách Icon đồ họa Marker
-            val updatedWithIcons = _suCoWithIcons.value.filter { it.first.id != id }
-            _suCoWithIcons.value = updatedWithIcons
-
-            android.util.Log.d("REALTIME_BUG", "🔥 Đã xóa sự cố $id khỏi State. Số lượng còn lại: ${updatedWithIcons.size}")
-        }
-    }
-    fun updateCameraFromSocket(camera: CameraMapDto, icon: Bitmap) {
-        val current = _cameraWithIcons.value.toMutableList()
-        current.removeAll { it.first.id == camera.id }
-        current.add(camera to icon)
-        _cameraWithIcons.value = current
-    }
-
-    fun removeCameraFromSocket(id: Long) {
-        val current = _cameraWithIcons.value.toMutableList()
-        current.removeAll { it.first.id == id }
-        _cameraWithIcons.value = current
-    }
-
-
-    // --- 7. LOGIC XỬ LÝ VẼ ĐÈ MÀU MARKER SỰ CỐ (TỐI ƯU MƯỢT MÀ) ---
+    // --- 7. LOGIC XỬ LÝ VẼ ĐÈ MÀU MARKER SỰ CỐ ---
 
     private suspend fun processAndAddSuCo(context: Context, suCo: SuCoMapResponseDTO) {
         val path = suCo.iconUrl ?: ""
         val fullUrl = if (path.startsWith("http")) path else "${AppConfig.HTTP_BASE_URL}$path"
 
         if (suCo.trangThaiXuLy == "HOAN_THANH") {
-            // Loại bỏ withContext(Dispatchers.Main) dư thừa vì StateFlow vốn dĩ đã Thread-safe
             val currentList = _suCoWithIcons.value.toMutableList()
             currentList.removeAll { it.first.id == suCo.id }
             _suCoWithIcons.value = currentList.toList()
@@ -322,10 +221,8 @@ class MapViewModel : ViewModel() {
 
     private suspend fun loadAllIcons(context: Context, list: List<SuCoMapResponseDTO>) {
         withContext(Dispatchers.IO) {
-            list.forEach { suCo ->
-                processAndAddSuCo(context, suCo)
-            }
-            Log.d("MapViewModel", "✅ Đã xử lý xong toàn bộ icon sự cố")
+            list.forEach { suCo -> processAndAddSuCo(context, suCo) }
+            Log.d("MapViewModel", "Đã xử lý xong toàn bộ icon sự cố")
         }
     }
 
@@ -346,15 +243,13 @@ class MapViewModel : ViewModel() {
                     val canvas = Canvas(output)
                     val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-                    // 🌟 SỬA ĐỒNG BỘ MÀU SẮC VỚI WEB ADMIN: Thay đổi từ trắng sang xám cho trường hợp NONE
                     val strokeColor = when (mucDo?.uppercase()?.trim()) {
-                        "HIGH" -> Color.RED                       // Đỏ nguy hiểm
-                        "MEDIUM" -> Color.rgb(241, 196, 15)      // Vàng/Cam sáng chuẩn (#f1c40f)
-                        "LOW" -> Color.rgb(46, 204, 113)         // Xanh lá mượt (#2ecc71)
-                        else -> Color.rgb(148, 163, 184)         // 🌟 MÀU XÁM chuẩn thương hiệu cho mức độ NONE (#94a3b8)
+                        "HIGH" -> Color.RED
+                        "MEDIUM" -> Color.rgb(241, 196, 15)
+                        "LOW" -> Color.rgb(46, 204, 113)
+                        else -> Color.rgb(148, 163, 184)
                     }
 
-                    // Tiến hành vẽ cái đuôi ghim nhọn chỉ xuống bản đồ
                     val path = Path().apply {
                         moveTo(centerX - 22f, size - 28f)
                         lineTo(centerX + 22f, size - 28f)
@@ -364,14 +259,10 @@ class MapViewModel : ViewModel() {
                     paint.color = strokeColor
                     canvas.drawPath(path, paint)
 
-                    // Vẽ vòng viền tròn ngoài ăn theo màu mức độ nguy hiểm
                     canvas.drawCircle(centerX, centerX, circleRadius + strokeThickness, paint)
-
-                    // Vẽ nền ruột trắng bên trong để làm nổi bật Icon sự cố giống hệt Web
                     paint.color = Color.WHITE
                     canvas.drawCircle(centerX, centerX, circleRadius, paint)
 
-                    // Đè icon png của sự cố (Ví dụ: icon ngập lụt, tai nạn) vào chính giữa vòng tròn
                     val innerSize = ((circleRadius - padding) * 2).toInt()
                     val left = (centerX - (innerSize / 2)).toInt()
                     val top = (centerX - (innerSize / 2)).toInt()
@@ -380,11 +271,12 @@ class MapViewModel : ViewModel() {
                     output
                 }
             } catch (e: Exception) {
-                android.util.Log.e("REALTIME_BUG", "💥 Lỗi tại hàm dựng Canvas Bitmap: ${e.message}")
+                android.util.Log.e("REALTIME_BUG", "Lỗi tại hàm dựng Canvas Bitmap: ${e.message}")
                 null
             }
         }
     }
+
     // --- 8. LOGIC ĐIỀU HƯỚNG TÌM ĐƯỜNG OSRM COOP ---
 
     fun setTravelMode(mode: String) { _travelMode.value = mode }
@@ -462,18 +354,16 @@ class MapViewModel : ViewModel() {
         setEndPoint(destPoint, destName)
         getFreeDirections()
     }
+
     fun stopLocationUpdates() {
-        android.util.Log.w("GPS_DEBUG", "🧹 Tiến hành gỡ bỏ lắng nghe GPS để bảo vệ Main Thread...")
-        // Nếu trong dự án bạn có viết hàm gỡ LocationCallback của FusedLocationProviderClient,
-        // hãy thực hiện gọi lệnh removeLocationUpdates ở đây.
-        // Ví dụ: fusedLocationClient?.removeLocationUpdates(locationCallback)
+        android.util.Log.w("GPS_DEBUG", "Tiến hành gỡ bỏ lắng nghe GPS để bảo vệ Main Thread...")
     }
+
     override fun onCleared() {
         super.onCleared()
-        android.util.Log.e("MAP_DEBUG", "💥 MapViewModel OnCleared! Khai tử toàn bộ luồng định vị và Socket.")
+        android.util.Log.e("MAP_DEBUG", "MapViewModel OnCleared! Khai tử toàn bộ luồng định vị và Socket.")
         try {
             stopLocationUpdates()
-            // Đóng socket hoàn toàn để tránh rò rỉ RxJava ngầm
             realtimeSocketManager = null
         } catch (e: Exception) {
             e.printStackTrace()
