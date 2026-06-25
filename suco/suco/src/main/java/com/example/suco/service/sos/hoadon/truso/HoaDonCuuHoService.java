@@ -16,6 +16,7 @@ import com.example.suco.mapper.hoadon.HoaDonCuuHoMapper;
 import com.example.suco.mapper.hoadon.ThanhToanCuuHoMapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,7 @@ public class HoaDonCuuHoService {
 
     @Autowired private ThanhToanHoaDonRepository thanhToanHoaDonRepository;
     @Autowired private ThanhToanCuuHoMapper thanhToanCuuHoMapper;
+    @Autowired private SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     public HoaDonTruSoResponseDTO taoHoaDon(HoaDonRequestDTO req, Long trusoId) {
@@ -67,11 +69,24 @@ public class HoaDonCuuHoService {
 
         sos.setHoaDon(saved);
         
-
-        // Lưu  nhật tín hiệu SOS
         tinHieuSOSRepository.save(sos);
 
-        return hoaDonMapper.toTruSoDTO(saved);
+        HoaDonTruSoResponseDTO responseDto = hoaDonMapper.toTruSoDTO(saved);
+
+        // Bắn tin cho nội bộ Trụ sở qua public topic
+        messagingTemplate.convertAndSend("/topic/truso/" + trusoId, responseDto);
+
+        // Bắn tin riêng cho Khách hàng (User) qua queue cá nhân
+        String khachHangUid = responseDto.getUserId();
+        if (khachHangUid != null) {
+            messagingTemplate.convertAndSendToUser(
+                khachHangUid,
+                "/queue/new-invoice",
+                responseDto
+            );
+        }
+
+        return responseDto;
     }
     public HoaDonDetailDTO layChiTietTongHop(Long hoaDonId) {
     // 1. Tìm hóa đơn trong DB

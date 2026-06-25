@@ -8,16 +8,12 @@ import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.hoadon.HoaDonCuuHoRepository;
 import com.example.suco.service.sos.hoadon.truso.HoaDonCuuHoService;
-
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map; // 🌟 ĐÃ THÊM IMPORT MAP ĐỂ HẾT LỖI
 
 @RestController
 @RequestMapping("/truso/hoa-don")
@@ -33,9 +29,6 @@ public class HoaDonSOSController {
     @Autowired
     private HoaDonCuuHoMapper hoaDonMapper; 
 
-    @Autowired 
-    private SimpMessagingTemplate messagingTemplate;
-
     @PostMapping("/tao")
 public ResponseEntity<?> tao(@RequestBody HoaDonRequestDTO request, HttpSession session) {
     try {
@@ -44,21 +37,8 @@ public ResponseEntity<?> tao(@RequestBody HoaDonRequestDTO request, HttpSession 
             return ResponseEntity.status(401).body("Lỗi: Phiên đăng nhập hết hạn.");
         }
 
-        // 1. Tạo hóa đơn xong, nhận DTO sạch (không có UID) để tí trả về cho Client
+        // 1. Tạo hóa đơn xong, nhận DTO sạch (không có UID) để trả về cho Client
         HoaDonTruSoResponseDTO response = hoaDonService.taoHoaDon(request, current.getId());
-
-        // 2. Bắn tin cho nội bộ Trụ sở
-        messagingTemplate.convertAndSend("/topic/truso/" + current.getId(), response);
-
-        String khachHangUid = response.getUserId();
-
-        if (khachHangUid != null) {
-        messagingTemplate.convertAndSendToUser(
-            khachHangUid,
-            "/queue/new-invoice",
-            response
-        );
-        }
 
         return ResponseEntity.ok(response);
     } catch (Exception e) {

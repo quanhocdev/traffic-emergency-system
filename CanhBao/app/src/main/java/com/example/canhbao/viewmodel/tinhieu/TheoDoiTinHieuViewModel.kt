@@ -9,7 +9,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
-import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSDetailResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSItemResponseDTO
@@ -17,7 +16,6 @@ import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -219,13 +217,13 @@ class TheoDoiTinHieuViewModel : ViewModel() {
             "${AppConfig.WS_BASE_URL}/ws-suco"
         )
 
-        // 🌟 Bọc toàn bộ các lệnh subscribe vào bên trong sự kiện OPENED
+        // Bọc toàn bộ các lệnh subscribe vào bên trong sự kiện OPENED
         mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
             when (lifecycleEvent.type) {
                 LifecycleEvent.Type.OPENED -> {
-                    Log.d("WebSocket_TinHieu", "🟢 Kết nối SOS thành công! Đang đăng ký các kênh bảo mật...")
+                    Log.d("WebSocket_TinHieu", "Kết nối SOS thành công! Đang đăng ký các kênh bảo mật...")
 
-                    // 1. SỬA KÊNH TRẠNG THÁI SOS: Ẩn danh hóa hoàn toàn, không cộng chuỗi UID nữa
+                    // 1. KÊNH TRẠNG THÁI SOS: Ẩn danh hóa hoàn toàn, không cộng chuỗi UID
                     mStompClient?.topic("/user/queue/sos-status")?.subscribe({
                         Log.d("WebSocket", "Nhận cập nhật trạng thái SOS riêng tư")
                         loadDataFromApi()
@@ -233,7 +231,7 @@ class TheoDoiTinHieuViewModel : ViewModel() {
                         Log.e("WebSocket", "SOS error: ${it.message}")
                     })
 
-                    // 2. SỬA KÊNH LỊCH SỬ (HISTORY): Ẩn danh hóa hoàn toàn
+                    // 2. KÊNH LỊCH SỬ: Ẩn danh hóa hoàn toàn
                     mStompClient?.topic("/user/queue/history")?.subscribe({
                         Log.d("WebSocket", "Nhận tín hiệu làm mới lịch sử (REFRESH)")
                         loadDataFromApi()
@@ -329,13 +327,13 @@ class TheoDoiTinHieuViewModel : ViewModel() {
     fun fetchDetailSOS(sosId: Long) {
         viewModelScope.launch {
             try {
-                // 💡 GIẢI PHÁP: Đẩy toàn bộ tác vụ lấy Token và gọi API sang IO Thread (Luồng nền)
+                // Đẩy toàn bộ tác vụ lấy Token và gọi API sang IO Thread (Luồng nền)
                 val response = withContext(Dispatchers.IO) {
-                    val token = getToken() // Chạy an toàn trên luồng nền, không sợ block Main Thread nữa
+                    val token = getToken() // Chạy an toàn trên luồng nền, không bị block Main Thread nữa
                     api.getTheoDoiSOSDetail(token, sosId)
                 }
 
-                // 🔄 Cập nhật UI State (Phải thực hiện trên Main Thread)
+                // Cập nhật UI State (Phải thực hiện trên Main Thread)
                 withContext(Dispatchers.Main) {
                     val currentMap = detailUiStateMap.toMutableMap()
                     currentMap[sosId] = response
@@ -344,7 +342,6 @@ class TheoDoiTinHieuViewModel : ViewModel() {
 
             } catch (e: Exception) {
                 Log.e("TheoDoiTinHieuViewModel", "Lỗi tải chi tiết SOS #$sosId: ${e.message}")
-                // Bạn có thể bổ sung xử lý UI tại đây nếu muốn, ví dụ: gán một trạng thái lỗi để tắt vòng xoay
             }
         }
     }
