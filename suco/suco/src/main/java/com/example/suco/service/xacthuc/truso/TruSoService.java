@@ -10,9 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.suco.service.location.GeocodingService;
 import com.example.suco.dto.info.truso.TruSoMapDto;
 import com.example.suco.dto.vanhanh.truso.TruSoCreateRequestDTO;
-import com.example.suco.dto.vanhanh.truso.TruSoResponseDTO;
 import com.example.suco.mapper.info.InfoTruSoMapper;
-import com.example.suco.mapper.vanhanh.truso.TruSoMapper;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.vanhanh.TruSoRepository;
 
@@ -21,12 +19,9 @@ import ch.hsr.geohash.GeoHash;
 @Service
 public class TruSoService {
 
-
-    @Autowired
-private TruSoMapper truSoMapper;
-
     @Autowired
     private InfoTruSoMapper infoTruSoMapper;
+
     @Autowired
     private TruSoRepository truSoRepository;
 
@@ -46,13 +41,13 @@ private TruSoMapper truSoMapper;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Transactional
-public TruSoResponseDTO createTruSo(TruSoCreateRequestDTO dto) {
+public TruSoMapDto createTruSo(TruSoCreateRequestDTO dto) {
 
-    TruSo truSo = truSoMapper.toEntity(dto);
+    TruSo truSo = infoTruSoMapper.toEntity(dto);
 
     TruSo saved = saveTruSo(truSo);
 
-    return truSoMapper.toResponseDTO(saved);
+    return infoTruSoMapper.toMapDto(saved);
 }
 
 @Transactional
@@ -140,18 +135,6 @@ public void deleteTruSo(Long id) {
     truSoRepository.delete(ts);
     messagingTemplate.convertAndSend("/topic/tru-so-delete", id);
 }
-
-
-
-    private double tinhKhoangCach(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
 
     public TruSo timTruSoTheoId(Long idTruSo) {
         return truSoRepository.findById(idTruSo).orElse(null);
