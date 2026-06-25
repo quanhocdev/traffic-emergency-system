@@ -8,7 +8,7 @@ stompClient.connect({}, function (frame) {
 
   stompClient.subscribe("/topic/su-co", function (message) {
     const suCoDto = JSON.parse(message.body);
-    console.log(" DỮ LIỆU REALTIME NHẬN ĐƯỢC:", suCoDto); // <-- THÊM DÒNG NÀY
+    console.log(" DỮ LIỆU REALTIME NHẬN ĐƯỢC:", suCoDto);
     const id = suCoDto.id;
 
     let tableRow = document.getElementById("report-" + id);

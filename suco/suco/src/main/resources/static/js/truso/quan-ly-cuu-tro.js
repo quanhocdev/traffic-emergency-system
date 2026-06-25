@@ -343,8 +343,7 @@ function checkEmptyList() {
     }
   }
 }
-// STOMP realtime subscription
-// Lưu trữ thông tin đếm ngược cho mỗi SOS
+
 var demNguocSOS = {};
 
 function connectRealtime() {
