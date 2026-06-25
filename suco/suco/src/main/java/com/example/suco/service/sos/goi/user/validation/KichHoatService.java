@@ -32,8 +32,9 @@ public class KichHoatService {
             mg.setTrangThai("ACTIVE");
             repo.save(mg);
 
-            messagingTemplate.convertAndSend(
-                    "/topic/package-status/" + mg.getUserId(),
+            messagingTemplate.convertAndSendToUser(
+                    mg.getUserId(),
+                    "/topic/package-status/",
                     "REFRESH"
             );
         }
