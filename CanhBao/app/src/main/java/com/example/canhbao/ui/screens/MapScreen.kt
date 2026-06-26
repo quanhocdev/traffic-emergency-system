@@ -61,12 +61,16 @@ import ua.naiksoftware.stomp.StompClient
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.Lifecycle
 import com.example.canhbao.data.model.info.truso.TruSoMapDto
+import com.example.canhbao.viewmodel.CameraViewModel
+import com.example.canhbao.viewmodel.TruSoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
     navController: NavController,
     mapViewModel: MapViewModel,
+    truSoViewModel: TruSoViewModel,
+    cameraViewModel: CameraViewModel,
     webrtcViewModel: WebRTCViewModel,
     alertViewModel: AlertViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel(),
@@ -102,13 +106,16 @@ fun MapScreen(
     val allRoutes by mapViewModel.allRoutes.collectAsState()
     val selectedIndex by mapViewModel.selectedRouteIndex.collectAsState()
     val suCoWithIcons by mapViewModel.suCoWithIcons.collectAsState()
-    val truSoWithIcons by mapViewModel.truSoWithIcons.collectAsState()
-    val cameraWithIcons by mapViewModel.cameraWithIcons.collectAsState()
+
     val suCoList by mapViewModel.suCoList.collectAsState()
 
     val showSuCo by mapViewModel.showSuCo.collectAsState()
-    val showTruSo by mapViewModel.showTruSo.collectAsState()
-    val showCamera by mapViewModel.showCamera.collectAsState()
+
+    val truSoWithIcons by truSoViewModel.truSoWithIcons.collectAsState()
+    val showTruSo by truSoViewModel.showTruSo.collectAsState()
+
+    val cameraWithIcons by cameraViewModel.cameraWithIcons.collectAsState()
+    val showCamera by cameraViewModel.showCamera.collectAsState()
 
     val suggestions by searchViewModel.placeSuggestions.collectAsState()
     var searchText by remember { mutableStateOf("") }
@@ -159,9 +166,9 @@ fun MapScreen(
 
         // Luôn gọi API làm mới danh sách sự cố để loại bỏ những gì đã bị xóa/hủy dưới DB
         mapViewModel.loadSuCoForMap(context)
-        mapViewModel.loadTruSoData(context)
-        mapViewModel.loadCameraData(context)
-        mapViewModel.startRealtimeSocket(context)
+        truSoViewModel.loadTruSoData(context)
+        cameraViewModel.loadCameraData(context)
+        mapViewModel.startRealtimeSocket(context, truSoViewModel, cameraViewModel)
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -431,7 +438,7 @@ fun MapScreen(
                         FilterChip(
                             modifier = Modifier.weight(1f),
                             selected = showTruSo,
-                            onClick = { mapViewModel.toggleFilter("TRU_SO") },
+                            onClick = { truSoViewModel.toggleFilter() },
                             label = { Text("Trụ sở", fontSize = 11.sp, maxLines = 1) },
                             leadingIcon = { Icon(Icons.Default.Business, null, modifier = Modifier.size(16.dp)) },
                             colors = FilterChipDefaults.filterChipColors(containerColor = Color.White, labelColor = Color(0xFF2196F3), iconColor = Color(0xFF2196F3), selectedContainerColor = Color(0xFF2196F3), selectedLabelColor = Color.White),
@@ -441,7 +448,7 @@ fun MapScreen(
                         FilterChip(
                             modifier = Modifier.weight(1f),
                             selected = showCamera,
-                            onClick = { mapViewModel.toggleFilter("CAMERA") },
+                            onClick = {cameraViewModel.toggleFilter() },
                             label = { Text("Camera", fontSize = 11.sp, maxLines = 1) },
                             leadingIcon = { Icon(Icons.Default.Videocam, null, modifier = Modifier.size(16.dp)) },
                             colors = FilterChipDefaults.filterChipColors(containerColor = Color.White, labelColor = Color.Black, iconColor = Color.Black, selectedContainerColor = Color.Black, selectedLabelColor = Color.White),
@@ -501,7 +508,7 @@ fun MapScreen(
                                         val rawId = handlingTruSoId!!
                                         val targetId = if (rawId.startsWith("TRU_SO_")) rawId else "TRU_SO_$rawId"
                                         if (stompClient.isConnected) {
-                                            webrtcViewModel.startCall(stompClient, targetId, maThietBi)
+                                            webrtcViewModel.startCall(targetId = targetId, myId = maThietBi)
                                         } else {
                                             Toast.makeText(context, "Kết nối máy chủ bận, hãy thử lại", Toast.LENGTH_SHORT).show()
                                         }
@@ -516,7 +523,7 @@ fun MapScreen(
                             }
                         }
                         IconButton(onClick = {
-                            webrtcViewModel.endCall(stompClient, maThietBi)
+                            webrtcViewModel.endCall (maThietBi)
                             sosViewModel.clear()
                         }) {
                             Icon(Icons.Default.CallEnd, null, tint = Color.Red)
@@ -662,7 +669,7 @@ fun MapScreen(
                                             onClick = {
                                                 // Trigger cuộc gọi thoại qua socket
                                                 if (stompClient.isConnected) {
-                                                    webrtcViewModel.startCall(stompClient, "TRU_SO_${truSo.id}", maThietBi)
+                                                    webrtcViewModel.startCall( "TRU_SO_${truSo.id}", maThietBi)
                                                 } else {
                                                     Toast.makeText(context, "Mất kết nối máy chủ", Toast.LENGTH_SHORT).show()
                                                 }
@@ -729,7 +736,6 @@ fun MapScreen(
                                             // ✅ ĐÃ SỬA: Dùng hàm startCall có sẵn trong WebRTCViewModel của bạn
                                             // Truyền chính xác: stompClient, targetId dạng "CAMERA_id", và maThietBi (myId)
                                             webrtcViewModel.startCall(
-                                                stompClient = stompClient,
                                                 targetId = "CAMERA_${camera.id}",
                                                 myId = maThietBi
                                             )
