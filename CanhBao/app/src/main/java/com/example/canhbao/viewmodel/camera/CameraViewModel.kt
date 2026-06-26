@@ -1,4 +1,4 @@
-package com.example.canhbao.viewmodel
+package com.example.canhbao.viewmodel.camera
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -15,64 +15,253 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class CameraViewModel : ViewModel() {
 
-    private val suCoApi: BaoCaoSuCoApi = BaoCaoSuCoRetrofit.api
+class CameraViewModel(
+    private val context: Context
+) : ViewModel() {
 
-    private val _cameraWithIcons = MutableStateFlow<List<Pair<CameraMapDto, Bitmap>>>(emptyList())
-    val cameraWithIcons = _cameraWithIcons.asStateFlow()
 
-    private val _showCamera = MutableStateFlow(true)
-    val showCamera = _showCamera.asStateFlow()
 
-    fun loadCameraData(context: Context) {
+    private val suCoApi: BaoCaoSuCoApi =
+        BaoCaoSuCoRetrofit.api
+
+
+
+    private val socket =
+        CameraSocket()
+
+
+
+    private val _cameraWithIcons =
+        MutableStateFlow<List<Pair<CameraMapDto, Bitmap>>>(
+            emptyList()
+        )
+
+    val cameraWithIcons =
+        _cameraWithIcons.asStateFlow()
+
+
+
+    private val _showCamera =
+        MutableStateFlow(true)
+
+    val showCamera =
+        _showCamera.asStateFlow()
+
+
+
+
+    init {
+
+        startSocket()
+
+    }
+
+
+
+
+
+    // ================= API =================
+
+
+    fun loadCameraData() {
+
         viewModelScope.launch {
-            try {
-                val list = suCoApi.getAllCamera()
-                val icon = createCameraIcon(context)
 
-                _cameraWithIcons.value = list.map { it to icon }
-                Log.d("CameraViewModel", "Load ${list.size} camera thành công từ API")
-            } catch (e: Exception) {
-                Log.e("CameraViewModel", "Load camera lỗi: ${e.message}")
+            try {
+
+                val list =
+                    suCoApi.getAllCamera()
+
+
+                val icon =
+                    createCameraIcon(
+                        context
+                    )
+
+
+                _cameraWithIcons.value =
+                    list.map {
+                        it to icon
+                    }
+
+
+
+                Log.d(
+                    "CameraViewModel",
+                    "Load ${list.size} camera"
+                )
+
+
+            } catch(e:Exception){
+
+                Log.e(
+                    "CameraViewModel",
+                    e.message ?: ""
+                )
+
             }
+
         }
+
     }
 
-    fun toggleFilter() {
-        _showCamera.value = !_showCamera.value
-    }
 
-    /**
-     * Được gọi trực tiếp sau khi MapViewModel nhận và parse JSON từ PublicSocketManager
-     * Đẩy việc xử lý danh sách và tạo Bitmap sang IO Thread để bảo toàn hiệu năng UI
-     */
-    fun updateCameraFromSocket(context: Context, camera: CameraMapDto) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                Log.d("CameraViewModel", "Realtime nhận cập nhật camera từ Socket (ID: ${camera.id})")
-                val icon = createCameraIcon(context)
-                val current = _cameraWithIcons.value.toMutableList()
 
-                // Nếu camera đã tồn tại, tiến hành xóa bản cũ để cập nhật đè bản mới
-                current.removeAll { it.first.id == camera.id }
-                current.add(camera to icon)
 
-                // Cập nhật lại State Flow đồng bộ trên Main Thread
-                withContext(Dispatchers.Main) {
-                    _cameraWithIcons.value = current.toList()
+
+
+    // ================= SOCKET =================
+
+
+    private fun startSocket(){
+
+        socket.subscribe(
+
+            object : CameraSocket.Callback {
+
+
+                override fun onCameraUpdate(
+                    camera: CameraMapDto
+                ){
+
+                    updateCameraFromSocket(
+                        camera
+                    )
+
                 }
-            } catch (e: Exception) {
-                Log.e("CameraViewModel", "Lỗi update camera từ socket: ${e.message}")
+
+
+
+                override fun onCameraDelete(
+                    id: Long
+                ){
+
+                    removeCameraFromSocket(
+                        id
+                    )
+
+                }
+
+
             }
-        }
+
+        )
+
     }
 
-    fun removeCameraFromSocket(id: Long) {
-        viewModelScope.launch(Dispatchers.Main) {
-            val updatedList = _cameraWithIcons.value.filter { it.first.id != id }
-            _cameraWithIcons.value = updatedList
-            Log.w("CameraViewModel", "Realtime đã xóa camera ID = $id khỏi bản đồ")
+
+
+
+
+
+    private fun updateCameraFromSocket(
+        camera: CameraMapDto
+    ){
+
+
+        viewModelScope.launch(
+            Dispatchers.IO
+        ){
+
+            try {
+
+
+                val icon =
+                    createCameraIcon(
+                        context
+                    )
+
+
+                val current =
+                    _cameraWithIcons.value
+                        .toMutableList()
+
+
+
+                current.removeAll {
+
+                    it.first.id == camera.id
+
+                }
+
+
+                current.add(
+                    camera to icon
+                )
+
+
+
+                withContext(
+                    Dispatchers.Main
+                ){
+
+                    _cameraWithIcons.value =
+                        current.toList()
+
+                }
+
+
+                Log.d(
+                    "REALTIME",
+                    "Update camera ${camera.id}"
+                )
+
+
+            }catch(e:Exception){
+
+                Log.e(
+                    "CameraViewModel",
+                    e.message ?: ""
+                )
+
+            }
+
+
         }
+
     }
+
+
+
+
+
+    private fun removeCameraFromSocket(
+        id:Long
+    ){
+
+        viewModelScope.launch(
+            Dispatchers.Main
+        ){
+
+            _cameraWithIcons.value =
+                _cameraWithIcons.value
+                    .filter {
+
+                        it.first.id != id
+
+                    }
+
+
+            Log.d(
+                "REALTIME",
+                "Delete camera $id"
+            )
+
+        }
+
+    }
+
+
+
+
+
+    fun toggleFilter(){
+
+        _showCamera.value =
+            !_showCamera.value
+
+    }
+
+
 }

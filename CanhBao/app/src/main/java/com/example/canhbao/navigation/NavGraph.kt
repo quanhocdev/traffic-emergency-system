@@ -17,7 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.canhbao.data.network.SocketClientProvider // 🌟 Dùng chung lớp Provider tập trung
+import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.ui.screens.*
 import com.example.canhbao.ui.screens.call.CallScreen
 import com.example.canhbao.ui.screens.theodoi.suco.ChiTietBaoCaoScreen
@@ -38,6 +38,8 @@ import com.example.canhbao.viewmodel.tinhieu.SOSViewModel
 import com.example.canhbao.viewmodel.tinhieu.TheoDoiTinHieuViewModel
 import com.example.canhbao.viewmodel.tinhieu.TinHieuSOSViewModel
 import com.example.canhbao.viewmodel.xacthuc.AuthViewModel
+import com.example.canhbao.viewmodel.camera.CameraViewModel
+import com.example.canhbao.viewmodel.truso.TruSoViewModel
 
 @Composable
 fun NavGraph(
@@ -75,8 +77,23 @@ fun NavGraph(
 
     // Khởi tạo các ViewModel hệ thống
     val mapViewModel: MapViewModel = viewModel()
-    val truSoViewModel: TruSoViewModel = viewModel()
-    val cameraViewModel: CameraViewModel = viewModel()
+
+    val truSoViewModel: TruSoViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return TruSoViewModel(context.applicationContext) as T
+            }
+        }
+    )
+
+    val cameraViewModel: CameraViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                return CameraViewModel(context.applicationContext) as T
+            }
+        }
+    )
+
     val sosViewModel: SOSViewModel = viewModel()
     val searchViewModel: SearchViewModel = viewModel()
     val callViewModel: CallViewModel = viewModel()

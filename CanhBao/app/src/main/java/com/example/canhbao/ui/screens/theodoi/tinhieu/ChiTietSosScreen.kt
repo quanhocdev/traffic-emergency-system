@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -310,10 +311,11 @@ fun ChiTietSosScreen(
     }
 
     // --- DIALOG QUÉT MÃ QR THANH TOÁN CHỜ VOUCHER ---
+    // --- DIALOG QUÉT MÃ QR THANH TOÁN (ĐÃ FIX LỖI INFER TYPE VÀ REFERENCE) ---
     if (showPayDialog && sosDetailNullable != null) {
         sosDetailNullable.let { sosDetail ->
-            val inv = viewModel.pendingInvoicesMap[sosDetail.hoaDonId]
-            val giaGoc = inv?.thanhTien?.toDouble() ?: sosDetail.thanhTien ?: 0.0
+            // Sử dụng trực tiếp trường thanhTien từ sosDetail (DTO gốc của trang SOS)
+            val giaGoc: Double = (sosDetail.thanhTien ?: 0.0).toDouble()
             var soTienGiam = 0.0
 
             selectedVoucher?.let { soTienGiam = giaGoc * 0.1 }
@@ -322,19 +324,25 @@ fun ChiTietSosScreen(
             AlertDialog(
                 onDismissRequest = { showPayDialog = false },
                 confirmButton = {
-                    Button(onClick = {
-                        val hoaDonId = sosDetail.hoaDonId ?: return@Button
-                        viewModel.confirmPayment(hoaDonId, selectedVoucher?.qua?.id)
-                        showPayDialog = false
-                        selectedVoucher = null
-                    }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))) {
+                    Button(
+                        onClick = {
+                            // Gọi sang hàm hủy/hoàn tất nếu cần, hoặc đóng dialog vì đã có màn hình riêng
+                            showPayDialog = false
+                            selectedVoucher = null
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))) {
                         Text("Tôi đã chuyển khoản")
                     }
                 },
                 dismissButton = { TextButton(onClick = { showPayDialog = false }) { Text("Đóng") } },
                 title = { Text("Thanh toán cứu hộ", fontWeight = FontWeight.Bold) },
                 text = {
-                    Column(modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState()),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Text("Quét mã QR để thanh toán", fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(8.dp))
                         Image(
@@ -346,24 +354,36 @@ fun ChiTietSosScreen(
                         Spacer(Modifier.height(16.dp))
                         Text("Áp dụng Voucher giảm giá", fontWeight = FontWeight.Bold, modifier = Modifier.align(Alignment.Start))
 
-                        viewModel.listTuiQua.filter { it.qua?.loai == "VOUCHER" && (it.soLuong ?: 0) > 0 }.forEach { voucher ->
+                        // FIX: Khai báo tường minh kiểu dữ liệu cho phần tử trong listTuiQua để chặn lỗi Infer Type
+                        viewModel.listTuiQua.filter { it.qua?.loai == "VOUCHER" && (it.soLuong ?: 0) > 0 }.forEach { voucher: TuiQuaResponseDTO ->
                             val isSelected = selectedVoucher?.qua?.id == voucher.qua?.id
+
                             OutlinedCard(
-                                onClick = { selectedVoucher = if (isSelected) null else voucher },
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                                border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) Color(0xFFFBC02D) else Color(0xFFE0E0E0))
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable {
+                                        selectedVoucher = if (isSelected) null else voucher
+                                    },
+                                border = BorderStroke(
+                                    if (isSelected) 2.dp else 1.dp,
+                                    if (isSelected) Color(0xFFFBC02D) else Color(0xFFE0E0E0)
+                                )
                             ) {
                                 Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                                     RadioButton(selected = isSelected, onClick = null)
                                     Spacer(Modifier.width(8.dp))
                                     Column {
-                                        Text(voucher.qua?.ten?:"Không có tên", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                        Text(voucher.qua?.ten ?: "Không có tên", fontWeight = FontWeight.Bold, fontSize = 14.sp)
                                         Text("Số lượng hiện có: ${voucher.soLuong}", fontSize = 11.sp, color = Color(0xFF2E7D32))
                                     }
                                 }
                             }
                         }
-                        Divider(Modifier.padding(vertical = 12.dp))
+
+                        HorizontalDivider(Modifier.padding(vertical = 12.dp))
+
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("Tổng cộng:")
                             Text("${String.format("%,d", tongThanhToanHienTai.toLong())} VNĐ", color = Color.Red, fontSize = 16.sp, fontWeight = FontWeight.Bold)

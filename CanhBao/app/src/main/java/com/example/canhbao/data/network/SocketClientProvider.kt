@@ -20,22 +20,21 @@ object SocketClientProvider {
         }
 
     fun initNewClient() {
-        // Kỹ thuật an toàn: Nếu client cũ đang kết nối tốt, tuyệt đối KHÔNG khởi tạo lại làm sập luồng
         if (_stompClient != null && _stompClient!!.isConnected) {
-            Log.d("SOCKET_DEBUG", "✅ Instance Stomp cũ vẫn đang kết nối tốt. Bỏ qua lệnh tạo mới.")
+            Log.d("SOCKET_DEBUG", " Instance Stomp cũ vẫn đang kết nối tốt. Bỏ qua lệnh tạo mới.")
             return
         }
 
-        Log.w("SOCKET_DEBUG", "🧹 Tiến hành dọn dẹp sạch luồng cũ và cấu hình cổng mạng mới...")
+        Log.w("SOCKET_DEBUG", " Tiến hành dọn dẹp sạch luồng cũ và cấu hình cổng mạng mới...")
 
         try {
             // Chỉ disconnect khi thực sự có instance cũ đang chạy dở dang
             _stompClient?.disconnect()
         } catch (e: Exception) {
-            Log.e("SOCKET_DEBUG", "❌ Lỗi dọn dẹp kết nối: ${e.message}")
+            Log.e("SOCKET_DEBUG", " Lỗi dọn dẹp kết nối: ${e.message}")
         }
 
-        // TỐI ƯU OKHTTP: Tăng timeout để tránh rớt mạng mạng LAN/WiFi thất thường
+        // Tăng timeout để tránh rớt mạng
         val customOkHttpClient = OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(10, TimeUnit.SECONDS)

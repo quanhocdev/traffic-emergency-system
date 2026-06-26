@@ -61,8 +61,8 @@ import ua.naiksoftware.stomp.StompClient
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.Lifecycle
 import com.example.canhbao.data.model.info.truso.TruSoMapDto
-import com.example.canhbao.viewmodel.CameraViewModel
-import com.example.canhbao.viewmodel.TruSoViewModel
+import com.example.canhbao.viewmodel.camera.CameraViewModel
+import com.example.canhbao.viewmodel.truso.TruSoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -162,13 +162,18 @@ fun MapScreen(
         }
     }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-        android.util.Log.d("MAP_DEBUG", "Màn hình Map được mở lại - Tiến hành đồng bộ làm sạch dữ liệu...")
 
-        // Luôn gọi API làm mới danh sách sự cố để loại bỏ những gì đã bị xóa/hủy dưới DB
+        android.util.Log.d(
+            "MAP_DEBUG",
+            "Màn hình Map resume"
+        )
+
         mapViewModel.loadSuCoForMap(context)
-        truSoViewModel.loadTruSoData(context)
-        cameraViewModel.loadCameraData(context)
-        mapViewModel.startRealtimeSocket(context, truSoViewModel, cameraViewModel)
+
+        truSoViewModel.loadTruSoData()
+
+        cameraViewModel.loadCameraData()
+
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -202,6 +207,28 @@ fun MapScreen(
                 .withFillOpacity(0.15)
                 .withFillOutlineColor("#4285F4")
             manager.create(polygonOptions)
+        }
+    }
+
+    LaunchedEffect(suCoWithIcons, pointManager, showSuCo) {
+        val manager = pointManager ?: return@LaunchedEffect
+        manager.deleteAll()
+        if (showSuCo) {
+            val options = suCoWithIcons.map { (suCo, bmp) ->
+                PointAnnotationOptions()
+                    .withPoint(Point.fromLngLat(suCo.kinhDo, suCo.viDo))
+                    .withIconImage(bmp)
+                    .withIconSize(1.0)
+                    // Thay vì dùng trường không tồn tại, ta dùng chuỗi cố định
+                    .withTextField("Sự cố #${suCo.id}")
+                    .withTextOffset(listOf(0.0, 2.3))
+                    .withTextColor(android.graphics.Color.RED)
+                    .withTextSize(11.0)
+                    .withTextHaloColor(android.graphics.Color.WHITE)
+                    .withTextHaloWidth(2.0)
+            }
+            manager.create(options)
+            mapView?.invalidate()
         }
     }
 
