@@ -10,24 +10,16 @@ class UserSocketManager(
 ) {
 
     interface Callback {
-
         fun onHistoryRefresh()
-
         fun onPackageRefresh()
-
         fun onSosRefresh()
-
         fun onInvoiceUpdate(json: String)
-
         fun onUserStats(json: String)
-
         fun onNewInvoice(json: String)
-
         fun onPaymentUpdate(json: String)
     }
 
     fun subscribe(callback: Callback) {
-
 
         // ================= HISTORY =================
 
@@ -52,10 +44,7 @@ class UserSocketManager(
 
             })
 
-
-
         // ================= PACKAGE =================
-
 
         stompClient.topic("/user/queue/package-status")
             .subscribeOn(Schedulers.io())
@@ -79,11 +68,7 @@ class UserSocketManager(
 
             })
 
-
-
-
         // ================= SOS =================
-
 
         stompClient.topic("/user/queue/sos-status")
             .subscribeOn(Schedulers.io())
@@ -129,7 +114,6 @@ class UserSocketManager(
 
         // ================= NEW INVOICE =================
 
-
         stompClient.topic("/user/queue/new-invoice")
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -149,13 +133,7 @@ class UserSocketManager(
 
             })
 
-
-
-
-
-
         // ================= PAYMENT =================
-
 
         stompClient.topic("/user/queue/payment")
             .subscribeOn(Schedulers.io())
@@ -165,8 +143,6 @@ class UserSocketManager(
                 callback.onPaymentUpdate(
                     it.payload
                 )
-
-
             }, {
 
                 Log.e(
@@ -176,12 +152,7 @@ class UserSocketManager(
 
             })
 
-
-
-
-
         // ================= USER STATS =================
-
 
         stompClient.topic("/user/queue/user-stats")
             .subscribeOn(Schedulers.io())
@@ -192,18 +163,13 @@ class UserSocketManager(
                     it.payload
                 )
 
-
             }, {
-
                 Log.e(
                     "UserSocket",
                     "UserStats error: ${it.message}"
                 )
 
             })
-
-
-
         Log.d(
             "UserSocket",
             "Subscribed all user topics"

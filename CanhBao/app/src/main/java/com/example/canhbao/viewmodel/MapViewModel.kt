@@ -9,15 +9,14 @@ import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
-import com.example.canhbao.data.model.info.camera.CameraMapDto
-import com.example.canhbao.data.model.info.truso.TruSoMapDto
+
 import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoApi
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.example.canhbao.data.network.PublicSocketManager
 import com.example.canhbao.data.network.SocketClientProvider
-import com.google.gson.Gson // Sử dụng Gson để parse JSON nhận từ PublicSocketManager
+import com.example.canhbao.viewmodel.suco.SuCoSocket
 import com.mapbox.geojson.Point
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -31,10 +30,10 @@ class MapViewModel : ViewModel() {
 
     private val client = OkHttpClient()
     private val suCoApi: BaoCaoSuCoApi = BaoCaoSuCoRetrofit.api
-    private val gson = Gson()
 
-    // Quản lý instance PublicSocketManager dựa trên file bạn đã viết
-    private var publicSocketManager: PublicSocketManager? = null
+
+    private val suCoSocket = SuCoSocket()
+    private lateinit var appContext: Context
 
     // --- 1. QUẢN LÝ TÌM ĐƯỜNG & ĐIỀU HƯỚNG ---
     private val _startPoint = MutableStateFlow<Point?>(null)
@@ -83,22 +82,73 @@ class MapViewModel : ViewModel() {
     // --- 5. CÁC HÀM TẢI DỮ LIỆU BAN ĐẦU TỪ API ---
 
     fun loadSuCoForMap(context: Context) {
+
+        appContext = context.applicationContext
+
         viewModelScope.launch {
+
             try {
+
                 _suCoWithIcons.value = emptyList()
                 _suCoList.value = emptyList()
 
                 val list = suCoApi.getSuCoForMap()
-                _suCoList.value = list
-                loadAllIcons(context, list)
 
-                Log.d("MAP_DEBUG", "✅ Đã đồng bộ mới danh sách sự cố thành công. Số lượng: ${list.size}")
-            } catch (e: Exception) {
+                _suCoList.value = list
+
+                loadAllIcons(
+                    appContext,
+                    list
+                )
+
+            } catch(e:Exception){
                 e.printStackTrace()
             }
         }
     }
 
+    init {
+        startRealtimeSocket()
+    }
+
+
+
+    private fun startRealtimeSocket(){
+
+
+        suCoSocket.subscribe(
+
+            object: SuCoSocket.Callback {
+
+
+                override fun onSuCoUpdate(
+                    suCo: SuCoMapResponseDTO
+                ){
+
+                    updateSuCoFromSocket(
+                        suCo
+                    )
+                }
+
+
+
+                override fun onSuCoDelete(
+                    id: Long
+                ){
+
+                    removeSuCoFromSocket(
+                        id
+                    )
+
+                }
+
+            }
+        )
+
+
+        suCoSocket.start()
+
+    }
     fun toggleFilter(type: String) {
         if (type == "SU_CO") {
             _showSuCo.value = !_showSuCo.value
@@ -106,16 +156,18 @@ class MapViewModel : ViewModel() {
     }
 
 
-    // --- 6. XỬ LÝ ĐỒNG BỘ REALTIME TỪ SOCKET MANAGER BẮN QUA ---
-
-    fun updateSuCoFromSocket(context: Context, suCo: SuCoMapResponseDTO) {
+    fun updateSuCoFromSocket(suCo: SuCoMapResponseDTO) {
         viewModelScope.launch(Dispatchers.IO) {
             Log.d("REALTIME_BUG", "🔄 ViewModel bắt đầu xử lý sự cố ID = ${suCo.id}")
 
             val currentList = _suCoList.value.toMutableList()
+
             currentList.removeAll { it.id == suCo.id }
             currentList.add(suCo)
-            _suCoList.value = currentList
+
+            withContext(Dispatchers.Main) {
+                _suCoList.value = currentList
+            }
 
             if (suCo.trangThaiXuLy == "HOAN_THANH") {
                 val currentWithIcons = _suCoWithIcons.value.toMutableList()
@@ -130,7 +182,7 @@ class MapViewModel : ViewModel() {
             val path = suCo.iconUrl ?: ""
             val fullUrl = if (path.startsWith("http")) path else "${AppConfig.HTTP_BASE_URL}$path"
 
-            val bmp = loadMarkerIcon(context, fullUrl, suCo.mucDoSuCo)
+            val bmp = loadMarkerIcon(appContext, fullUrl, suCo.mucDoSuCo)
             if (bmp != null) {
                 val currentWithIcons = _suCoWithIcons.value.toMutableList()
                 currentWithIcons.removeAll { it.first.id == suCo.id }
@@ -155,74 +207,6 @@ class MapViewModel : ViewModel() {
             Log.d("REALTIME_BUG", "Đã xóa sự cố $id khỏi State.")
         }
     }
-
-    // KHỞI CHẠY KẾT NỐI VÀ ĐĂNG KÝ THEO PUBLIC_SOCKET_MANAGER
-    fun startRealtimeSocket(
-        context: Context,
-        truSoViewModel: TruSoViewModel,
-        cameraViewModel: CameraViewModel
-    ) {
-        val currentClient = SocketClientProvider.stompClient
-        if (publicSocketManager != null && currentClient.isConnected) return
-
-        publicSocketManager = null
-        SocketClientProvider.initNewClient()
-        val activeClient = SocketClientProvider.stompClient
-
-        // Khởi tạo PublicSocketManager theo đúng cấu trúc file của bạn
-        publicSocketManager = PublicSocketManager(activeClient).apply {
-            subscribe(object : PublicSocketManager.Callback {
-
-                override fun onSuCoUpdate(json: String) {
-                    try {
-                        val suCo = gson.fromJson(json, SuCoMapResponseDTO::class.java)
-                        updateSuCoFromSocket(context, suCo)
-                    } catch (e: Exception) {
-                        Log.e("MAP_SOCKET", "Lỗi parse SuCo: ${e.message}")
-                    }
-                }
-
-                override fun onSuCoDelete(id: Long) {
-                    removeSuCoFromSocket(id)
-                }
-
-                override fun onTruSoUpdate(json: String) {
-                    try {
-                        val truSo = gson.fromJson(json, TruSoMapDto::class.java)
-                        truSoViewModel.updateTruSoFromSocket(context, truSo)
-                    } catch (e: Exception) {
-                        Log.e("MAP_SOCKET", "Lỗi parse TruSo: ${e.message}")
-                    }
-                }
-
-                override fun onTruSoDelete(id: Long) {
-                    truSoViewModel.removeTruSoFromSocket(id)
-                }
-
-                override fun onCameraUpdate(json: String) {
-                    try {
-                        val camera = gson.fromJson(json, CameraMapDto::class.java)
-                        cameraViewModel.updateCameraFromSocket(context, camera)
-                    } catch (e: Exception) {
-                        Log.e("MAP_SOCKET", "Lỗi parse Camera: ${e.message}")
-                    }
-                }
-
-                override fun onCameraDelete(id: Long) {
-                    cameraViewModel.removeCameraFromSocket(id)
-                }
-
-                override fun onPublicFundUpdate(json: String) {
-                    Log.d("MAP_SOCKET", "Quỹ công khai cập nhật: $json")
-                    // Triển khai thêm cập nhật Quỹ tại đây nếu cần thiết
-                }
-            })
-        }
-        activeClient.connect()
-    }
-
-
-    // --- 7. LOGIC XỬ LÝ VẼ ĐÈ MÀU MARKER SỰ CỐ ---
 
     private suspend fun processAndAddSuCo(context: Context, suCo: SuCoMapResponseDTO) {
         val path = suCo.iconUrl ?: ""
@@ -384,13 +368,10 @@ class MapViewModel : ViewModel() {
     }
 
     override fun onCleared() {
+
         super.onCleared()
-        Log.e("MAP_DEBUG", "MapViewModel OnCleared! Khai tử toàn bộ luồng định vị và Socket.")
-        try {
-            stopLocationUpdates()
-            publicSocketManager = null
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+
+        stopLocationUpdates()
+
     }
 }

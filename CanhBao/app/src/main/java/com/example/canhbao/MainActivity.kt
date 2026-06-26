@@ -45,7 +45,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun dangKyHomThuCuocGoi() {
-        // Lấy StompClient tập trung từ Provider của bạn
         val sharedStompClient = SocketClientProvider.stompClient
 
         val disposable = sharedStompClient.lifecycle()
@@ -55,7 +54,8 @@ class MainActivity : ComponentActivity() {
                 when (lifecycleEvent.type) {
                     LifecycleEvent.Type.OPENED -> {
                         Log.w("WebRTC_Debug", "🤝 Socket hệ thống đã MỞ CỬA! Tiến hành đăng ký hòm thư cuộc gọi...")
-                        callViewModel.start(applicationContext, sharedStompClient, webrtcViewModel)
+                        // 🛠️ ĐÃ SỬA: Đổi webrtcViewModel lên trước sharedStompClient
+                        callViewModel.start(applicationContext, webrtcViewModel)
                     }
                     else -> {}
                 }
@@ -65,10 +65,10 @@ class MainActivity : ComponentActivity() {
 
         compositeDisposable.add(disposable)
 
-        // Trường hợp app đã kết nối Socket từ trước đó rồi (Lớp OPENED đã kích hoạt trước)
         if (sharedStompClient.isConnected) {
             Log.w("WebRTC_Debug", "⚡ Socket hệ thống đã KẾT NỐI SẴN! Đăng ký hòm thư cuộc gọi luôn...")
-            callViewModel.start(applicationContext, sharedStompClient, webrtcViewModel)
+            // 🛠️ ĐÃ SỬA: Đổi webrtcViewModel lên trước sharedStompClient ở đây nữa
+            callViewModel.start(applicationContext, webrtcViewModel)
         }
     }
 

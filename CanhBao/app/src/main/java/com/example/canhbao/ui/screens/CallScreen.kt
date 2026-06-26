@@ -248,7 +248,7 @@ fun CallScreen(
                     if (callState == "INCOMING") {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             FilledIconButton(
-                                onClick = { webrtcViewModel.acceptCall(stompClient, maThietBi) },
+                                onClick = { webrtcViewModel.acceptCall( maThietBi) },
                                 modifier = Modifier.size(68.dp),
                                 colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFF2E7D32))
                             ) {
@@ -267,7 +267,7 @@ fun CallScreen(
                     // NÚT CÚP MÁY VÀ TỪ CHỐI (Luôn hiển thị)
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         FilledIconButton(
-                            onClick = { webrtcViewModel.endCall(stompClient, maThietBi) },
+                            onClick = { webrtcViewModel.endCall( maThietBi) },
                             modifier = Modifier.size(68.dp),
                             colors = IconButtonDefaults.filledIconButtonColors(containerColor = Color(0xFFC62828))
                         ) {
