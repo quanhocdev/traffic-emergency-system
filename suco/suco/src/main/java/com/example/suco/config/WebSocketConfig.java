@@ -26,16 +26,13 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         te.setThreadNamePrefix("ws-heartbeat-thread-");
         te.initialize();
 
-        // Thêm cấu hình Broker
-        config.enableSimpleBroker("/topic", "/queue"); // Thêm "/queue" phục vụ gửi tin nhắn riêng tư
-        config.setApplicationDestinationPrefixes("/app");
-        
-        // Bật tiền tố định tuyến cá nhân: Mặc định Spring sẽ map các kênh "/user/..." thành kênh riêng biệt
-        config.setUserDestinationPrefix("/user");
-
         config.enableSimpleBroker("/topic", "/queue")
-              .setHeartbeatValue(new long[]{20000, 20000})
-              .setTaskScheduler(te);
+            .setHeartbeatValue(new long[]{20000, 20000})
+            .setTaskScheduler(te);
+
+        config.setApplicationDestinationPrefixes("/app");
+
+        config.setUserDestinationPrefix("/user");
     }
 
     @Override
