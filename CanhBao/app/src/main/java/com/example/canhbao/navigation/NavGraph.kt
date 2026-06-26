@@ -42,18 +42,17 @@ import com.example.canhbao.viewmodel.xacthuc.AuthViewModel
 @Composable
 fun NavGraph(
     authViewModel: AuthViewModel,
-    webrtcViewModel: WebRTCViewModel // 🌟 1. SỬA TẠI ĐÂY: Mở cổng nhận tham số webrtcViewModel từ MainActivity truyền xuống
+    webrtcViewModel: WebRTCViewModel
 ) {
     val navController = rememberNavController()
     val context = LocalContext.current
 
-    // 🌟 2. SỬA TẠI ĐÂY: Lấy instance duy nhất tập trung của toàn app, loại bỏ đoạn khởi tạo cục bộ cũ lãng phí bộ nhớ
     val stompClient = SocketClientProvider.stompClient
 
     // Bộ lắng nghe trạng thái cuộc gọi toàn cục
     val callState by webrtcViewModel.callState.collectAsState()
 
-    // 🌟 3. THÊM MỚI: Tự động chuyển hướng sang màn hình đàm thoại khi có cuộc gọi tới bất kể đang ở màn hình nào
+    // Tự động chuyển hướng sang màn hình đàm thoại khi có cuộc gọi tới bất kể đang ở màn hình nào
     LaunchedEffect(callState) {
         if (callState == "INCOMING") {
             navController.navigate("call_screen") {
@@ -67,15 +66,17 @@ fun NavGraph(
         try {
             if (!stompClient.isConnected) {
                 stompClient.connect()
-                android.util.Log.d("NavGraph", "🟢 Đã phát lệnh kết nối STOMP hệ thống thành công.")
+                android.util.Log.d("NavGraph", "Đã phát lệnh kết nối STOMP hệ thống thành công.")
             }
         } catch (e: Exception) {
-            android.util.Log.e("NavGraph", "🔴 Lỗi khi cố gắng kết nối STOMP: ${e.message}")
+            android.util.Log.e("NavGraph", "Lỗi khi cố gắng kết nối STOMP: ${e.message}")
         }
     }
 
     // Khởi tạo các ViewModel hệ thống
     val mapViewModel: MapViewModel = viewModel()
+    val truSoViewModel: TruSoViewModel = viewModel()
+    val cameraViewModel: CameraViewModel = viewModel()
     val sosViewModel: SOSViewModel = viewModel()
     val searchViewModel: SearchViewModel = viewModel()
     val callViewModel: CallViewModel = viewModel()
@@ -120,17 +121,19 @@ fun NavGraph(
             MapScreen(
                 navController = navController,
                 mapViewModel = mapViewModel,
-                webrtcViewModel = webrtcViewModel, // Dùng chung instance
+                truSoViewModel = truSoViewModel,
+                cameraViewModel = cameraViewModel,
+                webrtcViewModel = webrtcViewModel,
                 alertViewModel = alertViewModel,
                 searchViewModel = searchViewModel,
                 sosViewModel = sosViewModel,
-                stompClient = stompClient, // Gắn cổng socket tập trung
+                stompClient = stompClient,
                 isLoggedIn = currentUser != null,
                 onReportClick = { navController.navigate("bao_cao_su_co") }
             )
         }
 
-        // 🌟 4. CẬP NHẬT ROUTE: Đăng ký màn hình đàm thoại độc lập
+        // Đăng ký màn hình đàm thoại độc lập
         composable("call_screen") {
             CallScreen(
                 navController = navController,
