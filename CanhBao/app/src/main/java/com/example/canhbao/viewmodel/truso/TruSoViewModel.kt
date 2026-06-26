@@ -32,17 +32,18 @@ class TruSoViewModel : ViewModel() {
                 val icon = createTruSoMarkerBitmap(context)
                 _truSoWithIcons.value = list.map { it to icon }
                 Log.d("TruSoViewModel", "Load API: Đã lấy ${list.size} trụ sở")
-            } catch (e: Exception) { e.printStackTrace() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
-
     fun toggleFilter() {
         _showTruSo.value = !_showTruSo.value
     }
-
+    // Được gọi trực tiếp sau khi MapViewModel nhận và parse JSON từ PublicSocketManager
     fun updateTruSoFromSocket(context: Context, truSo: TruSoMapDto) {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d("REALTIME_BUG", "TruSoViewModel xử lý Trụ sở (ID: ${truSo.id})")
+            Log.d("REALTIME_BUG", "TruSoViewModel xử lý Trụ sở từ Socket (ID: ${truSo.id})")
             val icon = createTruSoMarkerBitmap(context)
             val current = _truSoWithIcons.value.toMutableList()
             current.removeAll { it.first.id == truSo.id }
@@ -53,12 +54,12 @@ class TruSoViewModel : ViewModel() {
             }
         }
     }
-
+    // Được gọi trực tiếp khi MapViewModel bắt được sự kiện onTruSoDelete(id) từ PublicSocketManager
     fun removeTruSoFromSocket(id: Long) {
         viewModelScope.launch(Dispatchers.Main) {
             val updatedTruSo = _truSoWithIcons.value.filter { it.first.id != id }
             _truSoWithIcons.value = updatedTruSo
-            Log.w("REALTIME_BUG", "TruSoViewModel đã xóa trụ sở ID = $id")
+            Log.w("REALTIME_BUG", "TruSoViewModel đã xóa trụ sở ID = $id khỏi bản đồ")
         }
     }
 }

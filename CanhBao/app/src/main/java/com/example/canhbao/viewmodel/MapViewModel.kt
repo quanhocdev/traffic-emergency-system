@@ -9,14 +9,15 @@ import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
-import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.data.model.info.camera.CameraMapDto
 import com.example.canhbao.data.model.info.truso.TruSoMapDto
 import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoApi
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
-import com.example.canhbao.viewmodel.helper.RealtimeSocketManager
+import com.example.canhbao.data.network.PublicSocketManager
+import com.example.canhbao.data.network.SocketClientProvider
+import com.google.gson.Gson // Sử dụng Gson để parse JSON nhận từ PublicSocketManager
 import com.mapbox.geojson.Point
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -30,6 +31,10 @@ class MapViewModel : ViewModel() {
 
     private val client = OkHttpClient()
     private val suCoApi: BaoCaoSuCoApi = BaoCaoSuCoRetrofit.api
+    private val gson = Gson()
+
+    // Quản lý instance PublicSocketManager dựa trên file bạn đã viết
+    private var publicSocketManager: PublicSocketManager? = null
 
     // --- 1. QUẢN LÝ TÌM ĐƯỜNG & ĐIỀU HƯỚNG ---
     private val _startPoint = MutableStateFlow<Point?>(null)
@@ -87,7 +92,7 @@ class MapViewModel : ViewModel() {
                 _suCoList.value = list
                 loadAllIcons(context, list)
 
-                android.util.Log.d("MAP_DEBUG", "✅ Đã đồng bộ mới danh sách sự cố thành công. Số lượng: ${list.size}")
+                Log.d("MAP_DEBUG", "✅ Đã đồng bộ mới danh sách sự cố thành công. Số lượng: ${list.size}")
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -105,7 +110,7 @@ class MapViewModel : ViewModel() {
 
     fun updateSuCoFromSocket(context: Context, suCo: SuCoMapResponseDTO) {
         viewModelScope.launch(Dispatchers.IO) {
-            android.util.Log.d("REALTIME_BUG", "🔄 ViewModel bắt đầu xử lý sự cố ID = ${suCo.id}")
+            Log.d("REALTIME_BUG", "🔄 ViewModel bắt đầu xử lý sự cố ID = ${suCo.id}")
 
             val currentList = _suCoList.value.toMutableList()
             currentList.removeAll { it.id == suCo.id }
@@ -118,7 +123,7 @@ class MapViewModel : ViewModel() {
                 withContext(Dispatchers.Main) {
                     _suCoWithIcons.value = currentWithIcons.toList()
                 }
-                android.util.Log.d("REALTIME_BUG", "❌ Đã xóa sự cố hoàn thành khỏi bản đồ (ID = ${suCo.id})")
+                Log.d("REALTIME_BUG", "❌ Đã xóa sự cố hoàn thành khỏi bản đồ (ID = ${suCo.id})")
                 return@launch
             }
 
@@ -134,7 +139,7 @@ class MapViewModel : ViewModel() {
                 withContext(Dispatchers.Main) {
                     _suCoWithIcons.value = currentWithIcons.toList()
                 }
-                android.util.Log.d("REALTIME_BUG", "✅ Vẽ đè Icon thành công! Đã đẩy vào StateFlow.")
+                Log.d("REALTIME_BUG", "✅ Vẽ đè Icon thành công! Đã đẩy vào StateFlow.")
             }
         }
     }
@@ -147,50 +152,69 @@ class MapViewModel : ViewModel() {
             val updatedWithIcons = _suCoWithIcons.value.filter { it.first.id != id }
             _suCoWithIcons.value = updatedWithIcons
 
-            android.util.Log.d("REALTIME_BUG", "🔥 Đã xóa sự cố $id khỏi State.")
+            Log.d("REALTIME_BUG", "Đã xóa sự cố $id khỏi State.")
         }
     }
 
-    private var realtimeSocketManager: RealtimeSocketManager? = null
-
+    // KHỞI CHẠY KẾT NỐI VÀ ĐĂNG KÝ THEO PUBLIC_SOCKET_MANAGER
     fun startRealtimeSocket(
         context: Context,
         truSoViewModel: TruSoViewModel,
         cameraViewModel: CameraViewModel
     ) {
         val currentClient = SocketClientProvider.stompClient
-        if (realtimeSocketManager != null && currentClient.isConnected) return
+        if (publicSocketManager != null && currentClient.isConnected) return
 
-        realtimeSocketManager = null
+        publicSocketManager = null
         SocketClientProvider.initNewClient()
         val activeClient = SocketClientProvider.stompClient
 
-        realtimeSocketManager = RealtimeSocketManager(context, activeClient).apply {
-            subscribe(object : RealtimeSocketManager.Callback {
-                override fun onSuCoUpdate(suCo: SuCoMapResponseDTO) {
-                    updateSuCoFromSocket(context, suCo)
+        // Khởi tạo PublicSocketManager theo đúng cấu trúc file của bạn
+        publicSocketManager = PublicSocketManager(activeClient).apply {
+            subscribe(object : PublicSocketManager.Callback {
+
+                override fun onSuCoUpdate(json: String) {
+                    try {
+                        val suCo = gson.fromJson(json, SuCoMapResponseDTO::class.java)
+                        updateSuCoFromSocket(context, suCo)
+                    } catch (e: Exception) {
+                        Log.e("MAP_SOCKET", "Lỗi parse SuCo: ${e.message}")
+                    }
                 }
 
-                override fun onSuCoRemove(id: Long) {
+                override fun onSuCoDelete(id: Long) {
                     removeSuCoFromSocket(id)
                 }
 
-                // ỦY QUYỀN TRỌN GÓI SANG CHO TRUSO_VIEWMODEL
-                override fun onTruSoUpdate(truSo: TruSoMapDto) {
-                    truSoViewModel.updateTruSoFromSocket(context, truSo)
+                override fun onTruSoUpdate(json: String) {
+                    try {
+                        val truSo = gson.fromJson(json, TruSoMapDto::class.java)
+                        truSoViewModel.updateTruSoFromSocket(context, truSo)
+                    } catch (e: Exception) {
+                        Log.e("MAP_SOCKET", "Lỗi parse TruSo: ${e.message}")
+                    }
                 }
 
-                override fun onTruSoRemove(id: Long) {
+                override fun onTruSoDelete(id: Long) {
                     truSoViewModel.removeTruSoFromSocket(id)
                 }
 
-                // ỦY QUYỀN TRỌN GÓI SANG CHO CAMERA_VIEWMODEL
-                override fun onCameraUpdate(camera: CameraMapDto) {
-                    cameraViewModel.updateCameraFromSocket(context, camera)
+                override fun onCameraUpdate(json: String) {
+                    try {
+                        val camera = gson.fromJson(json, CameraMapDto::class.java)
+                        cameraViewModel.updateCameraFromSocket(context, camera)
+                    } catch (e: Exception) {
+                        Log.e("MAP_SOCKET", "Lỗi parse Camera: ${e.message}")
+                    }
                 }
 
-                override fun onCameraRemove(id: Long) {
+                override fun onCameraDelete(id: Long) {
                     cameraViewModel.removeCameraFromSocket(id)
+                }
+
+                override fun onPublicFundUpdate(json: String) {
+                    Log.d("MAP_SOCKET", "Quỹ công khai cập nhật: $json")
+                    // Triển khai thêm cập nhật Quỹ tại đây nếu cần thiết
                 }
             })
         }
@@ -271,7 +295,7 @@ class MapViewModel : ViewModel() {
                     output
                 }
             } catch (e: Exception) {
-                android.util.Log.e("REALTIME_BUG", "Lỗi tại hàm dựng Canvas Bitmap: ${e.message}")
+                Log.e("REALTIME_BUG", "Lỗi tại hàm dựng Canvas Bitmap: ${e.message}")
                 null
             }
         }
@@ -356,15 +380,15 @@ class MapViewModel : ViewModel() {
     }
 
     fun stopLocationUpdates() {
-        android.util.Log.w("GPS_DEBUG", "Tiến hành gỡ bỏ lắng nghe GPS để bảo vệ Main Thread...")
+        Log.w("GPS_DEBUG", "Tiến hành gỡ bỏ lắng nghe GPS để bảo vệ Main Thread...")
     }
 
     override fun onCleared() {
         super.onCleared()
-        android.util.Log.e("MAP_DEBUG", "MapViewModel OnCleared! Khai tử toàn bộ luồng định vị và Socket.")
+        Log.e("MAP_DEBUG", "MapViewModel OnCleared! Khai tử toàn bộ luồng định vị và Socket.")
         try {
             stopLocationUpdates()
-            realtimeSocketManager = null
+            publicSocketManager = null
         } catch (e: Exception) {
             e.printStackTrace()
         }
