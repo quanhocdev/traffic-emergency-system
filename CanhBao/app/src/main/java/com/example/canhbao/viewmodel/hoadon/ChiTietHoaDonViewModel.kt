@@ -1,5 +1,6 @@
 package com.example.canhbao.viewmodel.hoadon
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -8,16 +9,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
+import com.example.canhbao.data.network.SocketClientProvider
+import com.example.canhbao.data.network.UserSocketManager
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.annotation.SuppressLint
-import com.example.canhbao.data.network.AppConfig
-import ua.naiksoftware.stomp.Stomp
-import ua.naiksoftware.stomp.StompClient
-import ua.naiksoftware.stomp.dto.LifecycleEvent
 
 class ChiTietHoaDonViewModel : ViewModel() {
 
@@ -30,166 +28,90 @@ class ChiTietHoaDonViewModel : ViewModel() {
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
-    private var mStompClient: StompClient? = null
+    // Quản lý instance UserSocketManager dựa trên file gốc của bạn
+    private var userSocketManager: UserSocketManager? = null
 
     private var currentHoaDonId: Long? = null
 
-    private var subscribed = false
     private suspend fun getToken(): String {
-
-        val user =
-            FirebaseAuth.getInstance()
-                .currentUser
-                ?: throw Exception("Chưa đăng nhập")
-
-        val tokenResult =
-            Tasks.await(
-                user.getIdToken(false)
-            )
-
+        val user = FirebaseAuth.getInstance().currentUser ?: throw Exception("Chưa đăng nhập")
+        val tokenResult = Tasks.await(user.getIdToken(false))
         return "Bearer ${tokenResult.token}"
     }
 
     @SuppressLint("CheckResult")
     private fun connectWebSocket() {
+        val currentClient = SocketClientProvider.stompClient
+        if (userSocketManager != null && currentClient.isConnected) return
 
-        if (mStompClient?.isConnected == true)
-            return
+        userSocketManager = null
+        SocketClientProvider.initNewClient()
+        val activeClient = SocketClientProvider.stompClient
 
-        mStompClient = Stomp.over(
-            Stomp.ConnectionProvider.OKHTTP,
-            "${AppConfig.WS_BASE_URL}/ws-suco"
-        )
-
-        mStompClient?.lifecycle()?.subscribe { event ->
-
-            when (event.type) {
-
-                LifecycleEvent.Type.OPENED -> {
-
-                    Log.d(
-                        "HoaDonSocket",
-                        "Connected"
-                    )
-
-                    if (subscribed) return@subscribe
-
-                    subscribed = true
-
-                    mStompClient?.topic(
-                        "/user/queue/new-invoice"
-                    )?.subscribe({
-
-                        Log.d(
-                            "HoaDonSocket",
-                            "Nhận hóa đơn mới"
-                        )
-
-                        currentHoaDonId?.let {
-                            loadHoaDonDetail(it)
-                        }
-
-                    }, {
-
-                        Log.e(
-                            "HoaDonSocket",
-                            it.message ?: ""
-                        )
-                    })
+        // Đăng ký nhận thông báo hóa đơn mới từ UserSocketManager
+        userSocketManager = UserSocketManager(activeClient).apply {
+            subscribe(object : UserSocketManager.Callback {
+                override fun onNewInvoice(json: String) {
+                    Log.d("HoaDonSocket", "Nhận thông báo hóa đơn mới từ Socket -> Refresh dữ liệu")
+                    currentHoaDonId?.let {
+                        loadHoaDonDetail(it)
+                    }
                 }
 
-                else -> {}
-            }
+                override fun onInvoiceUpdate(json: String) {}
+                override fun onHistoryRefresh() {}
+                override fun onPackageRefresh() {}
+                override fun onSosRefresh() {}
+                override fun onUserStats(json: String) {}
+                override fun onPaymentUpdate(json: String) {}
+            })
         }
 
-        mStompClient?.connect()
+        activeClient.connect()
     }
-    override fun onCleared() {
-        super.onCleared()
-        mStompClient?.disconnect()
-    }
-    fun loadHoaDonDetail(
-        hoaDonId: Long
-    ) {
 
+    fun loadHoaDonDetail(hoaDonId: Long) {
         currentHoaDonId = hoaDonId
 
-        if (mStompClient?.isConnected != true) {
+        val currentClient = SocketClientProvider.stompClient
+        if (!currentClient.isConnected) {
             connectWebSocket()
         }
 
         viewModelScope.launch {
-
             try {
-
-                Log.d(
-                    "ChiTietHoaDon",
-                    "STEP 1 - Start loadHoaDonDetail"
-                )
-
+                Log.d("ChiTietHoaDon", "STEP 1 - Start loadHoaDonDetail")
                 isLoading = true
                 errorMessage = null
 
-                val token =
-                    withContext(Dispatchers.IO) {
+                val token = withContext(Dispatchers.IO) {
+                    Log.d("ChiTietHoaDon", "STEP 2 - Getting token")
+                    getToken()
+                }
 
-                        Log.d(
-                            "ChiTietHoaDon",
-                            "STEP 2 - Getting token"
-                        )
+                Log.d("ChiTietHoaDon", "STEP 3 - Got token")
 
-                        getToken()
-                    }
+                hoaDon = withContext(Dispatchers.IO) {
+                    Log.d("ChiTietHoaDon", "STEP 4 - Calling getHoaDonDetail")
+                    BaoCaoSuCoRetrofit.api.getHoaDonDetail(token, hoaDonId)
+                }
 
-                Log.d(
-                    "ChiTietHoaDon",
-                    "STEP 3 - Got token"
-                )
-
-                hoaDon =
-                    withContext(Dispatchers.IO) {
-
-                        Log.d(
-                            "ChiTietHoaDon",
-                            "STEP 4 - Calling getHoaDonDetail"
-                        )
-
-                        BaoCaoSuCoRetrofit.api.getHoaDonDetail(
-                            token,
-                            hoaDonId
-                        )
-                    }
-
-                Log.d(
-                    "ChiTietHoaDon",
-                    "STEP 5 - Loaded hoaDon"
-                )
-
-                Log.d(
-                    "ChiTietHoaDon",
-                    "STEP 7 - Finished"
-                )
+                Log.d("ChiTietHoaDon", "STEP 5 - Loaded hoaDon")
+                Log.d("ChiTietHoaDon", "STEP 7 - Finished")
 
             } catch (e: Exception) {
-
-                Log.e(
-                    "ChiTietHoaDon",
-                    "MAIN ERROR",
-                    e
-                )
-
-                errorMessage =
-                    e.message ?: "Lỗi tải dữ liệu"
-
+                Log.e("ChiTietHoaDon", "MAIN ERROR", e)
+                errorMessage = e.message ?: "Lỗi tải dữ liệu"
             } finally {
-
                 isLoading = false
-
-                Log.d(
-                    "ChiTietHoaDon",
-                    "STEP 8 - End"
-                )
+                Log.d("ChiTietHoaDon", "STEP 8 - End")
             }
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        userSocketManager = null
+        Log.w("ChiTietHoaDon", "🧹 Đã giải phóng UserSocketManager trong ChiTietHoaDonViewModel")
     }
 }

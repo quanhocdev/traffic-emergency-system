@@ -6,17 +6,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.canhbao.data.model.tien.DoiTienDto
 import com.example.canhbao.data.model.suco.baocao.SuCoUserDto
+import com.example.canhbao.data.model.tien.DoiTienDto
 import com.example.canhbao.data.model.tien.ThongKeQuyDto
-import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
+import com.example.canhbao.data.network.PublicSocketManager
+import com.example.canhbao.data.network.SocketClientProvider
+import com.example.canhbao.data.network.UserSocketManager
 import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ua.naiksoftware.stomp.Stomp
-import ua.naiksoftware.stomp.StompClient
-import ua.naiksoftware.stomp.dto.LifecycleEvent
 import java.time.LocalDate
 
 enum class FilterMode { DAY, MONTH, YEAR }
@@ -30,12 +29,14 @@ class DoiTienViewModel : ViewModel() {
 
     var message by mutableStateOf("")
         private set
+
     var publicFundStats by mutableStateOf(ThongKeQuyDto())
         private set
-    private var mStompClient: StompClient? = null
 
-    // --- THÊM VÀO VIEWMODEL ---
-
+    // Quản lý 2 luồng Socket riêng biệt dựa trên 2 file manager gốc của bạn
+    private var userSocketManager: UserSocketManager? = null
+    private var publicSocketManager: PublicSocketManager? = null
+    private val gson = Gson()
 
     // Khai báo các biến state mới cho việc lọc
     var filterMode by mutableStateOf(FilterMode.DAY)
@@ -53,6 +54,7 @@ class DoiTienViewModel : ViewModel() {
 
     // Tính tổng tiền theo danh sách đã lọc
     val totalFilteredValue get() = filteredVinhDanh.sumOf { it.giaTri ?: 0 }
+
     // Tiến tới 1 đơn vị thời gian (Ngày/Tháng/Năm)
     fun nextPeriod() {
         selectedDate = when (filterMode) {
@@ -70,11 +72,13 @@ class DoiTienViewModel : ViewModel() {
             FilterMode.YEAR -> selectedDate.minusYears(1)
         }
     }
+
     fun init(uid: String) {
         fetchUserInfo(uid)
         fetchPublicFund() // Lấy dữ liệu quỹ hiện tại từ database
-        connectUserSocket(uid)
+        connectSockets()
     }
+
     private fun fetchPublicFund() {
         viewModelScope.launch {
             try {
@@ -90,41 +94,65 @@ class DoiTienViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 userDetail = BaoCaoSuCoRetrofit.api.getUserInfo(uid)
-            } catch (e: Exception) { e.printStackTrace() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
-    private fun connectUserSocket(uid: String) {
-        if (mStompClient?.isConnected == true) return
+    private fun connectSockets() {
+        val currentClient = SocketClientProvider.stompClient
+        // Đảm bảo không tạo đè luồng nếu mọi thứ vẫn đang thông suốt
+        if (userSocketManager != null && publicSocketManager != null && currentClient.isConnected) return
 
-        mStompClient = Stomp.over(
-            Stomp.ConnectionProvider.OKHTTP,
-            "${AppConfig.WS_BASE_URL}/ws-suco"
-        )
+        userSocketManager = null
+        publicSocketManager = null
+        SocketClientProvider.initNewClient()
+        val activeClient = SocketClientProvider.stompClient
 
-        mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
-            when (lifecycleEvent.type) {
-                LifecycleEvent.Type.OPENED -> {
-                    Log.d("WebSocket_DoiTien", "🟢 Đổi Tiền Connected! Đang đăng ký cổng...")
-
-                    // 1. Lắng nghe điểm cá nhân biến động
-                    mStompClient?.topic("/topic/user-stats/$uid")?.subscribe({ topicMessage ->
-                        userDetail = Gson().fromJson(topicMessage.payload, SuCoUserDto::class.java)
-                    }, { it.printStackTrace() })
-
-                    // 2. Lắng nghe TỔNG QUỸ BIẾN ĐỘNG REALTIME
-                    mStompClient?.topic("/topic/public-fund")?.subscribe({ topicMessage ->
-                        publicFundStats = Gson().fromJson(topicMessage.payload, ThongKeQuyDto::class.java)
-                    }, { it.printStackTrace() })
+        // 1. ĐĂNG KÝ LUỒNG USER (ĐỂ THEO DÕI STATS CỦA USER CHÍNH XÁC QUA KÊNH RIÊNG TƯ)
+        userSocketManager = UserSocketManager(activeClient).apply {
+            subscribe(object : UserSocketManager.Callback {
+                override fun onUserStats(json: String) {
+                    try {
+                        userDetail = gson.fromJson(json, SuCoUserDto::class.java)
+                        Log.d("WebSocket_DoiTien", "🟢 Đã đồng bộ điểm cá nhân mới")
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
-                LifecycleEvent.Type.ERROR -> {
-                    Log.e("WebSocket_DoiTien", "❌ Lỗi mạng: ${lifecycleEvent.exception?.message}")
-                }
-                else -> {}
-            }
+
+                override fun onHistoryRefresh() {}
+                override fun onPackageRefresh() {}
+                override fun onSosRefresh() {}
+                override fun onInvoiceUpdate(json: String) {}
+                override fun onNewInvoice(json: String) {}
+                override fun onPaymentUpdate(json: String) {}
+            })
         }
 
-        mStompClient?.connect()
+        // 2. ĐĂNG KÝ LUỒNG PUBLIC (ĐỂ THEO DÕI BIẾN ĐỘNG QUỸ CÔNG KHAI TOÀN ỨNG DỤNG)
+        publicSocketManager = PublicSocketManager(activeClient).apply {
+            subscribe(object : PublicSocketManager.Callback {
+                override fun onPublicFundUpdate(json: String) {
+                    try {
+                        publicFundStats = gson.fromJson(json, ThongKeQuyDto::class.java)
+                        Log.d("WebSocket_DoiTien", "🟢 Tổng quỹ công khai biến động realtime")
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
+                override fun onSuCoUpdate(json: String) {}
+                override fun onSuCoDelete(id: Long) {}
+                override fun onTruSoUpdate(json: String) {}
+                override fun onTruSoDelete(id: Long) {}
+                override fun onCameraUpdate(json: String) {}
+                override fun onCameraDelete(id: Long) {}
+            })
+        }
+
+        activeClient.connect()
     }
 
     // Hàm xử lý chung cho cả Đổi tiền và Quyên góp
@@ -139,9 +167,7 @@ class DoiTienViewModel : ViewModel() {
                     message = if (type == "TIEN_MAT") "Đã quy đổi $points điểm!"
                     else "Cảm ơn bạn đã quyên góp!"
 
-                    // === DÒNG QUAN TRỌNG NHẤT ===
                     fetchUserInfo(uid) // Gọi lại hàm này để lấy điểm mới ngay lập tức
-                    // ============================
                 } else {
                     message = "Giao dịch thất bại!"
                 }
@@ -154,7 +180,6 @@ class DoiTienViewModel : ViewModel() {
         }
     }
 
-
     private fun resetMessage() {
         viewModelScope.launch {
             delay(3000)
@@ -163,7 +188,9 @@ class DoiTienViewModel : ViewModel() {
     }
 
     override fun onCleared() {
-        mStompClient?.disconnect()
         super.onCleared()
+        userSocketManager = null
+        publicSocketManager = null
+        Log.w("WebSocket_DoiTien", "🧹 Đã giải phóng bộ đôi Socket Managers trong DoiTienViewModel")
     }
 }

@@ -30,9 +30,12 @@ class CameraViewModel : ViewModel() {
             try {
                 val list = suCoApi.getAllCamera()
                 val icon = createCameraIcon(context)
+
                 _cameraWithIcons.value = list.map { it to icon }
-                Log.d("CameraViewModel", "📸 Đã load ${list.size} camera.")
-            } catch (e: Exception) { Log.e("CameraViewModel", "❌ Lỗi load camera: ${e.message}") }
+                Log.d("CameraViewModel", "Load ${list.size} camera thành công từ API")
+            } catch (e: Exception) {
+                Log.e("CameraViewModel", "Load camera lỗi: ${e.message}")
+            }
         }
     }
 
@@ -40,25 +43,36 @@ class CameraViewModel : ViewModel() {
         _showCamera.value = !_showCamera.value
     }
 
+    /**
+     * Được gọi trực tiếp sau khi MapViewModel nhận và parse JSON từ PublicSocketManager
+     * Đẩy việc xử lý danh sách và tạo Bitmap sang IO Thread để bảo toàn hiệu năng UI
+     */
     fun updateCameraFromSocket(context: Context, camera: CameraMapDto) {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d("REALTIME_BUG", "🔄 CameraViewModel xử lý Camera (ID: ${camera.id})")
-            val icon = createCameraIcon(context)
-            val current = _cameraWithIcons.value.toMutableList()
-            current.removeAll { it.first.id == camera.id }
-            current.add(camera to icon)
+            try {
+                Log.d("CameraViewModel", "Realtime nhận cập nhật camera từ Socket (ID: ${camera.id})")
+                val icon = createCameraIcon(context)
+                val current = _cameraWithIcons.value.toMutableList()
 
-            withContext(Dispatchers.Main) {
-                _cameraWithIcons.value = current.toList()
+                // Nếu camera đã tồn tại, tiến hành xóa bản cũ để cập nhật đè bản mới
+                current.removeAll { it.first.id == camera.id }
+                current.add(camera to icon)
+
+                // Cập nhật lại State Flow đồng bộ trên Main Thread
+                withContext(Dispatchers.Main) {
+                    _cameraWithIcons.value = current.toList()
+                }
+            } catch (e: Exception) {
+                Log.e("CameraViewModel", "Lỗi update camera từ socket: ${e.message}")
             }
         }
     }
 
     fun removeCameraFromSocket(id: Long) {
         viewModelScope.launch(Dispatchers.Main) {
-            val current = _cameraWithIcons.value.filter { it.first.id != id }
-            _cameraWithIcons.value = current
-            Log.w("REALTIME_BUG", "📸 CameraViewModel đã xóa camera ID = $id")
+            val updatedList = _cameraWithIcons.value.filter { it.first.id != id }
+            _cameraWithIcons.value = updatedList
+            Log.w("CameraViewModel", "Realtime đã xóa camera ID = $id khỏi bản đồ")
         }
     }
 }

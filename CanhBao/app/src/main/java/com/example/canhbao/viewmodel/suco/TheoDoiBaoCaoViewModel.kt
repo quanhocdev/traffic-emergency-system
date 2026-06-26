@@ -9,27 +9,21 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoDetailResponseDTO
-import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoItemResponseDTO // ✅ Thêm import bản rút gọn
-import com.example.canhbao.data.network.AppConfig
+import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoItemResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
+import com.example.canhbao.data.network.PublicSocketManager
+import com.example.canhbao.data.network.SocketClientProvider
+import com.example.canhbao.data.network.UserSocketManager
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import ua.naiksoftware.stomp.Stomp
-import ua.naiksoftware.stomp.StompClient
-import ua.naiksoftware.stomp.dto.LifecycleEvent
 
 sealed class TheoDoiBaoCaoUiState {
     object Loading : TheoDoiBaoCaoUiState()
-    data class Success(
-        val data: List<TheoDoiSuCoItemResponseDTO> // 🔄 ĐÃ SỬA: Danh sách trả về bản Item rút gọn
-    ) : TheoDoiBaoCaoUiState()
-
-    data class Error(
-        val message: String
-    ) : TheoDoiBaoCaoUiState()
+    data class Success(val data: List<TheoDoiSuCoItemResponseDTO>) : TheoDoiBaoCaoUiState()
+    data class Error(val message: String) : TheoDoiBaoCaoUiState()
 }
 
 class TheoDoiBaoCaoViewModel : ViewModel() {
@@ -38,11 +32,13 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
     var uiState: TheoDoiBaoCaoUiState by mutableStateOf(TheoDoiBaoCaoUiState.Loading)
         private set
 
-    // ➕ BỔ SUNG: Map lưu trữ dữ liệu chi tiết của từng sự cố dựa trên ID (Khớp hoàn toàn với SOS)
+    // Map lưu trữ dữ liệu chi tiết của từng sự cố dựa trên ID (Khớp hoàn toàn với SOS)
     var detailUiStateMap = mutableStateMapOf<Long, TheoDoiSuCoDetailResponseDTO>()
         private set
 
-    private var mStompClient: StompClient? = null
+    // Quản lý 2 luồng Socket riêng biệt dựa trên 2 file manager gốc của bạn
+    private var publicSocketManager: PublicSocketManager? = null
+    private var userSocketManager: UserSocketManager? = null
 
     private suspend fun getToken(): String {
         val user = FirebaseAuth.getInstance().currentUser
@@ -64,7 +60,7 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
 
                 val response = withContext(Dispatchers.IO) {
                     val token = getToken()
-                    api.getTheoDoiSuCo(token) // Nhận về List<TheoDoiSuCoItemResponseDTO>
+                    api.getTheoDoiSuCo(token)
                 }
 
                 uiState = TheoDoiBaoCaoUiState.Success(response)
@@ -78,7 +74,7 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
     }
 
     /**
-     * ➕ BỔ SUNG: Hàm lấy dữ liệu chi tiết của một Sự cố cụ thể từ API
+     * Hàm lấy dữ liệu chi tiết của một Sự cố cụ thể từ API
      * Sẽ được gọi tự động bên trong `LaunchedEffect` của ChiTietBaoCaoScreen
      */
     fun fetchDetailSuCo(suCoId: Long) {
@@ -88,7 +84,6 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
                     val token = getToken()
                     api.getTheoDoiSuCoDetail(token, suCoId)
                 }
-                // Cập nhật hoặc thêm mới đối tượng vào Map theo ID để UI cập nhật realtime
                 detailUiStateMap[suCoId] = response
             } catch (e: Exception) {
                 Log.e("TheoDoiBaoCao", "fetchDetailSuCo lỗi ID #$suCoId: ${e.message}")
@@ -97,20 +92,16 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
     }
 
     /**
-     * 🔄 ĐÃ SỬA TÊN HÀM: Đổi từ cancelBaoCao thành cancelSuCo để khớp 100% với
-     * nút bấm "Hủy Báo Cáo Sự Cố" bên giao diện ChiTietBaoCaoScreen bạn vừa viết
+     * Hủy báo cáo sự cố
      */
     fun cancelSuCo(suCoId: Long) {
         viewModelScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
+                withContext(Dispatchers.IO) {
                     val token = getToken()
                     api.cancelSuCo(token, suCoId)
-                    // Lưu ý: Nếu api.cancelSuCo trả về Response<Void>, bạn có thể dùng .isSuccessful
-                    // Nếu nó trả về trực tiếp DTO hoặc kiểu khác, hãy cấu trúc lại dòng này cho khớp Retrofit nhé
                 }
 
-                // Hủy thành công thì xóa dữ liệu cũ trong map chi tiết và refresh lại danh sách tổng
                 detailUiStateMap.remove(suCoId)
                 loadDataFromApi()
             } catch (e: Exception) {
@@ -121,59 +112,65 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
 
     @SuppressLint("CheckResult")
     private fun connectWebSocket() {
-        if (mStompClient?.isConnected == true) return
+        val currentClient = SocketClientProvider.stompClient
+        if (publicSocketManager != null && userSocketManager != null && currentClient.isConnected) return
 
-        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        publicSocketManager = null
+        userSocketManager = null
+        SocketClientProvider.initNewClient()
+        val activeClient = SocketClientProvider.stompClient
 
-        mStompClient = Stomp.over(
-            Stomp.ConnectionProvider.OKHTTP,
-            "${AppConfig.WS_BASE_URL}/ws-suco"
-        )
-
-        mStompClient?.lifecycle()?.subscribe { lifecycleEvent ->
-            when (lifecycleEvent.type) {
-                LifecycleEvent.Type.OPENED -> {
-                    Log.d("WebSocket_BaoCao", "🟢 Kết nối thành công! Bắt đầu subscribe...")
-
-                    // Kênh 1: Có sự cố mới công cộng chung
-                    mStompClient?.topic("/topic/su-co")?.subscribe({
-                        Log.d("WebSocket_BaoCao", "🔄 Nhận tín hiệu sự cố chung -> Tải lại API")
-                        loadDataFromApi()
-                    }, {
-                        Log.e("WebSocket_BaoCao", "Lỗi kênh /topic/su-co: ${it.message}")
-                    })
-
-                    // Kênh 2: Có cập nhật trạng thái trong lịch sử cá nhân (Ví dụ: Trạm bấm tiếp nhận/Từ chối)
-                    uid?.let { id ->
-                        mStompClient?.topic("/topic/user/$id/history")?.subscribe({
-                            Log.d("WebSocket_BaoCao", "🔄 Nhận tín hiệu lịch sử cá nhân -> Tải lại API")
-                            loadDataFromApi()
-
-                            // 💡 Mẹo thông minh: Khi có update lịch sử từ socket, quét qua các ID đang mở
-                            // trên màn hình chi tiết để kéo lại data mới nhất luôn, không sợ bị out-date dữ liệu
-                            detailUiStateMap.keys.forEach { activeId ->
-                                fetchDetailSuCo(activeId)
-                            }
-                        }, {
-                            Log.e("WebSocket_BaoCao", "Lỗi kênh history cá nhân: ${it.message}")
-                        })
-                    }
+        // 1. ĐĂNG KÝ KÊNH CÔNG KHAI (Lắng nghe khi có sự cố mới phát sinh toàn bản đồ)
+        publicSocketManager = PublicSocketManager(activeClient).apply {
+            subscribe(object : PublicSocketManager.Callback {
+                override fun onSuCoUpdate(json: String) {
+                    Log.d("WebSocket_BaoCao", "🔄 Nhận tín hiệu sự cố chung từ Socket -> Tải lại danh sách")
+                    loadDataFromApi()
                 }
-                LifecycleEvent.Type.ERROR -> {
-                    Log.e("WebSocket_BaoCao", "❌ Lỗi kết nối WebSocket: ${lifecycleEvent.exception?.message}")
+
+                override fun onSuCoDelete(id: Long) {
+                    Log.d("WebSocket_BaoCao", "🔥 Nhận tín hiệu xóa sự cố chung ID: $id -> Tải lại danh sách")
+                    detailUiStateMap.remove(id)
+                    loadDataFromApi()
                 }
-                LifecycleEvent.Type.CLOSED -> {
-                    Log.w("WebSocket_BaoCao", "🔌 Kết nối WebSocket đã đóng")
-                }
-                else -> {}
-            }
+
+                override fun onTruSoUpdate(json: String) {}
+                override fun onTruSoDelete(id: Long) {}
+                override fun onCameraUpdate(json: String) {}
+                override fun onCameraDelete(id: Long) {}
+                override fun onPublicFundUpdate(json: String) {}
+            })
         }
 
-        mStompClient?.connect()
+        // 2. ĐĂNG KÝ KÊNH CÁ NHÂN (Lắng nghe lịch sử đơn của User thay đổi tiến độ xử lý)
+        userSocketManager = UserSocketManager(activeClient).apply {
+            subscribe(object : UserSocketManager.Callback {
+                override fun onHistoryRefresh() {
+                    Log.d("WebSocket_BaoCao", "🔄 Nhận tín hiệu lịch sử cá nhân đổi trạng thái -> Tải lại API")
+                    loadDataFromApi()
+
+                    // Quét qua các ID đang mở trên màn hình chi tiết để kéo lại data mới nhất luôn
+                    detailUiStateMap.keys.forEach { activeId ->
+                        fetchDetailSuCo(activeId)
+                    }
+                }
+
+                override fun onPackageRefresh() {}
+                override fun onSosRefresh() {}
+                override fun onInvoiceUpdate(json: String) {}
+                override fun onUserStats(json: String) {}
+                override fun onNewInvoice(json: String) {}
+                override fun onPaymentUpdate(json: String) {}
+            })
+        }
+
+        activeClient.connect()
     }
 
     override fun onCleared() {
         super.onCleared()
-        mStompClient?.disconnect()
+        publicSocketManager = null
+        userSocketManager = null
+        Log.w("WebSocket_BaoCao", "🧹 Đã giải phóng bộ đôi Public và User Socket Manager trong TheoDoiBaoCaoViewModel")
     }
 }
