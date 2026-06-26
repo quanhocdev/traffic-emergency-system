@@ -7,10 +7,16 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.call.CallSignalDto
+import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
+import com.example.canhbao.data.network.SocketClientProvider
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
@@ -24,8 +30,6 @@ import org.webrtc.RtpReceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.audio.JavaAudioDeviceModule
-import ua.naiksoftware.stomp.StompClient
-import kotlin.collections.get
 
 class WebRTCViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -37,7 +41,8 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
     private var peerConnection: PeerConnection? = null
     private var audioSource: AudioSource? = null
     private val pendingCandidates = mutableListOf<IceCandidate>()
-    private var targetUserId: String? = null // Thêm biến này để lưu ID người gọi
+    private var targetUserId: String? = null
+
     private val iceServers = listOf(
         PeerConnection.IceServer.builder("stun:stun.l.google.com:19302").createIceServer(),
         PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302").createIceServer()
@@ -47,6 +52,7 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
 
     private val _callerName = MutableStateFlow("Trụ sở công an")
     val callerName = _callerName.asStateFlow()
+
     init {
         initWebRTC()
     }
@@ -56,19 +62,18 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
             .createInitializationOptions()
         PeerConnectionFactory.initialize(options)
 
-        // 1. Tạo Module quản lý âm thanh phần cứng
+        // Tạo Module quản lý âm thanh phần cứng (Khử nhiễu, chống vang cho thiết bị)
         val audioDeviceModule = JavaAudioDeviceModule.builder(getApplication())
-            .setUseHardwareAcousticEchoCanceler(true) // Quan trọng để hết vang
-            .setUseHardwareNoiseSuppressor(true)      // Quan trọng để hết rè
+            .setUseHardwareAcousticEchoCanceler(true)
+            .setUseHardwareNoiseSuppressor(true)
             .createAudioDeviceModule()
 
         val factoryOptions = PeerConnectionFactory.Options()
         peerConnectionFactory = PeerConnectionFactory.builder()
             .setOptions(factoryOptions)
-            .setAudioDeviceModule(audioDeviceModule) // BẮT BUỘC PHẢI CÓ DÒNG NÀY
+            .setAudioDeviceModule(audioDeviceModule)
             .createPeerConnectionFactory()
 
-        // 2. Thêm các tham số cấu hình lọc âm
         val audioConstraints = MediaConstraints().apply {
             mandatory.add(MediaConstraints.KeyValuePair("googEchoCancellation", "true"))
             mandatory.add(MediaConstraints.KeyValuePair("googNoiseSuppression", "true"))
@@ -83,11 +88,14 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
         Log.d("WebRTC", "Khởi tạo thành công với Hardware AEC")
     }
 
-    // --- 1. CHỦ ĐỘNG GỌI (GỬI OFFER) ---
-    fun startCall(stompClient: StompClient, targetId: String, myId: String) {
+    // --- 1. CHỦ ĐỘNG GỌI (Sử dụng client tập trung từ Provider) ---
+    fun startCall(targetId: String, myId: String) {
         setupAudioConfig()
         _callState.value = "CALLING"
-        if (peerConnection == null) peerConnection = createPeerConnection(targetId, stompClient, myId)
+
+        if (peerConnection == null) {
+            peerConnection = createPeerConnection(targetId, myId)
+        }
 
         val constraints = MediaConstraints().apply {
             mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"))
@@ -97,27 +105,25 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
             override fun onCreateSuccess(sdp: SessionDescription?) {
                 peerConnection?.setLocalDescription(SimpleSdpObserver(), sdp)
 
-                // Thay thế đoạn cũ bằng:
                 val signal = CallSignalDto(
                     type = "offer",
                     to = targetId,
                     from = myId,
                     sdp = sdp?.description
                 )
-                sendSignalSafely(stompClient, signal)
+                sendSignalSafely(signal)
             }
         }, constraints)
     }
 
     // --- 2. XỬ LÝ TÍN HIỆU TỪ SOCKET ---
-    fun handleSignal(json: JSONObject, stompClient: StompClient, myId: String) {
+    fun handleSignal(json: JSONObject, myId: String) {
         val signal = gson.fromJson(json.toString(), CallSignalDto::class.java)
         val fromUser = signal.from ?: ""
 
         when (signal.type?.uppercase()) {
             "BYE" -> {
-                Log.d("WebRTC", "Trụ sở đã cúp máy")
-                // Gọi đóng kết nối tại chỗ (không gửi ngược lại BYE)
+                Log.w("WebRTC", "Trụ sở đã cúp máy")
                 peerConnection?.close()
                 peerConnection = null
                 _callState.value = "IDLE"
@@ -127,18 +133,17 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
             "OFFER" -> {
                 targetUserId = fromUser
                 setupAudioConfig()
-
                 fetchAndSetTruSoName(fromUser)
 
                 _callState.value = "INCOMING"
                 val sdp = SessionDescription(SessionDescription.Type.OFFER, signal.sdp)
                 if (peerConnection == null) {
-                    peerConnection = createPeerConnection(fromUser, stompClient, myId)
+                    peerConnection = createPeerConnection(fromUser, myId)
                 }
 
                 peerConnection?.setRemoteDescription(object : SimpleSdpObserver() {
                     override fun onSetSuccess() {
-                        Log.d("WebRTC", "Đã nhận OFFER, đang chờ người dùng nhấc máy...")
+                        Log.d("WebRTC", "Đã nhận OFFER thành công, đang chờ nhấc máy...")
                         pendingCandidates.forEach { peerConnection?.addIceCandidate(it) }
                         pendingCandidates.clear()
                     }
@@ -157,25 +162,25 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
 
                     val candidate = IceCandidate(sdpMid, sdpMLineIndex, sdpCandidate)
 
-                    // Luôn add nếu đã có remoteDescription, ngược lại thì cho vào hàng đợi
                     if (peerConnection?.remoteDescription != null) {
                         peerConnection?.addIceCandidate(candidate)
-                        Log.d("WebRTC", "✅ Đã thêm Candidate: $sdpCandidate")
+                        Log.d("WebRTC", "✅ Đã thêm Candidate trực tiếp")
                     } else {
                         pendingCandidates.add(candidate)
-                        Log.d("WebRTC", "⏳ Đang đợi RemoteDesc, đã lưu candidate tạm thời")
+                        Log.d("WebRTC", "⏳ Đã lưu candidate tạm thời vào hàng đợi")
                     }
                 }
             }
         }
     }
 
-    // --- 3. HÀM CHẤP NHẬN CUỘC GỌI (DÙNG TRONG UI) ---
-    fun acceptCall(stompClient: StompClient?, myId: String) {
-        val currentTargetId = targetUserId // Chụp giá trị
+    // --- 3. HÀM CHẤP NHẬN CUỘC GỌI ---
+    fun acceptCall(myId: String) {
+        val currentTargetId = targetUserId
+        val activeClient = SocketClientProvider.stompClient
 
-        if (stompClient == null || peerConnection == null || currentTargetId == null) {
-            Log.e("WebRTC", "Không thể nhấc máy: Thiếu thông tin")
+        if (!activeClient.isConnected || peerConnection == null || currentTargetId == null) {
+            Log.e("WebRTC", "Không thể nhấc máy: Thiếu thông tin hoặc Socket mất kết nối")
             return
         }
 
@@ -185,38 +190,19 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
             override fun onCreateSuccess(sdp: SessionDescription?) {
                 peerConnection?.setLocalDescription(SimpleSdpObserver(), sdp)
 
-                // Thay thế đoạn cũ bằng:
                 val signal = CallSignalDto(
                     type = "answer",
                     to = currentTargetId,
                     from = myId,
                     sdp = sdp?.description
                 )
-                sendSignalSafely(stompClient, signal)
+                sendSignalSafely(signal)
             }
         }, MediaConstraints())
     }
 
-    private fun createAnswer(toUser: String, stompClient: StompClient, myId: String) {
-        // Sử dụng trực tiếp tham số toUser được truyền vào hàm
-        peerConnection?.createAnswer(object : SimpleSdpObserver() {
-            override fun onCreateSuccess(sdp: SessionDescription?) {
-                peerConnection?.setLocalDescription(SimpleSdpObserver(), sdp)
-
-                val signal = CallSignalDto(
-                    type = "answer",
-                    to = toUser, // Sử dụng tham số toUser thay vì currentTargetId
-                    from = myId,
-                    sdp = sdp?.description
-                )
-                sendSignalSafely(stompClient, signal)
-                Log.d("WebRTC", "Đã gửi answer (chữ thường) cho Web")
-            }
-        }, MediaConstraints())
-    }
-
-    // --- 4. CẤU HÌNH KẾT NỐI ---
-    private fun createPeerConnection(targetId: String, stompClient: StompClient, myId: String): PeerConnection? {
+    // --- 4. CẤU HÌNH KẾT NỐI PEER TO PEER ---
+    private fun createPeerConnection(targetId: String, myId: String): PeerConnection? {
         val rtcConfig = PeerConnection.RTCConfiguration(iceServers)
         val pc = peerConnectionFactory?.createPeerConnection(rtcConfig, object : PeerConnection.Observer {
             override fun onIceCandidate(candidate: IceCandidate?) {
@@ -228,13 +214,12 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
                         from = myId,
                         candidate = iceMap
                     )
-                    // Dùng hàm an toàn ở đây
-                    sendSignalSafely(stompClient, signal)
+                    sendSignalSafely(signal)
                 }
             }
 
             override fun onIceConnectionChange(newState: PeerConnection.IceConnectionState?) {
-                Log.d("WebRTC", "ICE State: $newState")
+                Log.d("WebRTC", "ICE Connection State thay đổi: $newState")
                 if (newState == PeerConnection.IceConnectionState.CONNECTED) {
                     applySonyAudioFix()
                 }
@@ -244,9 +229,8 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
                 val track = receiver?.track()
                 if (track is AudioTrack) {
                     track.setEnabled(true)
-                    // GIẢM TỪ 10.0 XUỐNG 1.0
                     track.setVolume(1.0)
-                    Log.d("WebRTC", "Đã nhận âm thanh từ Web (Volume: 1.0)")
+                    Log.d("WebRTC", "Đã nhận luồng âm thanh đầu ra thành công (Volume: 1.0)")
                 }
             }
 
@@ -283,31 +267,28 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
         audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
         audioManager.isSpeakerphoneOn = true
     }
+
     fun toggleMic(isMuted: Boolean) {
-        // isMuted = true (Người dùng bấm tắt) -> setEnabled(false) (Dừng track)
-        // isMuted = false (Người dùng bấm mở) -> setEnabled(true) (Chạy track)
         localAudioTrack?.setEnabled(!isMuted)
         Log.d("WebRTC", "Trạng thái Micro: ${if (isMuted) "ĐÃ TẮT" else "ĐANG MỞ"}")
     }
 
-    fun endCall(stompClient: StompClient? = null, myId: String? = null) {
+    fun endCall(myId: String? = null) {
         val currentTarget = targetUserId
 
-        // 1. Chỉ gửi BYE nếu thực sự đang trong cuộc gọi và có thông tin
-        if (stompClient != null && currentTarget != null && myId != null) {
+        if (currentTarget != null && myId != null) {
             val signal = CallSignalDto(
                 type = "BYE",
                 to = currentTarget,
                 from = myId
             )
-            sendSignalSafely(stompClient, signal)
+            sendSignalSafely(signal)
         }
 
-        // 2. Dọn dẹp tài nguyên WebRTC
         try {
             peerConnection?.close()
         } catch (e: Exception) {
-            Log.e("WebRTC", "Lỗi khi đóng PC: ${e.message}")
+            Log.e("WebRTC", "Lỗi khi đóng kết nối PeerConnection: ${e.message}")
         }
 
         peerConnection = null
@@ -315,50 +296,47 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
         _callState.value = "IDLE"
         _callerName.value = "Trụ sở cứu hộ"
 
-        // 3. Trả Audio về chế độ bình thường
         val audioManager = getApplication<Application>().getSystemService(Context.AUDIO_SERVICE) as AudioManager
         audioManager.mode = AudioManager.MODE_NORMAL
     }
-    private fun sendSignalSafely(stompClient: StompClient?, signal: CallSignalDto) {
-        if (stompClient != null && stompClient.isConnected) {
-            stompClient.send("/app/call-signal", gson.toJson(signal))
+
+    private fun sendSignalSafely(signal: CallSignalDto) {
+        val activeClient = SocketClientProvider.stompClient
+        if (activeClient.isConnected) {
+            activeClient.send("/app/call-signal", gson.toJson(signal))
                 .subscribe({
-                    Log.d("WebRTC", "Gửi signal ${signal.type} thành công")
+                    Log.d("WebRTC", "Gửi gói tin signal [${signal.type}] thành công")
                 }, { throwable ->
-                    // Hứng lỗi ở đây để không bị crash App
-                    Log.e("WebRTC", "Lỗi khi gửi signal: ${throwable.message}")
+                    Log.e("WebRTC", "Lỗi phát sinh khi đẩy gói tin tín hiệu: ${throwable.message}")
                 })
         } else {
-            Log.w("WebRTC", "Không thể gửi signal ${signal.type} vì Socket đã ngắt kết nối")
+            Log.w("WebRTC", "Không thể gửi gói tín hiệu vì Socket trung tâm đã đóng")
         }
     }
 
     open class SimpleSdpObserver : SdpObserver {
         override fun onCreateSuccess(p0: SessionDescription?) {}
         override fun onSetSuccess() {}
-        override fun onCreateFailure(p0: String?) { Log.e("WebRTC", "SDP Create Fail: $p0") }
-        override fun onSetFailure(p0: String?) { Log.e("WebRTC", "SDP Set Fail: $p0") }
+        override fun onCreateFailure(p0: String?) { Log.e("WebRTC", "Lỗi khởi tạo SDP: $p0") }
+        override fun onSetFailure(p0: String?) { Log.e("WebRTC", "Lỗi cấu hình thiết lập SDP: $p0") }
     }
 
-
     override fun onCleared() {
-
-        endCall(null, null)
-
+        endCall(null)
         audioSource?.dispose()
         peerConnectionFactory?.dispose()
         super.onCleared()
     }
+
     private fun fetchAndSetTruSoName(fromUser: String) {
         if (fromUser.startsWith("TRU_SO_")) {
             val truSoId = fromUser.substringAfter("TRU_SO_").toLongOrNull()
             if (truSoId != null) {
                 viewModelScope.launch {
                     try {
-                        // Gọi endpoint lấy tất cả trụ sở đang có từ Database Backend
-                        val listTruSo = com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api.getAllTruSo()
-
-                        // Tìm trụ sở trùng ID
+                        val listTruSo = withContext(Dispatchers.IO) {
+                            BaoCaoSuCoRetrofit.api.getAllTruSo()
+                        }
                         val targetTruSo = listTruSo.find { it.id == truSoId }
 
                         if (targetTruSo != null && !targetTruSo.tenTruSo.isNullOrBlank()) {
@@ -367,7 +345,7 @@ class WebRTCViewModel(application: Application) : AndroidViewModel(application) 
                             _callerName.value = "Trụ sở tiếp nhận số $truSoId"
                         }
                     } catch (e: Exception) {
-                        Log.e("WebRTC_API", "Lỗi tra cứu tên trụ sở: ${e.message}")
+                        Log.e("WebRTC_API", "Lỗi tra cứu thông tin tên trụ sở từ Backend: ${e.message}")
                         _callerName.value = "Trụ sở số $truSoId"
                     }
                 }
