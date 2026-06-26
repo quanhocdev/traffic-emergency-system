@@ -34,11 +34,12 @@ public class BaoCaoRealtimeService {
     }
 
     public void refreshUserHistory(String uid) {
-        messagingTemplate.convertAndSend(
-                "/topic/user/" + uid + "/history",
-                "REFRESH"
-        );
-    }
+    messagingTemplate.convertAndSendToUser(
+            uid,
+            "/queue/history",
+            "REFRESH"
+    );
+}
 
     public void broadcastAdminNotification(String message) {
         messagingTemplate.convertAndSend(
@@ -48,9 +49,10 @@ public class BaoCaoRealtimeService {
     }
 
     public void broadcastUserStats(String uid, Object user) {
-        messagingTemplate.convertAndSend(
-                "/topic/user-stats/" + uid,
-                user
-        );
-    }
+    messagingTemplate.convertAndSendToUser(
+            uid,
+            "/queue/user-stats",
+            user
+    );
+}
 }
