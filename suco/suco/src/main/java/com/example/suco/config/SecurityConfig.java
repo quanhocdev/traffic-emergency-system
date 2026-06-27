@@ -37,6 +37,9 @@ public class SecurityConfig {
             .authenticationEntryPoint(customAuthEntryPoint)
         )
             .authorizeHttpRequests(auth -> auth
+
+            .requestMatchers("/ws-suco/**", "/ws-suco-web/**").permitAll()
+            
     // PUBLIC
     .requestMatchers("/admin/login").permitAll()
     .requestMatchers("/api/auth/**").permitAll()

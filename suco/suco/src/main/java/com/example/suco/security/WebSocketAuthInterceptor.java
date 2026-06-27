@@ -1,72 +1,118 @@
 package com.example.suco.security;
 
-import com.example.suco.service.xacthuc.user.token.FirebaseService;
+import com.example.suco.model.TruSo;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.Cookie;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.security.Principal;
+import java.util.Map;
 
 @Component
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
     private final JwtService jwtService;
-    private final FirebaseService firebaseService; // Inject Service của bạn vào đây
 
-    public WebSocketAuthInterceptor(JwtService jwtService, FirebaseService firebaseService) {
+    public WebSocketAuthInterceptor(JwtService jwtService) {
         this.jwtService = jwtService;
-        this.firebaseService = firebaseService;
     }
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-        // Chỉ kiểm tra khi Client gửi lệnh CONNECT
-        if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-            String authHeader = accessor.getFirstNativeHeader("Authorization");
+        StompHeaderAccessor accessor =
+                MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
+        if (accessor == null || accessor.getCommand() != StompCommand.CONNECT) {
+            return message;
+        }
 
-                try {
-                    UsernamePasswordAuthenticationToken authentication;
+        System.out.println("========== WS CONNECT ==========");
+        System.out.println("Headers : " + accessor.toNativeHeaderMap());
 
-                    // 1. Kiểm tra nếu là JWT của ADMIN (Token có 3 phần ngăn cách bởi dấu chấm)
-                    if (token.split("\\.").length == 3) {
-                        Claims claims = jwtService.extractAllClaims(token);
-                        String role = (String) claims.get("role");
-                        var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
-                        
-                        authentication = new UsernamePasswordAuthenticationToken(
-                                claims.getSubject(), null, authorities
-                        );
-                    } else { 
-                        // 2. TÁI SỬ DỤNG: Dùng chính FirebaseService của bạn để bóc UID cho USER
-                        String uid = firebaseService.extractUid(authHeader);
-                        
-                        authentication = new UsernamePasswordAuthenticationToken(
-                                uid, null, List.of()
-                        );
+        Map<String, Object> attrs = accessor.getSessionAttributes();
+
+        System.out.println("Session attrs = " + attrs);
+
+if (attrs != null) {
+    System.out.println("Keys = " + attrs.keySet());
+}
+
+        /*
+         * ==========================================================
+         * TRỤ SỞ (SESSION)
+         * ==========================================================
+         */
+        if (attrs != null) {
+
+            Object obj = attrs.get("currentTruSo");
+
+            if (obj instanceof TruSo truSo) {
+
+                System.out.println("WS Login by SESSION");
+                System.out.println("TruSo = " + truSo.getTenTruSo());
+
+                accessor.setUser(new Principal() {
+                    @Override
+                    public String getName() {
+                        return String.valueOf(truSo.getId());
                     }
+                });
 
-                    // Lưu thông tin định danh vào phiên kết nối của Socket này
-                    accessor.setUser(authentication);
-
-                } catch (Exception e) {
-                    throw new IllegalArgumentException("Xác thực WebSocket thất bại: " + e.getMessage());
-                }
-            } else {
-                throw new IllegalArgumentException("Thiếu Token xác thực khi kết nối WebSocket.");
+                return message;
             }
         }
+
+        /*
+         * ==========================================================
+         * JWT (ANDROID / ADMIN)
+         * ==========================================================
+         */
+
+        String token = null;
+
+        // Android
+        String authHeader = accessor.getFirstNativeHeader("Authorization");
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        }
+
+        // Admin Cookie
+        if (token == null && attrs != null) {
+
+            Object cookieObj = attrs.get("cookie");
+
+            if (cookieObj instanceof Cookie[] cookies) {
+
+                for (Cookie cookie : cookies) {
+
+                    if ("ADMIN_JWT".equals(cookie.getName())) {
+                        token = cookie.getValue();
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (token == null || token.isBlank()) {
+            throw new IllegalArgumentException("Không tìm thấy JWT hoặc Session.");
+        }
+
+        Claims claims = jwtService.extractAllClaims(token);
+
+        String principalId = claims.getSubject();
+
+        accessor.setUser(() -> principalId);
+
+        System.out.println("WS Login by JWT : " + principalId);
+
         return message;
     }
 }
