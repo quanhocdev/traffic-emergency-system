@@ -1,6 +1,7 @@
 package com.example.canhbao.data.network
 
 import android.util.Log
+import com.example.canhbao.data.auth.FirebaseTokenProvider
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import ua.naiksoftware.stomp.Stomp
@@ -82,7 +83,6 @@ object SocketClientProvider {
 
 
 
-
         val customOkHttpClient =
             OkHttpClient.Builder()
 
@@ -154,7 +154,14 @@ object SocketClientProvider {
     }
 
 
+    suspend fun ensureConnected(): StompClient {
 
+        val token = FirebaseTokenProvider.getToken()
+
+        initNewClient(token)
+
+        return stompClient
+    }
 
 
     fun disconnect(){

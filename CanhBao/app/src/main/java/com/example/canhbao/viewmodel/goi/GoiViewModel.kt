@@ -31,16 +31,7 @@ class GoiViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
     private val _socketErrorMessage = MutableStateFlow<String?>(null)
     val socketErrorMessage: StateFlow<String?> = _socketErrorMessage
 
-    // Hàm lấy token đồng bộ an toàn phục vụ API cứu trợ
-    private suspend fun getToken(): String? {
-        return try {
-            val user = FirebaseAuth.getInstance().currentUser ?: return null
-            val tokenResult = Tasks.await(user.getIdToken(false))
-            tokenResult.token
-        } catch (e: Exception) {
-            null
-        }
-    }
+
 
     // Kết nối Socket thông qua Provider tập trung
     fun connectSocket() {

@@ -13,9 +13,13 @@ import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.example.canhbao.data.network.PublicSocketManager
 import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.data.network.UserSocketManager
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 enum class FilterMode { DAY, MONTH, YEAR }
@@ -37,6 +41,8 @@ class DoiTienViewModel : ViewModel() {
     private var userSocketManager: UserSocketManager? = null
     private var publicSocketManager: PublicSocketManager? = null
     private val gson = Gson()
+
+
 
     // Khai báo các biến state mới cho việc lọc
     var filterMode by mutableStateOf(FilterMode.DAY)
@@ -101,58 +107,84 @@ class DoiTienViewModel : ViewModel() {
     }
 
     private fun connectSockets() {
-        val currentClient = SocketClientProvider.stompClient
-        // Đảm bảo không tạo đè luồng nếu mọi thứ vẫn đang thông suốt
-        if (userSocketManager != null && publicSocketManager != null && currentClient.isConnected) return
 
-        userSocketManager = null
-        publicSocketManager = null
-        SocketClientProvider.initNewClient()
-        val activeClient = SocketClientProvider.stompClient
+        viewModelScope.launch {
 
-        // 1. ĐĂNG KÝ LUỒNG USER (ĐỂ THEO DÕI STATS CỦA USER CHÍNH XÁC QUA KÊNH RIÊNG TƯ)
-        userSocketManager = UserSocketManager(activeClient).apply {
-            subscribe(object : UserSocketManager.Callback {
-                override fun onUserStats(json: String) {
-                    try {
-                        userDetail = gson.fromJson(json, SuCoUserDto::class.java)
-                        Log.d("WebSocket_DoiTien", "🟢 Đã đồng bộ điểm cá nhân mới")
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+            val token = getToken()
+
+            val currentClient =
+                runCatching { SocketClientProvider.stompClient }.getOrNull()
+
+            if (
+                userSocketManager != null &&
+                publicSocketManager != null &&
+                currentClient != null &&
+                currentClient.isConnected
+            ) {
+                return@launch
+            }
+
+            userSocketManager = null
+            publicSocketManager = null
+
+            SocketClientProvider.initNewClient(token)
+
+            val activeClient = SocketClientProvider.stompClient
+
+            // 1. USER SOCKET
+            userSocketManager = UserSocketManager(activeClient).apply {
+                subscribe(object : UserSocketManager.Callback {
+
+                    override fun onUserStats(json: String) {
+                        try {
+                            userDetail =
+                                gson.fromJson(json, SuCoUserDto::class.java)
+
+                            Log.d(
+                                "WebSocket_DoiTien",
+                                "🟢 Đã đồng bộ điểm cá nhân mới"
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
-                }
 
-                override fun onHistoryRefresh() {}
-                override fun onPackageRefresh() {}
-                override fun onSosRefresh() {}
-                override fun onInvoiceUpdate(json: String) {}
-                override fun onNewInvoice(json: String) {}
-                override fun onPaymentUpdate(json: String) {}
-            })
-        }
+                    override fun onHistoryRefresh() {}
+                    override fun onPackageRefresh() {}
+                    override fun onSosRefresh() {}
+                    override fun onInvoiceUpdate(json: String) {}
+                    override fun onNewInvoice(json: String) {}
+                    override fun onPaymentUpdate(json: String) {}
+                })
+            }
 
-        // 2. ĐĂNG KÝ LUỒNG PUBLIC (ĐỂ THEO DÕI BIẾN ĐỘNG QUỸ CÔNG KHAI TOÀN ỨNG DỤNG)
-        publicSocketManager = PublicSocketManager(activeClient).apply {
-            subscribe(object : PublicSocketManager.Callback {
-                override fun onPublicFundUpdate(json: String) {
-                    try {
-                        publicFundStats = gson.fromJson(json, ThongKeQuyDto::class.java)
-                        Log.d("WebSocket_DoiTien", "🟢 Tổng quỹ công khai biến động realtime")
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+            // 2. PUBLIC SOCKET
+            publicSocketManager = PublicSocketManager(activeClient).apply {
+                subscribe(object : PublicSocketManager.Callback {
+
+                    override fun onPublicFundUpdate(json: String) {
+                        try {
+                            publicFundStats =
+                                gson.fromJson(json, ThongKeQuyDto::class.java)
+
+                            Log.d(
+                                "WebSocket_DoiTien",
+                                "🟢 Tổng quỹ công khai biến động realtime"
+                            )
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
-                }
 
-                override fun onSuCoUpdate(json: String) {}
-                override fun onSuCoDelete(id: Long) {}
-                override fun onTruSoUpdate(json: String) {}
-                override fun onTruSoDelete(id: Long) {}
-                override fun onCameraUpdate(json: String) {}
-                override fun onCameraDelete(id: Long) {}
-            })
+                    override fun onSuCoUpdate(json: String) {}
+                    override fun onSuCoDelete(id: Long) {}
+                    override fun onTruSoUpdate(json: String) {}
+                    override fun onTruSoDelete(id: Long) {}
+                    override fun onCameraUpdate(json: String) {}
+                    override fun onCameraDelete(id: Long) {}
+                })
+            }
         }
-
-        activeClient.connect()
     }
 
     // Hàm xử lý chung cho cả Đổi tiền và Quyên góp

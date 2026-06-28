@@ -45,11 +45,6 @@ class TheoDoiTinHieuViewModel : ViewModel() {
     var detailUiStateMap by mutableStateOf<Map<Long, TheoDoiSOSDetailResponseDTO>>(emptyMap())
         private set
 
-    private suspend fun getToken(): String {
-        val user = FirebaseAuth.getInstance().currentUser ?: throw Exception("Chưa đăng nhập")
-        val tokenResult = Tasks.await(user.getIdToken(false))
-        return "Bearer ${tokenResult.token ?: ""}"
-    }
 
     fun fetchData() {
         loadDataFromApi()

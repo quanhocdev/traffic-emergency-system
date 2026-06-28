@@ -33,11 +33,7 @@ class ChiTietHoaDonViewModel : ViewModel() {
 
     private var currentHoaDonId: Long? = null
 
-    private suspend fun getToken(): String {
-        val user = FirebaseAuth.getInstance().currentUser ?: throw Exception("Chưa đăng nhập")
-        val tokenResult = Tasks.await(user.getIdToken(false))
-        return "Bearer ${tokenResult.token}"
-    }
+
 
     @SuppressLint("CheckResult")
     private fun connectWebSocket() {

@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.canhbao.data.auth.FirebaseTokenProvider
 import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanResponseDTO
@@ -14,8 +15,6 @@ import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.data.network.UserSocketManager
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,52 +39,48 @@ class ThanhToanViewModel : ViewModel() {
 
     var paymentInfo by mutableStateOf<ThanhToanResponseDTO?>(null)
         private set
-
-    // Quản lý instance UserSocketManager dựa trên file gốc của bạn
     private var userSocketManager: UserSocketManager? = null
     private val gson = Gson()
 
-    private suspend fun getToken(): String {
-        val user = FirebaseAuth.getInstance().currentUser ?: throw Exception("Chưa đăng nhập")
-        val tokenResult = Tasks.await(user.getIdToken(false))
-        return "Bearer ${tokenResult.token}"
-    }
-
     @SuppressLint("CheckResult")
     private fun connectWebSocket() {
-        val currentClient = SocketClientProvider.stompClient
-        if (userSocketManager != null && currentClient.isConnected) return
 
-        userSocketManager = null
-        SocketClientProvider.initNewClient()
-        val activeClient = SocketClientProvider.stompClient
+        viewModelScope.launch {
 
-        // Đăng ký nhận cập nhật trạng thái hóa đơn thanh toán
-        userSocketManager = UserSocketManager(activeClient).apply {
-            subscribe(object : UserSocketManager.Callback {
-                override fun onInvoiceUpdate(json: String) {
-                    try {
-                        val response = gson.fromJson(json, ThanhToanResponseDTO::class.java)
-                        paymentInfo = response
-                        loadVoucher()
-                        Log.d("ThanhToanSocket", "🟢 Nhận thông tin cập nhật hóa đơn thành công")
-                    } catch (e: Exception) {
-                        Log.e("ThanhToanSocket", "Lỗi parse Invoice JSON: ${e.message}")
+            val activeClient = SocketClientProvider.ensureConnected()
+
+            if (userSocketManager != null) return@launch
+
+            userSocketManager = UserSocketManager(activeClient).apply {
+
+                subscribe(object : UserSocketManager.Callback {
+
+                    override fun onInvoiceUpdate(json: String) {
+                        try {
+                            val response =
+                                gson.fromJson(
+                                    json,
+                                    ThanhToanResponseDTO::class.java
+                                )
+
+                            paymentInfo = response
+                            loadVoucher()
+
+                        } catch (e: Exception) {
+                            Log.e("ThanhToanSocket", e.message ?: "")
+                        }
                     }
-                }
 
-                override fun onNewInvoice(json: String) {}
-                override fun onHistoryRefresh() {}
-                override fun onPackageRefresh() {}
-                override fun onSosRefresh() {}
-                override fun onUserStats(json: String) {}
-                override fun onPaymentUpdate(json: String) {}
-            })
+                    override fun onNewInvoice(json: String) {}
+                    override fun onHistoryRefresh() {}
+                    override fun onPackageRefresh() {}
+                    override fun onSosRefresh() {}
+                    override fun onUserStats(json: String) {}
+                    override fun onPaymentUpdate(json: String) {}
+                })
+            }
         }
-
-        activeClient.connect()
     }
-
     fun startSocket() {
         connectWebSocket()
     }
@@ -95,11 +90,8 @@ class ThanhToanViewModel : ViewModel() {
             try {
                 loading = true
                 val result = withContext(Dispatchers.IO) {
-                    val token = getToken()
-                    Log.d("VOUCHER", "TOKEN = $token")
-                    val res = BaoCaoSuCoRetrofit.api.getMyGifts(token)
-                    Log.d("VOUCHER", "RAW RESULT = $res")
-                    res
+                    val token = FirebaseTokenProvider.getToken()
+                    BaoCaoSuCoRetrofit.api.getMyGifts(token)
                 }
                 listVoucher = result
                 Log.d("VOUCHER", "LIST SIZE = ${listVoucher.size}")
@@ -120,7 +112,7 @@ class ThanhToanViewModel : ViewModel() {
                 errorMessage = null
 
                 val response = withContext(Dispatchers.IO) {
-                    val token = getToken()
+                    val token = FirebaseTokenProvider.getToken()
                     BaoCaoSuCoRetrofit.api.confirmPayment(
                         token,
                         ThanhToanRequestDTO(
@@ -162,11 +154,11 @@ class ThanhToanViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 errorMessage = null
-                val token = withContext(Dispatchers.IO) { getToken() }
-                val result = withContext(Dispatchers.IO) {
-                    BaoCaoSuCoRetrofit.api.getHoaDonDetail(token, hoaDonId)
-                }
-                hoaDonDetail = result
+
+                val token = FirebaseTokenProvider.getToken()
+
+                hoaDonDetail = BaoCaoSuCoRetrofit.api.getHoaDonDetail(token, hoaDonId)
+
             } catch (e: Exception) {
                 Log.e("ThanhToanVM", "LỖI TẢI CHI TIẾT HÓA ĐƠN", e)
             }
