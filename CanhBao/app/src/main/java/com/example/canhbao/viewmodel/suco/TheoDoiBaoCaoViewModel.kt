@@ -40,13 +40,7 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
     private var publicSocketManager: PublicSocketManager? = null
     private var userSocketManager: UserSocketManager? = null
 
-    private suspend fun getToken(): String {
-        val user = FirebaseAuth.getInstance().currentUser
-            ?: throw Exception("Chưa đăng nhập")
 
-        val tokenResult = Tasks.await(user.getIdToken(false))
-        return "Bearer ${tokenResult.token ?: ""}"
-    }
 
     fun fetchData() {
         loadDataFromApi()
@@ -112,59 +106,88 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
 
     @SuppressLint("CheckResult")
     private fun connectWebSocket() {
-        val currentClient = SocketClientProvider.stompClient
-        if (publicSocketManager != null && userSocketManager != null && currentClient.isConnected) return
 
-        publicSocketManager = null
-        userSocketManager = null
-        SocketClientProvider.initNewClient()
-        val activeClient = SocketClientProvider.stompClient
+        viewModelScope.launch {
 
-        // 1. ĐĂNG KÝ KÊNH CÔNG KHAI (Lắng nghe khi có sự cố mới phát sinh toàn bản đồ)
-        publicSocketManager = PublicSocketManager(activeClient).apply {
-            subscribe(object : PublicSocketManager.Callback {
-                override fun onSuCoUpdate(json: String) {
-                    Log.d("WebSocket_BaoCao", "🔄 Nhận tín hiệu sự cố chung từ Socket -> Tải lại danh sách")
-                    loadDataFromApi()
-                }
+            val token = getToken() ?: return@launch
 
-                override fun onSuCoDelete(id: Long) {
-                    Log.d("WebSocket_BaoCao", "🔥 Nhận tín hiệu xóa sự cố chung ID: $id -> Tải lại danh sách")
-                    detailUiStateMap.remove(id)
-                    loadDataFromApi()
-                }
+            val currentClient =
+                runCatching { SocketClientProvider.stompClient }.getOrNull()
 
-                override fun onTruSoUpdate(json: String) {}
-                override fun onTruSoDelete(id: Long) {}
-                override fun onCameraUpdate(json: String) {}
-                override fun onCameraDelete(id: Long) {}
-                override fun onPublicFundUpdate(json: String) {}
-            })
-        }
+            if (
+                publicSocketManager != null &&
+                userSocketManager != null &&
+                currentClient != null &&
+                currentClient.isConnected
+            ) {
+                return@launch
+            }
 
-        // 2. ĐĂNG KÝ KÊNH CÁ NHÂN (Lắng nghe lịch sử đơn của User thay đổi tiến độ xử lý)
-        userSocketManager = UserSocketManager(activeClient).apply {
-            subscribe(object : UserSocketManager.Callback {
-                override fun onHistoryRefresh() {
-                    Log.d("WebSocket_BaoCao", "🔄 Nhận tín hiệu lịch sử cá nhân đổi trạng thái -> Tải lại API")
-                    loadDataFromApi()
+            publicSocketManager = null
+            userSocketManager = null
 
-                    // Quét qua các ID đang mở trên màn hình chi tiết để kéo lại data mới nhất luôn
-                    detailUiStateMap.keys.forEach { activeId ->
-                        fetchDetailSuCo(activeId)
+            SocketClientProvider.initNewClient(token)
+
+            val activeClient = SocketClientProvider.stompClient
+
+            // 1. Socket công khai
+            publicSocketManager = PublicSocketManager(activeClient).apply {
+
+                subscribe(object : PublicSocketManager.Callback {
+
+                    override fun onSuCoUpdate(json: String) {
+                        Log.d(
+                            "WebSocket_BaoCao",
+                            "🔄 Nhận tín hiệu sự cố chung -> reload"
+                        )
+                        loadDataFromApi()
                     }
-                }
 
-                override fun onPackageRefresh() {}
-                override fun onSosRefresh() {}
-                override fun onInvoiceUpdate(json: String) {}
-                override fun onUserStats(json: String) {}
-                override fun onNewInvoice(json: String) {}
-                override fun onPaymentUpdate(json: String) {}
-            })
+                    override fun onSuCoDelete(id: Long) {
+                        Log.d(
+                            "WebSocket_BaoCao",
+                            "🔥 Xóa sự cố $id"
+                        )
+                        detailUiStateMap.remove(id)
+                        loadDataFromApi()
+                    }
+
+                    override fun onTruSoUpdate(json: String) {}
+                    override fun onTruSoDelete(id: Long) {}
+                    override fun onCameraUpdate(json: String) {}
+                    override fun onCameraDelete(id: Long) {}
+                    override fun onPublicFundUpdate(json: String) {}
+                })
+            }
+
+            // 2. Socket cá nhân
+            userSocketManager = UserSocketManager(activeClient).apply {
+
+                subscribe(object : UserSocketManager.Callback {
+
+                    override fun onHistoryRefresh() {
+
+                        Log.d(
+                            "WebSocket_BaoCao",
+                            "🔄 Refresh lịch sử"
+                        )
+
+                        loadDataFromApi()
+
+                        detailUiStateMap.keys.forEach { id ->
+                            fetchDetailSuCo(id)
+                        }
+                    }
+
+                    override fun onPackageRefresh() {}
+                    override fun onSosRefresh() {}
+                    override fun onInvoiceUpdate(json: String) {}
+                    override fun onUserStats(json: String) {}
+                    override fun onNewInvoice(json: String) {}
+                    override fun onPaymentUpdate(json: String) {}
+                })
+            }
         }
-
-        activeClient.connect()
     }
 
     override fun onCleared() {

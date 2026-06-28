@@ -63,6 +63,7 @@ import androidx.lifecycle.Lifecycle
 import com.example.canhbao.data.model.info.truso.TruSoMapDto
 import com.example.canhbao.viewmodel.camera.CameraViewModel
 import com.example.canhbao.viewmodel.truso.TruSoViewModel
+import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListener
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,8 +88,9 @@ fun MapScreen(
     val maThietBi = remember {
         android.provider.Settings.Secure.getString(context.contentResolver, android.provider.Settings.Secure.ANDROID_ID)
     }
-
-    var mapView: MapView? by remember { mutableStateOf(null) }
+    val mapView = remember {
+        MapView(context)
+    }
     var lastUserLocation by remember { mutableStateOf<Point?>(null) }
 
     // --- STATE QUẢN LÝ DETAIL BOTTOM SHEET ---
@@ -131,6 +133,9 @@ fun MapScreen(
         "Ô tô" -> Icons.Default.DirectionsCar
         else -> Icons.Default.DirectionsWalk
     }
+    var bearingListener by remember {
+        mutableStateOf<OnIndicatorBearingChangedListener?>(null)
+    }
 
     var polygonManager: PolygonAnnotationManager? by remember { mutableStateOf(null) }
     var pointManager: PointAnnotationManager? by remember { mutableStateOf(null) }
@@ -161,12 +166,7 @@ fun MapScreen(
             navController.navigate("call_screen")
         }
     }
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-
-        android.util.Log.d(
-            "MAP_DEBUG",
-            "Màn hình Map resume"
-        )
+    LaunchedEffect(Unit) {
 
         mapViewModel.loadSuCoForMap(context)
 
@@ -316,19 +316,34 @@ fun MapScreen(
         targetValue = if (isPressingSOS) 0.6f else 0f,
         animationSpec = tween(500), label = "BlurAlpha"
     )
+    DisposableEffect(mapView) {
 
-    DisposableEffect(Unit) {
+        val map = mapView
+
         onDispose {
-            tts.shutdown()
 
-            try {
-                mapViewModel.stopLocationUpdates()
-                android.util.Log.w("GPS_DEBUG", "🧹 Đã giải phóng luồng GPS đồng thời với TTS thành công!")
-            } catch (e: Exception) {
-                e.printStackTrace()
+            map.location.removeOnIndicatorPositionChangedListener(
+                positionListener
+            )
+
+            bearingListener?.let {
+                map.location.removeOnIndicatorBearingChangedListener(it)
             }
+
+            map.location.updateSettings {
+                enabled = false
+            }
+
+            map.onStop()
+            map.onDestroy()
+
+            android.util.Log.d(
+                "GPS_DEBUG",
+                "Đã cleanup Mapbox location"
+            )
         }
     }
+
     Scaffold(
         bottomBar = {
             NavigationBar(containerColor = Color.White) {
@@ -350,8 +365,8 @@ fun MapScreen(
 
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
-                factory = { ctx ->
-                    MapView(ctx).apply {
+                factory = {
+                    mapView.apply {
                         mapboxMap.setCamera(CameraOptions.Builder().center(Point.fromLngLat(106.6297, 10.8231)).zoom(12.0).build())
                         mapboxMap.loadStyleUri(Style.MAPBOX_STREETS) { style ->
                             mapboxMap.addOnMapClickListener {
@@ -409,12 +424,26 @@ fun MapScreen(
                             })
                         }
 
-                        if (ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                            location.updateSettings { enabled = true; pulsingEnabled = true }
-                            location.addOnIndicatorBearingChangedListener { bearing -> userHeading = bearing.toFloat() }
+                        if (ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            ) == PackageManager.PERMISSION_GRANTED) {
+
+                            location.updateSettings {
+                                enabled = true
+                                pulsingEnabled = true
+                            }
+
+                            val listener = OnIndicatorBearingChangedListener { bearing ->
+                                userHeading = bearing.toFloat()
+                            }
+
+                            bearingListener = listener
+
+                            location.addOnIndicatorBearingChangedListener(listener)
+
                             location.addOnIndicatorPositionChangedListener(positionListener)
                         }
-                        mapView = this
                     }
                 }
             )

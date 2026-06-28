@@ -33,41 +33,62 @@ class ChiTietHoaDonViewModel : ViewModel() {
 
     private var currentHoaDonId: Long? = null
 
-    private suspend fun getToken(): String {
-        val user = FirebaseAuth.getInstance().currentUser ?: throw Exception("Chưa đăng nhập")
-        val tokenResult = Tasks.await(user.getIdToken(false))
-        return "Bearer ${tokenResult.token}"
-    }
+
 
     @SuppressLint("CheckResult")
     private fun connectWebSocket() {
-        val currentClient = SocketClientProvider.stompClient
-        if (userSocketManager != null && currentClient.isConnected) return
 
-        userSocketManager = null
-        SocketClientProvider.initNewClient()
-        val activeClient = SocketClientProvider.stompClient
+        viewModelScope.launch {
 
-        // Đăng ký nhận thông báo hóa đơn mới từ UserSocketManager
-        userSocketManager = UserSocketManager(activeClient).apply {
-            subscribe(object : UserSocketManager.Callback {
-                override fun onNewInvoice(json: String) {
-                    Log.d("HoaDonSocket", "Nhận thông báo hóa đơn mới từ Socket -> Refresh dữ liệu")
-                    currentHoaDonId?.let {
-                        loadHoaDonDetail(it)
-                    }
+            val token = withContext(Dispatchers.IO) {
+                try {
+                    getToken().removePrefix("Bearer ")
+                } catch (e: Exception) {
+                    null
                 }
+            } ?: return@launch
 
-                override fun onInvoiceUpdate(json: String) {}
-                override fun onHistoryRefresh() {}
-                override fun onPackageRefresh() {}
-                override fun onSosRefresh() {}
-                override fun onUserStats(json: String) {}
-                override fun onPaymentUpdate(json: String) {}
-            })
+            val currentClient = runCatching {
+                SocketClientProvider.stompClient
+            }.getOrNull()
+
+            if (userSocketManager != null &&
+                currentClient?.isConnected == true
+            ) {
+                return@launch
+            }
+
+            userSocketManager = null
+
+            SocketClientProvider.initNewClient(token)
+
+            val activeClient = SocketClientProvider.stompClient
+
+            userSocketManager = UserSocketManager(activeClient).apply {
+
+                subscribe(object : UserSocketManager.Callback {
+
+                    override fun onNewInvoice(json: String) {
+
+                        Log.d(
+                            "HoaDonSocket",
+                            "Nhận thông báo hóa đơn mới -> Refresh"
+                        )
+
+                        currentHoaDonId?.let {
+                            loadHoaDonDetail(it)
+                        }
+                    }
+
+                    override fun onInvoiceUpdate(json: String) {}
+                    override fun onHistoryRefresh() {}
+                    override fun onPackageRefresh() {}
+                    override fun onSosRefresh() {}
+                    override fun onUserStats(json: String) {}
+                    override fun onPaymentUpdate(json: String) {}
+                })
+            }
         }
-
-        activeClient.connect()
     }
 
     fun loadHoaDonDetail(hoaDonId: Long) {

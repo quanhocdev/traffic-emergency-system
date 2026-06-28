@@ -1,5 +1,6 @@
 package com.example.canhbao.data.network
 
+import android.util.Log
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -8,9 +9,26 @@ import java.util.concurrent.TimeUnit
 object BaoCaoSuCoRetrofit {
     // 1. Tạo OkHttpClient với cấu hình Timeout mới
     private val okHttpClient = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS) // Thời gian kết nối
-        .readTimeout(60, TimeUnit.SECONDS)    // Thời gian chờ Server xử lý và trả về kết quả
-        .writeTimeout(60, TimeUnit.SECONDS)   // Thời gian đẩy dữ liệu (ảnh) lên
+        .addInterceptor { chain ->
+
+            val request = chain.request()
+
+            Log.d(
+                "HTTP",
+                "CALL ${request.url}"
+            )
+
+            val response = chain.proceed(request)
+
+            Log.d(
+                "HTTP",
+                "RESPONSE ${response.code}"
+            )
+
+            response
+        }
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
         .build()
 
     val api: BaoCaoSuCoApi by lazy {

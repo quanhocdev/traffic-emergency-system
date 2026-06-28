@@ -13,6 +13,12 @@ public class BaoCaoRealtimeService {
     private SimpMessagingTemplate messagingTemplate;
 
     public void broadcastReport(SuCoMapResponseDTO dto) {
+           
+        System.out.println(
+        "WS SEND SUCO = " + dto
+    );
+
+
         messagingTemplate.convertAndSend(
                 "/topic/su-co",
                 dto
