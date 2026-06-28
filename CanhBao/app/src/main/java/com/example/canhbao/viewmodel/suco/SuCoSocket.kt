@@ -5,10 +5,17 @@ import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
 import com.example.canhbao.data.network.SocketClientProvider
 import com.google.gson.Gson
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import io.reactivex.disposables.CompositeDisposable
+import ua.naiksoftware.stomp.StompClient
 
 
 class SuCoSocket {
+
+
+    private val disposables = CompositeDisposable()
+
+    private val gson = Gson()
+
 
 
     interface Callback {
@@ -17,7 +24,6 @@ class SuCoSocket {
             suCo: SuCoMapResponseDTO
         )
 
-
         fun onSuCoDelete(
             id: Long
         )
@@ -25,94 +31,117 @@ class SuCoSocket {
 
 
 
-    private val gson = Gson()
-
-
 
     fun subscribe(
         callback: Callback
     ){
 
-
-        val client =
+        val client: StompClient =
             SocketClientProvider.stompClient
 
 
 
-        // ===== UPDATE =====
+        /*
+        ==========================
+        UPDATE SỰ CỐ
+        ==========================
+        */
 
-        client.topic("/topic/su-co")
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
+        val updateDisposable =
+            client.topic("/topic/su-co")
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
 
-                try {
+                    try {
 
-                    val suCo =
-                        gson.fromJson(
-                            it.payload,
-                            SuCoMapResponseDTO::class.java
+                        val suCo =
+                            gson.fromJson(
+                                it.payload,
+                                SuCoMapResponseDTO::class.java
+                            )
+
+
+                        Log.d(
+                            "SUCO_SOCKET",
+                            "RECEIVE ${suCo.id} ${suCo.mucDoSuCo}"
                         )
 
 
-                    callback.onSuCoUpdate(
-                        suCo
-                    )
+                        callback.onSuCoUpdate(
+                            suCo
+                        )
 
 
-                } catch(e:Exception){
+                    }catch(e:Exception){
 
+                        Log.e(
+                            "SUCO_SOCKET",
+                            "Parse error ${e.message}"
+                        )
+                    }
+
+
+                },{
                     Log.e(
-                        "SuCoSocket",
-                        "Parse lỗi ${e.message}"
+                        "SUCO_SOCKET",
+                        "Update error ${it.message}"
                     )
-                }
+                })
 
 
-            },{
-
-                Log.e(
-                    "SuCoSocket",
-                    "Socket lỗi ${it.message}"
-                )
-
-            })
+        disposables.add(updateDisposable)
 
 
 
 
 
-        // ===== DELETE =====
+
+        /*
+        ==========================
+        DELETE SỰ CỐ
+        ==========================
+        */
 
 
-        client.topic("/topic/su-co-delete")
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
+        val deleteDisposable =
+            client.topic("/topic/su-co-delete")
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({
+
+                    it.payload
+                        .toLongOrNull()
+                        ?.let { id ->
+
+                            Log.d(
+                                "SUCO_SOCKET",
+                                "DELETE $id"
+                            )
+
+                            callback.onSuCoDelete(
+                                id
+                            )
+                        }
 
 
-                val id =
-                    it.payload.toLongOrNull()
-
-
-                if(id != null){
-
-                    callback.onSuCoDelete(
-                        id
+                },{
+                    Log.e(
+                        "SUCO_SOCKET",
+                        "Delete error ${it.message}"
                     )
-
-                }
-
-
-            },{
+                })
 
 
-                Log.e(
-                    "SuCoSocket",
-                    "Delete lỗi ${it.message}"
-                )
 
-            })
+        disposables.add(deleteDisposable)
+
+
+
+
+
+        Log.d(
+            "SUCO_SOCKET",
+            "Subscribed /topic/su-co"
+        )
 
     }
 
@@ -120,22 +149,13 @@ class SuCoSocket {
 
 
 
-    fun start(){
+    fun clear(){
 
-        val client =
-            SocketClientProvider.stompClient
-
-
-        if(!client.isConnected){
-
-            client.connect()
-
-        }
-
+        disposables.clear()
 
         Log.d(
-            "SuCoSocket",
-            "SuCo socket started"
+            "SUCO_SOCKET",
+            "Socket disposable cleared"
         )
     }
 

@@ -52,58 +52,96 @@ class HomeViewModel : ViewModel() {
     }
 
     private fun connectUserSocket() {
-        val currentClient = SocketClientProvider.stompClient
-        // Nếu đã khởi tạo manager và client cũ đang thông suốt thì không tạo đè
-        if (userSocketManager != null && currentClient.isConnected) return
 
-        userSocketManager = null
-        SocketClientProvider.initNewClient()
-        val activeClient = SocketClientProvider.stompClient
+        viewModelScope.launch {
 
-        // Khởi tạo và subscribe qua UserSocketManager gốc của bạn
-        userSocketManager = UserSocketManager(activeClient).apply {
-            subscribe(object : UserSocketManager.Callback {
+            try {
 
-                override fun onUserStats(json: String) {
-                    try {
-                        val updatedUser = gson.fromJson(json, SuCoUserDto::class.java)
-                        // Đồng bộ trực tiếp lên UI State Compose
-                        userDetail = updatedUser
-                        Log.d("WebSocket_Home", "✅ Đã cập nhật User Stats thành công")
-                    } catch (e: Exception) {
-                        Log.e("WebSocket_Home", "Lỗi parse UserStats JSON: ${e.message}")
-                    }
-                }
+                val user =
+                    FirebaseAuth.getInstance().currentUser
+                        ?: return@launch
 
-                override fun onHistoryRefresh() {
-                    Log.d("WebSocket_Home", "Yêu cầu refresh lịch sử")
-                }
 
-                override fun onPackageRefresh() {
-                    Log.d("WebSocket_Home", "Yêu cầu refresh gói cứu trợ")
-                }
+                val token =
+                    user.getIdToken(false)
+                        .await()
+                        .token
+                        ?: return@launch
 
-                override fun onSosRefresh() {
-                    Log.d("WebSocket_Home", "Yêu cầu refresh trạng thái SOS")
-                }
 
-                override fun onInvoiceUpdate(json: String) {
-                    Log.d("WebSocket_Home", "Cập nhật hóa đơn: $json")
-                }
 
-                override fun onNewInvoice(json: String) {
-                    Log.d("WebSocket_Home", "Có hóa đơn mới: $json")
-                }
+                userSocketManager = null
 
-                override fun onPaymentUpdate(json: String) {
-                    Log.d("WebSocket_Home", "Cập nhật thanh toán: $json")
-                }
-            })
+
+                SocketClientProvider.initNewClient(token)
+
+
+                val activeClient =
+                    SocketClientProvider.stompClient
+
+
+                userSocketManager =
+                    UserSocketManager(activeClient)
+                        .apply {
+
+                            subscribe(object : UserSocketManager.Callback {
+
+                                override fun onUserStats(json: String) {
+                                    try {
+
+                                        val updatedUser =
+                                            gson.fromJson(
+                                                json,
+                                                SuCoUserDto::class.java
+                                            )
+
+                                        userDetail = updatedUser
+
+                                        Log.d(
+                                            "WebSocket_Home",
+                                            "Update User Stats"
+                                        )
+
+                                    } catch(e:Exception){
+                                        Log.e(
+                                            "WebSocket_Home",
+                                            e.message ?: ""
+                                        )
+                                    }
+                                }
+
+
+                                override fun onHistoryRefresh() {}
+
+                                override fun onPackageRefresh() {}
+
+                                override fun onSosRefresh() {}
+
+                                override fun onInvoiceUpdate(json:String){}
+
+                                override fun onNewInvoice(json:String){}
+
+                                override fun onPaymentUpdate(json:String){}
+
+                            })
+                        }
+
+
+                Log.d(
+                    "WebSocket_Home",
+                    "Socket init có JWT"
+                )
+
+
+            } catch(e:Exception){
+
+                Log.e(
+                    "WebSocket_Home",
+                    "Socket lỗi ${e.message}"
+                )
+
+            }
         }
-
-        // Kích hoạt kết nối tập trung thông qua provider
-        activeClient.connect()
-        Log.d("WebSocket_Home", "🟢 Đã kích hoạt luồng kết nối User Socket thành công")
     }
 
     override fun onCleared() {

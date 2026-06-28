@@ -17,10 +17,12 @@ import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.example.canhbao.data.network.PublicSocketManager
 import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.viewmodel.suco.SuCoSocket
+import com.google.firebase.auth.FirebaseAuth
 import com.mapbox.geojson.Point
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -89,24 +91,51 @@ class MapViewModel : ViewModel() {
 
             try {
 
-                _suCoWithIcons.value = emptyList()
-                _suCoList.value = emptyList()
+                Log.d("MAP_SUCO", "START CALL API")
+
 
                 val list = suCoApi.getSuCoForMap()
 
-                _suCoList.value = list
+
+                val currentSocketData =
+                    _suCoList.value
+
+
+                _suCoList.value =
+                    (list + currentSocketData)
+                        .distinctBy { it.id }
+
+
+
+                Log.d(
+                    "MAP_SUCO",
+                    "LOAD ICON"
+                )
+
 
                 loadAllIcons(
                     appContext,
-                    list
+                    _suCoList.value
                 )
 
+
+                Log.d(
+                    "MAP_SUCO",
+                    "FINISH"
+                )
+
+
             } catch(e:Exception){
-                e.printStackTrace()
+
+                Log.e(
+                    "MAP_SUCO",
+                    "API ERROR ${e.message}",
+                    e
+                )
+
             }
         }
     }
-
     init {
         startRealtimeSocket()
     }
@@ -115,39 +144,67 @@ class MapViewModel : ViewModel() {
 
     private fun startRealtimeSocket(){
 
+        viewModelScope.launch {
 
-        suCoSocket.subscribe(
+            val user =
+                FirebaseAuth.getInstance()
+                    .currentUser
+                    ?: return@launch
 
-            object: SuCoSocket.Callback {
+
+            val token =
+                user.getIdToken(false)
+                    .await()
+                    .token
+                    ?: return@launch
 
 
-                override fun onSuCoUpdate(
-                    suCo: SuCoMapResponseDTO
-                ){
 
-                    updateSuCoFromSocket(
-                        suCo
-                    )
+            SocketClientProvider.initNewClient(
+                token
+            )
+
+
+
+            val callback =
+                object: SuCoSocket.Callback {
+
+
+                    override fun onSuCoUpdate(
+                        suCo: SuCoMapResponseDTO
+                    ){
+
+                        Log.d(
+                            "SUCO_SOCKET",
+                            "UPDATE ${suCo.id} ${suCo.mucDoSuCo}"
+                        )
+
+
+                        updateSuCoFromSocket(
+                            suCo
+                        )
+                    }
+
+
+
+                    override fun onSuCoDelete(
+                        id: Long
+                    ){
+
+                        removeSuCoFromSocket(
+                            id
+                        )
+                    }
+
                 }
 
 
 
-                override fun onSuCoDelete(
-                    id: Long
-                ){
+            suCoSocket.subscribe(
+                callback
+            )
 
-                    removeSuCoFromSocket(
-                        id
-                    )
-
-                }
-
-            }
-        )
-
-
-        suCoSocket.start()
-
+        }
     }
     fun toggleFilter(type: String) {
         if (type == "SU_CO") {
@@ -156,43 +213,36 @@ class MapViewModel : ViewModel() {
     }
 
 
-    fun updateSuCoFromSocket(suCo: SuCoMapResponseDTO) {
-        viewModelScope.launch(Dispatchers.IO) {
-            Log.d("REALTIME_BUG", "🔄 ViewModel bắt đầu xử lý sự cố ID = ${suCo.id}")
+    fun updateSuCoFromSocket(
+        suCo: SuCoMapResponseDTO
+    ){
+        val list =
+            _suCoList.value.toMutableList()
 
-            val currentList = _suCoList.value.toMutableList()
-
-            currentList.removeAll { it.id == suCo.id }
-            currentList.add(suCo)
-
-            withContext(Dispatchers.Main) {
-                _suCoList.value = currentList
+        val index =
+            list.indexOfFirst {
+                it.id == suCo.id
             }
 
-            if (suCo.trangThaiXuLy == "HOAN_THANH") {
-                val currentWithIcons = _suCoWithIcons.value.toMutableList()
-                currentWithIcons.removeAll { it.first.id == suCo.id }
-                withContext(Dispatchers.Main) {
-                    _suCoWithIcons.value = currentWithIcons.toList()
-                }
-                Log.d("REALTIME_BUG", "❌ Đã xóa sự cố hoàn thành khỏi bản đồ (ID = ${suCo.id})")
-                return@launch
-            }
 
-            val path = suCo.iconUrl ?: ""
-            val fullUrl = if (path.startsWith("http")) path else "${AppConfig.HTTP_BASE_URL}$path"
+        if(index >=0){
+            list[index]=suCo
+        }else{
+            list.add(suCo)
+        }
 
-            val bmp = loadMarkerIcon(appContext, fullUrl, suCo.mucDoSuCo)
-            if (bmp != null) {
-                val currentWithIcons = _suCoWithIcons.value.toMutableList()
-                currentWithIcons.removeAll { it.first.id == suCo.id }
-                currentWithIcons.add(suCo to bmp)
+        _suCoList.value=list
 
-                withContext(Dispatchers.Main) {
-                    _suCoWithIcons.value = currentWithIcons.toList()
-                }
-                Log.d("REALTIME_BUG", "✅ Vẽ đè Icon thành công! Đã đẩy vào StateFlow.")
-            }
+
+        // thêm đoạn này
+
+        viewModelScope.launch {
+
+            processAndAddSuCo(
+                appContext,
+                suCo
+            )
+
         }
     }
 
@@ -369,9 +419,11 @@ class MapViewModel : ViewModel() {
 
     override fun onCleared() {
 
-        super.onCleared()
+        suCoSocket.clear()
 
         stopLocationUpdates()
+
+        super.onCleared()
 
     }
 }

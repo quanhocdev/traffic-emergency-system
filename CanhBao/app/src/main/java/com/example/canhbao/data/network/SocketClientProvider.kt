@@ -5,52 +5,182 @@ import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
+import ua.naiksoftware.stomp.dto.StompHeader
+
 
 object SocketClientProvider {
 
+
     private var _stompClient: StompClient? = null
 
-    // Lấy instance hiện tại, nếu chưa có thì mới tạo, tránh việc tạo đè liên tục
+    private var currentToken: String? = null
+
+
+
     val stompClient: StompClient
         get() {
-            if (_stompClient == null) {
-                initNewClient()
-            }
-            return _stompClient!!
+            return _stompClient
+                ?: throw IllegalStateException(
+                    "Socket chưa init"
+                )
         }
 
-    fun initNewClient() {
-        if (_stompClient != null && _stompClient!!.isConnected) {
-            Log.d("SOCKET_DEBUG", " Instance Stomp cũ vẫn đang kết nối tốt. Bỏ qua lệnh tạo mới.")
+
+
+
+    fun initNewClient(token: String) {
+
+
+        /*
+        ==================================
+        Nếu socket tồn tại và cùng token
+        => dùng lại
+        ==================================
+        */
+
+        if (
+            _stompClient != null &&
+            currentToken == token
+        ) {
+
+            Log.d(
+                "SOCKET_DEBUG",
+                "Reuse socket cũ"
+            )
+
             return
         }
 
-        Log.w("SOCKET_DEBUG", " Tiến hành dọn dẹp sạch luồng cũ và cấu hình cổng mạng mới...")
+
+
+
+        /*
+        ==================================
+        Token đổi hoặc chưa có socket
+        => tạo mới
+        ==================================
+        */
+
 
         try {
-            // Chỉ disconnect khi thực sự có instance cũ đang chạy dở dang
+
             _stompClient?.disconnect()
-        } catch (e: Exception) {
-            Log.e("SOCKET_DEBUG", " Lỗi dọn dẹp kết nối: ${e.message}")
+
+            Log.d(
+                "SOCKET_DEBUG",
+                "Disconnect socket cũ"
+            )
+
+        } catch(e:Exception){
+
+            Log.e(
+                "SOCKET_DEBUG",
+                "Disconnect lỗi ${e.message}"
+            )
         }
 
-        // Tăng timeout để tránh rớt mạng
-        val customOkHttpClient = OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(10, TimeUnit.SECONDS)
-            .build()
 
-        // Khởi tạo instance mới độc lập hoàn toàn
-        _stompClient = Stomp.over(
-            Stomp.ConnectionProvider.OKHTTP,
-            AppConfig.WS_PURE_URL,
-            null,
-            customOkHttpClient
-        ).apply {
-            // Heartbeat giúp giữ kết nối sống (Ping/Pong giữa Android và Spring Boot)
-            withClientHeartbeat(15000)
-            withServerHeartbeat(15000)
+
+
+
+        val customOkHttpClient =
+            OkHttpClient.Builder()
+
+                .connectTimeout(
+                    10,
+                    TimeUnit.SECONDS
+                )
+
+                .readTimeout(
+                    0,
+                    TimeUnit.SECONDS
+                )
+
+                .writeTimeout(
+                    10,
+                    TimeUnit.SECONDS
+                )
+
+                .build()
+
+
+
+
+
+        _stompClient =
+            Stomp.over(
+                Stomp.ConnectionProvider.OKHTTP,
+                AppConfig.WS_PURE_URL,
+                null,
+                customOkHttpClient
+            )
+                .apply {
+
+
+                    withClientHeartbeat(
+                        15000
+                    )
+
+
+                    withServerHeartbeat(
+                        15000
+                    )
+
+
+
+                    connect(
+                        listOf(
+
+                            StompHeader(
+                                "Authorization",
+                                "Bearer $token"
+                            )
+
+                        )
+                    )
+
+                }
+
+
+
+        currentToken = token
+
+
+
+        Log.d(
+            "SOCKET_DEBUG",
+            "Tạo socket mới"
+        )
+    }
+
+
+
+
+
+    fun disconnect(){
+
+        try {
+
+            _stompClient?.disconnect()
+
+            _stompClient = null
+
+            currentToken = null
+
+
+            Log.d(
+                "SOCKET_DEBUG",
+                "Socket disconnected"
+            )
+
+
+        } catch(e:Exception){
+
+            Log.e(
+                "SOCKET_DEBUG",
+                "Disconnect error ${e.message}"
+            )
         }
     }
+
 }

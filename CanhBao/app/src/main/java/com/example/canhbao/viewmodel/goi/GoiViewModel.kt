@@ -44,31 +44,54 @@ class GoiViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
 
     // Kết nối Socket thông qua Provider tập trung
     fun connectSocket() {
-        val currentClient = SocketClientProvider.stompClient
-        if (userSocketManager != null && currentClient.isConnected) return
 
-        userSocketManager = null
-        SocketClientProvider.initNewClient()
-        val activeClient = SocketClientProvider.stompClient
+        viewModelScope.launch {
 
-        userSocketManager = UserSocketManager(activeClient).apply {
-            subscribe(object : UserSocketManager.Callback {
+            val token = withContext(Dispatchers.IO) {
+                getToken()
+            } ?: return@launch
 
-                override fun onPackageRefresh() {
-                    Log.d("WebSocket_Goi", "🔄 Nhận tín hiệu làm mới Gói cứu trợ (REFRESH)")
-                    fetchMyPackages()
+            val currentClient =
+                runCatching {
+                    SocketClientProvider.stompClient
+                }.getOrNull()
+
+            if (userSocketManager != null &&
+                currentClient?.isConnected == true
+            ) {
+                return@launch
+            }
+
+            userSocketManager = null
+
+            SocketClientProvider.initNewClient(token)
+
+            val activeClient =
+                SocketClientProvider.stompClient
+
+            userSocketManager =
+                UserSocketManager(activeClient).apply {
+
+                    subscribe(object : UserSocketManager.Callback {
+
+                        override fun onPackageRefresh() {
+                            Log.d(
+                                "WebSocket_Goi",
+                                "🔄 Nhận tín hiệu làm mới Gói cứu trợ"
+                            )
+                            fetchMyPackages()
+                        }
+
+                        override fun onHistoryRefresh() {}
+                        override fun onSosRefresh() {}
+                        override fun onInvoiceUpdate(json: String) {}
+                        override fun onUserStats(json: String) {}
+                        override fun onNewInvoice(json: String) {}
+                        override fun onPaymentUpdate(json: String) {}
+                    })
                 }
 
-                override fun onHistoryRefresh() {}
-                override fun onSosRefresh() {}
-                override fun onInvoiceUpdate(json: String) {}
-                override fun onUserStats(json: String) {}
-                override fun onNewInvoice(json: String) {}
-                override fun onPaymentUpdate(json: String) {}
-            })
         }
-
-        activeClient.connect()
     }
 
     fun fetchGoi() {
