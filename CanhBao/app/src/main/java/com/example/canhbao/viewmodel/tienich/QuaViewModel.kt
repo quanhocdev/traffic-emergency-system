@@ -5,14 +5,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.canhbao.data.auth.FirebaseTokenProvider
 import com.example.canhbao.data.model.suco.baocao.SuCoUserDto
 import com.example.canhbao.data.model.qua.QuaResponseDTO
 import com.example.canhbao.data.model.qua.doiqua.DoiQuaRequestDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoApi
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
 
@@ -21,7 +20,6 @@ class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
     var userProfile by mutableStateOf<SuCoUserDto?>(null)
     var isLoading by mutableStateOf(false)
     var selectedTab by mutableStateOf("TẤT CẢ")
-    private val auth = FirebaseAuth.getInstance()
     var listTuiQua by mutableStateOf<List<TuiQuaResponseDTO>>(emptyList())
     var isTuiLoading by mutableStateOf(false)
 
@@ -32,8 +30,7 @@ class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
         viewModelScope.launch {
             try {
 
-                val user = auth.currentUser ?: return@launch
-                val token = user.getIdToken(false).await().token ?: return@launch
+                val token = FirebaseTokenProvider.getToken()
 
                 userProfile = api.getUserInfo("Bearer $token")
 
@@ -55,8 +52,7 @@ class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
         viewModelScope.launch {
             isExchanging = true
             try {
-                val user = auth.currentUser ?: return@launch
-                val token = user.getIdToken(false).await().token ?: return@launch
+                val token = FirebaseTokenProvider.getToken()
 
                 val dto = DoiQuaRequestDTO(
                     quaId = qua.id,
@@ -93,8 +89,7 @@ class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
         viewModelScope.launch {
             isTuiLoading = true
             try {
-                val user = FirebaseAuth.getInstance().currentUser ?: return@launch
-                val token = user.getIdToken(false).await().token ?: return@launch
+                val token = FirebaseTokenProvider.getToken()
 
                 listTuiQua = api.getMyGifts("Bearer $token")
 

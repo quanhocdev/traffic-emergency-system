@@ -8,14 +8,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.canhbao.data.auth.FirebaseTokenProvider
 import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoDetailResponseDTO
 import com.example.canhbao.data.model.suco.baocao.TheoDoiSuCoItemResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
 import com.example.canhbao.data.network.PublicSocketManager
 import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.data.network.UserSocketManager
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -32,11 +31,11 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
     var uiState: TheoDoiBaoCaoUiState by mutableStateOf(TheoDoiBaoCaoUiState.Loading)
         private set
 
-    // Map lưu trữ dữ liệu chi tiết của từng sự cố dựa trên ID (Khớp hoàn toàn với SOS)
+    // Map lưu trữ dữ liệu chi tiết của từng sự cố
     var detailUiStateMap = mutableStateMapOf<Long, TheoDoiSuCoDetailResponseDTO>()
         private set
 
-    // Quản lý 2 luồng Socket riêng biệt dựa trên 2 file manager gốc của bạn
+    // Quản lý 2 luồng Socket riêng biệt
     private var publicSocketManager: PublicSocketManager? = null
     private var userSocketManager: UserSocketManager? = null
 
@@ -53,8 +52,8 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
                 uiState = TheoDoiBaoCaoUiState.Loading
 
                 val response = withContext(Dispatchers.IO) {
-                    val token = getToken()
-                    api.getTheoDoiSuCo(token)
+                    val token = FirebaseTokenProvider.getToken()
+                    api.getTheoDoiSuCo("Bearer $token")
                 }
 
                 uiState = TheoDoiBaoCaoUiState.Success(response)
@@ -75,8 +74,8 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    val token = getToken()
-                    api.getTheoDoiSuCoDetail(token, suCoId)
+                    val token = FirebaseTokenProvider.getToken()
+                    api.getTheoDoiSuCoDetail("Bearer $token", suCoId)
                 }
                 detailUiStateMap[suCoId] = response
             } catch (e: Exception) {
@@ -92,8 +91,8 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    val token = getToken()
-                    api.cancelSuCo(token, suCoId)
+                    val token = FirebaseTokenProvider.getToken()
+                    api.cancelSuCo("Bearer $token", suCoId)
                 }
 
                 detailUiStateMap.remove(suCoId)
@@ -109,16 +108,11 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
 
         viewModelScope.launch {
 
-            val token = getToken() ?: return@launch
-
-            val currentClient =
-                runCatching { SocketClientProvider.stompClient }.getOrNull()
+            val activeClient = SocketClientProvider.ensureConnected()
 
             if (
                 publicSocketManager != null &&
-                userSocketManager != null &&
-                currentClient != null &&
-                currentClient.isConnected
+                userSocketManager != null
             ) {
                 return@launch
             }
@@ -126,28 +120,18 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
             publicSocketManager = null
             userSocketManager = null
 
-            SocketClientProvider.initNewClient(token)
-
-            val activeClient = SocketClientProvider.stompClient
-
-            // 1. Socket công khai
+            // PUBLIC
             publicSocketManager = PublicSocketManager(activeClient).apply {
 
                 subscribe(object : PublicSocketManager.Callback {
 
                     override fun onSuCoUpdate(json: String) {
-                        Log.d(
-                            "WebSocket_BaoCao",
-                            "🔄 Nhận tín hiệu sự cố chung -> reload"
-                        )
+                        Log.d("WebSocket_BaoCao", "Nhận tín hiệu sự cố chung -> reload")
                         loadDataFromApi()
                     }
 
                     override fun onSuCoDelete(id: Long) {
-                        Log.d(
-                            "WebSocket_BaoCao",
-                            "🔥 Xóa sự cố $id"
-                        )
+                        Log.d("WebSocket_BaoCao", "Xóa sự cố $id")
                         detailUiStateMap.remove(id)
                         loadDataFromApi()
                     }
@@ -160,7 +144,7 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
                 })
             }
 
-            // 2. Socket cá nhân
+            // USER
             userSocketManager = UserSocketManager(activeClient).apply {
 
                 subscribe(object : UserSocketManager.Callback {
@@ -169,13 +153,13 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
 
                         Log.d(
                             "WebSocket_BaoCao",
-                            "🔄 Refresh lịch sử"
+                            " Refresh lịch sử"
                         )
 
                         loadDataFromApi()
 
-                        detailUiStateMap.keys.forEach { id ->
-                            fetchDetailSuCo(id)
+                        detailUiStateMap.keys.forEach {
+                            fetchDetailSuCo(it)
                         }
                     }
 
@@ -189,7 +173,6 @@ class TheoDoiBaoCaoViewModel : ViewModel() {
             }
         }
     }
-
     override fun onCleared() {
         super.onCleared()
         publicSocketManager = null

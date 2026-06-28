@@ -13,13 +13,9 @@ import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.example.canhbao.data.network.PublicSocketManager
 import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.data.network.UserSocketManager
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 enum class FilterMode { DAY, MONTH, YEAR }
@@ -37,7 +33,6 @@ class DoiTienViewModel : ViewModel() {
     var publicFundStats by mutableStateOf(ThongKeQuyDto())
         private set
 
-    // Quản lý 2 luồng Socket riêng biệt dựa trên 2 file manager gốc của bạn
     private var userSocketManager: UserSocketManager? = null
     private var publicSocketManager: PublicSocketManager? = null
     private val gson = Gson()
@@ -48,7 +43,6 @@ class DoiTienViewModel : ViewModel() {
     var filterMode by mutableStateOf(FilterMode.DAY)
     var selectedDate by mutableStateOf(LocalDate.now())
 
-    // Logic lọc danh sách (Dùng get() để nó tự cập nhật khi publicFundStats thay đổi)
     val filteredVinhDanh get() = publicFundStats.lichSuVinhDanh.filter { item ->
         val itemDate = item.ngayDoi?.take(10) ?: ""
         when (filterMode) {
@@ -110,16 +104,11 @@ class DoiTienViewModel : ViewModel() {
 
         viewModelScope.launch {
 
-            val token = getToken()
-
-            val currentClient =
-                runCatching { SocketClientProvider.stompClient }.getOrNull()
+            val activeClient = SocketClientProvider.ensureConnected()
 
             if (
                 userSocketManager != null &&
-                publicSocketManager != null &&
-                currentClient != null &&
-                currentClient.isConnected
+                publicSocketManager != null
             ) {
                 return@launch
             }
@@ -127,12 +116,9 @@ class DoiTienViewModel : ViewModel() {
             userSocketManager = null
             publicSocketManager = null
 
-            SocketClientProvider.initNewClient(token)
-
-            val activeClient = SocketClientProvider.stompClient
-
-            // 1. USER SOCKET
+            // USER SOCKET
             userSocketManager = UserSocketManager(activeClient).apply {
+
                 subscribe(object : UserSocketManager.Callback {
 
                     override fun onUserStats(json: String) {
@@ -144,6 +130,7 @@ class DoiTienViewModel : ViewModel() {
                                 "WebSocket_DoiTien",
                                 "🟢 Đã đồng bộ điểm cá nhân mới"
                             )
+
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -158,19 +145,25 @@ class DoiTienViewModel : ViewModel() {
                 })
             }
 
-            // 2. PUBLIC SOCKET
+            // PUBLIC SOCKET
             publicSocketManager = PublicSocketManager(activeClient).apply {
+
                 subscribe(object : PublicSocketManager.Callback {
 
                     override fun onPublicFundUpdate(json: String) {
                         try {
+
                             publicFundStats =
-                                gson.fromJson(json, ThongKeQuyDto::class.java)
+                                gson.fromJson(
+                                    json,
+                                    ThongKeQuyDto::class.java
+                                )
 
                             Log.d(
                                 "WebSocket_DoiTien",
                                 "🟢 Tổng quỹ công khai biến động realtime"
                             )
+
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -186,7 +179,6 @@ class DoiTienViewModel : ViewModel() {
             }
         }
     }
-
     // Hàm xử lý chung cho cả Đổi tiền và Quyên góp
     fun thucHienGiaoDich(uid: String, points: Int, type: String) {
         viewModelScope.launch {

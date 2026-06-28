@@ -14,15 +14,12 @@ import com.example.canhbao.data.model.suco.baocao.SuCoMapResponseDTO
 import com.example.canhbao.data.network.AppConfig
 import com.example.canhbao.data.network.BaoCaoSuCoApi
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
-import com.example.canhbao.data.network.PublicSocketManager
 import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.viewmodel.suco.SuCoSocket
-import com.google.firebase.auth.FirebaseAuth
 import com.mapbox.geojson.Point
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -142,68 +139,22 @@ class MapViewModel : ViewModel() {
 
 
 
-    private fun startRealtimeSocket(){
+    private fun startRealtimeSocket() {
 
         viewModelScope.launch {
 
-            val user =
-                FirebaseAuth.getInstance()
-                    .currentUser
-                    ?: return@launch
+            SocketClientProvider.ensureConnected()
 
+            suCoSocket.subscribe(object : SuCoSocket.Callback {
 
-            val token =
-                user.getIdToken(false)
-                    .await()
-                    .token
-                    ?: return@launch
-
-
-
-            SocketClientProvider.initNewClient(
-                token
-            )
-
-
-
-            val callback =
-                object: SuCoSocket.Callback {
-
-
-                    override fun onSuCoUpdate(
-                        suCo: SuCoMapResponseDTO
-                    ){
-
-                        Log.d(
-                            "SUCO_SOCKET",
-                            "UPDATE ${suCo.id} ${suCo.mucDoSuCo}"
-                        )
-
-
-                        updateSuCoFromSocket(
-                            suCo
-                        )
-                    }
-
-
-
-                    override fun onSuCoDelete(
-                        id: Long
-                    ){
-
-                        removeSuCoFromSocket(
-                            id
-                        )
-                    }
-
+                override fun onSuCoUpdate(suCo: SuCoMapResponseDTO) {
+                    updateSuCoFromSocket(suCo)
                 }
 
-
-
-            suCoSocket.subscribe(
-                callback
-            )
-
+                override fun onSuCoDelete(id: Long) {
+                    removeSuCoFromSocket(id)
+                }
+            })
         }
     }
     fun toggleFilter(type: String) {
@@ -341,13 +292,6 @@ class MapViewModel : ViewModel() {
     fun setStartPoint(point: Point, name: String) { _startPoint.value = point; _startName.value = name }
     fun setEndPoint(point: Point, name: String) { _endPoint.value = point; _endName.value = name }
 
-    fun selectRoute(index: Int) {
-        _selectedRouteIndex.value = index
-        _routeInfos.value.getOrNull(index)?.let {
-            _routeDistance.value = it.first
-            _routeDuration.value = it.second
-        }
-    }
 
     fun clearRoute() {
         _allRoutes.value = emptyList()
@@ -406,12 +350,6 @@ class MapViewModel : ViewModel() {
         }
     }
 
-    fun navigateToDestination(destPoint: Point, destName: String, userLocation: Point?) {
-        if (userLocation == null) return
-        setStartPoint(userLocation, "Vị trí của bạn")
-        setEndPoint(destPoint, destName)
-        getFreeDirections()
-    }
 
     fun stopLocationUpdates() {
         Log.w("GPS_DEBUG", "Tiến hành gỡ bỏ lắng nghe GPS để bảo vệ Main Thread...")
