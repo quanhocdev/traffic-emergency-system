@@ -53,7 +53,10 @@ class SuCoSocket {
                 .subscribe({
 
                     try {
-
+                        Log.d(
+                            "SUCO_SOCKET_RAW",
+                            it.payload
+                        )
                         val suCo =
                             gson.fromJson(
                                 it.payload,

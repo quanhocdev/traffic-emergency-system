@@ -143,18 +143,58 @@ class MapViewModel : ViewModel() {
 
         viewModelScope.launch {
 
-            SocketClientProvider.ensureConnected()
+            try {
 
-            suCoSocket.subscribe(object : SuCoSocket.Callback {
+                SocketClientProvider.ensureConnected()
 
-                override fun onSuCoUpdate(suCo: SuCoMapResponseDTO) {
-                    updateSuCoFromSocket(suCo)
-                }
 
-                override fun onSuCoDelete(id: Long) {
-                    removeSuCoFromSocket(id)
-                }
-            })
+                suCoSocket.subscribe(
+
+                    object : SuCoSocket.Callback {
+
+
+                        override fun onSuCoUpdate(
+                            suCo: SuCoMapResponseDTO
+                        ) {
+
+                            updateSuCoFromSocket(
+                                suCo
+                            )
+
+                        }
+
+
+                        override fun onSuCoDelete(
+                            id: Long
+                        ) {
+
+                            removeSuCoFromSocket(
+                                id
+                            )
+
+                        }
+
+                    }
+
+                )
+
+
+                Log.d(
+                    "MapViewModel",
+                    "SuCo socket started"
+                )
+
+
+            } catch(e:Exception){
+
+                Log.e(
+                    "MapViewModel",
+                    "Socket lỗi ${e.message}",
+                    e
+                )
+
+            }
+
         }
     }
     fun toggleFilter(type: String) {

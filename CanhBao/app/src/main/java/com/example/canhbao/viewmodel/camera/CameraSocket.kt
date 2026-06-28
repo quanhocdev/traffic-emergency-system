@@ -6,13 +6,9 @@ import com.example.canhbao.data.network.SocketClientProvider
 import com.google.gson.Gson
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import ua.naiksoftware.stomp.StompClient
 
 
-class CameraSocket(
-    private val stompClient: StompClient =
-        SocketClientProvider.stompClient
-) {
+class CameraSocket {
 
 
     private val gson = Gson()
@@ -24,11 +20,9 @@ class CameraSocket(
             camera: CameraMapDto
         )
 
-
         fun onCameraDelete(
             id: Long
         )
-
     }
 
 
@@ -39,15 +33,16 @@ class CameraSocket(
     ) {
 
 
-        // ================= CAMERA UPDATE =================
+        val client =
+            SocketClientProvider.stompClient
 
 
-        stompClient.topic(
-            "/topic/camera"
-        )
+
+        client.topic("/topic/camera")
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
+
 
                 try {
 
@@ -65,20 +60,23 @@ class CameraSocket(
 
                 } catch(e:Exception){
 
+
                     Log.e(
                         "CameraSocket",
-                        "Parse lỗi ${e.message}"
+                        e.message ?: ""
                     )
 
                 }
 
 
-            }, {
+            },{
+
 
                 Log.e(
                     "CameraSocket",
-                    "Socket camera lỗi ${it.message}"
+                    it.message ?: ""
                 )
+
 
             })
 
@@ -86,37 +84,31 @@ class CameraSocket(
 
 
 
-        // ================= CAMERA DELETE =================
-
-
-        stompClient.topic(
-            "/topic/camera-delete"
-        )
+        client.topic("/topic/camera-delete")
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
 
+
                 it.payload
                     .toLongOrNull()
-                    ?.let { id ->
-
-                        callback.onCameraDelete(
-                            id
-                        )
-
-                    }
+                    ?.let(callback::onCameraDelete)
 
 
-            }, {
+
+            },{
+
 
                 Log.e(
                     "CameraSocket",
-                    "Delete camera lỗi ${it.message}"
+                    it.message ?: ""
                 )
+
 
             })
 
-    }
 
+
+    }
 
 }

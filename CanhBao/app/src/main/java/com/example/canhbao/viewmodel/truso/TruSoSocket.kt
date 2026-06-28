@@ -2,17 +2,13 @@ package com.example.canhbao.viewmodel.truso
 
 import android.util.Log
 import com.example.canhbao.data.model.info.truso.TruSoMapDto
-import com.example.canhbao.data.network.SocketClientProvider
 import com.google.gson.Gson
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ua.naiksoftware.stomp.StompClient
 
 
-class TruSoSocket(
-    private val stompClient: StompClient =
-        SocketClientProvider.stompClient
-) {
+class TruSoSocket {
 
 
     private val gson = Gson()
@@ -24,12 +20,16 @@ class TruSoSocket(
             truSo: TruSoMapDto
         )
 
-
         fun onTruSoDelete(
             id: Long
         )
-
     }
+
+
+
+    private val stompClient: StompClient
+        get() = com.example.canhbao.data.network.SocketClientProvider.stompClient
+
 
 
 
@@ -38,12 +38,11 @@ class TruSoSocket(
     ) {
 
 
-        // ================= TRỤ SỞ UPDATE =================
+        val client = stompClient
 
 
-        stompClient.topic(
-            "/topic/tru-so"
-        )
+
+        client.topic("/topic/tru-so")
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
@@ -57,26 +56,23 @@ class TruSoSocket(
                         )
 
 
-                    callback.onTruSoUpdate(
-                        truSo
-                    )
+                    callback.onTruSoUpdate(truSo)
 
 
-                } catch (e: Exception) {
+                } catch(e:Exception){
 
                     Log.e(
                         "TruSoSocket",
-                        "Parse lỗi: ${e.message}"
+                        e.message ?: ""
                     )
-
                 }
 
 
-            }, {
+            },{
 
                 Log.e(
                     "TruSoSocket",
-                    "TruSo socket error: ${it.message}"
+                    it.message ?: ""
                 )
 
             })
@@ -84,29 +80,42 @@ class TruSoSocket(
 
 
 
-        // ================= TRỤ SỞ DELETE ================
 
-        stompClient.topic(
-            "/topic/tru-so-delete"
-        )
+
+
+        client.topic("/topic/tru-so-delete")
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
 
+
                 it.payload
                     .toLongOrNull()
-                    ?.let { id ->
+                    ?.let {
 
-                        callback.onTruSoDelete(
-                            id
-                        )
+                            id ->
+                        callback.onTruSoDelete(id)
 
                     }
-            }, {
+
+
+            },{
+
                 Log.e(
                     "TruSoSocket",
-                    "Delete error: ${it.message}"
+                    it.message ?: ""
                 )
+
             })
+
+
+
+        Log.d(
+            "TruSoSocket",
+            "Subscribe trụ sở"
+        )
+
     }
+
+
 }

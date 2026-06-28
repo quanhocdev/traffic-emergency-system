@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.lifecycle.viewModelScope
+import com.example.canhbao.data.network.SocketClientProvider
+import kotlinx.coroutines.launch
 
 
 class TruSoViewModel(
@@ -103,44 +106,77 @@ class TruSoViewModel(
 
 
 
-    // ================= SOCKET =================
-
-
     private fun startSocket(){
 
-        socket.subscribe(
 
-            object : TruSoSocket.Callback {
-
-
-                override fun onTruSoUpdate(
-                    truSo: TruSoMapDto
-                ) {
-
-                    updateTruSoFromSocket(
-                        truSo
-                    )
-
-                }
+        viewModelScope.launch {
 
 
-                override fun onTruSoDelete(
-                    id: Long
-                ) {
+            try {
 
-                    removeTruSoFromSocket(
-                        id
-                    )
 
-                }
+                // đảm bảo socket tồn tại
+                SocketClientProvider
+                    .ensureConnected()
+
+
+
+                socket.subscribe(
+
+                    object : TruSoSocket.Callback {
+
+
+                        override fun onTruSoUpdate(
+                            truSo: TruSoMapDto
+                        ) {
+
+
+                            updateTruSoFromSocket(
+                                truSo
+                            )
+
+                        }
+
+
+
+                        override fun onTruSoDelete(
+                            id: Long
+                        ) {
+
+
+                            removeTruSoFromSocket(
+                                id
+                            )
+
+                        }
+
+
+                    }
+
+                )
+
+
+
+                Log.d(
+                    "TruSoViewModel",
+                    "Socket trụ sở started"
+                )
+
+
+
+            } catch(e:Exception){
+
+
+                Log.e(
+                    "TruSoViewModel",
+                    "Socket lỗi ${e.message}"
+                )
 
             }
 
-        )
+        }
 
     }
-
-
 
 
 

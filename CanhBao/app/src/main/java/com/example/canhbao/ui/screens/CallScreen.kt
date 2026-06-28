@@ -27,13 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.canhbao.viewmodel.call.WebRTCViewModel
-import ua.naiksoftware.stomp.StompClient
-
 @Composable
 fun CallScreen(
     navController: NavController,
-    webrtcViewModel: WebRTCViewModel,
-    stompClient: StompClient
+    webrtcViewModel: WebRTCViewModel
 ) {
     val context = LocalContext.current
     val callState by webrtcViewModel.callState.collectAsState()

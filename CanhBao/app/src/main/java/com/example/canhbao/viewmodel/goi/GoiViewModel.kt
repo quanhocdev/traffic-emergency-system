@@ -3,6 +3,7 @@ package com.example.canhbao.viewmodel.goi
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.canhbao.data.auth.FirebaseTokenProvider
 import com.example.canhbao.data.model.sos.goi.GoiResponseDto
 import com.example.canhbao.data.model.sos.goi.MuaGoiRequestDTO
 import com.example.canhbao.data.model.sos.goi.MuaGoiUserResponseDto
@@ -35,53 +36,41 @@ class GoiViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
 
     // Kết nối Socket thông qua Provider tập trung
     fun connectSocket() {
-
         viewModelScope.launch {
 
-            val token = withContext(Dispatchers.IO) {
-                getToken()
-            } ?: return@launch
+            try {
 
-            val currentClient =
-                runCatching {
-                    SocketClientProvider.stompClient
-                }.getOrNull()
+                val activeClient = SocketClientProvider.ensureConnected()
 
-            if (userSocketManager != null &&
-                currentClient?.isConnected == true
-            ) {
-                return@launch
-            }
-
-            userSocketManager = null
-
-            SocketClientProvider.initNewClient(token)
-
-            val activeClient =
-                SocketClientProvider.stompClient
-
-            userSocketManager =
-                UserSocketManager(activeClient).apply {
-
-                    subscribe(object : UserSocketManager.Callback {
-
-                        override fun onPackageRefresh() {
-                            Log.d(
-                                "WebSocket_Goi",
-                                "🔄 Nhận tín hiệu làm mới Gói cứu trợ"
-                            )
-                            fetchMyPackages()
-                        }
-
-                        override fun onHistoryRefresh() {}
-                        override fun onSosRefresh() {}
-                        override fun onInvoiceUpdate(json: String) {}
-                        override fun onUserStats(json: String) {}
-                        override fun onNewInvoice(json: String) {}
-                        override fun onPaymentUpdate(json: String) {}
-                    })
+                if (userSocketManager != null) {
+                    return@launch
                 }
 
+                userSocketManager =
+                    UserSocketManager(activeClient).apply {
+
+                        subscribe(object : UserSocketManager.Callback {
+
+                            override fun onPackageRefresh() {
+                                Log.d(
+                                    "WebSocket_Goi",
+                                    "🔄 Nhận tín hiệu làm mới Gói cứu trợ"
+                                )
+                                fetchMyPackages()
+                            }
+
+                            override fun onHistoryRefresh() {}
+                            override fun onSosRefresh() {}
+                            override fun onInvoiceUpdate(json: String) {}
+                            override fun onUserStats(json: String) {}
+                            override fun onNewInvoice(json: String) {}
+                            override fun onPaymentUpdate(json: String) {}
+                        })
+                    }
+
+            } catch (e: Exception) {
+                Log.e("WebSocket_Goi", "Socket lỗi ${e.message}")
+            }
         }
     }
 
@@ -99,7 +88,7 @@ class GoiViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
     fun fetchMyPackages() {
         viewModelScope.launch {
             try {
-                val token = withContext(Dispatchers.IO) { getToken() } ?: return@launch
+                val token = FirebaseTokenProvider.getToken()
                 val response = api.getGoiCuaToi("Bearer $token")
                 _myPackages.value = response
             } catch (e: Exception) {
@@ -115,7 +104,7 @@ class GoiViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
     fun muaGoi(goiId: Long, onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
             try {
-                val token = withContext(Dispatchers.IO) { getToken() } ?: ""
+                val token = FirebaseTokenProvider.getToken()
                 val response = api.dangKyMuaGoi(
                     "Bearer $token",
                     MuaGoiRequestDTO(goiId)
@@ -136,7 +125,7 @@ class GoiViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
     fun huyGoi(idMuaGoi: Long, onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
             try {
-                val token = withContext(Dispatchers.IO) { getToken() } ?: ""
+                val token = FirebaseTokenProvider.getToken()
                 val response = api.cancelMuaGoi("Bearer $token", idMuaGoi)
 
                 if (response.isSuccessful) {
