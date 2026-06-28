@@ -7,12 +7,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.canhbao.data.auth.FirebaseTokenProvider
 import com.example.canhbao.data.model.hoadon.HoaDonUserResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.data.network.UserSocketManager
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,29 +39,9 @@ class ChiTietHoaDonViewModel : ViewModel() {
 
         viewModelScope.launch {
 
-            val token = withContext(Dispatchers.IO) {
-                try {
-                    getToken().removePrefix("Bearer ")
-                } catch (e: Exception) {
-                    null
-                }
-            } ?: return@launch
+            if (userSocketManager != null) return@launch
 
-            val currentClient = runCatching {
-                SocketClientProvider.stompClient
-            }.getOrNull()
-
-            if (userSocketManager != null &&
-                currentClient?.isConnected == true
-            ) {
-                return@launch
-            }
-
-            userSocketManager = null
-
-            SocketClientProvider.initNewClient(token)
-
-            val activeClient = SocketClientProvider.stompClient
+            val activeClient = SocketClientProvider.ensureConnected()
 
             userSocketManager = UserSocketManager(activeClient).apply {
 
@@ -92,40 +71,36 @@ class ChiTietHoaDonViewModel : ViewModel() {
     }
 
     fun loadHoaDonDetail(hoaDonId: Long) {
+
         currentHoaDonId = hoaDonId
 
-        val currentClient = SocketClientProvider.stompClient
-        if (!currentClient.isConnected) {
-            connectWebSocket()
-        }
+        connectWebSocket()
 
         viewModelScope.launch {
+
             try {
-                Log.d("ChiTietHoaDon", "STEP 1 - Start loadHoaDonDetail")
+
+                Log.d("ChiTietHoaDon", "STEP 1")
+
                 isLoading = true
                 errorMessage = null
 
-                val token = withContext(Dispatchers.IO) {
-                    Log.d("ChiTietHoaDon", "STEP 2 - Getting token")
-                    getToken()
-                }
+                val token = FirebaseTokenProvider.getToken()
 
-                Log.d("ChiTietHoaDon", "STEP 3 - Got token")
-
-                hoaDon = withContext(Dispatchers.IO) {
-                    Log.d("ChiTietHoaDon", "STEP 4 - Calling getHoaDonDetail")
-                    BaoCaoSuCoRetrofit.api.getHoaDonDetail(token, hoaDonId)
-                }
-
-                Log.d("ChiTietHoaDon", "STEP 5 - Loaded hoaDon")
-                Log.d("ChiTietHoaDon", "STEP 7 - Finished")
+                hoaDon = BaoCaoSuCoRetrofit.api.getHoaDonDetail(
+                    token,
+                    hoaDonId
+                )
 
             } catch (e: Exception) {
+
                 Log.e("ChiTietHoaDon", "MAIN ERROR", e)
+
                 errorMessage = e.message ?: "Lỗi tải dữ liệu"
+
             } finally {
+
                 isLoading = false
-                Log.d("ChiTietHoaDon", "STEP 8 - End")
             }
         }
     }

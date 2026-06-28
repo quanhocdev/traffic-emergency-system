@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.canhbao.data.auth.FirebaseTokenProvider
 import com.example.canhbao.data.model.hoadon.payment.ThanhToanRequestDTO
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSDetailResponseDTO
@@ -15,8 +16,6 @@ import com.example.canhbao.data.model.sos.tinhieu.TheoDoiSOSItemResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit.api
 import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.data.network.UserSocketManager
-import com.google.android.gms.tasks.Tasks
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,7 +57,7 @@ class TheoDoiTinHieuViewModel : ViewModel() {
                 uiState = TheoDoiTinHieuUiState.Loading
 
                 val response = withContext(Dispatchers.IO) {
-                    val token = getToken()
+                    val token = FirebaseTokenProvider.getToken()
                     api.getTheoDoiSOS(token)
                 }
 
@@ -76,8 +75,9 @@ class TheoDoiTinHieuViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    val token = getToken()
-                    api.getMyGifts(token)
+                    api.getMyGifts(
+                        FirebaseTokenProvider.getToken()
+                    )
                 }
                 listTuiQua = response
             } catch (e: Exception) {
@@ -90,9 +90,9 @@ class TheoDoiTinHieuViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val success = withContext(Dispatchers.IO) {
-                    val token = getToken()
+
                     api.confirmPayment(
-                        token,
+                        FirebaseTokenProvider.getToken(),
                         ThanhToanRequestDTO(
                             hoaDonId = hoaDonId,
                             quaId = quaId,
@@ -114,7 +114,7 @@ class TheoDoiTinHieuViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val success = withContext(Dispatchers.IO) {
-                    val token = getToken()
+                    val token = FirebaseTokenProvider.getToken()
                     api.cancelSOS(token, sosId).isSuccessful
                 }
 
@@ -129,50 +129,51 @@ class TheoDoiTinHieuViewModel : ViewModel() {
 
     @SuppressLint("CheckResult")
     private fun connectWebSocket() {
-        val currentClient = SocketClientProvider.stompClient
-        if (userSocketManager != null && currentClient.isConnected) return
 
-        userSocketManager = null
-        SocketClientProvider.initNewClient()
-        val activeClient = SocketClientProvider.stompClient
+        viewModelScope.launch {
 
-        // Ánh xạ callbacks từ UserSocketManager sang logic xử lý dữ liệu của bạn
-        userSocketManager = UserSocketManager(activeClient).apply {
-            subscribe(object : UserSocketManager.Callback {
+            val activeClient =
+                SocketClientProvider.ensureConnected()
 
-                override fun onSosRefresh() {
-                    Log.d("WebSocket_TinHieu", "Nhận cập nhật trạng thái SOS riêng tư -> Tiến hành reload")
-                    loadDataFromApi()
+            if (userSocketManager != null) {
+                return@launch
+            }
+
+            userSocketManager =
+                UserSocketManager(activeClient).apply {
+
+                    subscribe(object : UserSocketManager.Callback {
+
+                        override fun onSosRefresh() {
+                            Log.d(
+                                "WebSocket_TinHieu",
+                                "Nhận cập nhật trạng thái SOS -> reload"
+                            )
+
+                            loadDataFromApi()
+                        }
+
+                        override fun onHistoryRefresh() {
+                            Log.d(
+                                "WebSocket_TinHieu",
+                                "Refresh lịch sử"
+                            )
+
+                            loadDataFromApi()
+                        }
+
+                        override fun onPackageRefresh() {}
+
+                        override fun onInvoiceUpdate(json: String) {}
+
+                        override fun onUserStats(json: String) {}
+
+                        override fun onNewInvoice(json: String) {}
+
+                        override fun onPaymentUpdate(json: String) {}
+                    })
                 }
-
-                override fun onHistoryRefresh() {
-                    Log.d("WebSocket_TinHieu", "Nhận tín hiệu làm mới lịch sử -> Tiến hành reload")
-                    loadDataFromApi()
-                }
-
-                override fun onPackageRefresh() {
-                    Log.d("WebSocket_TinHieu", "Package status refresh nhận được từ Socket")
-                }
-
-                override fun onInvoiceUpdate(json: String) {
-                    Log.d("WebSocket_TinHieu", "Invoice update nhận được từ Socket")
-                }
-
-                override fun onUserStats(json: String) {
-                    Log.d("WebSocket_TinHieu", "User stats update nhận được từ Socket")
-                }
-
-                override fun onNewInvoice(json: String) {
-                    Log.d("WebSocket_TinHieu", "New invoice nhận được từ Socket")
-                }
-
-                override fun onPaymentUpdate(json: String) {
-                    Log.d("WebSocket_TinHieu", "Payment update nhận được từ Socket")
-                }
-            })
         }
-
-        activeClient.connect()
     }
 
     fun playRecording(url: String, id: Long) {
@@ -215,8 +216,11 @@ class TheoDoiTinHieuViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = withContext(Dispatchers.IO) {
-                    val token = getToken()
-                    api.getTheoDoiSOSDetail(token, sosId)
+
+                    api.getTheoDoiSOSDetail(
+                        FirebaseTokenProvider.getToken(),
+                        sosId
+                    )
                 }
 
                 withContext(Dispatchers.Main) {

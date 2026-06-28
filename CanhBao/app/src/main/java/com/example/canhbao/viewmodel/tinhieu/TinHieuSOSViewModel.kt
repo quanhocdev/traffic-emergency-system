@@ -9,9 +9,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.canhbao.data.auth.FirebaseTokenProvider
 import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequestDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,27 +43,11 @@ class TinHieuSOSViewModel : ViewModel() {
     }
 
     fun nextStep() { _currentStep.value += 1 }
-    fun prevStep() { if (_currentStep.value > 1) _currentStep.value -= 1 }
-
-    // =========================
-    // UTIL
-    // =========================
 
     private suspend fun fileToBase64(file: File): String =
         withContext(Dispatchers.IO) {
             Base64.encodeToString(file.readBytes(), Base64.NO_WRAP)
         }
-
-    private fun getToken(onResult: (String?) -> Unit) {
-        FirebaseAuth.getInstance().currentUser
-            ?.getIdToken(false)
-            ?.addOnSuccessListener { onResult(it.token) }
-            ?.addOnFailureListener { onResult(null) }
-    }
-
-    // =========================
-    // MAIN FUNCTION
-    // =========================
 
     fun guiSOS(
         context: Context,
@@ -118,54 +102,35 @@ class TinHieuSOSViewModel : ViewModel() {
                     )
                 }
 
-                // =========================
-                // 2. GET TOKEN
-                // =========================
                 statusSOS = "Đang xác thực..."
 
-                getToken { token ->
+                val token = FirebaseTokenProvider.getToken()
 
-                    if (token == null) {
-                        statusSOS = "Lỗi xác thực"
-                        isSubmitting = false
-                        onComplete(false)
-                        return@getToken
-                    }
+                statusSOS = "Đang gửi lên máy chủ..."
 
-                    // =========================
-                    // 3. CALL API
-                    // =========================
-                    viewModelScope.launch {
-
-                        statusSOS = "Đang gửi lên máy chủ..."
-
-                        val response = withContext(Dispatchers.IO) {
-                            BaoCaoSuCoRetrofit.api.submitSOS(
-                                "Bearer $token",
-                                request
-                            )
-                        }
-
-                        if (response.isSuccessful) {
-
-                            val body = response.body()
-
-                            val sosId = body?.sosId
-
-                            statusSOS = "Gửi thành công #$sosId"
-
-                            onComplete(true)
-
-                        } else {
-
-                            statusSOS = "Lỗi hệ thống: ${response.code()}"
-
-                            onComplete(false)
-                        }
-
-                        isSubmitting = false
-                    }
+                val response = withContext(Dispatchers.IO) {
+                    BaoCaoSuCoRetrofit.api.submitSOS(
+                        token,
+                        request
+                    )
                 }
+
+                if (response.isSuccessful) {
+
+                    val sosId = response.body()?.sosId
+
+                    statusSOS = "Gửi thành công #$sosId"
+
+                    onComplete(true)
+
+                } else {
+
+                    statusSOS = "Lỗi hệ thống: ${response.code()}"
+
+                    onComplete(false)
+                }
+
+                isSubmitting = false
 
             } catch (e: Exception) {
                 statusSOS = "Lỗi kết nối: ${e.localizedMessage}"
