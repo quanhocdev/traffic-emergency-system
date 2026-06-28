@@ -1,11 +1,15 @@
 package com.example.canhbao.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -40,6 +44,7 @@ import com.example.canhbao.viewmodel.tinhieu.TinHieuSOSViewModel
 import com.example.canhbao.viewmodel.xacthuc.AuthViewModel
 import com.example.canhbao.viewmodel.camera.CameraViewModel
 import com.example.canhbao.viewmodel.truso.TruSoViewModel
+import ua.naiksoftware.stomp.StompClient
 
 @Composable
 fun NavGraph(
@@ -49,8 +54,13 @@ fun NavGraph(
     val navController = rememberNavController()
     val context = LocalContext.current
 
-    val stompClient = SocketClientProvider.stompClient
+    var stompClient by remember {
+        mutableStateOf<StompClient?>(null)
+    }
 
+    LaunchedEffect(Unit) {
+        stompClient = SocketClientProvider.ensureConnected()
+    }
     // Bộ lắng nghe trạng thái cuộc gọi toàn cục
     val callState by webrtcViewModel.callState.collectAsState()
 
@@ -65,13 +75,15 @@ fun NavGraph(
 
     // Tiến hành phát lệnh kết nối tập trung nếu chưa mở cổng mạng
     LaunchedEffect(stompClient) {
-        try {
-            if (!stompClient.isConnected) {
-                stompClient.connect()
-                android.util.Log.d("NavGraph", "Đã phát lệnh kết nối STOMP hệ thống thành công.")
+        stompClient?.let { client ->
+            try {
+                if (!client.isConnected) {
+                    client.connect()
+                    Log.d("NavGraph", "Đã kết nối STOMP")
+                }
+            } catch (e: Exception) {
+                Log.e("NavGraph", "Lỗi: ${e.message}")
             }
-        } catch (e: Exception) {
-            android.util.Log.e("NavGraph", "Lỗi khi cố gắng kết nối STOMP: ${e.message}")
         }
     }
 
@@ -144,7 +156,6 @@ fun NavGraph(
                 alertViewModel = alertViewModel,
                 searchViewModel = searchViewModel,
                 sosViewModel = sosViewModel,
-                stompClient = stompClient,
                 isLoggedIn = currentUser != null,
                 onReportClick = { navController.navigate("bao_cao_su_co") }
             )
@@ -154,8 +165,7 @@ fun NavGraph(
         composable("call_screen") {
             CallScreen(
                 navController = navController,
-                webrtcViewModel = webrtcViewModel,
-                stompClient = stompClient
+                webrtcViewModel = webrtcViewModel
             )
         }
 

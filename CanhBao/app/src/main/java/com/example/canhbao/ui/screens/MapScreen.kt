@@ -57,10 +57,8 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import ua.naiksoftware.stomp.StompClient
-import androidx.lifecycle.compose.LifecycleEventEffect
-import androidx.lifecycle.Lifecycle
 import com.example.canhbao.data.model.info.truso.TruSoMapDto
+import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.viewmodel.camera.CameraViewModel
 import com.example.canhbao.viewmodel.truso.TruSoViewModel
 import com.mapbox.maps.plugin.locationcomponent.OnIndicatorBearingChangedListener
@@ -76,7 +74,6 @@ fun MapScreen(
     alertViewModel: AlertViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel(),
     sosViewModel: SOSViewModel = viewModel(),
-    stompClient: StompClient,
     isLoggedIn: Boolean,
     onReportClick: () -> Unit
 ) {
@@ -563,7 +560,7 @@ fun MapScreen(
                                     onClick = {
                                         val rawId = handlingTruSoId!!
                                         val targetId = if (rawId.startsWith("TRU_SO_")) rawId else "TRU_SO_$rawId"
-                                        if (stompClient.isConnected) {
+                                        if (SocketClientProvider.stompClient.isConnected) {
                                             webrtcViewModel.startCall(targetId = targetId, myId = maThietBi)
                                         } else {
                                             Toast.makeText(context, "Kết nối máy chủ bận, hãy thử lại", Toast.LENGTH_SHORT).show()
@@ -724,7 +721,7 @@ fun MapScreen(
                                         OutlinedButton(
                                             onClick = {
                                                 // Trigger cuộc gọi thoại qua socket
-                                                if (stompClient.isConnected) {
+                                                if (SocketClientProvider.stompClient.isConnected) {
                                                     webrtcViewModel.startCall( "TRU_SO_${truSo.id}", maThietBi)
                                                 } else {
                                                     Toast.makeText(context, "Mất kết nối máy chủ", Toast.LENGTH_SHORT).show()

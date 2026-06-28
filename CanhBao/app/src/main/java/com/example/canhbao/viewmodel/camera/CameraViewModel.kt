@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.model.info.camera.CameraMapDto
 import com.example.canhbao.data.network.BaoCaoSuCoApi
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
+import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.ui.screens.createCameraIcon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -112,44 +113,77 @@ class CameraViewModel(
 
 
     // ================= SOCKET =================
-
-
     private fun startSocket(){
 
-        socket.subscribe(
 
-            object : CameraSocket.Callback {
+        viewModelScope.launch {
 
 
-                override fun onCameraUpdate(
-                    camera: CameraMapDto
-                ){
+            try {
 
-                    updateCameraFromSocket(
-                        camera
-                    )
 
-                }
+                // tạo socket nếu chưa có
+                SocketClientProvider
+                    .ensureConnected()
 
 
 
-                override fun onCameraDelete(
-                    id: Long
-                ){
+                socket.subscribe(
 
-                    removeCameraFromSocket(
-                        id
-                    )
+                    object : CameraSocket.Callback {
 
-                }
+
+                        override fun onCameraUpdate(
+                            camera: CameraMapDto
+                        ) {
+
+
+                            updateCameraFromSocket(
+                                camera
+                            )
+
+                        }
+
+
+
+                        override fun onCameraDelete(
+                            id: Long
+                        ) {
+
+
+                            removeCameraFromSocket(
+                                id
+                            )
+
+                        }
+
+
+                    }
+
+                )
+
+
+
+                Log.d(
+                    "CameraViewModel",
+                    "Camera socket started"
+                )
+
+
+            } catch(e:Exception){
+
+
+                Log.e(
+                    "CameraViewModel",
+                    e.message ?: ""
+                )
 
 
             }
 
-        )
+        }
 
     }
-
 
 
 

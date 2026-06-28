@@ -1,5 +1,6 @@
 package com.example.suco.security;
 
+
 import com.example.suco.model.TruSo;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
@@ -14,105 +15,157 @@ import org.springframework.stereotype.Component;
 import java.security.Principal;
 import java.util.Map;
 
+
 @Component
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
+
     private final JwtService jwtService;
+
 
     public WebSocketAuthInterceptor(JwtService jwtService) {
         this.jwtService = jwtService;
     }
 
+
+
     @Override
-    public Message<?> preSend(Message<?> message, MessageChannel channel) {
+    public Message<?> preSend(
+            Message<?> message,
+            MessageChannel channel
+    ) {
+
 
         StompHeaderAccessor accessor =
-                MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+                MessageHeaderAccessor.getAccessor(
+                        message,
+                        StompHeaderAccessor.class
+                );
 
-        if (accessor == null || accessor.getCommand() != StompCommand.CONNECT) {
+
+        if(accessor == null){
             return message;
         }
 
-        System.out.println("========== WS CONNECT ==========");
-        System.out.println("Headers : " + accessor.toNativeHeaderMap());
 
-        Map<String, Object> attrs = accessor.getSessionAttributes();
 
-        System.out.println("Session attrs = " + attrs);
+        if(accessor.getCommand() == StompCommand.CONNECT){
 
-if (attrs != null) {
-    System.out.println("Keys = " + attrs.keySet());
-}
 
-        /*
-         * ==========================================================
-         * TRỤ SỞ (SESSION)
-         * ==========================================================
-         */
-        if (attrs != null) {
+            System.out.println("========== WS CONNECT ==========");
 
-            Object obj = attrs.get("currentTruSo");
+            System.out.println(
+                    "Headers : "
+                    + accessor.toNativeHeaderMap()
+            );
 
-            if (obj instanceof TruSo truSo) {
 
-                System.out.println("WS Login by SESSION");
-                System.out.println("TruSo = " + truSo.getTenTruSo());
+            Map<String,Object> attrs =
+                    accessor.getSessionAttributes();
 
-                accessor.setUser(new Principal() {
-                    @Override
-                    public String getName() {
-                        return String.valueOf(truSo.getId());
-                    }
-                });
 
-                return message;
-            }
-        }
 
-        /*
-         * ==========================================================
-         * JWT (ANDROID / ADMIN)
-         * ==========================================================
-         */
+            /*
+             * TRỤ SỞ WEB
+             */
 
-        String token = null;
+            if(attrs != null){
 
-        // Android
-        String authHeader = accessor.getFirstNativeHeader("Authorization");
+                Object obj =
+                        attrs.get("currentTruSo");
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-        }
 
-        // Admin Cookie
-        if (token == null && attrs != null) {
+                if(obj instanceof TruSo truSo){
 
-            Object cookieObj = attrs.get("cookie");
 
-            if (cookieObj instanceof Cookie[] cookies) {
+                    accessor.setUser(
+                            new Principal(){
 
-                for (Cookie cookie : cookies) {
+                                @Override
+                                public String getName(){
+                                    return String.valueOf(
+                                            truSo.getId()
+                                    );
+                                }
 
-                    if ("ADMIN_JWT".equals(cookie.getName())) {
-                        token = cookie.getValue();
-                        break;
-                    }
+                            }
+                    );
+
+
+                    System.out.println(
+                            "WS Login SESSION "
+                            + truSo.getTenTruSo()
+                    );
+
+
+                    return message;
                 }
             }
+
+
+
+
+
+            /*
+             * ANDROID JWT
+             */
+
+
+            String header =
+                    accessor.getFirstNativeHeader(
+                            "Authorization"
+                    );
+
+
+            if(header != null &&
+                    header.startsWith("Bearer ")) {
+
+
+                String token =
+                        header.substring(7);
+
+
+                Claims claims =
+                        jwtService.extractAllClaims(token);
+
+
+
+                String uid =
+                        claims.getSubject();
+
+
+
+                if(uid == null){
+                    throw new IllegalArgumentException(
+                            "JWT missing subject"
+                    );
+                }
+
+
+                accessor.setUser(
+                        new Principal(){
+
+                            @Override
+                            public String getName(){
+                                return uid;
+                            }
+
+                        }
+                );
+
+
+                System.out.println(
+                        "WS Login JWT "
+                        + uid
+                );
+
+            }
+
         }
 
-        if (token == null || token.isBlank()) {
-            throw new IllegalArgumentException("Không tìm thấy JWT hoặc Session.");
-        }
-
-        Claims claims = jwtService.extractAllClaims(token);
-
-        String principalId = claims.getSubject();
-
-        accessor.setUser(() -> principalId);
-
-        System.out.println("WS Login by JWT : " + principalId);
 
         return message;
+
     }
+
 }

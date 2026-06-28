@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.canhbao.navigation.NavGraph
 import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.viewmodel.call.CallViewModel
@@ -14,6 +15,7 @@ import com.mapbox.common.MapboxOptions
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.launch
 import ua.naiksoftware.stomp.dto.LifecycleEvent
 
 class MainActivity : ComponentActivity() {
@@ -45,30 +47,46 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun dangKyHomThuCuocGoi() {
-        val sharedStompClient = SocketClientProvider.stompClient
+        lifecycleScope.launch {
 
-        val disposable = sharedStompClient.lifecycle()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ lifecycleEvent ->
-                when (lifecycleEvent.type) {
-                    LifecycleEvent.Type.OPENED -> {
-                        Log.w("WebRTC_Debug", "🤝 Socket hệ thống đã MỞ CỬA! Tiến hành đăng ký hòm thư cuộc gọi...")
-                        // 🛠️ ĐÃ SỬA: Đổi webrtcViewModel lên trước sharedStompClient
-                        callViewModel.start(applicationContext, webrtcViewModel)
-                    }
-                    else -> {}
-                }
-            }, {
-                Log.e("WebRTC_Debug", "Lỗi vòng đời Socket", it)
-            })
+            val sharedStompClient =
+                SocketClientProvider.ensureConnected()
 
-        compositeDisposable.add(disposable)
+            val disposable =
+                sharedStompClient.lifecycle()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe({ lifecycleEvent ->
 
-        if (sharedStompClient.isConnected) {
-            Log.w("WebRTC_Debug", "⚡ Socket hệ thống đã KẾT NỐI SẴN! Đăng ký hòm thư cuộc gọi luôn...")
-            // 🛠️ ĐÃ SỬA: Đổi webrtcViewModel lên trước sharedStompClient ở đây nữa
-            callViewModel.start(applicationContext, webrtcViewModel)
+                        when (lifecycleEvent.type) {
+
+                            LifecycleEvent.Type.OPENED -> {
+                                callViewModel.start(
+                                    applicationContext,
+                                    webrtcViewModel
+                                )
+                            }
+
+                            else -> {}
+                        }
+
+                    }, {
+
+                        Log.e(
+                            "WebRTC_Debug",
+                            "Lỗi vòng đời Socket",
+                            it
+                        )
+                    })
+
+            compositeDisposable.add(disposable)
+
+            if (sharedStompClient.isConnected) {
+                callViewModel.start(
+                    applicationContext,
+                    webrtcViewModel
+                )
+            }
         }
     }
 
