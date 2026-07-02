@@ -41,7 +41,7 @@ private UserRepository userRepository;
     String uid;
     try {
         uid = firebaseService.extractUid(authHeader);
-    } catch (FirebaseAuthException e) {
+    } catch (RuntimeException e) {
         throw new RuntimeException("Token không hợp lệ");
     }
 
@@ -81,7 +81,7 @@ private UserRepository userRepository;
         String uid;
 try {
     uid = firebaseService.extractUid(authHeader);
-} catch (FirebaseAuthException e) {
+} catch (RuntimeException e) {
     throw new RuntimeException("Token không hợp lệ");
 }
 

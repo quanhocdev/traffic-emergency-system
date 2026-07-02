@@ -2,8 +2,9 @@ package com.example.suco.security;
 
 
 import com.example.suco.model.TruSo;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.Cookie;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -11,7 +12,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.stereotype.Component;
-
+import com.example.suco.service.xacthuc.user.token.FirebaseService;
 import java.security.Principal;
 import java.util.Map;
 
@@ -19,12 +20,19 @@ import java.util.Map;
 @Component
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
+        
 
-    private final JwtService jwtService;
+          private static final Logger log =
+            LoggerFactory.getLogger(WebSocketAuthInterceptor.class);
+            
+
+    @Autowired
+    FirebaseService firebaseService;
 
 
-    public WebSocketAuthInterceptor(JwtService jwtService) {
-        this.jwtService = jwtService;
+    public WebSocketAuthInterceptor(FirebaseService firebaseService
+) {
+        this.firebaseService = firebaseService;
     }
 
 
@@ -115,49 +123,33 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                     accessor.getFirstNativeHeader(
                             "Authorization"
                     );
+           log.info("STEP 1 - Authorization header exists: {}", header != null);
 
 
             if(header != null &&
                     header.startsWith("Bearer ")) {
 
 
-                String token =
-                        header.substring(7);
+                log.info("STEP 2 - Firebase verify");
 
+String uid;
 
-                Claims claims =
-                        jwtService.extractAllClaims(token);
+try {
 
+    uid = firebaseService.extractUid(header);
 
+    log.info("STEP 3 - Firebase UID = {}", uid);
 
-                String uid =
-                        claims.getSubject();
+} catch (Exception e) {
 
+    log.error("Firebase verify failed", e);
 
+    throw e;
+}
 
-                if(uid == null){
-                    throw new IllegalArgumentException(
-                            "JWT missing subject"
-                    );
-                }
+accessor.setUser(() -> uid);
 
-
-                accessor.setUser(
-                        new Principal(){
-
-                            @Override
-                            public String getName(){
-                                return uid;
-                            }
-
-                        }
-                );
-
-
-                System.out.println(
-                        "WS Login JWT "
-                        + uid
-                );
+log.info("STEP 4 - User set");
 
             }
 

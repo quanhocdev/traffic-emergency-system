@@ -104,6 +104,11 @@ public Map<String, Object> capNhatMucDo(
             "\nCập nhật mức độ thành công: {}",
             saved.getMucDoSuCo()
     );
+    log.info("DTO after mapper:");
+log.info("id={}", dto.getId());
+log.info("status={}", dto.getTrangThaiXuLy());
+log.info("level={}", dto.getMucDoSuCo());
+
 
     if (saved.getTruSoTiepNhan() != null) {
         realtimeService.broadcastTruSo(

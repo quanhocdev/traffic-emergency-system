@@ -36,7 +36,10 @@ class SuCoSocket {
         callback: Callback
     ){
 
-        val client: StompClient =
+        Log.d("SUCO_SOCKET", "subscribe() called")
+
+
+        val client =
             SocketClientProvider.stompClient
 
 

@@ -3,7 +3,8 @@ package com.example.suco.service.suco.baocao.system.notification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 
 @Service
@@ -12,17 +13,26 @@ public class BaoCaoRealtimeService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    private static final Logger log =
+        LoggerFactory.getLogger(BaoCaoRealtimeService.class);
+
+
+
     public void broadcastReport(SuCoMapResponseDTO dto) {
            
-        System.out.println(
-        "WS SEND SUCO = " + dto
-    );
+        log.info("========== WS SEND ==========");
+    log.info("Topic: /topic/su-co");
+    log.info("Id: {}", dto.getId());
+    log.info("Status: {}", dto.getTrangThaiXuLy());
+    log.info("Level: {}", dto.getMucDoSuCo());
 
 
         messagingTemplate.convertAndSend(
                 "/topic/su-co",
                 dto
         );
+            log.info("WS SEND DONE");
+
     }
 
     public void broadcastDelete(Long reportId) {
