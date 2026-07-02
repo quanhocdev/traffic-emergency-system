@@ -53,6 +53,8 @@ class PublicSocketManager(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
+                Log.d("PublicSocket", "RECEIVED /topic/su-co")
+                Log.d("PublicSocket", it.payload)
 
                 callback.onSuCoUpdate(
                     it.payload

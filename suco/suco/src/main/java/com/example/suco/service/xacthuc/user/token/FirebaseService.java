@@ -8,7 +8,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class FirebaseService {
 
-    public String extractUid(String authHeader) throws FirebaseAuthException {
+    public String extractUid(String authHeader) {
+
+    try {
 
         if (authHeader == null || authHeader.isBlank()) {
             throw new RuntimeException("Authorization header không tồn tại");
@@ -20,5 +22,10 @@ public class FirebaseService {
                 FirebaseAuth.getInstance().verifyIdToken(token);
 
         return decodedToken.getUid();
+
+    } catch (FirebaseAuthException e) {
+
+        throw new RuntimeException("Firebase token không hợp lệ", e);
     }
+}
 }

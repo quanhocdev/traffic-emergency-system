@@ -133,68 +133,60 @@ class MapViewModel : ViewModel() {
             }
         }
     }
-    init {
-        startRealtimeSocket()
-    }
-
 
 
     private fun startRealtimeSocket() {
 
-        viewModelScope.launch {
+        Log.d("REALTIME_TEST", "startRealtimeSocket()")
 
-            try {
+        try {
 
-                SocketClientProvider.ensureConnected()
-
-
-                suCoSocket.subscribe(
-
-                    object : SuCoSocket.Callback {
-
-
-                        override fun onSuCoUpdate(
-                            suCo: SuCoMapResponseDTO
-                        ) {
-
-                            updateSuCoFromSocket(
-                                suCo
-                            )
-
-                        }
-
-
-                        override fun onSuCoDelete(
-                            id: Long
-                        ) {
-
-                            removeSuCoFromSocket(
-                                id
-                            )
-
-                        }
-
-                    }
-
-                )
-
-
-                Log.d(
-                    "MapViewModel",
-                    "SuCo socket started"
-                )
-
-
-            } catch(e:Exception){
+            if (!SocketClientProvider.stompClient.isConnected) {
 
                 Log.e(
-                    "MapViewModel",
-                    "Socket lỗi ${e.message}",
-                    e
+                    "REALTIME_TEST",
+                    "Socket chưa connect"
                 )
 
+                return
             }
 
+            Log.d(
+                "REALTIME_TEST",
+                "Prepare subscribe"
+            )
+
+            suCoSocket.subscribe(
+
+                object : SuCoSocket.Callback {
+
+                    override fun onSuCoUpdate(
+                        suCo: SuCoMapResponseDTO
+                    ) {
+                        updateSuCoFromSocket(suCo)
+                    }
+
+                    override fun onSuCoDelete(
+                        id: Long
+                    ) {
+                        removeSuCoFromSocket(id)
+                    }
+
+                }
+            )
+
+            Log.d(
+                "MapViewModel",
+                "SuCo socket started"
+            )
+
+        } catch (e: Exception) {
+
+            Log.e(
+                "MapViewModel",
+                "Socket lỗi ${e.message}",
+                e
+            )
         }
     }
     fun toggleFilter(type: String) {
@@ -207,6 +199,10 @@ class MapViewModel : ViewModel() {
     fun updateSuCoFromSocket(
         suCo: SuCoMapResponseDTO
     ){
+        Log.d(
+            "WS_TEST",
+            "UPDATE VIEWMODEL id=${suCo.id} level=${suCo.mucDoSuCo}"
+        )
         val list =
             _suCoList.value.toMutableList()
 

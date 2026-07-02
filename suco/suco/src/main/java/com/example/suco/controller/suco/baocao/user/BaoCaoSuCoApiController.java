@@ -45,7 +45,7 @@ public ResponseEntity<?> submitReport(
 
         return ResponseEntity.ok(response);
 
-    } catch (FirebaseAuthException e) {
+    } catch (RuntimeException e) {
 
         return ResponseEntity.status(401).body(
                 new AiResponse(

@@ -143,10 +143,14 @@ object SocketClientProvider {
                 .observeOn(
                     AndroidSchedulers.mainThread()
                 )
-                .subscribe {
+                .subscribe { event ->
+                    Log.d(
+                    "STOMP_LIFE",
+                    "TYPE=${event.type}  MESSAGE=${event.message}  EXCEPTION=${event.exception}"
+                )
 
 
-                    when(it.type){
+                    when(event.type){
 
 
                         LifecycleEvent.Type.OPENED -> {
@@ -173,9 +177,18 @@ object SocketClientProvider {
 
                             Log.e(
                                 "SOCKET_DEBUG",
-                                "SOCKET ERROR"
+                                "SOCKET ERROR",
+                                event.exception
+
                             )
 
+                        }
+                        LifecycleEvent.Type.CLOSED -> {
+                            Log.e("SOCKET_DEBUG", "CLOSED")
+                        }
+
+                        LifecycleEvent.Type.FAILED_SERVER_HEARTBEAT -> {
+                            Log.e("SOCKET_DEBUG", "HEARTBEAT FAILED")
                         }
 
 
