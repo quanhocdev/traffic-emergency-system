@@ -14,7 +14,7 @@ import org.json.JSONObject
 class CallViewModel : ViewModel() {
 
     private var userSocketManager: UserSocketManager? = null
-    private var isListening = false // Biến cờ ngăn chặn subscribe trùng lặp nhiều lần
+    private var isListening = false
 
     fun start(
         context: Context,
@@ -28,28 +28,23 @@ class CallViewModel : ViewModel() {
                 Settings.Secure.ANDROID_ID
             )
 
-        Log.w(
-            "WebRTC_Debug",
-            "Android đăng ký lắng nghe Call qua UserSocketManager"
-        )
+        Log.w("WebRTC_Debug", "Start Call listener")
 
         viewModelScope.launch {
 
-            val activeClient = SocketClientProvider.ensureConnected()
+            // ⚠️ CHỈ LẤY SOCKET ĐÃ CONNECT, KHÔNG CONNECT Ở ĐÂY
+            val client = SocketClientProvider.stompClient
 
-            userSocketManager = UserSocketManager(activeClient).apply {
+            userSocketManager = UserSocketManager(client).apply {
 
                 subscribe(object : UserSocketManager.Callback {
 
                     override fun onPaymentUpdate(json: String) {
                         try {
-                            val jsonObject = JSONObject(json)
-                            webrtcViewModel.handleSignal(jsonObject, userId)
+                            val obj = JSONObject(json)
+                            webrtcViewModel.handleSignal(obj, userId)
                         } catch (e: Exception) {
-                            Log.e(
-                                "WebRTC_Debug",
-                                "Lỗi định tuyến tín hiệu: ${e.message}"
-                            )
+                            Log.e("WebRTC_Debug", "Parse error ${e.message}")
                         }
                     }
 
@@ -73,6 +68,5 @@ class CallViewModel : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         userSocketManager = null
-        Log.w("WebRTC_Debug", "🧹 Đã giải phóng UserSocketManager trong CallViewModel")
     }
 }

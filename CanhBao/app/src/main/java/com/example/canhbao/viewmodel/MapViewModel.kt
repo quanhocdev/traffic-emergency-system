@@ -114,6 +114,8 @@ class MapViewModel : ViewModel() {
                     appContext,
                     _suCoList.value
                 )
+                startRealtimeSocket()
+
 
 
                 Log.d(
