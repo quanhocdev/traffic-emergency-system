@@ -1,13 +1,13 @@
 package com.example.suco.controller.suco.baocao.user;
 
 import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoDetailResponseDTO;
-import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoItemResponseDTO; // ✅ Thêm import này
+import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoItemResponseDTO; 
 import com.example.suco.service.suco.baocao.user.TheoDoiBaoCaoService;
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.Authentication;
 import java.util.List;
 
 @RestController
@@ -21,23 +21,24 @@ public class TheoDoiBaoCaoController {
     private FirebaseService firebaseService;
 
     @GetMapping("/theo-doi")
-    public List<TheoDoiSuCoItemResponseDTO> layDanhSach(
-            @RequestHeader("Authorization") String authHeader
-    ) throws Exception {
+public List<TheoDoiSuCoItemResponseDTO> layDanhSach(
+        Authentication authentication
+) {
 
-        String uid = firebaseService.extractUid(authHeader);
+    String uid = authentication.getName();
 
-        return theoDoiBaoCaoService.layDanhSachItem(uid);
-    }
+    return theoDoiBaoCaoService.layDanhSachItem(uid);
+}
 
     @GetMapping("/theo-doi/{id}")
-    public TheoDoiSuCoDetailResponseDTO layChiTiet(
-            @PathVariable Long id,
-            @RequestHeader("Authorization") String authHeader
-    ) throws Exception {
+public TheoDoiSuCoDetailResponseDTO layChiTiet(
+        @PathVariable Long id,
+        Authentication authentication
+) {
 
-        firebaseService.extractUid(authHeader);
-
-        return theoDoiBaoCaoService.layChiTiet(id);
-    }
+    return theoDoiBaoCaoService.layChiTiet(
+            id,
+            authentication.getName()
+    );
+}
 }

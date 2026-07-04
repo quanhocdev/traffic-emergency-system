@@ -61,11 +61,11 @@ private TruSoService truSoService;
             .toList();
 }
 
-public TheoDoiSOSDetailResponseDTO layChiTiet(Long id) {
+public TheoDoiSOSDetailResponseDTO layChiTiet(Long id, String uid) {
 
-    var sos = tinHieuSOSRepository.findById(id)
+    var sos = tinHieuSOSRepository
+            .findByIdAndUserUid(id, uid)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy SOS"));
-
 
         // Lấy thông tin trụ sở tiếp nhận (nếu có)
     TruSoMapDto truSoDto = null;
