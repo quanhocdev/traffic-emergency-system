@@ -42,14 +42,12 @@ public class TheoDoiBaoCaoService {
                 .toList();
     }
 
-    /**
-     * 2. Lấy thông tin CHI TIẾT của MỘT sự cố dựa vào ID
-     * Trả về duy nhất 1 DTO đối tượng cụ thể (Giống hệt bên luồng SOS layChiTiet)
-     */
-    public TheoDoiSuCoDetailResponseDTO layChiTiet(Long id) {
-        // Tìm sự cố cụ thể trong db, nếu không thấy thì báo lỗi
-        var suCo = baoCaoSuCoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sự cố với ID: " + id));
+    public TheoDoiSuCoDetailResponseDTO layChiTiet(Long id, String uid) {
+        
+        var suCo = baoCaoSuCoRepository
+        .findByIdAndReporterUid(id, uid)
+        .orElseThrow(() ->
+                new RuntimeException("Không tìm thấy sự cố với ID: " + id));
 
         // Map thông tin Trụ sở tiếp nhận từ thực thể liên kết @ManyToOne sang DTO bản đồ
         TruSoMapDto truSoDto = null;
