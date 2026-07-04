@@ -14,7 +14,7 @@ import com.google.firebase.auth.FirebaseToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.security.core.Authentication;
 @RestController
 @RequestMapping("/api/tin-hieu-sos")
 public class TinHieuSOSController {
@@ -27,17 +27,12 @@ public class TinHieuSOSController {
 
 @PostMapping("/submit")
 public ResponseEntity<?> submitSOS(
-        @RequestHeader("Authorization") String authHeader,
+        Authentication authentication,
         @RequestBody TinHieuSOSRequestDTO dto
 ) {
     try {
 
-        String token = authHeader.replace("Bearer ", "");
-
-        FirebaseToken decodedToken =
-                FirebaseAuth.getInstance().verifyIdToken(token);
-
-        String uid = decodedToken.getUid();
+        String uid = authentication.getName();
 
         Long sosId = tinHieuService.submitSOS(uid, dto);
 
@@ -60,14 +55,12 @@ public ResponseEntity<?> submitSOS(
 }
 @PostMapping("/cancel/{id}")
 public ResponseEntity<?> cancelSOS(
-        @RequestHeader("Authorization") String authHeader,
+        Authentication authentication,
         @PathVariable Long id
 ) {
     try {
-        String token = authHeader.replace("Bearer ", "");
-        String currentUid;
-        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-        currentUid = decodedToken.getUid();
+        String currentUid = authentication.getName();
+        
         tinHieuHuyService.cancelSOS(id, currentUid);
         return ResponseEntity.ok(
                 Map.of("message", "Đã hủy yêu cầu SOS thành công")

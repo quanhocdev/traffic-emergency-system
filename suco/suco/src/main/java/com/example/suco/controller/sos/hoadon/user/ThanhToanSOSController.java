@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.util.Map;
+import org.springframework.security.core.Authentication;
+
 @RestController
 @RequestMapping("/api/hoa-don")
 @CrossOrigin(origins = "*")
@@ -54,17 +56,12 @@ public ResponseEntity<?> getChiTietThanhToan(
 @PostMapping("/xac-nhan")
 @Transactional
 public ResponseEntity<?> xacNhanThanhToan(
-    @RequestHeader("Authorization") String authHeader,
-    @RequestBody ThanhToanRequestDTO request
+            Authentication authentication,
+            @RequestBody ThanhToanRequestDTO request
 ) {
     try {
-        // 1. Lấy UID từ token
-        String token = authHeader.replace("Bearer ", "");
-        String uid;
+        String uid = authentication.getName();
 
-        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-        uid = decodedToken.getUid();
-        
         // 2. Xử lý thanh toán dịch vụ
         ThanhToanResponseDTO response = thanhToanSOSService.thanhToanHoaDon(uid, request);
 
@@ -90,10 +87,7 @@ public ResponseEntity<?> xacNhanThanhToan(
 
         return ResponseEntity.ok(response);
 
-    } catch (FirebaseAuthException e) {
-        return ResponseEntity.status(401)
-                .body(Map.of("message", "Token không hợp lệ"));
-    } catch (Exception e) {
+    }  catch (Exception e) {
         return ResponseEntity.status(500)
                 .body(Map.of("message", "Lỗi hệ thống: " + e.getMessage()));
     }

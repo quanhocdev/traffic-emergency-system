@@ -8,7 +8,7 @@ import com.example.suco.dto.sos.goi.dangky.MuaGoiRequestDTO;
 import com.example.suco.service.sos.goi.admin.CRUDGoiService;
 import com.example.suco.service.sos.goi.user.SoHuuGoiService;
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
-
+import org.springframework.security.core.Authentication;
 import java.util.Map;
 
 @RestController
@@ -21,8 +21,6 @@ public class SoHuuGoiController {
     @Autowired
     private CRUDGoiService goiService;
 
-    @Autowired
-    private FirebaseService firebaseService;
 
     @GetMapping("/danh-sach")
     public ResponseEntity<?> getDanhSachGoi() {
@@ -32,11 +30,11 @@ public class SoHuuGoiController {
     // ĐĂNG KÝ GÓI 
     @PostMapping("/dang-ky")
     public ResponseEntity<?> dangKyMuaGoi(
-            @RequestHeader("Authorization") String authHeader,
-                    @RequestBody MuaGoiRequestDTO request
+            Authentication authentication,
+            @RequestBody MuaGoiRequestDTO request
     ) {
         try {
-            String uid = firebaseService.extractUid(authHeader);
+            String uid = authentication.getName();
 
             muaGoiService.dangKyGoi(uid, request);
 
@@ -54,11 +52,11 @@ public class SoHuuGoiController {
     // HỦY GÓI 
     @PostMapping("/cancel/{id}")
     public ResponseEntity<?> cancelGoi(
-            @RequestHeader("Authorization") String authHeader,
+            Authentication authentication,
             @PathVariable Long id
     ) {
         try {
-            String uid = firebaseService.extractUid(authHeader);
+            String uid = authentication.getName();
 
             muaGoiService.huyGoi(id, uid);
 
@@ -79,10 +77,10 @@ public class SoHuuGoiController {
     // LẤY DANH SÁCH GÓI ĐÃ MUA CỦA USER
     @GetMapping("/my-packages")
     public ResponseEntity<?> getMyPackages(
-            @RequestHeader("Authorization") String authHeader
+            Authentication authentication
     ) {
         try {
-            String uid = firebaseService.extractUid(authHeader);
+            String uid = authentication.getName();
 
             return ResponseEntity.ok(muaGoiService.getGoiByUserId(uid));
 
