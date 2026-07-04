@@ -1,25 +1,20 @@
 
 package com.example.suco.controller.suco.baocao.user;
 
-import com.example.suco.service.xacthuc.user.token.FirebaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import com.example.suco.service.suco.baocao.user.GuiBaoCaoService;
 import com.example.suco.service.suco.baocao.user.HuyBaoCaoService;
-import com.google.firebase.auth.FirebaseAuthException;
 import jakarta.validation.Valid;
 
 import com.example.suco.dto.suco.baocao.ai.AiResponse;
 import com.example.suco.dto.suco.baocao.user.SuCoRequestDTO;
-
+import org.springframework.security.core.Authentication;
 @RestController
 @RequestMapping("/api/su-co")
 public class BaoCaoSuCoApiController {
-
-    @Autowired
-    private FirebaseService firebaseService;
 
     @Autowired
     private GuiBaoCaoService userBaoCaoService;
@@ -27,14 +22,14 @@ public class BaoCaoSuCoApiController {
     @Autowired
     private HuyBaoCaoService huyBaoCaoService;
 
-    @PostMapping
+ @PostMapping
 public ResponseEntity<?> submitReport(
-        @RequestHeader("Authorization") String authHeader,
+        Authentication authentication,
         @Valid @RequestBody SuCoRequestDTO request
 ) {
     try {
 
-        String uid = firebaseService.extractUid(authHeader);
+        String uid = authentication.getName();
 
         AiResponse response =
                 userBaoCaoService.submitReport(
@@ -59,13 +54,17 @@ public ResponseEntity<?> submitReport(
 
 @PatchMapping("/{id}")
 public ResponseEntity<?> cancelReport(
-        @RequestHeader("Authorization") String authHeader,
+        Authentication authentication,
         @PathVariable Long id
 ) {
     try {
-        String currentUid = firebaseService.extractUid(authHeader);
+
+        String currentUid = authentication.getName();
+
         return huyBaoCaoService.cancelReport(id, currentUid);
+
     } catch (Exception e) {
+
         return ResponseEntity.status(401)
                 .body(Map.of("message", "Xác thực thất bại"));
     }

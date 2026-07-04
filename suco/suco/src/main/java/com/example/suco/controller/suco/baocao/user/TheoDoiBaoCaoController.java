@@ -3,8 +3,6 @@ package com.example.suco.controller.suco.baocao.user;
 import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoItemResponseDTO; 
 import com.example.suco.service.suco.baocao.user.TheoDoiBaoCaoService;
-import com.example.suco.service.xacthuc.user.token.FirebaseService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
@@ -17,8 +15,6 @@ public class TheoDoiBaoCaoController {
     @Autowired
     private TheoDoiBaoCaoService theoDoiBaoCaoService;
 
-    @Autowired
-    private FirebaseService firebaseService;
 
     @GetMapping("/theo-doi")
 public List<TheoDoiSuCoItemResponseDTO> layDanhSach(

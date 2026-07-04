@@ -13,7 +13,6 @@ import com.example.suco.service.suco.baocao.user.workflow.gui.BaoCaoRewardServic
 import com.example.suco.service.suco.baocao.user.workflow.gui.CreateBaoCaoService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.DuplicateBaoCaoService;
 import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
