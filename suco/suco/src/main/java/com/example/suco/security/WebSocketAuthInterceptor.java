@@ -111,14 +111,6 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
             }
 
 
-
-
-
-            /*
-             * ANDROID JWT
-             */
-
-
             String header =
                     accessor.getFirstNativeHeader(
                             "Authorization"
