@@ -10,7 +10,7 @@ import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.repository.suco.loai.LoaiSuCoRepository;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.repository.vanhanh.UserRepository;
-import com.example.suco.service.suco.baocao.system.file.LocalImageStorageService;
+import com.example.suco.service.suco.baocao.system.file.ImageStorageService;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ public class AdminBaoCaoService {
     private TruSoSelectorService truSoSelectorService;
 
     @Autowired
-    private LocalImageStorageService imageStorageService;
+    private ImageStorageService imageStorageService;
 
     @Autowired
     private BaoCaoRealtimeService realtimeService;

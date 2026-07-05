@@ -10,7 +10,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 @Service
-public class LocalImageStorageService {
+public class LocalImageStorageService implements ImageStorageService {
+    
+    @Override
     public String saveBase64Image(String base64Data) {
 
         try {
@@ -44,6 +46,8 @@ public class LocalImageStorageService {
         }
     }
 
+
+    @Override
     public String saveMultipartImage(MultipartFile image) {
 
         try {
