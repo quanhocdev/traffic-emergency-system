@@ -75,7 +75,7 @@ public BaoCaoSuCo submitAdminReport(BaoCaoSuCo report, MultipartFile image) {
     }
 
     if (image != null && !image.isEmpty()) {
-        report.setHinhAnhUrl(imageStorageService.saveMultipartImage(image));
+        report.setHinhAnhUrl(imageStorageService.saveMultipart(image, "reports"));
     }
 
     // TRỤ SỞ GẦN NHẤT
