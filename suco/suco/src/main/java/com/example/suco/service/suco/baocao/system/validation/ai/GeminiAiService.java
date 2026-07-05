@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class GeminiAiService {
+public class GeminiAiService implements AiVerificationService {
 
     @Value("${gemini.api.keys}")
     private String keys;
@@ -35,6 +35,7 @@ public class GeminiAiService {
         apiKeys = List.of(keys.split(","));
     }
 
+    @Override
     public AiVerifyResult verifyImage(String base64Image, String loaiSuCo) {
 
         // 0. Nếu không có ảnh
