@@ -1,4 +1,4 @@
-package com.example.suco.service.suco.baocao.system.file;
+package com.example.suco.service.file;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,7 +8,7 @@ import java.nio.file.*;
 import java.util.Base64;
 
 @Service
-public class LocalImageStorageService implements ImageStorageService {
+public class LocalFileStorageService implements FileStorageService {
 
     @Override
     public String saveBase64(String base64, String folder, String prefix, String extension) {
