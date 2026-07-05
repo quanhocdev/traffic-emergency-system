@@ -4,15 +4,11 @@ import com.example.suco.dto.tienich.tien.quanly.ThongKeQuyDto;
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienDto;
 import com.example.suco.model.DoiTien;
 import com.example.suco.repository.tienich.tien.DoiTienRepository;
-import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.service.tienich.tien.user.DoiTienService;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseToken;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.Authentication;
 import java.util.*;
 
 @RestController
@@ -21,26 +17,15 @@ public class DoiTienApiController {
 
     @Autowired private DoiTienService doiTienService;
     @Autowired private DoiTienRepository doiTienRepository;
-    @Autowired private UserRepository userRepository;
 
-    private String getUidFromHeader(String authHeader) throws Exception {
-    String token = authHeader.replace("Bearer ", "");
-
-    if ("dev-token".equals(token)) {
-        return "test-user";
-    }
-
-    FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-    return decodedToken.getUid();
-}
 
    @PostMapping("/thuc-hien")
 public ResponseEntity<?> thucHienDoi(
-        @RequestHeader("Authorization") String authHeader,
+        Authentication authentication,
         @RequestBody DoiTienDto dto
 ) {
     try {
-        String uid = getUidFromHeader(authHeader);
+        String uid = authentication.getName();
 
         doiTienService.thucHienDoiTien(uid, dto);
 
@@ -65,24 +50,25 @@ public ResponseEntity<ThongKeQuyDto> getThongKeQuy() {
     Long tongGiaTri = doiTienRepository.sumAllDonationValues();
     if (tongGiaTri == null) tongGiaTri = 0L;
 
-    // Sử dụng hàm helper đã tạo ở Bước 1
     List<Map<String, Object>> vinhDanh = doiTienService.getFormattedVinhDanh();
 
     return ResponseEntity.ok(new ThongKeQuyDto(tongGiaTri, vinhDanh));
 }
+
 @GetMapping("/lich-su/all")
 public ResponseEntity<List<DoiTien>> getAllLichSu(@RequestParam(required = false) String loai) {
     // Gọi trực tiếp service để xử lý logic tìm kiếm toàn bộ
     return ResponseEntity.ok(doiTienService.getAllLichSu(loai));
 }
+
 @GetMapping("/lich-su")
 public ResponseEntity<?> getLichSu(
-        @RequestHeader("Authorization") String authHeader,
+        Authentication authentication,
         @RequestParam(required = false) String loai
 ) {
     try {
         // 1. Lấy UID từ Tokena
-        String uid = getUidFromHeader(authHeader);
+        String uid = authentication.getName();
 
         // 2. Gọi Service xử lý nghiệp vụ
         List<DoiTien> result = doiTienService.getLichSu(uid, loai);
