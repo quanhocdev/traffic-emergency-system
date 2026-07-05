@@ -3,10 +3,8 @@ package com.example.suco.service.suco.baocao.user.workflow.gui;
 import com.example.suco.dto.suco.baocao.ai.AiVerifyResult;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.LoaiSuCo;
-
 import com.example.suco.repository.suco.loai.LoaiSuCoRepository;
-import com.example.suco.service.suco.baocao.system.validation.ai.GeminiAiService;
-
+import com.example.suco.service.suco.baocao.system.validation.ai.AiVerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class BaoCaoAiService {
 
     @Autowired
-    private GeminiAiService geminiAiService;
+    private AiVerificationService aiVerificationService;
 
     @Autowired
     private LoaiSuCoRepository loaiSuCoRepository;
@@ -38,7 +36,7 @@ public class BaoCaoAiService {
 
         report.setLoaiSuCo(loaiSuCo);
 
-        return geminiAiService.verifyImage(
+        return aiVerificationService.verifyImage(
                 base64,
                 loaiSuCo.getTen()
         );

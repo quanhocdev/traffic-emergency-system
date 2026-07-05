@@ -6,3 +6,6 @@ import com.example.suco.model.BaoCaoSuCo;
 public interface BaoCaoProcess {
         BaoCaoSuCo process(SuCoRequestDTO dto, String uid, Object extraData);
 }
+
+
+// Image Storage, Notification, Geocoding
