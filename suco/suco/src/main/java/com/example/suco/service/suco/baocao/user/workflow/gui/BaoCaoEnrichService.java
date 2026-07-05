@@ -3,8 +3,8 @@ package com.example.suco.service.suco.baocao.user.workflow.gui;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.mapper.SuCoMapper;
+import com.example.suco.service.file.FileStorageService;
 import com.example.suco.service.location.GeocodingService;
-import com.example.suco.service.suco.baocao.system.file.ImageStorageService;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import com.example.suco.service.suco.baocao.system.validation.TrungLapBaoCaoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ public class BaoCaoEnrichService {
     private GeocodingService geocodingService;
 
     @Autowired
-    private ImageStorageService imageStorageService;
+    private FileStorageService imageStorageService;
 
     @Autowired
     private SuCoAdminRepository reportRepository;

@@ -10,7 +10,6 @@ import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.repository.suco.loai.LoaiSuCoRepository;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.repository.vanhanh.UserRepository;
-import com.example.suco.service.suco.baocao.system.file.ImageStorageService;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.example.suco.service.dieuphoi.TruSoSelectorService;
+import com.example.suco.service.file.FileStorageService;
 import com.example.suco.service.location.GeocodingService;
 
 
@@ -40,7 +40,7 @@ public class AdminBaoCaoService {
     private TruSoSelectorService truSoSelectorService;
 
     @Autowired
-    private ImageStorageService imageStorageService;
+    private FileStorageService imageStorageService;
 
     @Autowired
     private BaoCaoRealtimeService realtimeService;
