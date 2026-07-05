@@ -1,14 +1,12 @@
 package com.example.suco.controller.tienich.qua.user;
 
 import com.example.suco.service.tienich.qua.user.DoiQuaService;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseToken;
 import com.example.suco.dto.tienich.qua.quydoi.DoiQuaRequestDTO;
 import com.example.suco.dto.tienich.qua.quydoi.TuiQuaResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.security.core.Authentication;
 import java.util.List;  
 import java.util.Map;
 
@@ -19,26 +17,14 @@ public class DoiQuaApiController {
     @Autowired
     private DoiQuaService doiQuaService;
 
-    // ================== HÀM LẤY UID ==================
-    private String getUidFromHeader(String authHeader) throws Exception {
-        String token = authHeader.replace("Bearer ", "");
-
-        if ("dev-token".equals(token)) {
-            return "test-user"; // nhớ tạo user này trong DB
-        }
-
-        FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-        return decodedToken.getUid();
-    }
-
     // ================== 1. ĐỔI QUÀ ==================
     @PostMapping("/exchange")
 public ResponseEntity<?> exchange(
-        @RequestHeader("Authorization") String authHeader,
+        Authentication authentication,
         @RequestBody DoiQuaRequestDTO dto
 ) {
     try {
-        String uid = getUidFromHeader(authHeader);
+        String uid = authentication.getName();
 
         doiQuaService.thucHienDoiQua(uid, dto);
 
@@ -60,10 +46,10 @@ public ResponseEntity<?> exchange(
 
     // ================== 2. TÚI QUÀ CỦA TÔI ==================
  @GetMapping("/my-gifts")
-public ResponseEntity<?> getMyGifts(@RequestHeader("Authorization") String authHeader) {
+public ResponseEntity<?> getMyGifts( Authentication authentication) {
     try {
         // 1. Trích xuất UID từ header (giữ nguyên hàm helper của bạn)
-        String uid = getUidFromHeader(authHeader);
+        String uid = authentication.getName();
 
         // 2. Gọi Service để xử lý tác vụ
         List<TuiQuaResponseDTO> result = doiQuaService.getMyGifts(uid);
