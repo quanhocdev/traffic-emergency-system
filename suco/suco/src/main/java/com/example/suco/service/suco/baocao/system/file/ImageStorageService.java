@@ -4,7 +4,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface ImageStorageService {
 
-    String saveBase64Image(String base64);
+    String saveBase64(String base64, String folder, String prefix, String extension);
 
-    String saveMultipartImage(MultipartFile file);
+    String saveMultipart(MultipartFile file, String folder);
 }

@@ -46,7 +46,7 @@ public class BaoCaoEnrichService {
         // kiểm tra ảnh có hợp lệ không, nếu có thì lưu và set URL
         if (base64 != null && !base64.isBlank()) {
             report.setHinhAnhUrl(
-                    imageStorageService.saveBase64Image(base64)
+                    imageStorageService.saveBase64( base64,"reports","report",".jpg")
             );
         }
 

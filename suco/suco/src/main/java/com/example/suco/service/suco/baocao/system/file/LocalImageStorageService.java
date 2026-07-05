@@ -4,63 +4,54 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
+import java.util.Base64;
 
 @Service
 public class LocalImageStorageService implements ImageStorageService {
-    
+
     @Override
-    public String saveBase64Image(String base64Data) {
+    public String saveBase64(String base64, String folder, String prefix, String extension) {
 
         try {
-            String fileName =
-                    System.currentTimeMillis() + "_report.jpg";
+            String fileName = System.currentTimeMillis() + "_" + prefix + extension;
 
             Path uploadPath = Paths.get(
                     System.getProperty("user.dir"),
                     "uploads",
-                    "reports"
+                    folder
             );
 
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
 
-            String base64Image =
-                    base64Data.contains(",")
-                            ? base64Data.split(",")[1]
-                            : base64Data;
+            String cleanBase64 = base64.contains(",")
+                    ? base64.split(",")[1]
+                    : base64;
 
-            Files.write(
-                    uploadPath.resolve(fileName),
-                    java.util.Base64.getDecoder().decode(base64Image)
-            );
+            byte[] bytes = Base64.getDecoder().decode(cleanBase64);
 
-            return "/uploads/reports/" + fileName;
+            Files.write(uploadPath.resolve(fileName), bytes);
+
+            return "/uploads/" + folder + "/" + fileName;
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Lỗi lưu file", e);
         }
     }
 
-
     @Override
-    public String saveMultipartImage(MultipartFile image) {
+    public String saveMultipart(MultipartFile file, String folder) {
 
         try {
-
             String filename =
-                    System.currentTimeMillis()
-                            + "_"
-                            + image.getOriginalFilename();
+                    System.currentTimeMillis() + "_" + file.getOriginalFilename();
 
             Path uploadDir = Paths.get(
                     System.getProperty("user.dir"),
                     "uploads",
-                    "reports"
+                    folder
             );
 
             if (!Files.exists(uploadDir)) {
@@ -68,15 +59,15 @@ public class LocalImageStorageService implements ImageStorageService {
             }
 
             Files.copy(
-                    image.getInputStream(),
+                    file.getInputStream(),
                     uploadDir.resolve(filename),
                     StandardCopyOption.REPLACE_EXISTING
             );
 
-            return "/uploads/reports/" + filename;
+            return "/uploads/" + folder + "/" + filename;
 
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Lỗi lưu multipart file", e);
         }
     }
 }

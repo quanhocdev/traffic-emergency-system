@@ -9,8 +9,8 @@ import com.example.suco.model.TinHieuSOS;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.service.dieuphoi.DispatchEngineService;
 import com.example.suco.service.location.GeocodingService;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.StorageSOSService;
 import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
+import com.example.suco.service.suco.baocao.system.file.ImageStorageService;
 import com.example.suco.model.User;
 
 @Service
@@ -23,7 +23,7 @@ public class GuiTinHieuService {
     private VipService vipService;
  
     @Autowired
-    private StorageSOSService fileStorageService;
+private ImageStorageService fileStorageService;
 
     @Autowired
     private GeocodingService geocodingService;
@@ -50,7 +50,27 @@ public Long submitSOS(String uid, TinHieuSOSRequestDTO dto) {
             )
     );
 
-    fileStorageService.handleFiles(sos, dto);
+    if (dto.getHinhAnhBase64() != null) {
+    sos.setHinhAnh(
+            fileStorageService.saveBase64(
+                    dto.getHinhAnhBase64(),
+                    "sos",
+                    "sos_img",
+                    ".jpg"
+            )
+    );
+}
+
+if (dto.getGhiAmBase64() != null) {
+    sos.setGhiAm(
+            fileStorageService.saveBase64(
+                    dto.getGhiAmBase64(),
+                    "sos",
+                    "sos_audio",
+                    ".m4a"
+            )
+    );
+}
 
     sos.setIsVip(vipService.checkVip(uid));
 
