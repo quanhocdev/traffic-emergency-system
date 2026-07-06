@@ -7,11 +7,12 @@ import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
-import com.example.suco.service.suco.baocao.system.reward.UserRewardService;
+import com.example.suco.service.suco.baocao.system.reward.DuplicateReportRewardPolicy;
 import com.example.suco.service.suco.baocao.system.validation.TrungLapBaoCaoService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.example.suco.service.suco.baocao.system.reward.RewardEngine;
 
 @Service
 public class DuplicateBaoCaoService {
@@ -26,9 +27,6 @@ public class DuplicateBaoCaoService {
     private UserRepository userRepository;
 
     @Autowired
-    private UserRewardService userRewardService;
-
-    @Autowired
     private BaoCaoRealtimeService realtimeService;
 
     @Autowired
@@ -36,6 +34,8 @@ public class DuplicateBaoCaoService {
 
     @Autowired
     private BaoCaoResponseFactory responseFactory;
+
+    @Autowired RewardEngine rewardEngine;
 
     public AiResponse process(
             String uid,
@@ -92,11 +92,10 @@ public class DuplicateBaoCaoService {
 
         if (user != null) {
 
-            userRewardService.rewardUser(
-                    uid,
-                    2,
-                    5
-            );
+            rewardEngine.reward(
+                        uid,
+                        new DuplicateReportRewardPolicy()
+        );
         }
 
         realtimeService.broadcastReport(

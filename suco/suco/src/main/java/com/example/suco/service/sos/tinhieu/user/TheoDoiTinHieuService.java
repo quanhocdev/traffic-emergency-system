@@ -8,7 +8,7 @@ import com.example.suco.dto.info.truso.TruSoMapDto;
 import com.example.suco.dto.info.user.UserInfoResponseDTO;
 import com.example.suco.dto.sos.tinhieu.user.TheoDoiSOSDetailResponseDTO;
 import com.example.suco.dto.sos.tinhieu.user.TheoDoiSOSItemResponseDTO;
-
+import com.example.suco.mapper.info.InfoTruSoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -28,8 +28,9 @@ public class TheoDoiTinHieuService {
     @Autowired
 private TruSoService truSoService;
 
+
     @Autowired
-    private VipService vipService;
+    private InfoTruSoMapper infoTruSoMapper;
 
    public List<TheoDoiSOSItemResponseDTO> layDanhSachItem(
         String uid
@@ -67,29 +68,21 @@ public TheoDoiSOSDetailResponseDTO layChiTiet(Long id, String uid) {
             .findByIdAndUserUid(id, uid)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy SOS"));
 
-        // Lấy thông tin trụ sở tiếp nhận (nếu có)
     TruSoMapDto truSoDto = null;
 
     if (sos.getIdTruSoTiepNhan() != null) {
 
-        var truSo =
-                truSoService.timTruSoTheoId(
-                        sos.getIdTruSoTiepNhan()
-                );
+        var truSo = truSoService.timTruSoTheoId(
+                sos.getIdTruSoTiepNhan()
+        );
 
         if (truSo != null) {
-
-            truSoDto = new TruSoMapDto(
-                    truSo.getId(),
-                    truSo.getTenTruSo(),
-                    truSo.getKinhDo(),
-                    truSo.getViDo(),
-                    truSo.getDiaChi()
-            );
+            truSoDto = infoTruSoMapper.toMapDto(truSo);
         }
     }
 
-UserInfoResponseDTO userInfo = infoUserMapper.toUserInfoResponseDTO(sos.getUser());
+    UserInfoResponseDTO userInfo =
+            infoUserMapper.toUserInfoResponseDTO(sos.getUser());
 
     return tinHieuMapper.toTheoDoiDto(
             sos,

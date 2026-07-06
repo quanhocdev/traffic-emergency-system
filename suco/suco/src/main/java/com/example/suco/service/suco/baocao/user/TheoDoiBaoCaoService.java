@@ -6,10 +6,11 @@ import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoDetailResponseDTO;
 import com.example.suco.dto.suco.baocao.user.TheoDoiSuCoItemResponseDTO;
 import com.example.suco.mapper.SuCoMapper;
 import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import com.example.suco.mapper.info.InfoTruSoMapper;
+import com.example.suco.mapper.info.InfoUserMapper;
 
 @Service
 public class TheoDoiBaoCaoService {
@@ -21,12 +22,11 @@ public class TheoDoiBaoCaoService {
     private SuCoMapper suCoMapper;
 
     @Autowired
-    private VipService vipService;
+    private InfoTruSoMapper infoTruSoMapper;
 
-    /**
-     * 1. Lấy danh sách rút gọn (Item) dựa vào Firebase UID người dùng
-     * Trả về List dùng cho màn hình danh sách lịch sử
-     */
+    @Autowired
+    private InfoUserMapper infoUserMapper;
+
     public List<TheoDoiSuCoItemResponseDTO> layDanhSachItem(String uid) {
         return baoCaoSuCoRepository.findByReporterUid(uid)
                 .stream()
@@ -50,27 +50,10 @@ public class TheoDoiBaoCaoService {
                 new RuntimeException("Không tìm thấy sự cố với ID: " + id));
 
         // Map thông tin Trụ sở tiếp nhận từ thực thể liên kết @ManyToOne sang DTO bản đồ
-        TruSoMapDto truSoDto = null;
-        if (suCo.getTruSoTiepNhan() != null) {
-            var truSo = suCo.getTruSoTiepNhan();
-            truSoDto = new TruSoMapDto(
-                    truSo.getId(),
-                    truSo.getTenTruSo(),
-                    truSo.getKinhDo(),
-                    truSo.getViDo(),
-                    truSo.getDiaChi()
-            );
-        }
+        TruSoMapDto truSoDto = infoTruSoMapper.toMapDto(suCo.getTruSoTiepNhan());
 
         // Map thông tin tài khoản người báo cáo & kiểm tra gói VIP
-        UserInfoResponseDTO userInfo = new UserInfoResponseDTO();
-        if (suCo.getReporter() != null) {
-            userInfo.setName(suCo.getReporter().getName());
-            userInfo.setEmail(suCo.getReporter().getEmail());
-            
-            String reporterId = suCo.getReporter().getUid();
-            userInfo.setVip(vipService.checkVip(reporterId));
-        }
+        UserInfoResponseDTO userInfo = infoUserMapper.toUserInfoResponseDTO(suCo.getReporter());
 
         // Chuyển đổi và trả về dữ liệu đơn lẻ
         return suCoMapper.toTheoDoiDto(suCo, truSoDto, userInfo);
