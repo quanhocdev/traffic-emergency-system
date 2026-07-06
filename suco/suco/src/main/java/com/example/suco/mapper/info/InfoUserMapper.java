@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 
 import com.example.suco.dto.info.user.UserInfoResponseDTO;
 import com.example.suco.dto.info.user.UserMiniDTO;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
 import com.example.suco.model.User;
+import com.example.suco.service.VipService;
 
 @Component
 public class InfoUserMapper {

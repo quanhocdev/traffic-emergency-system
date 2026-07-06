@@ -3,10 +3,11 @@ package com.example.suco.service.suco.baocao.system.reward;
 import com.example.suco.model.User;
 import com.example.suco.repository.sos.goi.MuaGoiRepository;
 import com.example.suco.repository.vanhanh.UserRepository;
+import com.example.suco.service.VipService;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
 @Service
 public class UserRewardService {
 

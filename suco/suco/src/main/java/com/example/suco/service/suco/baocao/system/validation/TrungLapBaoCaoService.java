@@ -25,7 +25,6 @@ public class TrungLapBaoCaoService {
             return null;
         }
 
-        // 🔥 TỐI ƯU: Tận dụng hàm tổng Admin đã JOIN FETCH đầy đủ mối quan hệ để tránh lỗi N+1
         List<BaoCaoSuCo> allReports = reportRepository.findAllForAdminDashboard();
 
         // Lọc lấy các sự cố đang hoạt động (không phải HOAN_THANH hay HUY_BO) trực tiếp trên Stream

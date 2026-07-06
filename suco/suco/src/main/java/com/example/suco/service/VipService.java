@@ -1,4 +1,5 @@
-package com.example.suco.service.sos.tinhieu.user.workflow.gui;
+package com.example.suco.service;
+
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
