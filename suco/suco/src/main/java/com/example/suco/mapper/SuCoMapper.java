@@ -1,7 +1,6 @@
 package com.example.suco.mapper;
 import com.example.suco.model.LoaiSuCo;
 import com.example.suco.dto.info.truso.TruSoMapDto;
-import com.example.suco.dto.info.truso.TruSoMiniDTO;
 import com.example.suco.dto.info.user.UserInfoResponseDTO;
 import com.example.suco.dto.suco.baocao.SuCoMapResponseDTO;
 import com.example.suco.dto.suco.baocao.admin.AdminSuCoDetailResponseDTO;
