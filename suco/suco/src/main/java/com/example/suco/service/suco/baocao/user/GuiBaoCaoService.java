@@ -6,10 +6,11 @@ import com.example.suco.dto.suco.baocao.user.SuCoRequestDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.service.dieuphoi.TruSoSelectorService;
+import com.example.suco.service.suco.baocao.system.reward.NewReportRewardPolicy;
+import com.example.suco.service.suco.baocao.system.reward.RewardEngine;
 import com.example.suco.service.suco.baocao.user.workflow.gui.BaoCaoAiService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.BaoCaoEnrichService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.BaoCaoResponseFactory;
-import com.example.suco.service.suco.baocao.user.workflow.gui.BaoCaoRewardService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.CreateBaoCaoService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.DuplicateBaoCaoService;
 import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
@@ -31,8 +32,9 @@ public class GuiBaoCaoService {
     @Autowired
     private BaoCaoEnrichService baoCaoEnrichService;
 
+
     @Autowired
-    private BaoCaoRewardService baoCaoRewardService;
+        private RewardEngine rewardEngine;
 
     @Autowired
     private BaoCaoResponseFactory baoCaoResponseFactory;
@@ -45,22 +47,13 @@ public class GuiBaoCaoService {
 
 
     @Transactional
-public AiResponse submitReport(
-        String uid,
-        SuCoRequestDTO dto,
-        String base64FullData
-) {
+public AiResponse submitReport(String uid, SuCoRequestDTO dto, String base64FullData) {
 
     // 1. CREATE
-    BaoCaoSuCo report =
-            createBaoCaoService.create(uid, dto);
+    BaoCaoSuCo report = createBaoCaoService.create(uid, dto);
 
     // 2. AI VERIFY
-    AiVerifyResult ai =
-            baoCaoAiService.verify(
-                    report,
-                    base64FullData
-            );
+    AiVerifyResult ai = baoCaoAiService.verify(report, base64FullData);
 
     if (!ai.isValid()) {
         return baoCaoResponseFactory.reject(ai);
@@ -74,31 +67,26 @@ public AiResponse submitReport(
         return duplicateResponse;
     }
 
-    // 4. ENRICH + SAVE BASE DATA
+    // 4. ENRICH
     BaoCaoSuCo savedReport =
-            baoCaoEnrichService.enrichAndSave(
-                    report,
-                    base64FullData
-            );
+            baoCaoEnrichService.enrichAndSave(report, base64FullData);
 
-    // 5. AI ASSIGN TRỤ SỞ 
+    // 5. TRỤ SỞ
     var truSo = truSoSelectorService.selectNearest(
             savedReport.getViDo(),
             savedReport.getKinhDo()
     );
 
     savedReport.setTruSoTiepNhan(truSo);
+    savedReport.setTrangThaiXuLy(TrangThaiXuLy.DA_TIEP_NHAN);
 
-    // 6. SET STATE
-    savedReport.setTrangThaiXuLy(
-            TrangThaiXuLy.DA_TIEP_NHAN
-    );
+    // 6. SAVE
+    BaoCaoSuCo finalReport = reportRepository.save(savedReport);
 
-    // 7. SAVE FINAL STATE
-    BaoCaoSuCo finalReport =
-            reportRepository.save(savedReport);
+    // 7. REWARD (chỉ NEW REPORT)
+    rewardEngine.reward(uid, new NewReportRewardPolicy());
 
-    // 8. RESPONSE + OPTIONAL REWARD 
+    // 8. RESPONSE
     return baoCaoResponseFactory.success(finalReport);
 }
 }

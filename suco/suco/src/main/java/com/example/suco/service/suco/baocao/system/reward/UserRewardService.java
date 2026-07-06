@@ -6,8 +6,7 @@ import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.service.suco.baocao.system.notification.BaoCaoRealtimeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
-
+import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
 @Service
 public class UserRewardService {
 
@@ -20,16 +19,8 @@ public class UserRewardService {
     @Autowired
     private BaoCaoRealtimeService realtimeService;
 
-    public boolean isUserVip(String userId) {
-
-        return muaGoiRepository
-                .findFirstByUserIdAndTrangThaiAndNgayHetHanAfter(
-                        userId,
-                        "ACTIVE",
-                        LocalDateTime.now()
-                )
-                .isPresent();
-    }
+    @Autowired
+    private VipService vipService;
 
     public void rewardUser(String uid, int normalPoints, int vipPoints) {
 
@@ -40,7 +31,7 @@ public class UserRewardService {
         }
 
         int pointsToAdd =
-                isUserVip(uid)
+                vipService.checkVip(uid)
                         ? vipPoints
                         : normalPoints;
 
