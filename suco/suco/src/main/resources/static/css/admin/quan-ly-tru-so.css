@@ -113,6 +113,12 @@ td {
   border-bottom: 1px solid #f1f5f9;
   color: #334155;
 }
+.address-cell {
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .status-badge {
   padding: 4px 12px;
   border-radius: 20px;

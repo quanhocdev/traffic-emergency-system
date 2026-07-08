@@ -7,21 +7,21 @@ public class CameraMapDto {
     private Double viDo;
     private String anhCamera;
     private String videoUrl;
-    private String moTa;
+    private String diaChi; // Địa chỉ của camera
     private double distance;
 
 
     public CameraMapDto() {
     }
 
-    public CameraMapDto(Long id, String tenCamera, Double kinhDo, Double viDo, String anhCamera, String videoUrl, String moTa, double distance) {
+    public CameraMapDto(Long id, String tenCamera, Double kinhDo, Double viDo, String anhCamera, String videoUrl, String diaChi, double distance) {
         this.id = id;
         this.tenCamera = tenCamera;
         this.kinhDo = kinhDo;
         this.viDo = viDo;
         this.anhCamera = anhCamera;
         this.videoUrl = videoUrl;
-        this.moTa = moTa;
+        this.diaChi = diaChi;
         this.distance = distance;
     }
 
@@ -68,11 +68,11 @@ public class CameraMapDto {
     public void setVideoUrl(String videoUrl) {
         this.videoUrl = videoUrl;
     }
-    public String getMoTa() {
-        return moTa;
+    public String getDiaChi() {
+        return diaChi;
     }
-    public void setMoTa(String moTa) {
-        this.moTa = moTa;
+    public void setDiaChi(String diaChi) {
+        this.diaChi = diaChi;
     }
     public double getDistance() {
         return distance;

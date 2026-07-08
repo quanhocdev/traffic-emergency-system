@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 
-
+import com.example.suco.service.location.GeocodingService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,6 +32,10 @@ private static final Logger log = LoggerFactory.getLogger(CameraService.class);
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+private GeocodingService geocodingService;
+
 
     // 1. Lấy tất cả camera (Dạng Model cho Admin quản lý bảng)
     public List<Camera> getAllCameras() {
@@ -56,7 +60,7 @@ private static final Logger log = LoggerFactory.getLogger(CameraService.class);
                 c.getViDo(), 
                 c.getAnhCamera(), 
                 c.getVideoUrl(), 
-                c.getMoTa(),
+                c.getDiaChi(),
                  0.0
 ))
                 
@@ -67,10 +71,25 @@ private static final Logger log = LoggerFactory.getLogger(CameraService.class);
     @Transactional
     public Camera saveCamera(Camera camera) {
         // TÍNH TOÁN GEOHASH 8 (Đảm bảo luôn tính trước khi lưu)
-        if (camera.getViDo() != null && camera.getKinhDo() != null && camera.getViDo() != 0) {
-            String gh = GeoHash.withCharacterPrecision(camera.getViDo(), camera.getKinhDo(), 8).toBase32();
-            camera.setGeohash(gh);
-        }
+        if (camera.getViDo() != null
+        && camera.getKinhDo() != null
+        && camera.getViDo() != 0) {
+
+    String gh = GeoHash.withCharacterPrecision(
+            camera.getViDo(),
+            camera.getKinhDo(),
+            8
+    ).toBase32();
+
+    camera.setGeohash(gh);
+
+    camera.setDiaChi(
+            geocodingService.getAddress(
+                    camera.getViDo(),
+                    camera.getKinhDo()
+            )
+    );
+}
 
         Camera saved;
         if (camera.getId() != null) {
@@ -79,6 +98,7 @@ private static final Logger log = LoggerFactory.getLogger(CameraService.class);
                         existing.setKinhDo(camera.getKinhDo());
                         existing.setViDo(camera.getViDo());
                         existing.setGeohash(camera.getGeohash()); // CẬP NHẬT CẢ GEOHASH VÀO DB
+                        existing.setDiaChi(camera.getDiaChi());
                         if (camera.getTenCamera() != null && !camera.getTenCamera().isEmpty()) {
                             existing.setTenCamera(camera.getTenCamera());
                         }
@@ -90,7 +110,7 @@ private static final Logger log = LoggerFactory.getLogger(CameraService.class);
             saved = cameraRepository.save(camera);
         }
 
-        CameraMapDto dto = new CameraMapDto(saved.getId(), saved.getTenCamera(), saved.getKinhDo(), saved.getViDo(), saved.getAnhCamera(), saved.getVideoUrl(), saved.getMoTa(), 0.0);
+        CameraMapDto dto = new CameraMapDto(saved.getId(), saved.getTenCamera(), saved.getKinhDo(), saved.getViDo(), saved.getAnhCamera(), saved.getVideoUrl(), saved.getDiaChi(), 0.0);
         messagingTemplate.convertAndSend("/topic/camera", dto);
         return saved;
     }
@@ -132,7 +152,7 @@ private static final Logger log = LoggerFactory.getLogger(CameraService.class);
             c.getViDo(),
             c.getAnhCamera(),
             c.getVideoUrl(),
-            c.getMoTa(),
+            c.getDiaChi(),
             Math.round(distance * 1000 * 100.0) / 100.0
 
     );

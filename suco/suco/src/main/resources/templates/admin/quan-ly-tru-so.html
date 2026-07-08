@@ -62,6 +62,7 @@
                 <th>Tên trụ sở</th>
                 <th>Tài khoản</th>
                 <th>Tọa độ (Kinh độ, Vĩ độ)</th>
+                <th>Địa chỉ</th>
                 <th>Trạng thái</th>
                 <th style="text-align: center">Thao tác</th>
               </tr>
@@ -81,6 +82,7 @@
                     >Chưa gán vị trí</span
                   >
                 </td>
+                <td th:text="${st.diaChi ?: 'Chưa xác định'}" th:title="${st.diaChi}" class="address-cell"></td>
                 <td>
                   <span
                     th:class="${st.kinhDo != 0 ? 'status-badge status-ready' : 'status-badge status-pending'}"
