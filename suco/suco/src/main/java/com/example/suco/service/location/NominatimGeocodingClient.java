@@ -1,4 +1,4 @@
-package com.example.suco.util;
+package com.example.suco.service.location;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -7,12 +7,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
-public class GeocodingUtil {
+public class NominatimGeocodingClient {
 
     private static final String NOMINATIM_URL = "https://nominatim.openstreetmap.org/reverse";
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -45,7 +44,13 @@ public class GeocodingUtil {
                 if (address != null) {
                     // Lấy thông tin địa chỉ chi tiết
                     addressMap.put("tenDuong", getJsonValue(address, "road"));
-                    addressMap.put("quan", getJsonValue(address, "suburb")); // quận/huyện
+                    
+                    String district = getJsonValue(address, "city_district");
+                        if (district.isEmpty()) {
+                            district = getJsonValue(address, "suburb");
+                        }
+                    addressMap.put("quan", district);
+                    
                     addressMap.put("huyenHoac", getJsonValue(address, "county")); // huyện
                     addressMap.put("thanhPho", getJsonValue(address, "city")); // thành phố
                     addressMap.put("tinh", getJsonValue(address, "state")); // tỉnh
@@ -60,34 +65,34 @@ public class GeocodingUtil {
         return addressMap;
     }
 
-    /**
-     * Format địa chỉ thành chuỗi ngắn gọn
-     * @param addressMap Map chứa thông tin địa chỉ
-     * @return Chuỗi địa chỉ formatted
-     */
-    public String formatAddress(Map<String, String> addressMap) {
-        StringBuilder address = new StringBuilder();
+    // /**
+    //  * Format địa chỉ thành chuỗi ngắn gọn
+    //  * @param addressMap Map chứa thông tin địa chỉ
+    //  * @return Chuỗi địa chỉ formatted
+    //  */
+    // public String formatAddress(Map<String, String> addressMap) {
+    //     StringBuilder address = new StringBuilder();
         
-        if (addressMap.containsKey("soNha") && !addressMap.get("soNha").isEmpty()) {
-            address.append(addressMap.get("soNha")).append(" ");
-        }
+    //     if (addressMap.containsKey("soNha") && !addressMap.get("soNha").isEmpty()) {
+    //         address.append(addressMap.get("soNha")).append(" ");
+    //     }
         
-        if (addressMap.containsKey("tenDuong") && !addressMap.get("tenDuong").isEmpty()) {
-            address.append(addressMap.get("tenDuong")).append(", ");
-        }
+    //     if (addressMap.containsKey("tenDuong") && !addressMap.get("tenDuong").isEmpty()) {
+    //         address.append(addressMap.get("tenDuong")).append(", ");
+    //     }
         
-        if (addressMap.containsKey("quan") && !addressMap.get("quan").isEmpty()) {
-            address.append(addressMap.get("quan")).append(", ");
-        } else if (addressMap.containsKey("huyenHoac") && !addressMap.get("huyenHoac").isEmpty()) {
-            address.append(addressMap.get("huyenHoac")).append(", ");
-        }
+    //     if (addressMap.containsKey("quan") && !addressMap.get("quan").isEmpty()) {
+    //         address.append(addressMap.get("quan")).append(", ");
+    //     } else if (addressMap.containsKey("huyenHoac") && !addressMap.get("huyenHoac").isEmpty()) {
+    //         address.append(addressMap.get("huyenHoac")).append(", ");
+    //     }
         
-        if (addressMap.containsKey("thanhPho") && !addressMap.get("thanhPho").isEmpty()) {
-            address.append(addressMap.get("thanhPho"));
-        }
+    //     if (addressMap.containsKey("thanhPho") && !addressMap.get("thanhPho").isEmpty()) {
+    //         address.append(addressMap.get("thanhPho"));
+    //     }
         
-        return address.toString().replaceAll(", $", "");
-    }
+    //     return address.toString().replaceAll(", $", "");
+    // }
 
     private String getJsonValue(JsonNode node, String fieldName) {
         JsonNode field = node.get(fieldName);

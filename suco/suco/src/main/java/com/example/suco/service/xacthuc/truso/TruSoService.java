@@ -80,6 +80,7 @@ public TruSo saveTruSo(TruSo truSo) {
                     existing.setKinhDo(truSo.getKinhDo());
                     existing.setViDo(truSo.getViDo());
                     existing.setGeohash(gh);
+                    existing.setDiaChi(truSo.getDiaChi());
 
                     if (truSo.getTenTruSo() != null) {
                         existing.setTenTruSo(truSo.getTenTruSo());
