@@ -48,7 +48,6 @@ public class AdminCameraController {
 @ResponseBody 
     public ResponseEntity<Camera> themCamera(
             @RequestParam("tenCamera") String tenCamera,
-            @RequestParam(value = "moTa", required = false) String moTa,
             @RequestParam(value = "kinhDo", required = false) String kinhDoStr,
             @RequestParam(value = "viDo", required = false) String viDoStr,
             @RequestParam(value = "anhCamera", required = false) MultipartFile anhCamera,
@@ -56,7 +55,6 @@ public class AdminCameraController {
         try {
             Camera camera = new Camera();
             camera.setTenCamera(tenCamera);
-            camera.setMoTa(moTa != null && !moTa.trim().isEmpty() ? moTa : null);
             
             // Xử lý tọa độ - chuyển từ String sang Double
             Double kinhDo = null;

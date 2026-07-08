@@ -17,7 +17,7 @@ public class Camera {
     private String tenCamera;
     private Double kinhDo;
     private Double viDo;
-    private String moTa; // Miêu tả chính xác vị trí camera
+    private String diaChi; // Miêu tả chính xác vị trí camera
     private String anhCamera; // Đường dẫn ảnh chụp camera
     private String videoUrl; // Đường dẫn video demo (có thể là video giả)
     @Column(length = 8)
@@ -60,12 +60,12 @@ private String geohash
 
 
 
-    public String getMoTa() {
-        return moTa;
+    public String getDiaChi() {
+        return diaChi;
     }
 
-    public void setMoTa(String moTa) {
-        this.moTa = moTa;
+    public void setDiaChi(String diaChi) {
+        this.diaChi = diaChi;
     }
 
     public String getAnhCamera() {

@@ -90,9 +90,8 @@ function displayCameraDetail(data) {
   document.getElementById("detailCameraName").textContent =
     data.tenCamera || "Camera";
   document.getElementById("detailName").textContent = data.tenCamera || "-";
-  document.getElementById("detailMoTa").textContent =
-    data.moTa || "Chưa có miêu tả";
-
+  document.getElementById("detailDiaChi").textContent =
+    data.diaChi || "Chưa xác định";
   // Xử lý tọa độ - kiểm tra null và 0
   const kinhDo = data.kinhDo != null && data.kinhDo != 0 ? data.kinhDo : null;
   const viDo = data.viDo != null && data.viDo != 0 ? data.viDo : null;

@@ -51,6 +51,7 @@
                 <th>Tên Camera</th>
                 <th>Kinh độ (Lng)</th>
                 <th>Vĩ độ (Lat)</th>
+                <th>Địa chỉ</th>
                 <th>Trạng thái</th>
                 <th style="text-align: center">Thao tác</th>
               </tr>
@@ -97,6 +98,11 @@
                 <td th:text="${cam.tenCamera}" style="font-weight: 600"></td>
                 <td th:text="${cam.kinhDo != 0 ? cam.kinhDo : '---'}"></td>
                 <td th:text="${cam.viDo != 0 ? cam.viDo : '---'}"></td>
+                <td
+    th:text="${cam.diaChi ?: 'Chưa xác định'}"
+    th:title="${cam.diaChi}"
+    class="address-cell">
+</td>
                 <td>
                   <span
                     th:class="${cam.kinhDo != 0 ? 'status-badge status-ready' : 'status-badge status-pending'}"
@@ -163,25 +169,7 @@
             />
           </div>
 
-          <div class="form-group">
-            <label>Miêu tả vị trí chính xác</label>
-            <textarea
-              name="moTa"
-              id="moTa"
-              rows="3"
-              placeholder="VD: Camera đặt tại cổng chính, góc phải, cao 3m..."
-              style="
-                width: 100%;
-                padding: 10px;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-                box-sizing: border-box;
-                font-family: inherit;
-                resize: vertical;
-              "
-            ></textarea>
-          </div>
-
+          
           <div class="form-group">
             <label>Ảnh chụp camera</label>
             <input
@@ -304,8 +292,8 @@
             <span class="info-value" id="detailName">-</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Miêu tả:</span>
-            <span class="info-value" id="detailMoTa">-</span>
+            <span class="info-label">Địa chỉ:</span>
+            <span class="info-value" id="detailDiaChi">-</span>
           </div>
           <div class="info-row">
             <span class="info-label">Kinh độ:</span>
