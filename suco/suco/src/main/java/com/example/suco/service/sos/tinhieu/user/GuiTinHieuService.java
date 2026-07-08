@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
+import com.example.suco.service.VipService;
 import com.example.suco.service.dieuphoi.DispatchEngineService;
 import com.example.suco.service.file.FileStorageService;
 import com.example.suco.service.location.GeocodingService;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
 import com.example.suco.model.User;
 
 @Service

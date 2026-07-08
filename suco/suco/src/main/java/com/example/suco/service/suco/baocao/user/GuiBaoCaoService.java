@@ -4,6 +4,7 @@ import com.example.suco.dto.suco.baocao.ai.AiResponse;
 import com.example.suco.dto.suco.baocao.ai.AiVerifyResult;
 import com.example.suco.dto.suco.baocao.user.SuCoRequestDTO;
 import com.example.suco.model.BaoCaoSuCo;
+import com.example.suco.model.LoaiSuCo;
 import com.example.suco.model.enums.TrangThaiXuLy;
 import com.example.suco.service.dieuphoi.TruSoSelectorService;
 import com.example.suco.service.suco.baocao.system.reward.NewReportRewardPolicy;
@@ -13,6 +14,7 @@ import com.example.suco.service.suco.baocao.user.workflow.gui.BaoCaoEnrichServic
 import com.example.suco.service.suco.baocao.user.workflow.gui.BaoCaoResponseFactory;
 import com.example.suco.service.suco.baocao.user.workflow.gui.CreateBaoCaoService;
 import com.example.suco.service.suco.baocao.user.workflow.gui.DuplicateBaoCaoService;
+import com.example.suco.service.suco.loai.LoaiSuCoService;
 import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,13 +46,19 @@ public class GuiBaoCaoService {
 
 @Autowired
     private TruSoSelectorService truSoSelectorService;
+    @Autowired
+private LoaiSuCoService loaiSuCoService;
 
 
     @Transactional
 public AiResponse submitReport(String uid, SuCoRequestDTO dto, String base64FullData) {
 
+        // Lấy loại sự cố từ cơ sở dữ liệu
+        LoaiSuCo loaiSuCo = loaiSuCoService.findById(dto.getLoaiSuCoId());
+
+
     // 1. CREATE
-    BaoCaoSuCo report = createBaoCaoService.create(uid, dto);
+    BaoCaoSuCo report = createBaoCaoService.create(uid, dto, loaiSuCo);
 
     // 2. AI VERIFY
     AiVerifyResult ai = baoCaoAiService.verify(report, base64FullData);

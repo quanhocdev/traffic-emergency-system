@@ -8,4 +8,4 @@ public interface BaoCaoProcess {
 }
 
 
-// Image Storage, Notification, Geocoding
+// Notification, Geocoding

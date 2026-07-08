@@ -21,25 +21,21 @@ public class CreateBaoCaoService {
 
     public BaoCaoSuCo create(
             String uid,
-            SuCoRequestDTO dto
+            SuCoRequestDTO dto,
+            LoaiSuCo loaiSuCo
     ) {
 
-        User user = userRepository.findById(uid)
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+        User user = userRepository.findById(uid).orElseThrow();
 
-        LoaiSuCo loaiSuCo = loaiSuCoRepository.findById(dto.getLoaiSuCoId())
-                .orElseThrow(() -> new RuntimeException("Loại sự cố không tồn tại"));
+BaoCaoSuCo report = new BaoCaoSuCo();
+report.setReporter(user);
+report.setLoaiSuCo(loaiSuCo);
 
-        BaoCaoSuCo report = new BaoCaoSuCo();
+report.setMoTa(dto.getMoTa());
+report.setViDo(dto.getViDo());
+report.setKinhDo(dto.getKinhDo());
+report.setHinhAnhUrl(dto.getHinhAnhUrl());
 
-        report.setReporter(user);
-        report.setLoaiSuCo(loaiSuCo);
-
-        report.setMoTa(dto.getMoTa());
-        report.setViDo(dto.getViDo());
-        report.setKinhDo(dto.getKinhDo());
-        report.setHinhAnhUrl(dto.getHinhAnhUrl());
-
-        return report;
+return report;
     }
 }

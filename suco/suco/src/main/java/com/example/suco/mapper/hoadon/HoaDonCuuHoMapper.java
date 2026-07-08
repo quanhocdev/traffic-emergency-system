@@ -10,7 +10,7 @@ import com.example.suco.mapper.info.InfoUserMapper;
 import com.example.suco.model.HoaDon;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.vanhanh.UserRepository;
-import com.example.suco.service.sos.tinhieu.user.workflow.gui.VipService;
+import com.example.suco.service.VipService;
 import com.example.suco.model.User;
 import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
