@@ -8,6 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import com.example.suco.dto.vanhanh.camera.CameraMapDto;
+import com.example.suco.dto.vanhanh.camera.CameraRequestDTO;
+import com.example.suco.dto.vanhanh.camera.CameraResponseDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Camera;
 import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
@@ -47,59 +51,26 @@ private CameraNearService cameraNearService;
         
         return "admin/quan-ly-camera";
     }
+@PostMapping(value = "/them", consumes = "multipart/form-data")
+@ResponseBody
+public ResponseEntity<CameraResponseDTO> themCamera(
+        @ModelAttribute CameraRequestDTO dto
+) {
 
-    @PostMapping(value = "/them", consumes = "multipart/form-data")
-@ResponseBody 
-    public ResponseEntity<Camera> themCamera(
-            @RequestParam("tenCamera") String tenCamera,
-            @RequestParam(value = "kinhDo", required = false) String kinhDoStr,
-            @RequestParam(value = "viDo", required = false) String viDoStr,
-            @RequestParam(value = "anhCamera", required = false) MultipartFile anhCamera,
-            @RequestParam(value = "videoFile", required = false) MultipartFile videoFile) {
-        try {
-            Camera camera = new Camera();
-            camera.setTenCamera(tenCamera);
-            
-            // Xử lý tọa độ - chuyển từ String sang Double
-            Double kinhDo = null;
-            Double viDo = null;
-            try {
-                if (kinhDoStr != null && !kinhDoStr.trim().isEmpty()) {
-                    kinhDo = Double.parseDouble(kinhDoStr);
-                }
-            } catch (NumberFormatException e) {
-                // Bỏ qua nếu không parse được
-            }
-            try {
-                if (viDoStr != null && !viDoStr.trim().isEmpty()) {
-                    viDo = Double.parseDouble(viDoStr);
-                }
-            } catch (NumberFormatException e) {
-                // Bỏ qua nếu không parse được
-            }
-            
-            camera.setKinhDo(kinhDo != null ? kinhDo : 0.0);
-            camera.setViDo(viDo != null ? viDo : 0.0);
-            
-            // Xử lý upload ảnh
-            if (anhCamera != null && !anhCamera.isEmpty()) {
-                String anhPath = cameraService.saveImage(anhCamera);
-                camera.setAnhCamera(anhPath);
-            }
-            
-            // Xử lý upload video demo
-            if (videoFile != null && !videoFile.isEmpty()) {
-                String videoPath = cameraService.saveVideo(videoFile);
-                camera.setVideoUrl(videoPath);
-            }
-            
-            cameraService.saveCamera(camera);
-            return ResponseEntity.ok(camera);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).build();
-        }
-    }
+    return ResponseEntity.ok(
+            cameraService.createCamera(dto)
+    );
+}
+@PatchMapping("/{id}")
+@ResponseBody
+public ResponseEntity<CameraResponseDTO> capNhatCamera(
+        @PathVariable Long id,
+        @ModelAttribute CameraRequestDTO dto
+) {
+    return ResponseEntity.ok(
+            cameraService.updateCamera(id, dto)
+    );
+}
 
     @GetMapping("/all-json")
     @ResponseBody
@@ -109,23 +80,36 @@ private CameraNearService cameraNearService;
 
 @DeleteMapping("/{id}")
 @ResponseBody
-public ResponseEntity<String> xoaCamera(@PathVariable Long id) {
-    if (!cameraRepository.existsById(id)) {
-        return ResponseEntity.status(404).body("Camera không tồn tại!");
-    }
+public ResponseEntity<String> xoaCamera(
+        @PathVariable Long id
+) {
 
-    cameraService.deleteCamera(id);
-    return ResponseEntity.ok("Xóa camera thành công!");
+    try {
+
+        cameraService.deleteCamera(id);
+
+        return ResponseEntity.ok(
+                "Xóa camera thành công!"
+        );
+
+    } catch (Exception e) {
+
+        return ResponseEntity
+                .status(404)
+                .body(e.getMessage());
+    }
 }
 
-    @GetMapping("/{id}/detail")
-    @ResponseBody
-    public ResponseEntity<Camera> getCameraDetail(@PathVariable Long id) {
-        return cameraRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
+@GetMapping("/{id}/detail")
+@ResponseBody
+public ResponseEntity<CameraResponseDTO> getCameraDetail(
+        @PathVariable Long id
+) {
 
+    return ResponseEntity.ok(
+            cameraService.getCameraDetail(id)
+    );
+}
 
     // API nhận tọa độ gửi từ frontend để gán cho camera
     @PostMapping("/gan-toa-do/{id}")
