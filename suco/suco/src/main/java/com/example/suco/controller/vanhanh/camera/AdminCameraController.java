@@ -19,6 +19,7 @@ import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.Camera;
 import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.repository.vanhanh.CameraRepository;
+import com.example.suco.service.vanhanh.camera.CameraNearService;
 import com.example.suco.service.vanhanh.camera.CameraService;
 
 @Controller
@@ -33,6 +34,9 @@ public class AdminCameraController {
 
     @Autowired
     private SuCoAdminRepository baoCaoSuCoRepository;
+
+    @Autowired
+private CameraNearService cameraNearService;
 
     @GetMapping
     public String hienThiDanhSach(Model model) {
@@ -144,7 +148,7 @@ public List<CameraMapDto> getCameraByIncident(@PathVariable Long id) {
     BaoCaoSuCo report = baoCaoSuCoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy sự cố"));
 
-    return cameraService.getCamerasNearIncident(
+    return cameraNearService.getCamerasNearIncident(
             report.getViDo(),
             report.getKinhDo()
     );

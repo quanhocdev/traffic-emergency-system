@@ -10,25 +10,15 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
-
 import com.example.suco.service.file.FileStorageService;
 import com.example.suco.service.location.GeocodingService;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import ch.hsr.geohash.GeoHash;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 @Service
 public class CameraService {
-private static final Logger log = LoggerFactory.getLogger(CameraService.class);
     @Autowired
     private CameraRepository cameraRepository;
 
@@ -43,6 +33,9 @@ private GeocodingService geocodingService;
 
 @Autowired
 private FileStorageService fileStorageService;
+
+@Autowired
+private CameraNearService cameraNearService;
 
 
     // 1. Lấy tất cả camera (Dạng Model cho Admin quản lý bảng)
@@ -114,60 +107,8 @@ private FileStorageService fileStorageService;
         return saved;
     }
 
-    /**
-     * TÌM CAMERA GẦN SỰ CỐ TRONG BÁN KÍNH 20M
-     * Không lưu vào DB, chỉ tính toán động để hiển thị cho Admin
-     */
-    public List<CameraMapDto> getCamerasNearIncident(double lat, double lng) {
-        log.info("========== KIỂM TRA CAMERA GẦN SỰ CỐ ==========");
-        log.info("[Vị trí sự cố]: {}, {}", lat, lng);
-
-        // 1. Lấy Geohash cấp 8 của sự cố
-        GeoHash center = GeoHash.withCharacterPrecision(lat, lng, 8);
-        List<String> area = new ArrayList<>();
-        area.add(center.toBase32());
-        for (GeoHash adj : center.getAdjacent()) {
-            area.add(adj.toBase32());
-        }
-        log.info("[Geohash]: Quét vùng 9 ô xung quanh mã: {}", center.toBase32());
-
-        // 2. Query DB theo index Geohash
-        List<Camera> candidates = cameraRepository.findByGeohashIn(area);
-        log.info("[DB]: Tìm thấy {} camera tiềm năng trong các ô Geohash", candidates.size());
-
-        // 3. Lọc Haversine chính xác 20m
-        List<CameraMapDto> result = candidates.stream()
-        .map(c -> {
-    double distance = tinhKhoangCach(lat, lng, c.getViDo(), c.getKinhDo());
-
-    log.info("Camera {} distance = {} km", c.getId(), distance);
-
-    if (distance > 0.02) return null;
-
-    CameraMapDto dto = cameraMapper.toMapDto(
-    c,
-    Math.round(distance * 1000 * 100.0) / 100.0
-);
-    return dto;
-})
-        .filter(dto -> dto != null)
-        .collect(Collectors.toList());
-
-        log.info("[Kết quả]: Tổng cộng {} camera khả dụng.", result.size());
-        log.info("===============================================");
-        
-        return result;
-    }
-
-    private double tinhKhoangCach(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371; // Bán kính Trái Đất (km)
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
+    
+    
 
     // 5. Xóa Camera
     @Transactional
@@ -182,16 +123,23 @@ private FileStorageService fileStorageService;
             imageFile,
             "cameras"
     );
-}
+    }
 
     // 7. Lưu video demo camera
-    // Trong CameraService.java
-public String saveVideo(MultipartFile file) {
+    public String saveVideo(MultipartFile file) {
     return fileStorageService.saveMultipart(
             file,
             "cameras/videos"
     );
-}
-
+    }
+    private double tinhKhoangCach(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371; // Bán kính Trái Đất (km)
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
     
 }
