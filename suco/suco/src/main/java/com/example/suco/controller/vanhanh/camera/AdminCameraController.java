@@ -15,12 +15,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
 import com.example.suco.dto.vanhanh.camera.CameraMapDto;
 import com.example.suco.dto.vanhanh.camera.CameraRequestDTO;
 import com.example.suco.dto.vanhanh.camera.CameraResponseDTO;
 import com.example.suco.model.BaoCaoSuCo;
-import com.example.suco.model.Camera;
 import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.repository.vanhanh.CameraRepository;
 import com.example.suco.service.vanhanh.camera.CameraNearService;
@@ -32,10 +30,7 @@ public class AdminCameraController {
 
     @Autowired
     private CameraService cameraService;
-
-    @Autowired
-    private CameraRepository cameraRepository;
-
+    
     @Autowired
     private SuCoAdminRepository baoCaoSuCoRepository;
 
@@ -73,10 +68,10 @@ public ResponseEntity<CameraResponseDTO> capNhatCamera(
 }
 
     @GetMapping("/all-json")
-    @ResponseBody
-    public List<Camera> getAllCameraJson() {
-        return cameraService.getAllCameras();
-    }
+@ResponseBody
+public List<CameraResponseDTO> getAllCameraJson() {
+    return cameraService.getAllCameras();
+}
 
 @DeleteMapping("/{id}")
 @ResponseBody
@@ -112,19 +107,24 @@ public ResponseEntity<CameraResponseDTO> getCameraDetail(
 }
 
     // API nhận tọa độ gửi từ frontend để gán cho camera
-    @PostMapping("/gan-toa-do/{id}")
-    @ResponseBody
-    public ResponseEntity<String> ganToaDoCamera(@PathVariable Long id,
-                                                 @RequestParam("kinhDo") double kinhDo,
-                                                 @RequestParam("viDo") double viDo) {
-        return cameraRepository.findById(id).map(cam -> {
-            cam.setKinhDo(kinhDo);
-            cam.setViDo(viDo);
-            cameraService.saveCamera(cam);
-            return ResponseEntity.ok("Gán tọa độ thành công");
-        }).orElse(ResponseEntity.status(404).body("Không tìm thấy camera"));
-    }
+   @PostMapping("/gan-toa-do/{id}")
+@ResponseBody
+public ResponseEntity<String> ganToaDoCamera(
+        @PathVariable Long id,
+        @RequestParam("kinhDo") double kinhDo,
+        @RequestParam("viDo") double viDo
+) {
 
+    cameraService.updateLocation(
+            id,
+            kinhDo,
+            viDo
+    );
+
+    return ResponseEntity.ok(
+            "Gán tọa độ thành công"
+    );
+}
 @GetMapping("/near-by-incident/{id}")
 @ResponseBody
 public List<CameraMapDto> getCameraByIncident(@PathVariable Long id) {

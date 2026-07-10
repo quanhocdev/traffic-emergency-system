@@ -36,8 +36,6 @@ private GeocodingService geocodingService;
 @Autowired
 private FileStorageService fileStorageService;
 
-@Autowired
-private CameraNearService cameraNearService;
 
 
     public CameraResponseDTO createCamera(CameraRequestDTO dto){
@@ -98,6 +96,24 @@ public CameraResponseDTO updateCamera(Long id, CameraRequestDTO dto) {
 
     return cameraMapper.toResponseDto(saved);
 }
+public CameraResponseDTO updateLocation(
+        Long id,
+        double kinhDo,
+        double viDo
+){
+
+    Camera camera = cameraRepository.findById(id)
+            .orElseThrow(
+                () -> new RuntimeException("Không tìm thấy camera")
+            );
+
+    camera.setKinhDo(kinhDo);
+    camera.setViDo(viDo);
+
+    Camera saved = saveCamera(camera);
+
+    return cameraMapper.toResponseDto(saved);
+}
 
 public CameraResponseDTO getCameraDetail(Long id){
 
@@ -110,14 +126,17 @@ public CameraResponseDTO getCameraDetail(Long id){
 }
 
     // 1. Lấy tất cả camera (Dạng Model cho Admin quản lý bảng)
-    public List<Camera> getAllCameras() {
-        return cameraRepository.findAll();
-    }
-
-    // 2. Lấy danh sách camera chưa gán tọa độ (Dùng cho Select-box trên FE)
-    public List<Camera> getCamerasChuaGan() {
+   public List<CameraResponseDTO> getAllCameras() {
+    return cameraRepository.findAll()
+            .stream()
+            .map(cameraMapper::toResponseDto)
+            .toList();
+}
+    // 2. Lấy danh sách camera chưa gán tọa độ 
+    public List<CameraResponseDTO> getCamerasChuaGan() {
         return cameraRepository.findAll().stream()
                 .filter(c -> c.getKinhDo() == null || c.getKinhDo() == 0.0)
+                .map(cameraMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -130,56 +149,41 @@ public CameraResponseDTO getCameraDetail(Long id){
     }
 
     // 4. Lưu hoặc Cập nhật vị trí Camera
-    @Transactional
-    public Camera saveCamera(Camera camera) {
-        // TÍNH TOÁN GEOHASH 8 (Đảm bảo luôn tính trước khi lưu)
-        if (camera.getViDo() != null
-        && camera.getKinhDo() != null
-        && camera.getViDo() != 0) {
+@Transactional
+private Camera saveCamera(Camera camera) {
 
-    String gh = GeoHash.withCharacterPrecision(
-            camera.getViDo(),
-            camera.getKinhDo(),
-            8
-    ).toBase32();
+    if (camera.getViDo() != null
+            && camera.getKinhDo() != null
+            && camera.getViDo() != 0) {
 
-    camera.setGeohash(gh);
+        String gh = GeoHash.withCharacterPrecision(
+                camera.getViDo(),
+                camera.getKinhDo(),
+                8
+        ).toBase32();
 
-    camera.setDiaChi(
-            geocodingService.getAddress(
-                    camera.getViDo(),
-                    camera.getKinhDo()
-            )
-    );
-}
+        camera.setGeohash(gh);
 
-        Camera saved;
-        if (camera.getId() != null) {
-            saved = cameraRepository.findById(camera.getId())
-                    .map(existing -> {
-                        existing.setKinhDo(camera.getKinhDo());
-                        existing.setViDo(camera.getViDo());
-                        existing.setGeohash(camera.getGeohash()); // CẬP NHẬT CẢ GEOHASH VÀO DB
-                        existing.setDiaChi(camera.getDiaChi());
-                        if (camera.getTenCamera() != null && !camera.getTenCamera().isEmpty()) {
-                            existing.setTenCamera(camera.getTenCamera());
-                        }
-                        return cameraRepository.save(existing);
-                    }).orElseGet(() -> cameraRepository.save(camera));
-        } else {
-            if (camera.getKinhDo() == null) camera.setKinhDo(0.0);
-            if (camera.getViDo() == null) camera.setViDo(0.0);
-            saved = cameraRepository.save(camera);
-        }
-
-        CameraMapDto dto = cameraMapper.toMapDto(saved);
-        messagingTemplate.convertAndSend("/topic/camera", dto);
-        return saved;
+        camera.setDiaChi(
+                geocodingService.getAddress(
+                        camera.getViDo(),
+                        camera.getKinhDo()
+                )
+        );
     }
 
-    
-    
 
+    Camera saved = cameraRepository.save(camera);
+
+
+    messagingTemplate.convertAndSend(
+            "/topic/camera",
+            cameraMapper.toMapDto(saved)
+    );
+
+
+    return saved;
+}
     // 5. Xóa Camera
     @Transactional
 public void deleteCamera(Long id) {
@@ -195,20 +199,5 @@ public void deleteCamera(Long id) {
             id
     );
 }
-    // 6. Lưu ảnh camera
-    public String saveImage(MultipartFile imageFile) {
-    return fileStorageService.saveMultipart(
-            imageFile,
-            "cameras"
-    );
-    }
-
-    // 7. Lưu video demo camera
-    public String saveVideo(MultipartFile file) {
-    return fileStorageService.saveMultipart(
-            file,
-            "cameras/videos"
-    );
-    }
     
 }
