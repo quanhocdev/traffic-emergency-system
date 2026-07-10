@@ -5,6 +5,8 @@ import com.example.suco.dto.vanhanh.camera.CameraMapDto;
 import com.example.suco.mapper.info.CameraMapper;
 import com.example.suco.model.Camera;
 import com.example.suco.repository.vanhanh.CameraRepository;
+import com.example.suco.service.distance.DistanceService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,8 @@ public class CameraNearService {
 
     @Autowired
     private CameraMapper cameraMapper;
+    @Autowired
+private DistanceService distanceService;
 
     /**
      * Tìm camera trong bán kính 20m quanh sự cố
@@ -65,7 +69,7 @@ public class CameraNearService {
         List<CameraMapDto> result = candidates.stream()
                 .map(camera -> {
 
-                    double distance = tinhKhoangCach(
+                    double distance = distanceService.calculateDistanceInKm(
                             lat,
                             lng,
                             camera.getViDo(),
@@ -101,31 +105,4 @@ public class CameraNearService {
         return result;
     }
 
-    /**
-     * Tính khoảng cách Haversine (km)
-     */
-    private double tinhKhoangCach(
-            double lat1,
-            double lon1,
-            double lat2,
-            double lon2
-    ) {
-
-        double R = 6371;
-
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-
-        double a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                        + Math.cos(Math.toRadians(lat1))
-                        * Math.cos(Math.toRadians(lat2))
-                        * Math.sin(dLon / 2)
-                        * Math.sin(dLon / 2);
-
-        return R * 2 * Math.atan2(
-                Math.sqrt(a),
-                Math.sqrt(1 - a)
-        );
-    }
 }
