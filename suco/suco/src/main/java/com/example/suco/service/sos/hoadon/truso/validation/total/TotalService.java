@@ -2,7 +2,7 @@ package com.example.suco.service.sos.hoadon.truso.validation.total;
 
 import com.example.suco.model.Goi;
 import com.example.suco.model.TruSo;
-import com.example.suco.service.sos.hoadon.truso.validation.DistanceService;
+import com.example.suco.service.distance.DistanceService;
 import com.example.suco.model.TinHieuSOS;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class TotalService {
             TinHieuSOS sos
     ) {
 
-        double distance = distanceService.calculateDistance(
+        double distance = distanceService.calculateDistanceInKm(
                 truso.getViDo(),
                 truso.getKinhDo(),
                 sos.getViDo(),
