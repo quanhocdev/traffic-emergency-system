@@ -16,12 +16,10 @@
     />
     <link rel="stylesheet" th:href="@{/css/admin/quan-ly-camera.css}" />
     <link rel="stylesheet" th:href="@{/css/fragments/admin/sidebar.css}" />
-
   </head>
   <body>
     <div id="main-container">
-            <div th:replace="fragments/admin/sidebar :: sidebar"></div>
-
+      <div th:replace="fragments/admin/sidebar :: sidebar"></div>
 
       <div class="main-content">
         <div class="header-section">
@@ -99,10 +97,10 @@
                 <td th:text="${cam.kinhDo != 0 ? cam.kinhDo : '---'}"></td>
                 <td th:text="${cam.viDo != 0 ? cam.viDo : '---'}"></td>
                 <td
-    th:text="${cam.diaChi ?: 'Chưa xác định'}"
-    th:title="${cam.diaChi}"
-    class="address-cell">
-</td>
+                  th:text="${cam.diaChi ?: 'Chưa xác định'}"
+                  th:title="${cam.diaChi}"
+                  class="address-cell"
+                ></td>
                 <td>
                   <span
                     th:class="${cam.kinhDo != 0 ? 'status-badge status-ready' : 'status-badge status-pending'}"
@@ -111,22 +109,30 @@
                   </span>
                 </td>
                 <td style="text-align: center">
+                  <button
+                    class="btn-action btn-edit"
+                    th:onclick="'openEditCamera(' + ${cam.id} + ')'"
+                  >
+                    <i class="fa-solid fa-pen"></i>
+                    Sửa
+                  </button>
+
                   <a
                     th:href="@{/admin/trang-chu}"
                     class="btn-action btn-edit"
                     title="Gán vị trí trên bản đồ"
                   >
-                    <i class="fa-solid fa-location-crosshairs"></i> Định vị
+                    <i class="fa-solid fa-location-crosshairs"></i>
+                    Định vị
                   </a>
-                  <button 
-    type="button"
-    class="btn-action btn-delete" 
-    th:onclick="'confirmDelete(' + ${cam.id} + ')'"
-    title="Xóa camera"
->
-    <i class="fa-solid fa-trash"></i>
-</button>
-                  </a>
+
+                  <button
+                    type="button"
+                    class="btn-action btn-delete"
+                    th:onclick="'confirmDelete(' + ${cam.id} + ')'"
+                  >
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -169,7 +175,6 @@
             />
           </div>
 
-          
           <div class="form-group">
             <label>Ảnh chụp camera</label>
             <input
@@ -237,6 +242,59 @@
               Hủy
             </button>
             <button type="submit" class="btn-add">Lưu Camera</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div id="editCameraModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Sửa Camera</h3>
+
+          <i class="fa-solid fa-xmark" onclick="closeEditCamera()"> </i>
+        </div>
+
+        <form
+          id="editCameraForm"
+          onsubmit="handleEditSubmit(event)"
+          enctype="multipart/form-data"
+        >
+          <input type="hidden" id="editCameraId" />
+
+          <div class="form-group">
+            <label>Tên Camera</label>
+
+            <input id="editTenCamera" name="tenCamera" type="text" />
+          </div>
+
+          <div class="form-group">
+            <label>Kinh độ</label>
+
+            <input id="editKinhDo" name="kinhDo" type="number" step="any" />
+          </div>
+
+          <div class="form-group">
+            <label>Vĩ độ</label>
+
+            <input id="editViDo" name="viDo" type="number" step="any" />
+          </div>
+
+          <div class="form-group">
+            <label>Ảnh mới</label>
+
+            <input type="file" name="anhCamera" accept="image/*" />
+          </div>
+
+          <div class="form-group">
+            <label>Video mới</label>
+
+            <input type="file" name="videoFile" accept="video/*" />
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" onclick="closeEditCamera()">Hủy</button>
+
+            <button class="btn-add" type="submit">Lưu thay đổi</button>
           </div>
         </form>
       </div>
@@ -321,7 +379,6 @@
     </div>
 
     <script th:src="@{/js/admin/quan-ly-camera.js}"></script>
-        <script th:src="@{/js/fragments/admin/sidebar.js}"></script>
-
+    <script th:src="@{/js/fragments/admin/sidebar.js}"></script>
   </body>
 </html>
