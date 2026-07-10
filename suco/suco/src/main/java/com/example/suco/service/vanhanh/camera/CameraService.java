@@ -1,6 +1,7 @@
 package com.example.suco.service.vanhanh.camera;
 
 import com.example.suco.dto.vanhanh.camera.CameraMapDto;
+import com.example.suco.mapper.info.CameraMapper;
 import com.example.suco.model.Camera;
 import com.example.suco.repository.vanhanh.CameraRepository;
 
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 
+import com.example.suco.service.file.FileStorageService;
 import com.example.suco.service.location.GeocodingService;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -31,10 +33,16 @@ private static final Logger log = LoggerFactory.getLogger(CameraService.class);
     private CameraRepository cameraRepository;
 
     @Autowired
+private CameraMapper cameraMapper;
+
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
 private GeocodingService geocodingService;
+
+@Autowired
+private FileStorageService fileStorageService;
 
 
     // 1. Lấy tất cả camera (Dạng Model cho Admin quản lý bảng)
@@ -53,16 +61,7 @@ private GeocodingService geocodingService;
     public List<CameraMapDto> getAllCameraForMap() {
     return cameraRepository.findAll().stream()
             .filter(c -> c.getKinhDo() != null && c.getKinhDo() != 0.0)
-            .map(c -> new CameraMapDto(
-                c.getId(), 
-                c.getTenCamera(), 
-                c.getKinhDo(), 
-                c.getViDo(), 
-                c.getAnhCamera(), 
-                c.getVideoUrl(), 
-                c.getDiaChi(),
-                 0.0
-))
+            .map(cameraMapper::toMapDto)
                 
             .collect(Collectors.toList());
 }
@@ -110,7 +109,7 @@ private GeocodingService geocodingService;
             saved = cameraRepository.save(camera);
         }
 
-        CameraMapDto dto = new CameraMapDto(saved.getId(), saved.getTenCamera(), saved.getKinhDo(), saved.getViDo(), saved.getAnhCamera(), saved.getVideoUrl(), saved.getDiaChi(), 0.0);
+        CameraMapDto dto = cameraMapper.toMapDto(saved);
         messagingTemplate.convertAndSend("/topic/camera", dto);
         return saved;
     }
@@ -145,17 +144,10 @@ private GeocodingService geocodingService;
 
     if (distance > 0.02) return null;
 
-    CameraMapDto dto = new CameraMapDto(
-            c.getId(),
-            c.getTenCamera(),
-            c.getKinhDo(),
-            c.getViDo(),
-            c.getAnhCamera(),
-            c.getVideoUrl(),
-            c.getDiaChi(),
-            Math.round(distance * 1000 * 100.0) / 100.0
-
-    );
+    CameraMapDto dto = cameraMapper.toMapDto(
+    c,
+    Math.round(distance * 1000 * 100.0) / 100.0
+);
     return dto;
 })
         .filter(dto -> dto != null)
@@ -186,36 +178,19 @@ private GeocodingService geocodingService;
 
     // 6. Lưu ảnh camera
     public String saveImage(MultipartFile imageFile) {
-        try {
-            String filename = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
-            Path uploadDir = Paths.get(System.getProperty("user.dir"), "uploads", "cameras");
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-            Files.copy(imageFile.getInputStream(), uploadDir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
-            return "/uploads/cameras/" + filename;
-        } catch (IOException e) {
-            throw new RuntimeException("Lỗi lưu ảnh camera: " + e.getMessage());
-        }
-    }
+    return fileStorageService.saveMultipart(
+            imageFile,
+            "cameras"
+    );
+}
 
     // 7. Lưu video demo camera
     // Trong CameraService.java
-public String saveVideo(MultipartFile file) throws IOException {
-    // 1. Định nghĩa thư mục lưu trữ vật lý
-    String uploadDir = System.getProperty("user.dir") + File.separator + "uploads" + File.separator + "cameras" + File.separator + "videos";
-    File dir = new File(uploadDir);
-    if (!dir.exists()) dir.mkdirs();
-
-    // 2. Tạo tên file duy nhất
-    String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-    Path filePath = Paths.get(uploadDir, fileName);
-
-    // 3. Lưu file
-    Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-    // 4. Trả về đường dẫn để lưu vào Database (Khớp với WebMvcConfig)
-    return "/uploads/cameras/videos/" + fileName;
+public String saveVideo(MultipartFile file) {
+    return fileStorageService.saveMultipart(
+            file,
+            "cameras/videos"
+    );
 }
 
     
