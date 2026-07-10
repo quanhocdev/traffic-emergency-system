@@ -1,6 +1,8 @@
 package com.example.suco.service.vanhanh.camera;
 
 import com.example.suco.dto.vanhanh.camera.CameraMapDto;
+import com.example.suco.dto.vanhanh.camera.CameraRequestDTO;
+import com.example.suco.dto.vanhanh.camera.CameraResponseDTO;
 import com.example.suco.mapper.info.CameraMapper;
 import com.example.suco.model.Camera;
 import com.example.suco.repository.vanhanh.CameraRepository;
@@ -10,25 +12,15 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
-
 import com.example.suco.service.file.FileStorageService;
 import com.example.suco.service.location.GeocodingService;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import ch.hsr.geohash.GeoHash;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 @Service
 public class CameraService {
-private static final Logger log = LoggerFactory.getLogger(CameraService.class);
     @Autowired
     private CameraRepository cameraRepository;
 
@@ -44,6 +36,78 @@ private GeocodingService geocodingService;
 @Autowired
 private FileStorageService fileStorageService;
 
+@Autowired
+private CameraNearService cameraNearService;
+
+
+    public CameraResponseDTO createCamera(CameraRequestDTO dto){
+
+    Camera camera = cameraMapper.toEntity(dto);
+
+    if(dto.getAnhCamera() != null && !dto.getAnhCamera().isEmpty()){
+        camera.setAnhCamera(
+                fileStorageService.saveMultipart(
+                        dto.getAnhCamera(),
+                        "cameras"
+                )
+        );
+    }
+
+
+    if(dto.getVideoFile() != null && !dto.getVideoFile().isEmpty()){
+        camera.setVideoUrl(
+                fileStorageService.saveMultipart(
+                        dto.getVideoFile(),
+                        "cameras/videos"
+                )
+        );
+    }
+
+    Camera saved = saveCamera(camera);
+
+    return cameraMapper.toResponseDto(saved);
+}
+
+public CameraResponseDTO updateCamera(Long id, CameraRequestDTO dto) {
+
+    Camera camera = cameraRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy camera"));
+
+    // cập nhật tên
+    camera.setTenCamera(dto.getTenCamera());
+
+    // cập nhật tọa độ
+    camera.setKinhDo(dto.getKinhDo());
+    camera.setViDo(dto.getViDo());
+
+    // cập nhật ảnh nếu có
+    if (dto.getAnhCamera() != null && !dto.getAnhCamera().isEmpty()) {
+        camera.setAnhCamera(
+                fileStorageService.saveMultipart(dto.getAnhCamera(), "cameras")
+        );
+    }
+
+    // cập nhật video nếu có
+    if (dto.getVideoFile() != null && !dto.getVideoFile().isEmpty()) {
+        camera.setVideoUrl(
+                fileStorageService.saveMultipart(dto.getVideoFile(), "cameras/videos")
+        );
+    }
+
+    Camera saved = saveCamera(camera);
+
+    return cameraMapper.toResponseDto(saved);
+}
+
+public CameraResponseDTO getCameraDetail(Long id){
+
+    Camera camera = cameraRepository.findById(id)
+            .orElseThrow(
+                () -> new RuntimeException("Không tìm thấy camera")
+            );
+
+    return cameraMapper.toResponseDto(camera);
+}
 
     // 1. Lấy tất cả camera (Dạng Model cho Admin quản lý bảng)
     public List<Camera> getAllCameras() {
@@ -62,9 +126,8 @@ private FileStorageService fileStorageService;
     return cameraRepository.findAll().stream()
             .filter(c -> c.getKinhDo() != null && c.getKinhDo() != 0.0)
             .map(cameraMapper::toMapDto)
-                
             .collect(Collectors.toList());
-}
+    }
 
     // 4. Lưu hoặc Cập nhật vị trí Camera
     @Transactional
@@ -114,84 +177,38 @@ private FileStorageService fileStorageService;
         return saved;
     }
 
-    /**
-     * TÌM CAMERA GẦN SỰ CỐ TRONG BÁN KÍNH 20M
-     * Không lưu vào DB, chỉ tính toán động để hiển thị cho Admin
-     */
-    public List<CameraMapDto> getCamerasNearIncident(double lat, double lng) {
-        log.info("========== KIỂM TRA CAMERA GẦN SỰ CỐ ==========");
-        log.info("[Vị trí sự cố]: {}, {}", lat, lng);
-
-        // 1. Lấy Geohash cấp 8 của sự cố
-        GeoHash center = GeoHash.withCharacterPrecision(lat, lng, 8);
-        List<String> area = new ArrayList<>();
-        area.add(center.toBase32());
-        for (GeoHash adj : center.getAdjacent()) {
-            area.add(adj.toBase32());
-        }
-        log.info("[Geohash]: Quét vùng 9 ô xung quanh mã: {}", center.toBase32());
-
-        // 2. Query DB theo index Geohash
-        List<Camera> candidates = cameraRepository.findByGeohashIn(area);
-        log.info("[DB]: Tìm thấy {} camera tiềm năng trong các ô Geohash", candidates.size());
-
-        // 3. Lọc Haversine chính xác 20m
-        List<CameraMapDto> result = candidates.stream()
-        .map(c -> {
-    double distance = tinhKhoangCach(lat, lng, c.getViDo(), c.getKinhDo());
-
-    log.info("Camera {} distance = {} km", c.getId(), distance);
-
-    if (distance > 0.02) return null;
-
-    CameraMapDto dto = cameraMapper.toMapDto(
-    c,
-    Math.round(distance * 1000 * 100.0) / 100.0
-);
-    return dto;
-})
-        .filter(dto -> dto != null)
-        .collect(Collectors.toList());
-
-        log.info("[Kết quả]: Tổng cộng {} camera khả dụng.", result.size());
-        log.info("===============================================");
-        
-        return result;
-    }
-
-    private double tinhKhoangCach(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371; // Bán kính Trái Đất (km)
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    }
+    
+    
 
     // 5. Xóa Camera
     @Transactional
-    public void deleteCamera(Long id) {
-        cameraRepository.deleteById(id);
-        messagingTemplate.convertAndSend("/topic/camera-delete", id);
+public void deleteCamera(Long id) {
+
+    if (!cameraRepository.existsById(id)) {
+        throw new RuntimeException("Camera không tồn tại");
     }
 
+    cameraRepository.deleteById(id);
+
+    messagingTemplate.convertAndSend(
+            "/topic/camera-delete",
+            id
+    );
+}
     // 6. Lưu ảnh camera
     public String saveImage(MultipartFile imageFile) {
     return fileStorageService.saveMultipart(
             imageFile,
             "cameras"
     );
-}
+    }
 
     // 7. Lưu video demo camera
-    // Trong CameraService.java
-public String saveVideo(MultipartFile file) {
+    public String saveVideo(MultipartFile file) {
     return fileStorageService.saveMultipart(
             file,
             "cameras/videos"
     );
-}
-
+    }
     
 }

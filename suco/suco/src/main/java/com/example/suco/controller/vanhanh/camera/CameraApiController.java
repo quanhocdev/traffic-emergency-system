@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.suco.dto.vanhanh.camera.CameraMapDto;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
+import com.example.suco.service.vanhanh.camera.CameraNearService;
 import com.example.suco.service.vanhanh.camera.CameraService;
 
 import java.util.List;
@@ -23,6 +24,9 @@ public class CameraApiController {
     @Autowired
 private SuCoAdminRepository baoCaoSuCoRepository;
 
+@Autowired
+private CameraNearService cameraNearService;
+
     @GetMapping("/all")
     public List<CameraMapDto> getAllCamera() {
         return cameraService.getAllCameraForMap();
@@ -33,7 +37,7 @@ private SuCoAdminRepository baoCaoSuCoRepository;
     BaoCaoSuCo report = baoCaoSuCoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy sự cố"));
 
-    return cameraService.getCamerasNearIncident(
+    return cameraNearService.getCamerasNearIncident(
             report.getViDo(),
             report.getKinhDo()
     );
