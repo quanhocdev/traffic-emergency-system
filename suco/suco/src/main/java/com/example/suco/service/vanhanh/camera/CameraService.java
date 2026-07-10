@@ -1,6 +1,7 @@
 package com.example.suco.service.vanhanh.camera;
 
 import com.example.suco.dto.vanhanh.camera.CameraMapDto;
+import com.example.suco.mapper.info.CameraMapper;
 import com.example.suco.model.Camera;
 import com.example.suco.repository.vanhanh.CameraRepository;
 
@@ -31,6 +32,9 @@ private static final Logger log = LoggerFactory.getLogger(CameraService.class);
     private CameraRepository cameraRepository;
 
     @Autowired
+private CameraMapper cameraMapper;
+
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
     @Autowired
@@ -53,16 +57,7 @@ private GeocodingService geocodingService;
     public List<CameraMapDto> getAllCameraForMap() {
     return cameraRepository.findAll().stream()
             .filter(c -> c.getKinhDo() != null && c.getKinhDo() != 0.0)
-            .map(c -> new CameraMapDto(
-                c.getId(), 
-                c.getTenCamera(), 
-                c.getKinhDo(), 
-                c.getViDo(), 
-                c.getAnhCamera(), 
-                c.getVideoUrl(), 
-                c.getDiaChi(),
-                 0.0
-))
+            .map(cameraMapper::toMapDto)
                 
             .collect(Collectors.toList());
 }
@@ -110,7 +105,7 @@ private GeocodingService geocodingService;
             saved = cameraRepository.save(camera);
         }
 
-        CameraMapDto dto = new CameraMapDto(saved.getId(), saved.getTenCamera(), saved.getKinhDo(), saved.getViDo(), saved.getAnhCamera(), saved.getVideoUrl(), saved.getDiaChi(), 0.0);
+        CameraMapDto dto = cameraMapper.toMapDto(saved);
         messagingTemplate.convertAndSend("/topic/camera", dto);
         return saved;
     }
@@ -145,17 +140,10 @@ private GeocodingService geocodingService;
 
     if (distance > 0.02) return null;
 
-    CameraMapDto dto = new CameraMapDto(
-            c.getId(),
-            c.getTenCamera(),
-            c.getKinhDo(),
-            c.getViDo(),
-            c.getAnhCamera(),
-            c.getVideoUrl(),
-            c.getDiaChi(),
-            Math.round(distance * 1000 * 100.0) / 100.0
-
-    );
+    CameraMapDto dto = cameraMapper.toMapDto(
+    c,
+    Math.round(distance * 1000 * 100.0) / 100.0
+);
     return dto;
 })
         .filter(dto -> dto != null)
