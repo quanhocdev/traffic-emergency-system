@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 
+import com.example.suco.service.file.FileStorageService;
 import com.example.suco.service.location.GeocodingService;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -39,6 +40,9 @@ private CameraMapper cameraMapper;
 
     @Autowired
 private GeocodingService geocodingService;
+
+@Autowired
+private FileStorageService fileStorageService;
 
 
     // 1. Lấy tất cả camera (Dạng Model cho Admin quản lý bảng)
@@ -174,36 +178,19 @@ private GeocodingService geocodingService;
 
     // 6. Lưu ảnh camera
     public String saveImage(MultipartFile imageFile) {
-        try {
-            String filename = System.currentTimeMillis() + "_" + imageFile.getOriginalFilename();
-            Path uploadDir = Paths.get(System.getProperty("user.dir"), "uploads", "cameras");
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-            Files.copy(imageFile.getInputStream(), uploadDir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
-            return "/uploads/cameras/" + filename;
-        } catch (IOException e) {
-            throw new RuntimeException("Lỗi lưu ảnh camera: " + e.getMessage());
-        }
-    }
+    return fileStorageService.saveMultipart(
+            imageFile,
+            "cameras"
+    );
+}
 
     // 7. Lưu video demo camera
     // Trong CameraService.java
-public String saveVideo(MultipartFile file) throws IOException {
-    // 1. Định nghĩa thư mục lưu trữ vật lý
-    String uploadDir = System.getProperty("user.dir") + File.separator + "uploads" + File.separator + "cameras" + File.separator + "videos";
-    File dir = new File(uploadDir);
-    if (!dir.exists()) dir.mkdirs();
-
-    // 2. Tạo tên file duy nhất
-    String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-    Path filePath = Paths.get(uploadDir, fileName);
-
-    // 3. Lưu file
-    Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-    // 4. Trả về đường dẫn để lưu vào Database (Khớp với WebMvcConfig)
-    return "/uploads/cameras/videos/" + fileName;
+public String saveVideo(MultipartFile file) {
+    return fileStorageService.saveMultipart(
+            file,
+            "cameras/videos"
+    );
 }
 
     
