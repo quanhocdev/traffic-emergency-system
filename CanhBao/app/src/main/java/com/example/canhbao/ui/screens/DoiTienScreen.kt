@@ -31,7 +31,6 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun DoiTienScreen(
     navController: NavController,
-    uid: String?,
     viewModel: DoiTienViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     val context = LocalContext.current
@@ -57,8 +56,8 @@ fun DoiTienScreen(
         viewModel.selectedDate.dayOfMonth
     )
 
-    LaunchedEffect(uid) {
-        if (uid != null) viewModel.init(uid)
+    LaunchedEffect(true) {
+        viewModel.init()
     }
 
     Scaffold(
@@ -247,7 +246,7 @@ fun DoiTienScreen(
             maxPoints = currentPoints.toFloat(),
             onDismiss = { showExchangeDialog = false },
             onConfirm = { points ->
-                uid?.let { viewModel.thucHienGiaoDich(it, points, "TIEN_MAT") }
+                viewModel.thucHienGiaoDich(points, "TIEN_MAT")
                 showExchangeDialog = false
             }
         )
@@ -260,7 +259,7 @@ fun DoiTienScreen(
             maxPoints = currentPoints.toFloat(),
             onDismiss = { showDonationDialog = false },
             onConfirm = { points ->
-                uid?.let { viewModel.thucHienGiaoDich(it, points, "QUYEN_GOP") }
+                viewModel.thucHienGiaoDich( points, "QUYEN_GOP")
                 showDonationDialog = false
             }
         )

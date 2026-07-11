@@ -165,16 +165,17 @@ interface BaoCaoSuCoApi {
 
     @POST("/api/doi-tien/thuc-hien")
     suspend fun thucHienDoiTien(
+        @Header("Authorization") token: String,
         @Body request: DoiTienDto
-    ): Response<Boolean>
+    ): Response<Map<String, Any>>
 
-    @GET("/api/doi-tien/lich-su/{userId}")
+    @GET("/api/doi-tien/lich-su")
     suspend fun getHistory(
-        @Path("userId") userId: String,
+        @Header("Authorization") token: String,
         @Query("loai") loai: String? = null
     ): List<DoiTienDto>
 
-    @GET("/api/doi-tien/thong-ke-quy")
+    @GET("/api/thong-ke-quy")
     suspend fun getThongKeQuy(): ThongKeQuyDto
 
 

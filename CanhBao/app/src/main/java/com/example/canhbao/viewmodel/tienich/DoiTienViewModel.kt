@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.canhbao.data.auth.FirebaseTokenProvider
 import com.example.canhbao.data.model.suco.baocao.SuCoUserDto
 import com.example.canhbao.data.model.tien.DoiTienDto
 import com.example.canhbao.data.model.tien.ThongKeQuyDto
@@ -73,8 +74,8 @@ class DoiTienViewModel : ViewModel() {
         }
     }
 
-    fun init(uid: String) {
-        fetchUserInfo(uid)
+    fun init() {
+        fetchUserInfo()
         fetchPublicFund() // Lấy dữ liệu quỹ hiện tại từ database
         connectSockets()
     }
@@ -90,10 +91,11 @@ class DoiTienViewModel : ViewModel() {
         }
     }
 
-    private fun fetchUserInfo(uid: String) {
+    private fun fetchUserInfo() {
         viewModelScope.launch {
             try {
-                userDetail = BaoCaoSuCoRetrofit.api.getUserInfo(uid)
+                val token = FirebaseTokenProvider.getToken()
+                userDetail = BaoCaoSuCoRetrofit.api.getUserInfo("Bearer $token")
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -180,23 +182,39 @@ class DoiTienViewModel : ViewModel() {
         }
     }
     // Hàm xử lý chung cho cả Đổi tiền và Quyên góp
-    fun thucHienGiaoDich(uid: String, points: Int, type: String) {
+    fun thucHienGiaoDich(points: Int, type: String) {
         viewModelScope.launch {
             isProcessing = true
             try {
-                val dto = DoiTienDto(userId = uid, soDiemDoi = points, loaiDoi = type)
-                val response = BaoCaoSuCoRetrofit.api.thucHienDoiTien(dto)
 
-                if (response.isSuccessful && response.body() == true) {
-                    message = if (type == "TIEN_MAT") "Đã quy đổi $points điểm!"
-                    else "Cảm ơn bạn đã quyên góp!"
+                val token = FirebaseTokenProvider.getToken()
 
-                    fetchUserInfo(uid) // Gọi lại hàm này để lấy điểm mới ngay lập tức
+                val dto = DoiTienDto(
+                    soDiemDoi = points,
+                    loaiDoi = type
+                )
+
+                val response = BaoCaoSuCoRetrofit.api.thucHienDoiTien(
+                    "Bearer $token",
+                    dto
+                )
+
+                if (response.isSuccessful) {
+
+                    val msg = response.body()?.get("message")?.toString()
+
+                    message = msg ?: "Giao dịch thành công!"
+
+                    fetchUserInfo()
+
                 } else {
-                    message = "Giao dịch thất bại!"
+
+                    message = response.errorBody()?.string()
+                        ?: "Giao dịch thất bại!"
                 }
+
             } catch (e: Exception) {
-                message = "Lỗi kết nối."
+                message = "Lỗi kết nối: ${e.message}"
             } finally {
                 isProcessing = false
                 resetMessage()
