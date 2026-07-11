@@ -51,15 +51,22 @@ public class SecurityConfig {
 
     // AUTH SYNC USER
     .requestMatchers("/api/map/**").authenticated()
+    .requestMatchers("/api/qua/**").authenticated()
+    .requestMatchers("/api/su-co/**").authenticated()
+    .requestMatchers("/api/sos/**").authenticated()
+    .requestMatchers("/api/doi-tien/**").authenticated()
+
 
     .anyRequest().permitAll()
 )
 
-            // JWT ADMIN chạy trước
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+            // // JWT ADMIN chạy trước
+            // .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 
-            // Firebase USER chạy sau
-            .addFilterBefore(firebaseFilter, UsernamePasswordAuthenticationFilter.class);
+            // // Firebase USER chạy sau
+            // .addFilterBefore(firebaseFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(firebaseFilter, UsernamePasswordAuthenticationFilter.class)
+.addFilterBefore(jwtFilter, FirebaseFilter.class);
 
         return http.build();
     }

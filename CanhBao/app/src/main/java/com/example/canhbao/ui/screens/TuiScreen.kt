@@ -23,7 +23,8 @@ import com.example.canhbao.viewmodel.tienich.QuaViewModel
 import androidx.compose.foundation.shape.CircleShape
 import com.example.canhbao.data.model.qua.doiqua.TuiQuaResponseDTO
 
-
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TuiScreen(viewModel: QuaViewModel, uid: String, onBack: () -> Unit) {
@@ -186,9 +187,12 @@ fun TuiItemRow(item: TuiQuaResponseDTO, onNhanNgayClick: () -> Unit) {
     val isVoucher = item.qua?.loai == "VOUCHER"
 
     // Kiểm tra hạn sử dụng an toàn từ item.qua?.ngayKetThuc
-    val isExpired = item.qua?.ngayKetThuc != null &&
-            java.time.LocalDateTime.parse(item.qua.ngayKetThuc)
-                .isBefore(java.time.LocalDateTime.now())
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+
+    val isExpired = item.qua?.ngayKetThuc?.let { date ->
+        LocalDateTime.parse(date, formatter)
+            .isBefore(LocalDateTime.now())
+    } ?: false
 
     Card(
         modifier = Modifier

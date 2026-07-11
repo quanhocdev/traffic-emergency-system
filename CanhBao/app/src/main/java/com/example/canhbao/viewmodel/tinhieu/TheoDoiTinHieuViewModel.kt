@@ -58,7 +58,8 @@ class TheoDoiTinHieuViewModel : ViewModel() {
 
                 val response = withContext(Dispatchers.IO) {
                     val token = FirebaseTokenProvider.getToken()
-                    api.getTheoDoiSOS(token)
+                    api.getTheoDoiSOS("Bearer $token"
+                    )
                 }
 
                 uiState = TheoDoiTinHieuUiState.Success(response)
@@ -76,7 +77,7 @@ class TheoDoiTinHieuViewModel : ViewModel() {
             try {
                 val response = withContext(Dispatchers.IO) {
                     api.getMyGifts(
-                        FirebaseTokenProvider.getToken()
+                        "Bearer ${FirebaseTokenProvider.getToken()}"
                     )
                 }
                 listTuiQua = response
@@ -92,7 +93,7 @@ class TheoDoiTinHieuViewModel : ViewModel() {
                 val success = withContext(Dispatchers.IO) {
 
                     api.confirmPayment(
-                        FirebaseTokenProvider.getToken(),
+                        "Bearer ${FirebaseTokenProvider.getToken()}",
                         ThanhToanRequestDTO(
                             hoaDonId = hoaDonId,
                             quaId = quaId,
@@ -115,7 +116,10 @@ class TheoDoiTinHieuViewModel : ViewModel() {
             try {
                 val success = withContext(Dispatchers.IO) {
                     val token = FirebaseTokenProvider.getToken()
-                    api.cancelSOS(token, sosId).isSuccessful
+                    api.cancelSOS(
+                        "Bearer $token",
+                        sosId
+                    ).isSuccessful
                 }
 
                 if (success) {
@@ -218,7 +222,7 @@ class TheoDoiTinHieuViewModel : ViewModel() {
                 val response = withContext(Dispatchers.IO) {
 
                     api.getTheoDoiSOSDetail(
-                        FirebaseTokenProvider.getToken(),
+                        "Bearer ${FirebaseTokenProvider.getToken()}",
                         sosId
                     )
                 }
