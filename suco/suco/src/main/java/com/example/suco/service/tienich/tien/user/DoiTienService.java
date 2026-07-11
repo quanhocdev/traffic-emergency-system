@@ -1,8 +1,8 @@
 package com.example.suco.service.tienich.tien.user;
 
-import com.example.suco.dto.tienich.tien.quydoi.DoiTienDto;
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienRequestDTO;
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienResponseDTO;
+import com.example.suco.mapper.TienMapper;
 import com.example.suco.model.DoiTien;
 import com.example.suco.model.User;
 import com.example.suco.repository.tienich.tien.DoiTienRepository;
@@ -25,6 +25,8 @@ public class DoiTienService {
     @Autowired private DoiTienRepository doiTienRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private SimpMessagingTemplate messagingTemplate;
+    @Autowired
+private TienMapper tienMapper;
 
     private final long HE_SO = 100L; // 10 điểm * 100 = 1000 VNĐ
 
@@ -73,9 +75,15 @@ public class DoiTienService {
 }
 
     private void saveNewRecord(String uid, DoiTienRequestDTO dto, long giaTri) {
-        DoiTien log = new DoiTien(uid, dto.getSoDiemDoi(), giaTri, dto.getLoaiDoi(), LocalDateTime.now());
-        doiTienRepository.save(log);
-    }
+
+    DoiTien entity = tienMapper.toEntity(dto);
+
+    entity.setUserId(uid);
+    entity.setGiaTri(giaTri);
+    entity.setNgayDoi(LocalDateTime.now());
+
+    doiTienRepository.save(entity);
+}
 
 public void broadcastFundStats() {
 
@@ -115,17 +123,32 @@ public List<VinhDanhDTO> getBangVinhDanh() {
     }).collect(Collectors.toList());
 }
 public List<DoiTienResponseDTO> getLichSu(String uid, String loai) {
+
+    List<DoiTien> list;
+
     if (loai != null && !loai.isEmpty()) {
-        return doiTienRepository.findByUserIdAndLoaiDoi(uid, loai);
+        list = doiTienRepository.findByUserIdAndLoaiDoi(uid, loai);
+    } else {
+        list = doiTienRepository.findByUserId(uid);
     }
-    return doiTienRepository.findByUserId(uid);
+
+    return list.stream()
+            .map(tienMapper::toResponseDTO)
+            .collect(Collectors.toList());
 }
 public List<DoiTienResponseDTO> getAllLichSu(String loai) {
+
+    List<DoiTien> list;
+
     if (loai != null && !loai.isEmpty()) {
-        // Chuẩn hóa sang Uppercase để khớp với Enum hoặc dữ liệu trong DB
-        return doiTienRepository.findByLoaiDoi(loai.toUpperCase());
+        list = doiTienRepository.findByLoaiDoi(loai.toUpperCase());
+    } else {
+        list = doiTienRepository.findAll();
     }
-    return doiTienRepository.findAll();
+
+    return list.stream()
+            .map(tienMapper::toResponseDTO)
+            .collect(Collectors.toList());
 }
 public ThongKeQuyDTO getThongKeQuy() {
 

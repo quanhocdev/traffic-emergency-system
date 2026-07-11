@@ -1,5 +1,5 @@
 package com.example.suco.dto.tienich.tien.quydoi;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class DoiTienResponseDTO {
 
@@ -7,7 +7,7 @@ public class DoiTienResponseDTO {
     private int soDiemDoi;
     private Long giaTri;
     private String loaiDoi;
-    private LocalDate ngayDoi;
+    private LocalDateTime ngayDoi;
 
     public DoiTienResponseDTO() {
     }
@@ -44,11 +44,11 @@ public class DoiTienResponseDTO {
         this.loaiDoi = loaiDoi;
     }
 
-    public LocalDate getNgayDoi() {
+    public LocalDateTime getNgayDoi() {
         return ngayDoi;
     }
 
-    public void setNgayDoi(LocalDate ngayDoi) {
+    public void setNgayDoi(LocalDateTime ngayDoi) {
         this.ngayDoi = ngayDoi;
     }
 }

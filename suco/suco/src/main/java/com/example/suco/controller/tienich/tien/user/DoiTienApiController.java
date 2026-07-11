@@ -1,15 +1,12 @@
 package com.example.suco.controller.tienich.tien.user;
 
-import com.example.suco.dto.tienich.tien.quydoi.DoiTienDto;
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienRequestDTO;
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienResultDTO;
-import com.example.suco.model.DoiTien;
 import com.example.suco.service.tienich.tien.user.DoiTienService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
-import java.util.*;
 
 @RestController
 @RequestMapping("/api/doi-tien")
@@ -46,14 +43,12 @@ public ResponseEntity<?> getLichSu(
         @RequestParam(required = false) String loai
 ) {
     try {
-        // 1. Lấy UID từ Token
+
         String uid = authentication.getName();
 
-        // 2. Gọi Service xử lý nghiệp vụ
-        List<DoiTien> result = doiTienService.getLichSu(uid, loai);
-
-        // 3. Trả về dữ liệu
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(
+                doiTienService.getLichSu(uid, loai)
+        );
 
     } catch (Exception e) {
         return ResponseEntity.status(401).body("Xác thực thất bại");
