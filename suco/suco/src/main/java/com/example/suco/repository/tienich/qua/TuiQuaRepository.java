@@ -10,13 +10,14 @@ import java.util.Optional;
 
 @Repository
 public interface TuiQuaRepository extends JpaRepository<TuiQua, Long> {
-    List<TuiQua> findByUserId(String userId);
+
     Optional<TuiQua> findByUserIdAndQuaId(String userId, Long quaId);
+
     @Query("""
-SELECT t, q
-FROM TuiQua t
-JOIN Qua q ON t.quaId = q.id
-WHERE t.userId = :uid
-""")
-List<Object[]> getMyGiftsWithQua(@Param("uid") String uid);
+        SELECT t
+        FROM TuiQua t
+        JOIN FETCH t.qua
+        WHERE t.userId = :uid
+    """)
+    List<TuiQua> findByUserId(@Param("uid") String uid);
 }

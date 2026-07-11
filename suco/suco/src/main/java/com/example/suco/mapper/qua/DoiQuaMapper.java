@@ -6,15 +6,13 @@ import com.example.suco.dto.tienich.qua.quydoi.DoiQuaRequestDTO;
 import com.example.suco.dto.tienich.qua.quydoi.DoiQuaResponseDTO;
 import com.example.suco.dto.tienich.qua.quydoi.TuiQuaResponseDTO;
 import com.example.suco.model.DoiQua;
-import com.example.suco.model.Qua;
 import com.example.suco.model.TuiQua;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-@Component // 1. Chuyển thành Spring Bean
+@Component 
 public class DoiQuaMapper {
 
-    // 2. Inject QuaMapper (đã thành Component ở bước trước) vào để tái sử dụng
     @Autowired
     private QuaMapper quaMapper;
 
@@ -33,32 +31,27 @@ public class DoiQuaMapper {
     }
 
     // Entity DoiQua -> DoiQuaResponseDTO
-    public DoiQuaResponseDTO toDoiQuaResponse(DoiQua doiQua, Qua qua) {
-        if (doiQua == null) return null;
+    public DoiQuaResponseDTO toDoiQuaResponse(DoiQua doiQua) {
+    if (doiQua == null) return null;
 
-        DoiQuaResponseDTO dto = new DoiQuaResponseDTO();
-        dto.setId(doiQua.getId());
-        
-        // Gọi qua instance thay vì gọi hàm static cũ
-        dto.setQua(quaMapper.toResponseDTO(qua)); 
-        
-        dto.setSoLuong(doiQua.getSoLuong());
-        dto.setDiemDaTru(doiQua.getDiemDaTru());
-        dto.setNgayDoi(doiQua.getNgayDoi());
+    DoiQuaResponseDTO dto = new DoiQuaResponseDTO();
+    dto.setId(doiQua.getId());
+    dto.setQua(quaMapper.toResponseDTO(doiQua.getQua()));
+    dto.setSoLuong(doiQua.getSoLuong());
+    dto.setDiemDaTru(doiQua.getDiemDaTru());
+    dto.setNgayDoi(doiQua.getNgayDoi());
 
-        return dto;
-    }
+    return dto;
+}
     
     // Entity TuiQua -> TuiQuaResponseDTO
-    public TuiQuaResponseDTO toTuiQuaResponse(TuiQua tuiQua, Qua qua) {
-        if (tuiQua == null) return null;
+    public TuiQuaResponseDTO toTuiQuaResponse(TuiQua tuiQua) {
+    if (tuiQua == null) return null;
 
-        TuiQuaResponseDTO dto = new TuiQuaResponseDTO();
-        dto.setSoLuong(tuiQua.getSoLuong());
-        
-        // Gọi qua instance thay vì gọi hàm static cũ
-        dto.setQua(quaMapper.toResponseDTO(qua)); 
-        
-        return dto;
-    }
+    TuiQuaResponseDTO dto = new TuiQuaResponseDTO();
+    dto.setSoLuong(tuiQua.getSoLuong());
+    dto.setQua(quaMapper.toResponseDTO(tuiQua.getQua()));
+
+    return dto;
+}
 }

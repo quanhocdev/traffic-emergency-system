@@ -95,14 +95,9 @@ public class DoiQuaService {
     }
 
     public List<TuiQuaResponseDTO> getMyGifts(String uid) {
-        return tuiQuaRepository.getMyGiftsWithQua(uid)
-            .stream()
-            .map(obj -> {
-                TuiQua t = (TuiQua) obj[0];
-                Qua q = (Qua) obj[1];
-                
-                return doiQuaMapper.toTuiQuaResponse(t, q);
-            })
-            .toList();
+        return tuiQuaRepository.findByUserId(uid)
+        .stream()
+        .map(doiQuaMapper::toTuiQuaResponse)
+        .toList();
     }
 }
