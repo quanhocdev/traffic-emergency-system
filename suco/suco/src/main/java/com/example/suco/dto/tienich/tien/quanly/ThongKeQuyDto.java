@@ -1,22 +1,33 @@
 package com.example.suco.dto.tienich.tien.quanly;
 
 import java.util.List;
-import java.util.Map;
 
-public class ThongKeQuyDto {
-    private long tongGiaTri; // Tổng số tiền trong quỹ
-    private List<Map<String, Object>> lichSuVinhDanh;
+public class ThongKeQuyDTO {
 
-    public ThongKeQuyDto() {}
-    public ThongKeQuyDto(long tongGiaTri, List<Map<String, Object>> lichSuVinhDanh) {
-        this.tongGiaTri = tongGiaTri;
-        this.lichSuVinhDanh = lichSuVinhDanh;
+    private long tongGiaTri;
+    private List<VinhDanhDTO> bangVinhDanh;
+
+    public ThongKeQuyDTO() {
     }
 
-    // Getters and Setters
-    public long getTongGiaTri() { return tongGiaTri; }
-    public void setTongGiaTri(long tongGiaTri) { this.tongGiaTri = tongGiaTri; }
-    
-    public List<Map<String, Object>> getLichSuVinhDanh() { return lichSuVinhDanh; }
-    public void setLichSuVinhDanh(List<Map<String, Object>> lichSuVinhDanh) { this.lichSuVinhDanh = lichSuVinhDanh; }
+    public ThongKeQuyDTO(long tongGiaTri, List<VinhDanhDTO> bangVinhDanh) {
+        this.tongGiaTri = tongGiaTri;
+        this.bangVinhDanh = bangVinhDanh;
+    }
+
+    public long getTongGiaTri() {
+        return tongGiaTri;
+    }
+
+    public void setTongGiaTri(long tongGiaTri) {
+        this.tongGiaTri = tongGiaTri;
+    }
+
+    public List<VinhDanhDTO> getBangVinhDanh() {
+        return bangVinhDanh;
+    }
+
+    public void setBangVinhDanh(List<VinhDanhDTO> bangVinhDanh) {
+        this.bangVinhDanh = bangVinhDanh;
+    }
 }
