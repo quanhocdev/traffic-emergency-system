@@ -9,7 +9,7 @@ import com.example.suco.dto.tienich.qua.quanly.QuaResponseDTO;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/qua")
+@RequestMapping("/api/qua-public")
 public class QuaApiController {
 
     @Autowired

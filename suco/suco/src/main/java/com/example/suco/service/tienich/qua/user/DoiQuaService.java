@@ -35,6 +35,10 @@ public class DoiQuaService {
     @Transactional
     public boolean thucHienDoiQua(String uid, DoiQuaRequestDTO dto) {
 
+          System.out.println("UID = " + uid);
+    System.out.println("quaId = " + dto.getQuaId());
+    System.out.println("soLuong = " + dto.getSoLuong());
+
         LocalDateTime now = LocalDateTime.now();
 
         User user = userRepository.findById(uid)

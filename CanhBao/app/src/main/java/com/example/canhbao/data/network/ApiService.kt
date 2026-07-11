@@ -85,6 +85,7 @@ interface BaoCaoSuCoApi {
 
     @GET("/api/sos/map")
     suspend fun getSOSMap(): List<SOSMapResponseDTO>
+
     @GET("/api/sos/theo-doi")
     suspend fun getTheoDoiSOS(
         @Header("Authorization") token: String
@@ -121,7 +122,7 @@ interface BaoCaoSuCoApi {
 
     // ĐỔI QUÀ THƯỞNG
 
-    @GET("/api/qua/all")
+    @GET("/api/qua-public/all")
     suspend fun getAllQua(): List<QuaResponseDTO>
 
     @POST("/api/qua/exchange")

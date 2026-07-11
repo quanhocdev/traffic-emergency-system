@@ -65,7 +65,13 @@ class QuaViewModel(private val api: BaoCaoSuCoApi) : ViewModel() {
                     loadData()
                     onResult(true, "Đổi quà thành công!")
                 } else {
-                    onResult(false, "Đổi quà thất bại: ${response.message()}")
+
+                    val error = response.errorBody()?.string()
+
+                    onResult(
+                        false,
+                        "Đổi quà thất bại: $error"
+                    )
                 }
 
             } catch (e: Exception) {

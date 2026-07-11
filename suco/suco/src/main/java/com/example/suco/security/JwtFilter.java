@@ -27,6 +27,13 @@ protected void doFilterInternal(HttpServletRequest request,
                                 FilterChain filterChain)
         throws ServletException, IOException {
 
+              if(SecurityContextHolder.getContext()
+            .getAuthentication() != null){
+
+        filterChain.doFilter(request,response);
+        return;
+    }
+
             String path = request.getRequestURI();
 if (path.equals("/api/su-co/map") || path.equals("/api/sos/map")) {
     filterChain.doFilter(request, response);

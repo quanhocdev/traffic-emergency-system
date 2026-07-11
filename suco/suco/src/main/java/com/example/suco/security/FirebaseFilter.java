@@ -28,12 +28,24 @@
         }
         
             String path = request.getRequestURI();
+            System.out.println(
+    "FIREBASE FILTER PATH = " + path
+);
+
+System.out.println(
+    "AUTH BEFORE = " +
+    SecurityContextHolder.getContext()
+        .getAuthentication()
+);
             String auth = request.getHeader("Authorization");
 
 
             // CHỈ API USER
-if (!path.startsWith("/api") || path.startsWith("/api/goi") 
-    || path.equals("/api/su-co/map") || path.equals("/api/sos/map")) { // 🌟 Né 2 api bản đồ ra
+if (!path.startsWith("/api") 
+    || path.startsWith("/api/goi") 
+    || path.equals("/api/su-co/map") 
+    || path.equals("/api/sos/map")) {
+
     filterChain.doFilter(request, response);
     return;
 }
@@ -51,11 +63,11 @@ if (!path.startsWith("/api") || path.startsWith("/api/goi")
 
             String token = auth.substring(7);
 
-            // JWT thì bỏ qua
-            if (token.split("\\.").length == 3) {
-                filterChain.doFilter(request, response);
-                return;
-            }
+            // // JWT thì bỏ qua
+            // if (token.split("\\.").length == 3) {
+            //     filterChain.doFilter(request, response);
+            //     return;
+            // }
 
             try {
                 FirebaseToken decoded = FirebaseAuth.getInstance().verifyIdToken(token);
@@ -69,6 +81,14 @@ if (!path.startsWith("/api") || path.startsWith("/api/goi")
                 );
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                System.out.println(
+    "AUTH HEADER = " + auth
+);
+                System.out.println(
+    "AUTH AFTER = " +
+    SecurityContextHolder.getContext()
+        .getAuthentication()
+);
 
             } catch (Exception e) {
                 SecurityContextHolder.clearContext();
