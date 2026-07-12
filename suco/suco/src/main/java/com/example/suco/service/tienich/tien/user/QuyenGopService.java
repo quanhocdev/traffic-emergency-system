@@ -1,12 +1,12 @@
 package com.example.suco.service.tienich.tien.user;
 
 
-import com.example.suco.dto.tienich.tien.quydoi.DoiTienRequestDTO;
-import com.example.suco.dto.tienich.tien.quydoi.DoiTienResponseDTO;
-import com.example.suco.mapper.DoiTienMapper;
-import com.example.suco.model.DoiTien;
+import com.example.suco.dto.tienich.tien.quyengop.QuyenGopRequestDTO;
+import com.example.suco.dto.tienich.tien.quyengop.QuyenGopResponseDTO;
+import com.example.suco.mapper.QuyenGopMapper;
+import com.example.suco.model.QuyenGop;
 import com.example.suco.model.User;
-import com.example.suco.repository.tienich.tien.DoiTienRepository;
+import com.example.suco.repository.tienich.tien.QuyenGopRepository;
 import com.example.suco.repository.vanhanh.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +18,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 
+
 @Service
-public class DoiTienService {
+public class QuyenGopService {
 
 
     @Autowired
-    private DoiTienRepository doiTienRepository;
+    private QuyenGopRepository quyenGopRepository;
 
 
     @Autowired
@@ -31,7 +32,7 @@ public class DoiTienService {
 
 
     @Autowired
-    private DoiTienMapper doiTienMapper;
+    private QuyenGopMapper quyenGopMapper;
 
 
 
@@ -40,22 +41,25 @@ public class DoiTienService {
 
 
     @Transactional
-    public boolean thucHienDoiTien(
+    public boolean thucHienQuyenGop(
             String uid,
-            DoiTienRequestDTO dto
+            QuyenGopRequestDTO dto
     ){
 
-        if(dto.getSoDiemDoi() <= 0)
+
+        if(dto.getSoDiemQuyenGop() <= 0)
             return false;
 
 
-        User user = userRepository
-                .findById(uid)
+
+        User user =
+                userRepository.findById(uid)
                 .orElse(null);
 
 
+
         if(user == null ||
-           user.getTotalPoints() < dto.getSoDiemDoi())
+           user.getTotalPoints() < dto.getSoDiemQuyenGop())
             return false;
 
 
@@ -64,7 +68,7 @@ public class DoiTienService {
 
         user.setTotalPoints(
                 user.getTotalPoints()
-                - dto.getSoDiemDoi()
+                - dto.getSoDiemQuyenGop()
         );
 
 
@@ -73,25 +77,26 @@ public class DoiTienService {
 
 
         long giaTri =
-                dto.getSoDiemDoi() * HE_SO;
+                dto.getSoDiemQuyenGop() * HE_SO;
 
 
 
-        DoiTien doiTien =
-                doiTienMapper.toEntity(dto);
+        QuyenGop quyenGop =
+                quyenGopMapper.toEntity(dto);
 
 
 
-        doiTien.setUser(user);
+        quyenGop.setUser(user);
 
-        doiTien.setGiaTri(giaTri);
+        quyenGop.setGiaTri(giaTri);
 
-        doiTien.setNgayDoi(
+        quyenGop.setNgayQuyenGop(
                 LocalDateTime.now()
         );
 
 
-        doiTienRepository.save(doiTien);
+        quyenGopRepository.save(quyenGop);
+
 
 
         return true;
@@ -101,15 +106,16 @@ public class DoiTienService {
 
 
 
-    public List<DoiTienResponseDTO> getLichSu(
+    public List<QuyenGopResponseDTO> getLichSu(
             String uid
     ){
 
-        return doiTienRepository
+        return quyenGopRepository
                 .findByUserUid(uid)
                 .stream()
-                .map(doiTienMapper::toResponseDTO)
+                .map(quyenGopMapper::toResponseDTO)
                 .collect(Collectors.toList());
+
     }
 
 }
