@@ -1,6 +1,6 @@
 package com.example.suco.controller.tienich.tien.user;
 
-import com.example.suco.dto.tienich.tien.quanly.ThongKeQuyDTO;
+import com.example.suco.dto.tienich.tien.quanly.ThongKeQuyResponseDTO;
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienResponseDTO;
 import com.example.suco.service.tienich.tien.user.DoiTienService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ public class ThongKeQuyController {
     private DoiTienService doiTienService;
 
     @GetMapping
-    public ResponseEntity<ThongKeQuyDTO> getThongKeQuy() {
+    public ResponseEntity<ThongKeQuyResponseDTO> getThongKeQuy() {
 
         return ResponseEntity.ok(
                 doiTienService.getThongKeQuy()

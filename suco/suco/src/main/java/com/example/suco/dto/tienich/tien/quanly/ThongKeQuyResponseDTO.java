@@ -2,15 +2,15 @@ package com.example.suco.dto.tienich.tien.quanly;
 
 import java.util.List;
 
-public class ThongKeQuyDTO {
+public class ThongKeQuyResponseDTO {
 
     private long tongGiaTri;
     private List<VinhDanhDTO> bangVinhDanh;
 
-    public ThongKeQuyDTO() {
+    public ThongKeQuyResponseDTO() {
     }
 
-    public ThongKeQuyDTO(long tongGiaTri, List<VinhDanhDTO> bangVinhDanh) {
+    public ThongKeQuyResponseDTO(long tongGiaTri, List<VinhDanhDTO> bangVinhDanh) {
         this.tongGiaTri = tongGiaTri;
         this.bangVinhDanh = bangVinhDanh;
     }
