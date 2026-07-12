@@ -1,4 +1,4 @@
-package com.example.suco.mapper;
+package com.example.suco.mapper.tien;
 
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienRequestDTO;
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienResponseDTO;

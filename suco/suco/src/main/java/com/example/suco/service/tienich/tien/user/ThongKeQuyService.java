@@ -3,17 +3,17 @@ package com.example.suco.service.tienich.tien.user;
 import com.example.suco.dto.tienich.tien.quanly.ThongKeQuyRequestDTO;
 import com.example.suco.dto.tienich.tien.quanly.ThongKeQuyResponseDTO;
 import com.example.suco.dto.tienich.tien.quanly.VinhDanhDTO;
-import com.example.suco.repository.tienich.tien.VinhDanhRepository;
+import com.example.suco.repository.tienich.tien.ThongKeQuyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class VinhDanhService {
+public class ThongKeQuyService {
 
     @Autowired
-    private VinhDanhRepository vinhDanhRepository;
+    private ThongKeQuyRepository vinhDanhRepository;
 
     public ThongKeQuyResponseDTO getThongKe(
         ThongKeQuyRequestDTO dto

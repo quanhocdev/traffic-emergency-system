@@ -3,7 +3,7 @@ package com.example.suco.service.tienich.tien.user;
 
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienRequestDTO;
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienResponseDTO;
-import com.example.suco.mapper.DoiTienMapper;
+import com.example.suco.mapper.tien.DoiTienMapper;
 import com.example.suco.model.DoiTien;
 import com.example.suco.model.User;
 import com.example.suco.repository.tienich.tien.DoiTienRepository;

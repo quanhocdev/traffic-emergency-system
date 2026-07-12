@@ -14,7 +14,7 @@ import java.util.List;
 
 
 @Repository
-public interface VinhDanhRepository 
+public interface ThongKeQuyRepository 
         extends JpaRepository<QuyenGop, Long> {
 
 

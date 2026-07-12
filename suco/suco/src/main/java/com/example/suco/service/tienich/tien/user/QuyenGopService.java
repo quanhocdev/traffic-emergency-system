@@ -3,7 +3,7 @@ package com.example.suco.service.tienich.tien.user;
 
 import com.example.suco.dto.tienich.tien.quyengop.QuyenGopRequestDTO;
 import com.example.suco.dto.tienich.tien.quyengop.QuyenGopResponseDTO;
-import com.example.suco.mapper.QuyenGopMapper;
+import com.example.suco.mapper.tien.QuyenGopMapper;
 import com.example.suco.model.QuyenGop;
 import com.example.suco.model.User;
 import com.example.suco.repository.tienich.tien.QuyenGopRepository;
