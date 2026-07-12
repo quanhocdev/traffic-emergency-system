@@ -55,7 +55,7 @@ public class SecurityConfig {
     .requestMatchers("/api/su-co/**").authenticated()
     .requestMatchers("/api/sos/**").authenticated()
     .requestMatchers("/api/doi-tien/**").authenticated()
-
+    .requestMatchers("/api/quyen-gop/**").authenticated()
 
     .anyRequest().permitAll()
 )

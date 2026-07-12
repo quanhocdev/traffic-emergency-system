@@ -222,7 +222,7 @@ async function handleAdminSubmit() {
   }
 
   try {
-    const response = await fetch("/admin/bao-cao-su-co/admin-submit", {
+    const response = await fetch("/admin/quan-ly-su-co/admin-submit", {
       method: "POST",
       body: formData,
     });
