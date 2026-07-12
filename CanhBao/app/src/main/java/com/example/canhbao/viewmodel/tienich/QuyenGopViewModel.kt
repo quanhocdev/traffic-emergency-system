@@ -8,8 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.auth.FirebaseTokenProvider
 import com.example.canhbao.data.model.suco.baocao.SuCoUserDto
-import com.example.canhbao.data.model.tien.doitien.DoiTienRequestDTO
-import com.example.canhbao.data.model.tien.doitien.DoiTienResponseDTO
+import com.example.canhbao.data.model.tien.quyengop.QuyenGopRequestDTO
+import com.example.canhbao.data.model.tien.quyengop.QuyenGopResponseDTO
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.example.canhbao.data.network.SocketClientProvider
 import com.example.canhbao.data.network.UserSocketManager
@@ -17,12 +17,12 @@ import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class DoiTienViewModel : ViewModel() {
+class QuyenGopViewModel : ViewModel() {
 
     var userDetail by mutableStateOf<SuCoUserDto?>(null)
         private set
 
-    var lichSu by mutableStateOf<List<DoiTienResponseDTO>>(emptyList())
+    var lichSu by mutableStateOf<List<QuyenGopResponseDTO>>(emptyList())
         private set
 
     var isLoading by mutableStateOf(false)
@@ -45,8 +45,10 @@ class DoiTienViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val token = FirebaseTokenProvider.getToken()
+
                 userDetail =
                     BaoCaoSuCoRetrofit.api.getUserInfo("Bearer $token")
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -56,10 +58,11 @@ class DoiTienViewModel : ViewModel() {
     fun fetchLichSu() {
         viewModelScope.launch {
             try {
+
                 val token = FirebaseTokenProvider.getToken()
 
                 lichSu =
-                    BaoCaoSuCoRetrofit.api.getHistory(
+                    BaoCaoSuCoRetrofit.api.getLichSuQuyenGop(
                         "Bearer $token"
                     )
 
@@ -69,7 +72,10 @@ class DoiTienViewModel : ViewModel() {
         }
     }
 
-    fun thucHienDoiTien(soDiem: Int) {
+    fun thucHienQuyenGop(
+        soDiem: Int,
+        noiDung: String
+    ) {
 
         viewModelScope.launch {
 
@@ -80,18 +86,17 @@ class DoiTienViewModel : ViewModel() {
                 val token = FirebaseTokenProvider.getToken()
 
                 val response =
-                    BaoCaoSuCoRetrofit.api.thucHienDoiTien(
+                    BaoCaoSuCoRetrofit.api.thucHienQuyenGop(
                         "Bearer $token",
-                        DoiTienRequestDTO(
-                            soDiemDoi = soDiem
+                        QuyenGopRequestDTO(
+                            soDiemQuyenGop = soDiem,
+                            noiDung = noiDung
                         )
                     )
 
                 if (response.isSuccessful) {
 
-                    message =
-                        response.body()?.message
-                            ?: "Đổi tiền thành công"
+                    message = "Quyên góp thành công"
 
                     fetchUserInfo()
                     fetchLichSu()
@@ -99,8 +104,9 @@ class DoiTienViewModel : ViewModel() {
                 } else {
 
                     message =
-                        response.body()?.message
-                            ?: "Đổi tiền thất bại"
+                        response.errorBody()?.string()
+                            ?: "Quyên góp thất bại"
+
                 }
 
             } catch (e: Exception) {
@@ -114,7 +120,9 @@ class DoiTienViewModel : ViewModel() {
                 resetMessage()
 
             }
+
         }
+
     }
 
     private fun connectSocket() {
@@ -143,7 +151,7 @@ class DoiTienViewModel : ViewModel() {
                                     )
 
                                 Log.d(
-                                    "DoiTienVM",
+                                    "QuyenGopVM",
                                     "User updated realtime"
                                 )
 
