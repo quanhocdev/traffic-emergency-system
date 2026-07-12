@@ -17,11 +17,14 @@ import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequestDTO
 import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSResponse
 import com.example.canhbao.data.model.suco.baocao.*
 import com.example.canhbao.data.model.suco.loai.LoaiSuCo
-import com.example.canhbao.data.model.tien.ThongKeQuyDto
+import com.example.canhbao.data.model.tien.vinhdanh.ThongKeQuyResponseDTO
 import com.example.canhbao.data.model.info.truso.TruSoMapDto
-import com.example.canhbao.data.model.tien.DoiTienRequestDTO
-import com.example.canhbao.data.model.tien.DoiTienResponseDTO
-import com.example.canhbao.data.model.tien.DoiTienResultDTO
+import com.example.canhbao.data.model.tien.doitien.DoiTienRequestDTO
+import com.example.canhbao.data.model.tien.doitien.DoiTienResponseDTO
+import com.example.canhbao.data.model.tien.doitien.DoiTienResultDTO
+import com.example.canhbao.data.model.tien.quyengop.QuyenGopRequestDTO
+import com.example.canhbao.data.model.tien.quyengop.QuyenGopResponseDTO
+import com.example.canhbao.data.model.tien.vinhdanh.ThongKeQuyRequestDTO
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -174,16 +177,28 @@ interface BaoCaoSuCoApi {
     @GET("/api/doi-tien/lich-su")
     suspend fun getHistory(
         @Header("Authorization") token: String,
-        @Query("loai") loai: String? = null
     ): List<DoiTienResponseDTO>
 
-    @GET("/api/thong-ke-quy/lich-su/all")
-    suspend fun getAllHistory(
-        @Query("loai") loai: String? = null
-    ): List<DoiTienResponseDTO>
+    @POST("/api/quyen-gop/thuc-hien")
+    suspend fun thucHienQuyenGop(
+        @Header("Authorization") token: String,
+        @Body request: QuyenGopRequestDTO
+    ): Response<String>
 
-    @GET("/api/thong-ke-quy")
-    suspend fun getThongKeQuy(): ThongKeQuyDto
+    @GET("/api/quyen-gop/lich-su")
+    suspend fun getLichSuQuyenGop(
+        @Header("Authorization") token: String
+    ): List<QuyenGopResponseDTO>
+
+//    @GET("/api/thong-ke-quy/lich-su/all")
+//    suspend fun getAllHistory(
+//        @Query("loai") loai: String? = null
+//    ): List<DoiTienResponseDTO>
+
+    @POST("/api/vinh-danh")
+    suspend fun getThongKeQuy(
+        @Body request: ThongKeQuyRequestDTO
+    ): ThongKeQuyResponseDTO
 
 
     // THÔNG TIN USER & LỊCH SỬ CHUNG
