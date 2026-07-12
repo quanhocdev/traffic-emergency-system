@@ -21,7 +21,7 @@ import com.example.canhbao.data.model.tien.vinhdanh.ThongKeQuyResponseDTO
 import com.example.canhbao.data.model.info.truso.TruSoMapDto
 import com.example.canhbao.data.model.tien.doitien.DoiTienRequestDTO
 import com.example.canhbao.data.model.tien.doitien.DoiTienResponseDTO
-import com.example.canhbao.data.model.tien.doitien.DoiTienResultDTO
+import com.example.canhbao.data.model.tien.doitien.GiaoDichResultDTO
 import com.example.canhbao.data.model.tien.quyengop.QuyenGopRequestDTO
 import com.example.canhbao.data.model.tien.quyengop.QuyenGopResponseDTO
 import com.example.canhbao.data.model.tien.vinhdanh.ThongKeQuyRequestDTO
@@ -172,7 +172,7 @@ interface BaoCaoSuCoApi {
     suspend fun thucHienDoiTien(
         @Header("Authorization") token: String,
         @Body request: DoiTienRequestDTO
-    ): Response<DoiTienResultDTO>
+    ): Response<GiaoDichResultDTO>
 
     @GET("/api/doi-tien/lich-su")
     suspend fun getHistory(
@@ -183,7 +183,7 @@ interface BaoCaoSuCoApi {
     suspend fun thucHienQuyenGop(
         @Header("Authorization") token: String,
         @Body request: QuyenGopRequestDTO
-    ): Response<String>
+    ): Response<GiaoDichResultDTO>
 
     @GET("/api/quyen-gop/lich-su")
     suspend fun getLichSuQuyenGop(
