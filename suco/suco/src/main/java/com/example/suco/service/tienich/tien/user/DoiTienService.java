@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import com.example.suco.dto.tienich.tien.quanly.ThongKeQuyDTO;
+import com.example.suco.dto.tienich.tien.quanly.ThongKeQuyResponseDTO;
 import com.example.suco.dto.tienich.tien.quanly.VinhDanhDTO;
 
 
@@ -93,8 +93,8 @@ public void broadcastFundStats() {
         tong = 0L;
     }
 
-    ThongKeQuyDTO dto =
-            new ThongKeQuyDTO(
+    ThongKeQuyResponseDTO dto =
+            new ThongKeQuyResponseDTO(
                     tong,
                     getBangVinhDanh()
             );
@@ -117,7 +117,8 @@ public List<VinhDanhDTO> getBangVinhDanh() {
 
         return new VinhDanhDTO(
                 user != null ? user.getName() : "Ẩn danh",
-                log.getGiaTri()
+                log.getGiaTri(), 
+                log.getNgayDoi()
         );
 
     }).collect(Collectors.toList());
@@ -150,7 +151,7 @@ public List<DoiTienResponseDTO> getAllLichSu(String loai) {
             .map(tienMapper::toResponseDTO)
             .collect(Collectors.toList());
 }
-public ThongKeQuyDTO getThongKeQuy() {
+public ThongKeQuyResponseDTO getThongKeQuy() {
 
     Long tong = doiTienRepository.sumAllDonationValues();
 
@@ -158,7 +159,7 @@ public ThongKeQuyDTO getThongKeQuy() {
         tong = 0L;
     }
 
-    return new ThongKeQuyDTO(
+    return new ThongKeQuyResponseDTO(
             tong,
             getBangVinhDanh()
     );
