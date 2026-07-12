@@ -1,6 +1,7 @@
 package com.example.suco.controller.tienich.tien.user;
 
 
+import com.example.suco.dto.tienich.tien.quydoi.GiaoDichResultDTO;
 import com.example.suco.dto.tienich.tien.quyengop.QuyenGopRequestDTO;
 import com.example.suco.dto.tienich.tien.quyengop.QuyenGopResponseDTO;
 import com.example.suco.service.tienich.tien.user.QuyenGopService;
@@ -20,36 +21,24 @@ public class QuyenGopController {
     private QuyenGopService quyenGopService;
 
     @PostMapping("/thuc-hien")
-    public ResponseEntity<?> thucHienQuyenGop(
-            Authentication authentication,
-            @RequestBody QuyenGopRequestDTO dto
-    ){
+public ResponseEntity<?> thucHienQuyenGop(
+        Authentication authentication,
+        @RequestBody QuyenGopRequestDTO dto
+) {
+    String uid = authentication.getName();
 
-        String uid =
-                authentication.getName();
+    boolean result = quyenGopService.thucHienQuyenGop(uid, dto);
 
-
-        boolean result =
-                quyenGopService.thucHienQuyenGop(
-                        uid,
-                        dto
-                );
-
-
-        if(result){
-
-            return ResponseEntity.ok(
-                    "Quyên góp thành công"
-            );
-        }
-
-
-        return ResponseEntity.badRequest()
-                .body(
-                    "Không đủ điểm hoặc dữ liệu không hợp lệ"
-                );
+    if (result) {
+        return ResponseEntity.ok(
+                new GiaoDichResultDTO(true, "Quyên góp thành công")
+        );
     }
 
+    return ResponseEntity.badRequest().body(
+            new GiaoDichResultDTO(false, "Không đủ điểm hoặc dữ liệu không hợp lệ")
+    );
+}
 
 
 

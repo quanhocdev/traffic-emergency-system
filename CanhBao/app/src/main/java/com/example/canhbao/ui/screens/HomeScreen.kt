@@ -205,12 +205,63 @@ fun HomeScreen(
                     )
                     Spacer(Modifier.height(12.dp))
 
-                    HistoryCategoryCard(
-                        title = "Quy đổi tiền",
-                        description = "Rút tiền, quyên góp thiện nguyện",
-                        icon = Icons.Default.Money,
-                        onClick = { navController.navigate("doitien_screen") }
+                    Text(
+                        text = "Tài chính & Thiện nguyện",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(bottom = 12.dp)
                     )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Nút 1: Bảng Vinh Danh (Thống kê quỹ)
+                        Button(
+                            onClick = { navController.navigate("thong_ke_quy_screen") },
+                            modifier = Modifier.weight(1f).height(60.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                            contentPadding = PaddingValues(4.dp)
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.EmojiEvents, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text("Vinh Danh", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        // Nút 2: Rút/Đổi Tiền cá nhân
+                        Button(
+                            onClick = { navController.navigate("doitien_screen") },
+                            modifier = Modifier.weight(1f).height(60.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1976D2)),
+                            contentPadding = PaddingValues(4.dp)
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.MonetizationOn, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text("Đổi Tiền", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        // Nút 3: Quyên Góp tích lũy
+                        Button(
+                            onClick = { navController.navigate("quyen_gop_screen") },
+                            modifier = Modifier.weight(1f).height(60.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)),
+                            contentPadding = PaddingValues(4.dp)
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.Favorite, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text("Quyên Góp", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
                 }
             }
         }

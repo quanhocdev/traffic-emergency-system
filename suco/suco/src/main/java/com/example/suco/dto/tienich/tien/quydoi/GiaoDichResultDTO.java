@@ -1,14 +1,14 @@
 package com.example.suco.dto.tienich.tien.quydoi;
 
-public class DoiTienResultDTO {
+public class GiaoDichResultDTO {
 
     private boolean success;
     private String message;
 
-    public DoiTienResultDTO() {
+    public GiaoDichResultDTO() {
     }
 
-    public DoiTienResultDTO(boolean success, String message) {
+    public GiaoDichResultDTO(boolean success, String message) {
         this.success = success;
         this.message = message;
     }

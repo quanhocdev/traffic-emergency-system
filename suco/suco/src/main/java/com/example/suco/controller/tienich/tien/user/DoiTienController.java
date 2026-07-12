@@ -2,7 +2,7 @@ package com.example.suco.controller.tienich.tien.user;
 
 
 import com.example.suco.dto.tienich.tien.quydoi.DoiTienRequestDTO;
-import com.example.suco.dto.tienich.tien.quydoi.DoiTienResultDTO;
+import com.example.suco.dto.tienich.tien.quydoi.GiaoDichResultDTO;
 import com.example.suco.service.tienich.tien.user.DoiTienService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class DoiTienController {
 
 
     @PostMapping("/thuc-hien")
-    public ResponseEntity<DoiTienResultDTO> thucHienDoi(
+    public ResponseEntity<GiaoDichResultDTO> thucHienDoi(
             Authentication authentication,
             @RequestBody DoiTienRequestDTO dto
     ){
@@ -44,7 +44,7 @@ public class DoiTienController {
             if(result){
 
                 return ResponseEntity.ok(
-                    new DoiTienResultDTO(
+                    new GiaoDichResultDTO(
                         true,
                         "Đổi tiền thành công!"
                     )
@@ -55,7 +55,7 @@ public class DoiTienController {
 
             return ResponseEntity.badRequest()
                     .body(
-                        new DoiTienResultDTO(
+                        new GiaoDichResultDTO(
                             false,
                             "Không đủ điểm hoặc dữ liệu không hợp lệ"
                         )
@@ -66,7 +66,7 @@ public class DoiTienController {
 
             return ResponseEntity.badRequest()
                     .body(
-                        new DoiTienResultDTO(
+                        new GiaoDichResultDTO(
                             false,
                             e.getMessage()
                         )

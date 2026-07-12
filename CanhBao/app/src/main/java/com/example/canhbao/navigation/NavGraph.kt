@@ -29,7 +29,14 @@ import com.example.canhbao.ui.screens.theodoi.tinhieu.ChiTietSosScreen
 import com.example.canhbao.ui.screens.theodoi.LichSuScreen
 import com.example.canhbao.ui.screens.theodoi.hoadon.ChiTietHoaDonScreen
 import com.example.canhbao.ui.screens.theodoi.hoadon.ThanhToanScreen
-import com.example.canhbao.ui.screens.theodoi.tien.thongke.DoiTienScreen
+// --- IMPORT CÁC MÀN HÌNH TÀI CHÍNH ĐÃ TÁCH ---
+import com.example.canhbao.ui.screens.theodoi.tien.thongke.ThongKeQuyScreen
+import com.example.canhbao.ui.screens.theodoi.tien.thongke.QuyenGopCongDongScreen
+import com.example.canhbao.ui.screens.theodoi.tien.doitien.DoiTienScreen
+import com.example.canhbao.ui.screens.theodoi.tien.doitien.LichSuDoiTienScreen
+import com.example.canhbao.ui.screens.theodoi.tien.quyengop.QuyenGopScreen
+import com.example.canhbao.ui.screens.theodoi.tien.quyengop.QuyenGopCaNhanScreen
+
 import com.example.canhbao.viewmodel.*
 import com.example.canhbao.viewmodel.call.CallViewModel
 import com.example.canhbao.viewmodel.call.WebRTCViewModel
@@ -38,6 +45,8 @@ import com.example.canhbao.viewmodel.helper.AlertViewModel
 import com.example.canhbao.viewmodel.helper.SearchViewModel
 import com.example.canhbao.viewmodel.suco.TheoDoiBaoCaoViewModel
 import com.example.canhbao.viewmodel.tienich.DoiTienViewModel
+import com.example.canhbao.viewmodel.tienich.QuyenGopViewModel
+import com.example.canhbao.viewmodel.tienich.ThongKeQuyViewModel
 import com.example.canhbao.viewmodel.tienich.QuaViewModel
 import com.example.canhbao.viewmodel.tinhieu.SOSViewModel
 import com.example.canhbao.viewmodel.tinhieu.TheoDoiTinHieuViewModel
@@ -62,19 +71,17 @@ fun NavGraph(
     LaunchedEffect(Unit) {
         stompClient = SocketClientProvider.ensureConnected()
     }
-    // Bộ lắng nghe trạng thái cuộc gọi toàn cục
+
     val callState by webrtcViewModel.callState.collectAsState()
 
-    // Tự động chuyển hướng sang màn hình đàm thoại khi có cuộc gọi tới bất kể đang ở màn hình nào
     LaunchedEffect(callState) {
         if (callState == "INCOMING") {
             navController.navigate("call_screen") {
-                launchSingleTop = true // Tránh mở chồng nhiều màn hình khi nhận candidate liên tục
+                launchSingleTop = true
             }
         }
     }
 
-    // Tiến hành phát lệnh kết nối tập trung nếu chưa mở cổng mạng
     LaunchedEffect(stompClient) {
         stompClient?.let { client ->
             try {
@@ -88,7 +95,7 @@ fun NavGraph(
         }
     }
 
-    // Khởi tạo các ViewModel hệ thống
+    // Khởi tạo các ViewModel
     val mapViewModel: MapViewModel = viewModel()
 
     val truSoViewModel: TruSoViewModel = viewModel(
@@ -133,6 +140,11 @@ fun NavGraph(
         }
     )
 
+    // Khởi tạo tập trung 3 ViewModel phục vụ tài chính/điểm thưởng
+    val thongKeQuyVM: ThongKeQuyViewModel = viewModel()
+    val doiTienVM: DoiTienViewModel = viewModel()
+    val quyenGopVM: QuyenGopViewModel = viewModel()
+
     val currentUser by authViewModel.user.collectAsState()
     val startDest = if (currentUser != null) "map" else "login"
 
@@ -162,7 +174,6 @@ fun NavGraph(
             )
         }
 
-        // Đăng ký màn hình đàm thoại độc lập
         composable("call_screen") {
             CallScreen(
                 navController = navController,
@@ -179,14 +190,59 @@ fun NavGraph(
             QuaScreen(viewModel = quaViewModel, navController = navController)
         }
 
+        // =========================================================================
+        // PHÂN HỆ PHÂN TÁCH: QUY ĐỔI TIỀN, THIỆN NGUYỆN & VINH DANH
+        // =========================================================================
+
+        // 1. Màn hình Bảng Vinh Danh Quỹ Công Cộng (Mặc định mở khi vào mục tài chính từ Home/Map)
+        composable("thong_ke_quy_screen") {
+            ThongKeQuyScreen(
+                navController = navController,
+                viewModel = thongKeQuyVM
+            )
+        }
+
+        // 2. Màn hình xem chi tiết danh sách đóng góp cộng đồng (Chuyển đến khi bấm lọc ngày)
+        composable("quyen_gop_cong_dong") {
+            QuyenGopCongDongScreen(
+                navController = navController,
+                viewModel = thongKeQuyVM
+            )
+        }
+
+        // 3. Màn hình Đổi Điểm Cá Nhân lấy tiền mặt
         composable("doitien_screen") {
-            val doiTienVM: DoiTienViewModel = viewModel()
             DoiTienScreen(
                 navController = navController,
-                uid = currentUser?.uid,
                 viewModel = doiTienVM
             )
         }
+
+        // 4. Màn hình xem Nhật ký/Lịch sử đổi tiền của cá nhân
+        composable("lich_su_doi_tien") {
+            LichSuDoiTienScreen(
+                navController = navController,
+                viewModel = doiTienVM
+            )
+        }
+
+        // 5. Màn hình nhập số điểm thực hiện Quyên góp cá nhân
+        composable("quyen_gop_screen") {
+            QuyenGopScreen(
+                navController = navController,
+                viewModel = quyenGopVM
+            )
+        }
+
+        // 6. Màn hình Nhật ký/Lịch sử quyên góp cá nhân
+        composable("lich_su_quyen_gop_ca_nhan") {
+            QuyenGopCaNhanScreen(
+                navController = navController,
+                viewModel = quyenGopVM
+            )
+        }
+
+        // =========================================================================
 
         composable("home") {
             HomeScreen(

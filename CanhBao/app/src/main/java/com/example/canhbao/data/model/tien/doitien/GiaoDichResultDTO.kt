@@ -1,6 +1,6 @@
 package com.example.canhbao.data.model.tien.doitien
 
-data class DoiTienResultDTO(
+data class GiaoDichResultDTO(
     val success: Boolean,
     val message: String
 )

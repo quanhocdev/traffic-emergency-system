@@ -76,15 +76,10 @@ class QuyenGopViewModel : ViewModel() {
         soDiem: Int,
         noiDung: String
     ) {
-
         viewModelScope.launch {
-
             isLoading = true
-
             try {
-
                 val token = FirebaseTokenProvider.getToken()
-
                 val response =
                     BaoCaoSuCoRetrofit.api.thucHienQuyenGop(
                         "Bearer $token",
@@ -94,37 +89,39 @@ class QuyenGopViewModel : ViewModel() {
                         )
                     )
 
-                if (response.isSuccessful) {
+                // Nhận GiaoDichResultDTO từ backend trả về
+                if (response.isSuccessful && response.body()?.success == true) {
 
-                    message = "Quyên góp thành công"
+                    // 1. Trừ điểm nóng trên UI ngay tức khắc
+                    userDetail?.let { current ->
+                        userDetail = current.copy(
+                            totalPoints = (current.totalPoints - soDiem).coerceAtLeast(0)
+                        )
+                    }
 
+                    // 2. Hiện message từ Object JSON của Backend
+                    message = response.body()?.message ?: "Quyên góp thành công"
+
+                    // 3. Đồng bộ lại dữ liệu chuẩn ngầm
                     fetchUserInfo()
                     fetchLichSu()
 
+                    resetMessage()
                 } else {
-
-                    message =
-                        response.errorBody()?.string()
-                            ?: "Quyên góp thất bại"
-
+                    // Trường hợp success = false hoặc có lỗi validate
+                    message = response.body()?.message
+                        ?: response.errorBody()?.string()
+                                ?: "Quyên góp thất bại"
                 }
 
             } catch (e: Exception) {
-
-                message =
-                    e.message ?: "Có lỗi xảy ra"
-
+                Log.e("QuyenGopVM", "Lỗi: ${e.message}")
+                message = "Có lỗi xảy ra trong quá trình kết nối"
             } finally {
-
                 isLoading = false
-                resetMessage()
-
             }
-
         }
-
     }
-
     private fun connectSocket() {
 
         viewModelScope.launch {
