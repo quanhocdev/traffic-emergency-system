@@ -1,17 +1,6 @@
 package com.example.canhbao.data.model.tien
 
-import com.google.gson.annotations.SerializedName
-
-data class DoiTienDtoRealtime(
-    @SerializedName("userId")
-    val userId: String = "Ẩn danh",
-    val email: String = "",
-    val soDiemDoi: Int = 0,
-    val giaTri: Long = 0,
-    val ngayDoi: String? = null
-)
-
 data class ThongKeQuyDto(
-    val tongGiaTri: Long = 0,
-    val lichSuVinhDanh: List<DoiTienDtoRealtime> = emptyList()
+    val tongGiaTri: Long = 0L,
+    val bangVinhDanh: List<VinhDanhDTO> = emptyList()
 )

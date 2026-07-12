@@ -8,7 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.canhbao.data.auth.FirebaseTokenProvider
 import com.example.canhbao.data.model.suco.baocao.SuCoUserDto
-import com.example.canhbao.data.model.tien.DoiTienDto
+import com.example.canhbao.data.model.tien.DoiTienRequestDTO
+import com.example.canhbao.data.model.tien.DoiTienResultDTO
 import com.example.canhbao.data.model.tien.ThongKeQuyDto
 import com.example.canhbao.data.network.BaoCaoSuCoRetrofit
 import com.example.canhbao.data.network.PublicSocketManager
@@ -44,17 +45,10 @@ class DoiTienViewModel : ViewModel() {
     var filterMode by mutableStateOf(FilterMode.DAY)
     var selectedDate by mutableStateOf(LocalDate.now())
 
-    val filteredVinhDanh get() = publicFundStats.lichSuVinhDanh.filter { item ->
-        val itemDate = item.ngayDoi?.take(10) ?: ""
-        when (filterMode) {
-            FilterMode.DAY -> itemDate == selectedDate.toString()
-            FilterMode.MONTH -> itemDate.startsWith(selectedDate.toString().take(7))
-            FilterMode.YEAR -> itemDate.startsWith(selectedDate.year.toString())
-        }
-    }
+    val filteredVinhDanh get() = publicFundStats.bangVinhDanh
 
     // Tính tổng tiền theo danh sách đã lọc
-    val totalFilteredValue get() = filteredVinhDanh.sumOf { it.giaTri ?: 0 }
+    val totalFilteredValue get() = filteredVinhDanh.sumOf { it.giaTri}
 
     // Tiến tới 1 đơn vị thời gian (Ngày/Tháng/Năm)
     fun nextPeriod() {
@@ -189,7 +183,7 @@ class DoiTienViewModel : ViewModel() {
 
                 val token = FirebaseTokenProvider.getToken()
 
-                val dto = DoiTienDto(
+                val dto = DoiTienRequestDTO(
                     soDiemDoi = points,
                     loaiDoi = type
                 )
@@ -201,9 +195,7 @@ class DoiTienViewModel : ViewModel() {
 
                 if (response.isSuccessful) {
 
-                    val msg = response.body()?.get("message")?.toString()
-
-                    message = msg ?: "Giao dịch thành công!"
+                    message = response.body()?.message ?: "Giao dịch thành công!"
 
                     fetchUserInfo()
 
