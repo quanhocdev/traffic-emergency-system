@@ -17,9 +17,11 @@ import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSRequestDTO
 import com.example.canhbao.data.model.sos.tinhieu.TinHieuSOSResponse
 import com.example.canhbao.data.model.suco.baocao.*
 import com.example.canhbao.data.model.suco.loai.LoaiSuCo
-import com.example.canhbao.data.model.tien.DoiTienDto
 import com.example.canhbao.data.model.tien.ThongKeQuyDto
 import com.example.canhbao.data.model.info.truso.TruSoMapDto
+import com.example.canhbao.data.model.tien.DoiTienRequestDTO
+import com.example.canhbao.data.model.tien.DoiTienResponseDTO
+import com.example.canhbao.data.model.tien.DoiTienResultDTO
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -166,14 +168,19 @@ interface BaoCaoSuCoApi {
     @POST("/api/doi-tien/thuc-hien")
     suspend fun thucHienDoiTien(
         @Header("Authorization") token: String,
-        @Body request: DoiTienDto
-    ): Response<Map<String, Any>>
+        @Body request: DoiTienRequestDTO
+    ): Response<DoiTienResultDTO>
 
     @GET("/api/doi-tien/lich-su")
     suspend fun getHistory(
         @Header("Authorization") token: String,
         @Query("loai") loai: String? = null
-    ): List<DoiTienDto>
+    ): List<DoiTienResponseDTO>
+
+    @GET("/api/thong-ke-quy/lich-su/all")
+    suspend fun getAllHistory(
+        @Query("loai") loai: String? = null
+    ): List<DoiTienResponseDTO>
 
     @GET("/api/thong-ke-quy")
     suspend fun getThongKeQuy(): ThongKeQuyDto

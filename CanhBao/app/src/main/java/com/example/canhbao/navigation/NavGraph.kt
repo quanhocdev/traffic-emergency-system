@@ -29,6 +29,7 @@ import com.example.canhbao.ui.screens.theodoi.tinhieu.ChiTietSosScreen
 import com.example.canhbao.ui.screens.theodoi.LichSuScreen
 import com.example.canhbao.ui.screens.theodoi.hoadon.ChiTietHoaDonScreen
 import com.example.canhbao.ui.screens.theodoi.hoadon.ThanhToanScreen
+import com.example.canhbao.ui.screens.theodoi.tien.DoiTienScreen
 import com.example.canhbao.viewmodel.*
 import com.example.canhbao.viewmodel.call.CallViewModel
 import com.example.canhbao.viewmodel.call.WebRTCViewModel
@@ -180,7 +181,11 @@ fun NavGraph(
 
         composable("doitien_screen") {
             val doiTienVM: DoiTienViewModel = viewModel()
-            DoiTienScreen(navController = navController, uid = currentUser?.uid, viewModel = doiTienVM)
+            DoiTienScreen(
+                navController = navController,
+                uid = currentUser?.uid,
+                viewModel = doiTienVM
+            )
         }
 
         composable("home") {

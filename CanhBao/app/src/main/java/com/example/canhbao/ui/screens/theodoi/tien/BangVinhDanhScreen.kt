@@ -1,4 +1,4 @@
-package com.example.canhbao.ui.screens
+package com.example.canhbao.ui.screens.theodoi.tien
 
 import android.app.DatePickerDialog
 import androidx.compose.foundation.*
@@ -20,8 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.canhbao.data.model.tien.DoiTienDtoRealtime
+import com.example.canhbao.data.model.tien.VinhDanhDTO
 import com.example.canhbao.viewmodel.tienich.DoiTienViewModel
 import com.example.canhbao.viewmodel.tienich.FilterMode
 import java.time.LocalDate
@@ -31,7 +32,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun DoiTienScreen(
     navController: NavController,
-    viewModel: DoiTienViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: DoiTienViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val user = viewModel.userDetail
@@ -144,7 +145,7 @@ fun DoiTienScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text("Bảng vinh danh 🏆", fontWeight = FontWeight.Black, fontSize = 18.sp)
                             Text(
-                                "Tổng: ${String.format("%,d", viewModel.totalFilteredValue)}đ",
+                                "Tổng: ${String.format("%,d", viewModel.publicFundStats.tongGiaTri)}đ",
                                 color = Color(0xFFD32F2F),
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold
@@ -225,7 +226,7 @@ fun DoiTienScreen(
                     Divider(modifier = Modifier.padding(vertical = 8.dp), thickness = 0.5.dp)
 
                     // Hiển thị danh sách từ ViewModel
-                    val filteredList = viewModel.filteredVinhDanh
+                    val filteredList = viewModel.publicFundStats.bangVinhDanh
                     if (filteredList.isEmpty()) {
                         Text("Không có dữ liệu đóng góp", modifier = Modifier.fillMaxWidth().padding(32.dp), textAlign = TextAlign.Center, color = Color.Gray)
                     } else {
@@ -308,18 +309,43 @@ fun ActionRewardCard(
 }
 
 @Composable
-fun VinhDanhItem(item: DoiTienDtoRealtime) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFFEEEEEE)), contentAlignment = Alignment.Center) {
-            Text(item.userId?.take(1)?.uppercase() ?: "?", fontWeight = FontWeight.Bold)
+fun VinhDanhItem(item: VinhDanhDTO) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFEEEEEE)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                item.tenHienThi.take(1).uppercase(),
+                fontWeight = FontWeight.Bold
+            )
         }
+
         Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            Text(item.userId ?: "Ẩn danh", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            Text(item.ngayDoi?.take(16)?.replace("T", " ") ?: "", fontSize = 10.sp, color = Color.Gray)
-        }
-        Text("+${String.format("%,d", item.giaTri ?: 0)}đ", color = Color(0xFF388E3C), fontWeight = FontWeight.Black)
+
+        Text(
+            text = item.tenHienThi,
+            modifier = Modifier.weight(1f),
+            fontWeight = FontWeight.Bold,
+            fontSize = 14.sp
+        )
+
+        Text(
+            text = "${String.format("%,d", item.giaTri)}đ",
+            color = Color(0xFF388E3C),
+            fontWeight = FontWeight.Black
+        )
     }
+
     Divider(color = Color(0xFFF5F5F5))
 }
 
