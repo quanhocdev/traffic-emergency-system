@@ -1,4 +1,4 @@
-package com.example.suco.mapper;
+package com.example.suco.mapper.tien;
 
 
 import com.example.suco.dto.tienich.tien.quanly.VinhDanhDTO;
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-public class VinhDanhMapper {
+public class ThongKeQuyMapper {
 
 
     public VinhDanhDTO toDTO(

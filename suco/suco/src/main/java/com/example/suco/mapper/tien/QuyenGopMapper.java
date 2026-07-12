@@ -1,4 +1,4 @@
-package com.example.suco.mapper;
+package com.example.suco.mapper.tien;
 
 import com.example.suco.dto.tienich.tien.quyengop.QuyenGopRequestDTO;
 import com.example.suco.dto.tienich.tien.quyengop.QuyenGopResponseDTO;
@@ -24,7 +24,6 @@ public class QuyenGopMapper {
 
         return entity;
     }
-
 
 
     public QuyenGopResponseDTO toResponseDTO(
