@@ -20,23 +20,19 @@ document
         }),
       });
 
-      const contentType = res.headers.get("content-type") || "";
-      const data = contentType.includes("application/json")
-        ? await res.json()
-        : await res.text();
+      // Backend mới của chúng ta luôn trả về JSON dạng: { "message": "..." } hoặc { "token": "..." }
+      const data = await res.json();
 
       if (res.ok) {
-        // lưu JWT
-        localStorage.setItem("token", data.token);
+        // [ĐÃ SỬA] Bỏ dòng lưu localStorage cũ đi.
+        // Token lúc này nằm trong Cookie HttpOnly "accessToken", trình duyệt tự lo hết rồi nhé.
 
-        // chuyển thẳng sang dashboard admin
+        // Chuyển thẳng sang trang chủ quản trị admin
         window.location.href = "/admin/trang-chu";
       } else {
         errorBox.style.display = "block";
-        errorBox.innerText =
-          typeof data === "string"
-            ? data
-            : data?.message || "Đăng nhập thất bại";
+        // [ĐÃ SỬA] Backend luôn trả về JSON nên lấy trực tiếp data.message
+        errorBox.innerText = data.message || "Đăng nhập thất bại";
       }
     } catch (err) {
       errorBox.style.display = "block";

@@ -32,6 +32,9 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
+
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+
                 .requestMatchers("/ws-suco/**", "/ws-suco-web/**").permitAll()
                 .requestMatchers("/admin/login", "/api/auth/**").permitAll()
                 .requestMatchers("/api/su-co/map", "/api/sos/map").permitAll()
