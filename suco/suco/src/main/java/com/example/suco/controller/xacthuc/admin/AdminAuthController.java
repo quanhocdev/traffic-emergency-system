@@ -1,8 +1,10 @@
 package com.example.suco.controller.xacthuc.admin;
+
 import com.example.suco.model.User;
 import com.example.suco.repository.vanhanh.UserRepository;
-import com.example.suco.security.JwtService;
+import com.example.suco.security.TokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -20,46 +22,54 @@ public class AdminAuthController {
     private UserRepository userRepository;
 
     @Autowired
-    private JwtService jwtService;
+    private TokenProvider tokenProvider;
+
+    @Value("${jwt.expiration}")
+    private long jwtExpirationMs;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @PostMapping("/login")
     @ResponseBody
-public ResponseEntity<?> login(@RequestBody Map<String, String> req) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> req) {
 
-    String email = req.get("email");
-    String password = req.get("password");
+        String email = req.get("email");
+        String password = req.get("password");
 
-    User user = userRepository.findByEmail(email).orElse(null);
+        User user = userRepository.findByEmail(email).orElse(null);
 
-    if (user == null) {
-        return ResponseEntity.status(401).body("Sai tài khoản hoặc mật khẩu");
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("message", "Sai tài khoản hoặc mật khẩu"));
+        }
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            return ResponseEntity.status(401).body(Map.of("message", "Sai tài khoản hoặc mật khẩu"));
+        }
+
+        if (!"ADMIN".equals(user.getRole())) {
+            return ResponseEntity.status(403).body(Map.of("message", "Không có quyền truy cập vùng quản trị"));
+        }
+
+        String token = tokenProvider.generateToken(user.getUid(), user.getRole());
+        
+        // Đồng bộ thời gian sống cookie bằng giây
+        long maxAgeSeconds = jwtExpirationMs / 1000;
+
+        ResponseCookie cookie = ResponseCookie.from("accessToken", token)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("Lax")
+                .maxAge(maxAgeSeconds)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(Map.of("token", token, "message", "Đăng nhập admin thành công"));
     }
 
-    if (!passwordEncoder.matches(password, user.getPassword())) {
-        return ResponseEntity.status(401).body("Sai tài khoản hoặc mật khẩu");
+    @GetMapping("/login")
+    public String loginPage() {
+        return "admin/login";
     }
-
-    if (!"ADMIN".equals(user.getRole())) {
-        return ResponseEntity.status(401).body("Không phải admin");
-    }
-
-    String token = jwtService.generateToken(user.getUid(), user.getRole());
-    ResponseCookie cookie = ResponseCookie.from("ADMIN_JWT", token)
-            .httpOnly(true)
-            .secure(false)
-            .path("/")
-            .sameSite("Lax")
-            .build();
-
-    return ResponseEntity.ok()
-            .header(HttpHeaders.SET_COOKIE, cookie.toString())
-            .body(Map.of("token", token));
-}
-@GetMapping("/login")
-public String loginPage() {
-    return "admin/login";
-}
-
 }
