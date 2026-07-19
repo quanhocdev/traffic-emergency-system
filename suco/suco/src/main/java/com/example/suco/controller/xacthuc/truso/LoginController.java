@@ -13,7 +13,6 @@ import com.example.suco.model.TruSo;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.repository.vanhanh.TruSoRepository;
 import com.example.suco.security.TokenProvider;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -24,9 +23,7 @@ import java.util.Map;
 public class LoginController {
 
     private final TruSoRepository truSoRepository;
-    private final TinHieuSOSRepository tinHieuSOSRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    private final AppConfig appConfig;
     private final TokenProvider tokenProvider;
 
     @Value("${jwt.expiration}")
@@ -37,8 +34,6 @@ public class LoginController {
                            AppConfig appConfig,
                            TokenProvider tokenProvider) {
         this.truSoRepository = truSoRepository;
-        this.tinHieuSOSRepository = tinHieuSOSRepository;
-        this.appConfig = appConfig;
         this.tokenProvider = tokenProvider;
     }
 

@@ -14,12 +14,12 @@
     />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <link rel="stylesheet" th:href="@{/css/fragments/truso/sidebar.css}" />
+    <link rel="stylesheet" th:href="@{/css/fragments/sidebar-truso.css}" />
     <link rel="stylesheet" th:href="@{/css/truso/trang-chu.css}" />
   </head>
   <body>
     <div
-      th:replace="~{fragments/truso/sidebar :: sidebar('map', ${truSo?.toString() != null ? truSo : null})}"
+      th:replace="~{fragments/sidebar-truso :: sidebar('map', ${truSo?.toString() != null ? truSo : null})}"
     ></div>
 
     <!-- Toàn bộ không gian làm việc bên phải -->
@@ -101,6 +101,6 @@
       const MAPBOX_TOKEN = /*[[${mapboxToken}]]*/ "";
     </script>
     <script th:src="@{/js/truso/trang-chu.js}"></script>
-    <script th:src="@{/js/fragments/truso/sidebar.js}"></script>
+    <script th:src="@{/js/fragments/sidebar-truso.js}"></script>
   </body>
 </html>

@@ -25,8 +25,8 @@ public class CRUDLoaiSuCoController {
     @GetMapping
     public String page(Model model) {
         model.addAttribute("list", loaiSuCo.getLoaiSuCo());
-        model.addAttribute("activePage", "loai-su-co");
-        return "admin/loai-su-co"; 
+        model.addAttribute("activePage", "quan-ly-loai-su-co");
+        return "admin/quan-ly-loai-su-co"; 
     }
 
 @PostMapping
