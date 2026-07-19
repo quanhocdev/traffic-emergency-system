@@ -5,26 +5,29 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import java.util.Map;
-import jakarta.servlet.http.Cookie;
 
 @Controller
 @RequestMapping("/truso")
 public class LogoutController {
 
-@PostMapping("/logout")
-@ResponseBody
-public ResponseEntity<?> logout(HttpSession session, HttpServletResponse response) {
+    @PostMapping("/logout")
+    @ResponseBody
+    public ResponseEntity<?> logout() {
 
-    session.invalidate();
+        // Ghi đè cookie "accessToken" cũ với thời gian sống bằng 0 để xóa sạch token ở client
+        ResponseCookie cookie = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("Lax")
+                .maxAge(0)
+                .build();
 
-    Cookie cookie = new Cookie("JSESSIONID", null);
-    cookie.setMaxAge(0);
-    cookie.setPath("/");
-    response.addCookie(cookie);
-
-    return ResponseEntity.ok(Map.of("message", "Logout success"));
-}
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(Map.of("message", "Logout success"));
+    }
 }

@@ -116,6 +116,19 @@
             <span>Quản Lý Doanh Thu</span>
           </a>
         </li>
+        <li class="logout-wrapper">
+          <!-- Form gửi POST thuần backend -->
+          <form th:action="@{/admin/logout}" method="POST" style="margin: 0">
+            <button
+              id="adminLogoutBtn"
+              type="submit"
+              class="menu-item logout-btn"
+            >
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Đăng xuất</span>
+            </button>
+          </form>
+        </li>
       </ul>
     </nav>
   </body>

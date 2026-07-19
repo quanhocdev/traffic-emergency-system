@@ -37,13 +37,15 @@
 
 .sidebar-menu {
   list-style: none;
-  padding: 15px 0;
+  padding: 15px 0 0 0; /* Bỏ padding-bottom để dồn khoảng trống xuống dưới */
   margin: 0;
 
-  flex-grow: 0; /* ❌ bỏ stretch */
-  flex: none; /* ✔ cố định */
-  overflow-y: auto; /* nếu dài thì scroll */
+  flex-grow: 1;
+  overflow-y: auto; /* Nếu menu quá dài sẽ tự sinh thanh cuộn riêng ở giữa */
+  display: flex;
+  flex-direction: column;
 }
+
 .menu-item {
   display: flex;
   align-items: center;
@@ -88,4 +90,37 @@
   color: white;
   cursor: pointer;
   font-size: 18px;
+}
+/* ... Các cấu hình trên giữ nguyên ... */
+
+.logout-wrapper {
+  margin-top: auto; /* Tuyệt chiêu đẩy phần tử xuống đáy trong Flexbox */
+  margin-bottom: 15px; /* Tạo chút khoảng cách với cạnh đáy màn hình */
+  border-top: 1px solid #333;
+  padding-top: 10px;
+}
+
+/* [SỬA TẠI ĐÂY] Reset style mặc định của button để nó ăn theo .menu-item */
+.menu-item.logout-btn {
+  color: #ff6b6b;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit; /* Giữ nguyên font chữ của hệ thống */
+  font-size: inherit; /* Giữ nguyên size chữ như các menu khác */
+  box-sizing: border-box;
+}
+
+.menu-item.logout-btn:hover {
+  background: #2c1a1a;
+  color: #ff4747;
+  border-left-color: #ff4747;
+}
+
+/* Đảm bảo khi sidebar co nhỏ (collapsed), icon đăng xuất vẫn căn giữa đẹp đẽ */
+#sidebar.collapsed .menu-item.logout-btn {
+  justify-content: center;
+  padding: 15px 0;
 }

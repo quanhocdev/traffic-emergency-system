@@ -36,12 +36,14 @@ public class SecurityConfig {
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
 
                 .requestMatchers("/ws-suco/**", "/ws-suco-web/**").permitAll()
-                .requestMatchers("/admin/login", "/api/auth/**").permitAll()
+                .requestMatchers("/admin/login","/admin/logout", "/api/auth/**").permitAll()
                 .requestMatchers("/api/su-co/map", "/api/sos/map").permitAll()
+                .requestMatchers("/truso/login", "/truso/logout").permitAll()
 
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/goi/**").hasAuthority("SCOPE_ADMIN")
                 .requestMatchers("/api/admin/**").hasAuthority("SCOPE_ADMIN")
+                .requestMatchers("/truso/**").hasAuthority("SCOPE_TRUSO")
 
                 .requestMatchers("/api/map/**", "/api/qua/**", "/api/su-co/**", 
                                  "/api/sos/**", "/api/doi-tien/**", "/api/quyen-gop/**").authenticated()
@@ -50,15 +52,20 @@ public class SecurityConfig {
             )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .bearerTokenResolver(request -> {
-                    if (request.getCookies() != null) {
-                        for (Cookie cookie : request.getCookies()) {
-                            if ("accessToken".equals(cookie.getName())) {
-                                return cookie.getValue();
-                            }
-                        }
-                    }
-                    return new DefaultBearerTokenResolver().resolve(request);
-                })
+    if (request.getCookies() != null) {
+        for (Cookie cookie : request.getCookies()) {
+            // Nếu request đang gọi tới vùng truso, lấy đúng cookie truso
+            if (request.getRequestURI().startsWith("/truso") && "accessToken_truso".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+            // Nếu request gọi tới vùng admin, lấy đúng cookie admin
+            if (request.getRequestURI().startsWith("/admin") && "accessToken_admin".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+    }
+    return new DefaultBearerTokenResolver().resolve(request);
+})
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
             )
@@ -66,13 +73,13 @@ public class SecurityConfig {
                 .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
             )
             .logout(logout -> logout
-                .logoutUrl("/admin/logout")
-                .deleteCookies("accessToken")
-                .clearAuthentication(true)
-                .logoutSuccessHandler((request, response, authentication) -> {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                })
-            );
+    .logoutUrl("/admin/logout")          // Endpoint kích hoạt logout
+    .deleteCookies("accessToken")       // Ép trình duyệt hủy cookie accessToken
+    .clearAuthentication(true)          // Xóa thông tin Admin hiện tại trong bộ nhớ server
+    .invalidateHttpSession(true)        // Hủy session nếu có
+    .permitAll()
+    .logoutSuccessUrl("/admin/login?logout=true") // Đăng xuất xong tự chuyển hướng về trang Login
+);
 
         http.addFilterBefore(firebaseFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -58,7 +58,7 @@ public class AdminAuthController {
         ResponseCookie cookie = ResponseCookie.from("accessToken", token)
                 .httpOnly(true)
                 .secure(false)
-                .path("/")
+                .path("/admin")
                 .sameSite("Lax")
                 .maxAge(maxAgeSeconds)
                 .build();
@@ -72,4 +72,5 @@ public class AdminAuthController {
     public String loginPage() {
         return "admin/login";
     }
+   
 }
