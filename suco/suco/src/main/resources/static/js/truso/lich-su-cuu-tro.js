@@ -1,7 +1,4 @@
-/*<![CDATA[*/
-var TRUSO_ID = /*[[${session.currentTruSo != null ? session.currentTruSo.id : 0}]]*/ 0;
-/*]]>*/
-
+const TRUSO_ID = window.TRUSO_ID;
 var currentFilter = "su-co";
 var allHistoryData = [];
 
@@ -20,8 +17,15 @@ function formatTime(iso) {
 async function loadHistory() {
   try {
     const [sosRes, sucoRes] = await Promise.all([
-      fetch("/sos/lich-su").then((r) => r.json()),
-      fetch("/truso/api/su-co/da-xu-ly").then((r) => (r.ok ? r.json() : [])),
+      fetch("/truso/api/sos/da-xu-ly").then((r) => {
+        if (!r.ok) throw new Error(`SOS API trả về mã lỗi: ${r.status}`);
+        return r.json();
+      }),
+      // 2. Kiểm tra luôn đường dẫn Sự cố xem đã chuẩn /truso/api/su-co/da-xu-ly chưa
+      fetch("/truso/api/su-co/da-xu-ly").then((r) => {
+        if (!r.ok) throw new Error(`Sự cố API trả về mã lỗi: ${r.status}`);
+        return r.json();
+      }),
     ]);
 
     console.log("Dữ liệu Sự cố:", sucoRes);

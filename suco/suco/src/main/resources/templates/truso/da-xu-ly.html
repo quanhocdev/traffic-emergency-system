@@ -50,9 +50,8 @@
       </div>
     </main>
 
-    <!-- ĐÃ BỔ SUNG: Nhúng an toàn TRUSO_ID phòng trường hợp file JS của bạn cần gọi API theo trụ sở -->
     <script th:inline="javascript">
-      const TRUSO_ID = /*[[${session.currentTruSo?.id}]]*/ 0;
+      window.TRUSO_ID = /*[[${truSo != null ? truSo.id : 0}]]*/ 0;
     </script>
 
     <script th:src="@{/js/truso/lich-su-cuu-tro.js}"></script>
