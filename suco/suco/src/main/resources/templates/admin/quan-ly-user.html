@@ -16,11 +16,11 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <link rel="stylesheet" th:href="@{/css/admin/quan-ly-user.css}" />
-    <link rel="stylesheet" th:href="@{/css/fragments/admin/sidebar.css}" />
+    <link rel="stylesheet" th:href="@{/css/fragments/sidebar-admin.css}" />
   </head>
   <body>
     <div id="main-container">
-            <div th:replace="fragments/admin/sidebar :: sidebar"></div>
+            <div th:replace="fragments/sidebar-admin :: sidebar"></div>
 
 
       <div class="main-content">
@@ -119,7 +119,7 @@
       </div>
     </div>
     <script th:src="@{/js/admin/quan-ly-user.js}"></script>
-        <script th:src="@{/js/fragments/admin/sidebar.js}"></script>
+        <script th:src="@{/js/fragments/sidebar-admin.js}"></script>
 
   </body>
 </html>
