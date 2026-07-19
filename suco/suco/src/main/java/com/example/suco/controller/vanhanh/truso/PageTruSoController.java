@@ -26,62 +26,103 @@ public class PageTruSoController {
         return "truso/login";
     }
 
+    // 1. TRANG CHỦ (BẢN ĐỒ)
     @GetMapping("/trang-chu") 
     public String trangChu(@AuthenticationPrincipal Jwt jwt, Model model) {
-        // PHÒNG THỦ 1: Kiểm tra nếu bộ lọc làm mất JWT hoặc JWT rỗng
         if (jwt == null || jwt.getSubject() == null) {
-            System.out.println("⚠️ [PageTruSoController] Không tìm thấy JWT Token hợp lệ!");
             return "redirect:/truso/login?error=session_expired";
         }
-        
         try {
             Long truSoId = Long.parseLong(jwt.getSubject());
             TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
-            
-            // PHÒNG THỦ 2: Nếu Token hợp lệ nhưng DB không có bản ghi tương ứng
             if (truSo == null) {
-                System.out.println("⚠️ [PageTruSoController] Không tìm thấy Trụ sở với ID: " + truSoId);
                 return "redirect:/truso/login?error=not_found";
             }
-            
             model.addAttribute("mapboxToken", appConfig.getMapboxToken());
-            model.addAttribute("truSo", truSo); // Đảm bảo chắc chắn KHÔNG null khi ra Thymeleaf
+            model.addAttribute("truSo", truSo); 
             return "truso/trang-chu";
-
         } catch (NumberFormatException e) {
-            System.out.println("⚠️ [PageTruSoController] Subject của JWT sai định dạng số: " + jwt.getSubject());
             return "redirect:/truso/login?error=invalid_token";
         }
     }
 
-    // Áp dụng tương tự cho các trang còn lại để chống sập hoàn toàn
+    // 2. ĐÃ TIẾP NHẬN
     @GetMapping("/da-tiep-nhan")
     public String daTiepNhan(@AuthenticationPrincipal Jwt jwt, Model model) {
-        if (jwt == null) return "redirect:/truso/login";
-        TruSo truSo = truSoRepository.findById(Long.parseLong(jwt.getSubject())).orElse(null);
-        if (truSo == null) return "redirect:/truso/login";
-        
-        model.addAttribute("truSo", truSo);
-        return "truso/da-tiep-nhan"; 
+        if (jwt == null || jwt.getSubject() == null) return "redirect:/truso/login?error=session_expired";
+        try {
+            Long truSoId = Long.parseLong(jwt.getSubject());
+            TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
+            if (truSo == null) return "redirect:/truso/login?error=not_found";
+            
+            model.addAttribute("truSo", truSo);
+            return "truso/da-tiep-nhan"; 
+        } catch (NumberFormatException e) {
+            return "redirect:/truso/login?error=invalid_token";
+        }
     }
 
+    // 3. ĐANG DI CHUYỂN
     @GetMapping("/dang-di-chuyen")
     public String dangDiChuyen(@AuthenticationPrincipal Jwt jwt, Model model) {
-        if (jwt == null) return "redirect:/truso/login";
-        TruSo truSo = truSoRepository.findById(Long.parseLong(jwt.getSubject())).orElse(null);
-        if (truSo == null) return "redirect:/truso/login";
-        
-        model.addAttribute("truSo", truSo);
-        return "truso/dang-di-chuyen"; 
+        if (jwt == null || jwt.getSubject() == null) return "redirect:/truso/login?error=session_expired";
+        try {
+            Long truSoId = Long.parseLong(jwt.getSubject());
+            TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
+            if (truSo == null) return "redirect:/truso/login?error=not_found";
+            
+            model.addAttribute("truSo", truSo);
+            return "truso/dang-di-chuyen"; 
+        } catch (NumberFormatException e) {
+            return "redirect:/truso/login?error=invalid_token";
+        }
     }
 
+    // 4. ĐANG CỨU HỘ (ĐANG XỬ LÝ)
     @GetMapping("/dang-xu-ly")
     public String dangXuLy(@AuthenticationPrincipal Jwt jwt, Model model) {
-        if (jwt == null) return "redirect:/truso/login";
-        TruSo truSo = truSoRepository.findById(Long.parseLong(jwt.getSubject())).orElse(null);
-        if (truSo == null) return "redirect:/truso/login";
-        
-        model.addAttribute("truSo", truSo);
-        return "truso/dang-xu-ly"; 
+        if (jwt == null || jwt.getSubject() == null) return "redirect:/truso/login?error=session_expired";
+        try {
+            Long truSoId = Long.parseLong(jwt.getSubject());
+            TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
+            if (truSo == null) return "redirect:/truso/login?error=not_found";
+            
+            model.addAttribute("truSo", truSo);
+            return "truso/dang-xu-ly"; 
+        } catch (NumberFormatException e) {
+            return "redirect:/truso/login?error=invalid_token";
+        }
+    }
+
+    // 5. ĐÃ BỔ SUNG: LỊCH SỬ CỨU HỘ (ĐÃ XỬ LÝ)
+    @GetMapping("/da-xu-ly")
+    public String daXuLy(@AuthenticationPrincipal Jwt jwt, Model model) {
+        if (jwt == null || jwt.getSubject() == null) return "redirect:/truso/login?error=session_expired";
+        try {
+            Long truSoId = Long.parseLong(jwt.getSubject());
+            TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
+            if (truSo == null) return "redirect:/truso/login?error=not_found";
+            
+            model.addAttribute("truSo", truSo);
+            return "truso/da-xu-ly"; // Trả về file da-xu-ly.html của bạn
+        } catch (NumberFormatException e) {
+            return "redirect:/truso/login?error=invalid_token";
+        }
+    }
+
+    // 6. ĐÃ BỔ SUNG: LỊCH SỬ HỦY XỬ LÝ
+    @GetMapping("/huy-xu-ly")
+    public String huyXuLy(@AuthenticationPrincipal Jwt jwt, Model model) {
+        if (jwt == null || jwt.getSubject() == null) return "redirect:/truso/login?error=session_expired";
+        try {
+            Long truSoId = Long.parseLong(jwt.getSubject());
+            TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
+            if (truSo == null) return "redirect:/truso/login?error=not_found";
+            
+            model.addAttribute("truSo", truSo);
+            return "truso/huy-xu-ly"; // Trả về file huy-xu-ly.html tương ứng nếu có
+        } catch (NumberFormatException e) {
+            return "redirect:/truso/login?error=invalid_token";
+        }
     }
 }

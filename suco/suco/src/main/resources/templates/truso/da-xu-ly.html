@@ -15,8 +15,9 @@
     <link rel="stylesheet" th:href="@{/css/truso/lich-su-cuu-tro.css}" />
   </head>
   <body>
+    <!-- ĐÃ SỬA: Bọc kiểm tra truSo null để tránh sập khi tải trang -->
     <div
-      th:replace="fragments/truso/sidebar :: sidebar('history', ${truSo})"
+      th:replace="~{fragments/truso/sidebar :: sidebar('history', ${truSo != null ? truSo : null})}"
     ></div>
 
     <main class="main-content">
@@ -48,8 +49,16 @@
         </div>
       </div>
     </main>
+
+    <!-- ĐÃ BỔ SUNG: Nhúng an toàn TRUSO_ID phòng trường hợp file JS của bạn cần gọi API theo trụ sở -->
+    <script th:inline="javascript">
+      const TRUSO_ID = /*[[${session.currentTruSo?.id}]]*/ 0;
+    </script>
+
     <script th:src="@{/js/truso/lich-su-cuu-tro.js}"></script>
     <script th:src="@{/js/fragments/truso/sidebar.js}"></script>
+
+    <!-- Modal Chi tiết Hóa đơn cứu hộ -->
     <div id="invoice-modal" class="modal-overlay" style="display: none">
       <div class="invoice-box">
         <div class="invoice-header">
