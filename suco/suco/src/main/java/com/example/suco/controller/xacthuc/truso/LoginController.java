@@ -59,10 +59,10 @@ public class LoginController {
             long maxAgeSeconds = jwtExpirationMs / 1000;
 
             // Đóng gói JWT vào cookie HttpOnly "accessToken" để trình duyệt tự quản lý
-            ResponseCookie cookie = ResponseCookie.from("accessToken", token)
+            ResponseCookie cookie = ResponseCookie.from("accessToken_truso", token)
                     .httpOnly(true)
                     .secure(false) // Đổi thành true khi chạy trên môi trường HTTPS thực tế
-                    .path("/truso")
+                    .path("/")
                     .sameSite("Lax")
                     .maxAge(maxAgeSeconds)
                     .build();

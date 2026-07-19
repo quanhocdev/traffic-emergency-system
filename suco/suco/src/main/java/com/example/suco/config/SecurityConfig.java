@@ -2,7 +2,6 @@ package com.example.suco.config;
 
 import com.example.suco.security.FirebaseFilter;
 import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -32,19 +31,25 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authorizeHttpRequests(auth -> auth
-
-                .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-
+                // 1. Cho phép tài nguyên tĩnh công khai công cộng
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**", "/favicon.ico").permitAll()
                 .requestMatchers("/ws-suco/**", "/ws-suco-web/**").permitAll()
-                .requestMatchers("/admin/login","/admin/logout", "/api/auth/**").permitAll()
-                .requestMatchers("/api/su-co/map", "/api/sos/map").permitAll()
+                
+                // 2. Cho phép các trang login truy cập tự do
+                .requestMatchers("/admin/login", "/admin/logout", "/api/auth/**").permitAll()
                 .requestMatchers("/truso/login", "/truso/logout").permitAll()
+                
+                // Bản đồ công khai
+                .requestMatchers("/api/su-co/map", "/api/sos/map").permitAll()
 
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/goi/**").hasAuthority("SCOPE_ADMIN")
-                .requestMatchers("/api/admin/**").hasAuthority("SCOPE_ADMIN")
-                .requestMatchers("/truso/**").hasAuthority("SCOPE_TRUSO")
+                // 3. Phân quyền cụ thể dựa trên SCOPE (Từ JWT của Trụ sở) và ROLE (Từ Admin)
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SCOPE_ADMIN")
+                .requestMatchers("/api/goi/**", "/api/admin/**").hasAnyAuthority("SCOPE_ADMIN", "ROLE_ADMIN")
+                
+                // Phân vùng dành riêng cho trụ sở
+                .requestMatchers("/truso/**").hasAnyAuthority("SCOPE_TRUSO", "ROLE_TRUSO")
 
+                // 4. Tất cả các api vận hành còn lại yêu cầu phải xác thực
                 .requestMatchers("/api/map/**", "/api/qua/**", "/api/su-co/**", 
                                  "/api/sos/**", "/api/doi-tien/**", "/api/quyen-gop/**").authenticated()
 
@@ -52,20 +57,24 @@ public class SecurityConfig {
             )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .bearerTokenResolver(request -> {
-    if (request.getCookies() != null) {
-        for (Cookie cookie : request.getCookies()) {
-            // Nếu request đang gọi tới vùng truso, lấy đúng cookie truso
-            if (request.getRequestURI().startsWith("/truso") && "accessToken_truso".equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-            // Nếu request gọi tới vùng admin, lấy đúng cookie admin
-            if (request.getRequestURI().startsWith("/admin") && "accessToken_admin".equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-    }
-    return new DefaultBearerTokenResolver().resolve(request);
-})
+                    if (request.getCookies() != null) {
+                        for (Cookie cookie : request.getCookies()) {
+                            String uri = request.getRequestURI();
+                            
+                            // NẾU request chạy vào vùng /truso HOẶC các API gọi dữ liệu ngầm /api/
+                            // THÌ ưu tiên bóc cookie của Trụ sở trước
+                            if ((uri.startsWith("/truso") || uri.startsWith("/api")) && "accessToken_truso".equals(cookie.getName())) {
+                                return cookie.getValue();
+                            }
+                            
+                            // NẾU request chạy vào vùng /admin HOẶC api hệ thống của admin
+                            if ((uri.startsWith("/admin") || uri.startsWith("/api/admin")) && "accessToken_admin".equals(cookie.getName())) {
+                                return cookie.getValue();
+                            }
+                        }
+                    }
+                    return new DefaultBearerTokenResolver().resolve(request);
+                })
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
             )
@@ -73,14 +82,15 @@ public class SecurityConfig {
                 .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
             )
             .logout(logout -> logout
-    .logoutUrl("/admin/logout")          // Endpoint kích hoạt logout
-    .deleteCookies("accessToken")       // Ép trình duyệt hủy cookie accessToken
-    .clearAuthentication(true)          // Xóa thông tin Admin hiện tại trong bộ nhớ server
-    .invalidateHttpSession(true)        // Hủy session nếu có
-    .permitAll()
-    .logoutSuccessUrl("/admin/login?logout=true") // Đăng xuất xong tự chuyển hướng về trang Login
-);
+                .logoutUrl("/admin/logout")          
+                .deleteCookies("accessToken_admin", "accessToken_truso") // Xóa sạch cả 2 loại cookie khi logout
+                .clearAuthentication(true)          
+                .invalidateHttpSession(true)        
+                .permitAll()
+                .logoutSuccessUrl("/admin/login?logout=true") 
+            );
 
+        // Đặt FirebaseFilter chạy trước để gánh phần xác thực Admin Firebase
         http.addFilterBefore(firebaseFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

@@ -19,7 +19,7 @@ public class PageTruSoController {
     private AppConfig appConfig;
 
     @Autowired
-    private TruSoRepository truSoRepository; // Thêm repo vào đây
+    private TruSoRepository truSoRepository;
 
     @GetMapping("/login")
     public String trangLogin() {
@@ -28,56 +28,60 @@ public class PageTruSoController {
 
     @GetMapping("/trang-chu") 
     public String trangChu(@AuthenticationPrincipal Jwt jwt, Model model) {
-        // 1. Lấy ID từ token (Đảm bảo lúc sinh token bạn set Subject là ID)
-        Long truSoId = Long.parseLong(jwt.getSubject());
+        // PHÒNG THỦ 1: Kiểm tra nếu bộ lọc làm mất JWT hoặc JWT rỗng
+        if (jwt == null || jwt.getSubject() == null) {
+            System.out.println("⚠️ [PageTruSoController] Không tìm thấy JWT Token hợp lệ!");
+            return "redirect:/truso/login?error=session_expired";
+        }
         
-        // 2. Tìm object TruSo đầy đủ trong DB
-        TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
-        
-        // 3. Đẩy vào model y hệt ngày xưa để nuôi giao diện Thymeleaf
-        model.addAttribute("mapboxToken", appConfig.getMapboxToken());
-        model.addAttribute("truSo", truSo); 
-        
-        return "truso/trang-chu";
+        try {
+            Long truSoId = Long.parseLong(jwt.getSubject());
+            TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
+            
+            // PHÒNG THỦ 2: Nếu Token hợp lệ nhưng DB không có bản ghi tương ứng
+            if (truSo == null) {
+                System.out.println("⚠️ [PageTruSoController] Không tìm thấy Trụ sở với ID: " + truSoId);
+                return "redirect:/truso/login?error=not_found";
+            }
+            
+            model.addAttribute("mapboxToken", appConfig.getMapboxToken());
+            model.addAttribute("truSo", truSo); // Đảm bảo chắc chắn KHÔNG null khi ra Thymeleaf
+            return "truso/trang-chu";
+
+        } catch (NumberFormatException e) {
+            System.out.println("⚠️ [PageTruSoController] Subject của JWT sai định dạng số: " + jwt.getSubject());
+            return "redirect:/truso/login?error=invalid_token";
+        }
     }
 
+    // Áp dụng tương tự cho các trang còn lại để chống sập hoàn toàn
     @GetMapping("/da-tiep-nhan")
     public String daTiepNhan(@AuthenticationPrincipal Jwt jwt, Model model) {
-        Long truSoId = Long.parseLong(jwt.getSubject());
-        TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
+        if (jwt == null) return "redirect:/truso/login";
+        TruSo truSo = truSoRepository.findById(Long.parseLong(jwt.getSubject())).orElse(null);
+        if (truSo == null) return "redirect:/truso/login";
+        
         model.addAttribute("truSo", truSo);
         return "truso/da-tiep-nhan"; 
     }
 
     @GetMapping("/dang-di-chuyen")
     public String dangDiChuyen(@AuthenticationPrincipal Jwt jwt, Model model) {
-        Long truSoId = Long.parseLong(jwt.getSubject());
-        TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
+        if (jwt == null) return "redirect:/truso/login";
+        TruSo truSo = truSoRepository.findById(Long.parseLong(jwt.getSubject())).orElse(null);
+        if (truSo == null) return "redirect:/truso/login";
+        
         model.addAttribute("truSo", truSo);
         return "truso/dang-di-chuyen"; 
     }
 
     @GetMapping("/dang-xu-ly")
     public String dangXuLy(@AuthenticationPrincipal Jwt jwt, Model model) {
-        Long truSoId = Long.parseLong(jwt.getSubject());
-        TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
+        if (jwt == null) return "redirect:/truso/login";
+        TruSo truSo = truSoRepository.findById(Long.parseLong(jwt.getSubject())).orElse(null);
+        if (truSo == null) return "redirect:/truso/login";
+        
         model.addAttribute("truSo", truSo);
         return "truso/dang-xu-ly"; 
-    }
-
-    @GetMapping("/da-xu-ly")
-    public String lichSuXuLy(@AuthenticationPrincipal Jwt jwt, Model model) {
-        Long truSoId = Long.parseLong(jwt.getSubject());
-        TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
-        model.addAttribute("truSo", truSo);
-        return "truso/da-xu-ly"; 
-    }
-
-    @GetMapping("/huy-xu-ly")
-    public String lichSuHuyXuLy(@AuthenticationPrincipal Jwt jwt, Model model) {
-        Long truSoId = Long.parseLong(jwt.getSubject());
-        TruSo truSo = truSoRepository.findById(truSoId).orElse(null);
-        model.addAttribute("truSo", truSo);
-        return "truso/huy-xu-ly"; 
     }
 }

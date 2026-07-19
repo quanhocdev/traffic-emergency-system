@@ -55,10 +55,10 @@ public class AdminAuthController {
         // Đồng bộ thời gian sống cookie bằng giây
         long maxAgeSeconds = jwtExpirationMs / 1000;
 
-        ResponseCookie cookie = ResponseCookie.from("accessToken", token)
+        ResponseCookie cookie = ResponseCookie.from("accessToken_admin", token)
                 .httpOnly(true)
                 .secure(false)
-                .path("/admin")
+                .path("/")
                 .sameSite("Lax")
                 .maxAge(maxAgeSeconds)
                 .build();
