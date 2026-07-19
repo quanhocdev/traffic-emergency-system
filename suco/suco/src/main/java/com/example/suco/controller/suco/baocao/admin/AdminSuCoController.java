@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.example.suco.service.suco.baocao.admin.AdminBaoCaoService;
 import com.example.suco.dto.suco.baocao.admin.AdminSuCoDetailResponseDTO; 
 import com.example.suco.mapper.SuCoMapper; 
@@ -24,8 +23,8 @@ import com.example.suco.repository.suco.baocao.SuCoAdminRepository;
 import com.example.suco.repository.suco.baocao.SpamRepository;
 
 @Controller
-@RequestMapping("/admin/bao-cao-su-co")
-public class BaoCaoSuCoAdminController {
+@RequestMapping("/admin/quan-ly-su-co")
+public class AdminSuCoController {
 
     @Autowired
     private SuCoAdminRepository reportRepository;
@@ -76,9 +75,9 @@ public class BaoCaoSuCoAdminController {
         model.addAttribute("countXong", countXong);
         model.addAttribute("countHuy", countHuy);
         
-        model.addAttribute("activePage", "bao-cao-su-co");
+        model.addAttribute("activePage", "quan-ly-su-co");
 
-        return "admin/bao-cao-su-co";
+        return "admin/quan-ly-su-co";
     }
 
     @PostMapping(value = "/admin-submit", consumes = "multipart/form-data")

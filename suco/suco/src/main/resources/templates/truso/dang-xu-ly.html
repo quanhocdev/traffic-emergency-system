@@ -18,8 +18,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
     <script th:inline="javascript">
-      window.TRUSO_ID = /*[[${session.currentTruSo != null ? session.currentTruSo.id : 0}]]*/ 0;
-      console.log("Kiểm tra TRUSO_ID nhận từ Thymeleaf:", window.TRUSO_ID);
+      window.TRUSO_ID = /*[[${truSo != null ? truSo.id : 0}]]*/ 0;
+
+      console.log(
+        "Kiểm tra TRUSO_ID nhận từ Thymeleaf Model:",
+        window.TRUSO_ID,
+      );
     </script>
   </head>
   <body>

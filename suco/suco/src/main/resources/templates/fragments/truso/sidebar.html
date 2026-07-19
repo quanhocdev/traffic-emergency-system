@@ -1,6 +1,17 @@
-<div th:fragment="sidebar(activePage, truSo)"> <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px; position: relative; padding-bottom: 15px;">
-      
+<div th:fragment="sidebar(activePage, truSo)">
+  <aside class="sidebar" id="sidebar">
+    <div
+      class="sidebar-header"
+      style="
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        position: relative;
+        padding-bottom: 15px;
+      "
+    >
+      <!-- SỬA TẠI ĐÂY: Đã thêm dấu > ở cuối đoạn style của h2 -->
       <h2
         style="
           font-size: 1.35rem;
@@ -12,18 +23,40 @@
           color: #fff;
           line-height: 1.2;
         "
-      </h2>
+      >
         <i class="fa-solid fa-shield-heart" style="color: #fff"></i>
         <span>Trụ sở</span>
       </h2>
 
-      <div class="tru-so-info" th:if="${truSo != null}" 
-           style="font-size: 0.85rem; color: #cbd5e1; font-weight: 400; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 4px; width: 100%; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-        <i class="fa-solid fa-building-user" style="margin-right: 6px; color: #a5d6a7;"></i>
-        <span th:text="${truSo.tenTruSo}">Tên Trụ Sở Mẫu</span>
+      <div
+        class="tru-so-info"
+        th:if="${truSo != null}"
+        style="
+          font-size: 0.85rem;
+          color: #cbd5e1;
+          font-weight: 400;
+          background: rgba(255, 255, 255, 0.1);
+          padding: 4px 10px;
+          border-radius: 4px;
+          width: 100%;
+          box-sizing: border-box;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        "
+      >
+        <i
+          class="fa-solid fa-building-user"
+          style="margin-right: 6px; color: #a5d6a7"
+        ></i>
+        <span th:text="${truSo?.tenTruSo}">Tên Trụ Sở Mẫu</span>
       </div>
 
-      <button class="toggle-btn" onclick="toggleSidebar()" style="position: absolute; right: 10px; top: 15px;">
+      <button
+        class="toggle-btn"
+        onclick="toggleSidebar()"
+        style="position: absolute; right: 10px; top: 15px"
+      >
         <i class="fa-solid fa-chevron-left" id="toggle-icon"></i>
       </button>
     </div>
@@ -67,6 +100,7 @@
         <i class="fa-solid fa-list-check"></i>
         <span>Lịch sử cứu hộ</span>
       </a>
+
       <a
         href="/truso/huy-xu-ly"
         th:class="${activePage == 'cancel'} ? 'nav-item active' : 'nav-item'"

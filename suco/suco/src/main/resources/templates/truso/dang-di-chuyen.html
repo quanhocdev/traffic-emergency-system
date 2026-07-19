@@ -15,8 +15,9 @@
     <link rel="stylesheet" th:href="@{/css/truso/quan-ly-cuu-tro.css}" />
   </head>
   <body>
+    <!-- ĐÃ SỬA: Bọc kiểm tra truSo null để tránh sập khi chưa tải kịp dữ liệu -->
     <div
-      th:replace="fragments/truso/sidebar :: sidebar('pending', ${truSo})"
+      th:replace="~{fragments/truso/sidebar :: sidebar('pending', ${truSo != null ? truSo : null})}"
     ></div>
 
     <main class="main-content">
@@ -54,8 +55,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
     <script th:inline="javascript">
-      const TRUSO_ID = /*[[${session.currentTruSo.id}]]*/ 0;
+      const TRUSO_ID = /*[[${truSo?.id}]]*/ 0;
     </script>
 
     <script th:src="@{/js/truso/quan-ly-cuu-tro.js}"></script>

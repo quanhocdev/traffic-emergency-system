@@ -1,11 +1,16 @@
 package com.example.suco.config;
 
-import com.example.suco.security.CustomAuthEntryPoint;
 import com.example.suco.security.FirebaseFilter;
-import com.example.suco.security.JwtFilter;
+import jakarta.servlet.http.Cookie;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -13,61 +18,100 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final FirebaseFilter firebaseFilter;
-    private final JwtFilter jwtFilter;
-    private final CustomAuthEntryPoint customAuthEntryPoint;
 
-    public SecurityConfig(FirebaseFilter firebaseFilter,
-                      JwtFilter jwtFilter,
-                      CustomAuthEntryPoint customAuthEntryPoint) {
-    this.firebaseFilter = firebaseFilter;
-    this.jwtFilter = jwtFilter;
-    this.customAuthEntryPoint = customAuthEntryPoint;
-}
+    public SecurityConfig(FirebaseFilter firebaseFilter) {
+        this.firebaseFilter = firebaseFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
             .csrf(csrf -> csrf.disable())
-            // Session
-            .securityContext(context -> context
-        .requireExplicitSave(false)
-    )
-            .exceptionHandling(ex -> ex
-            .authenticationEntryPoint(customAuthEntryPoint)
-        )
+            .sessionManagement(session -> 
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
             .authorizeHttpRequests(auth -> auth
+                // 1. Cho phép tài nguyên tĩnh công khai công cộng
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**", "/favicon.ico").permitAll()
+                .requestMatchers("/ws-suco/**", "/ws-suco-web/**").permitAll()
+                
+                // 2. Cho phép các trang login truy cập tự do
+                .requestMatchers("/admin/login", "/admin/logout", "/api/auth/**").permitAll()
+                .requestMatchers("/truso/login", "/truso/logout").permitAll()
+                
+                // Bản đồ công khai
+                .requestMatchers("/api/su-co/map", "/api/sos/map").permitAll()
 
-            .requestMatchers("/ws-suco/**", "/ws-suco-web/**").permitAll()
-            
-    // PUBLIC
-    .requestMatchers("/admin/login").permitAll()
-    .requestMatchers("/api/auth/**").permitAll()
-    .requestMatchers("/api/su-co/map", "/api/sos/map").permitAll()
+                // 3. Phân quyền cụ thể dựa trên SCOPE (Từ JWT của Trụ sở) và ROLE (Từ Admin)
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SCOPE_ADMIN")
+                .requestMatchers("/api/goi/**", "/api/admin/**").hasAnyAuthority("SCOPE_ADMIN", "ROLE_ADMIN")
+                
+                // Phân vùng dành riêng cho trụ sở
+                .requestMatchers("/truso/**").hasAnyAuthority("SCOPE_TRUSO", "ROLE_TRUSO")
 
-    // ADMIN ONLY
-    .requestMatchers("/admin/**").hasRole("ADMIN")
-    .requestMatchers("/api/goi/**").hasRole("ADMIN")
+                // 4. Tất cả các api vận hành còn lại yêu cầu phải xác thực
+                .requestMatchers("/api/map/**", "/api/qua/**", "/api/su-co/**", 
+                                 "/api/sos/**", "/api/doi-tien/**", "/api/quyen-gop/**").authenticated()
 
-    // AUTH SYNC USER
-    .requestMatchers("/api/map/**").authenticated()
-    .requestMatchers("/api/qua/**").authenticated()
-    .requestMatchers("/api/su-co/**").authenticated()
-    .requestMatchers("/api/sos/**").authenticated()
-    .requestMatchers("/api/doi-tien/**").authenticated()
+                .anyRequest().authenticated()
+            )
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .bearerTokenResolver(request -> {
+                    if (request.getCookies() != null) {
+                        for (Cookie cookie : request.getCookies()) {
+                            String uri = request.getRequestURI();
+                            
+                            // NẾU request chạy vào vùng /truso HOẶC các API gọi dữ liệu ngầm /api/
+                            // THÌ ưu tiên bóc cookie của Trụ sở trước
+                            if ((uri.startsWith("/truso") || uri.startsWith("/api")) && "accessToken_truso".equals(cookie.getName())) {
+                                return cookie.getValue();
+                            }
+                            
+                            // NẾU request chạy vào vùng /admin HOẶC api hệ thống của admin
+                            if ((uri.startsWith("/admin") || uri.startsWith("/api/admin")) && "accessToken_admin".equals(cookie.getName())) {
+                                return cookie.getValue();
+                            }
+                        }
+                    }
+                    return new DefaultBearerTokenResolver().resolve(request);
+                })
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
+            )
+            .exceptionHandling(ex -> ex
+                .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
+            )
+            .logout(logout -> logout
+                .logoutUrl("/admin/logout")          
+                .deleteCookies("accessToken_admin", "accessToken_truso") // Xóa sạch cả 2 loại cookie khi logout
+                .clearAuthentication(true)          
+                .invalidateHttpSession(true)        
+                .permitAll()
+                .logoutSuccessUrl("/admin/login?logout=true") 
+            );
 
-
-    .anyRequest().permitAll()
-)
-
-            // // JWT ADMIN chạy trước
-            // .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-
-            // // Firebase USER chạy sau
-            // .addFilterBefore(firebaseFilter, UsernamePasswordAuthenticationFilter.class);
-            .addFilterBefore(firebaseFilter, UsernamePasswordAuthenticationFilter.class)
-.addFilterBefore(jwtFilter, FirebaseFilter.class);
+        // Đặt FirebaseFilter chạy trước để gánh phần xác thực Admin Firebase
+        http.addFilterBefore(firebaseFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter scopeConverter = new JwtGrantedAuthoritiesConverter();
+        scopeConverter.setAuthoritiesClaimName("scope");
+        scopeConverter.setAuthorityPrefix("SCOPE_");
+
+        JwtGrantedAuthoritiesConverter roleConverter = new JwtGrantedAuthoritiesConverter();
+        roleConverter.setAuthoritiesClaimName("scope");
+        roleConverter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            var authorities = scopeConverter.convert(jwt);
+            authorities.addAll(roleConverter.convert(jwt));
+            return authorities;
+        });
+        return converter;
     }
 }

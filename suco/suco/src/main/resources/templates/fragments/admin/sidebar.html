@@ -43,9 +43,9 @@
 
         <li>
           <a
-            href="/admin/bao-cao-su-co"
+            href="/admin/quan-ly-su-co"
             class="menu-item"
-            th:classappend="${activePage == 'bao-cao-su-co'} ? 'active' : ''"
+            th:classappend="${activePage == 'quan-ly-su-co'} ? 'active' : ''"
           >
             <i class="fa-solid fa-file-signature"></i>
             <span>Quản Lý Sự Cố</span>
@@ -115,6 +115,19 @@
             <i class="fas fa-money-bill-wave"></i>
             <span>Quản Lý Doanh Thu</span>
           </a>
+        </li>
+        <li class="logout-wrapper">
+          <!-- Form gửi POST thuần backend -->
+          <form th:action="@{/admin/logout}" method="POST" style="margin: 0">
+            <button
+              id="adminLogoutBtn"
+              type="submit"
+              class="menu-item logout-btn"
+            >
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Đăng xuất</span>
+            </button>
+          </form>
         </li>
       </ul>
     </nav>
