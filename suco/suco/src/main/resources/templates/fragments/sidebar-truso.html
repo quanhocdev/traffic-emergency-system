@@ -1,17 +1,6 @@
 <div th:fragment="sidebar(activePage, truSo)">
   <aside class="sidebar" id="sidebar">
-    <div
-      class="sidebar-header"
-      style="
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-        position: relative;
-        padding-bottom: 15px;
-      "
-    >
-      <!-- SỬA TẠI ĐÂY: Đã thêm dấu > ở cuối đoạn style của h2 -->
+    <div class="sidebar-header">
       <h2
         style="
           font-size: 1.35rem;
@@ -24,39 +13,16 @@
           line-height: 1.2;
         "
       >
-        <i class="fa-solid fa-shield-heart" style="color: #fff"></i>
+        <i class="fa-solid fa-shield-heart"></i>
         <span>Trụ sở</span>
       </h2>
 
-      <div
-        class="tru-so-info"
-        th:if="${truSo != null}"
-        style="
-          font-size: 0.85rem;
-          color: #cbd5e1;
-          font-weight: 400;
-          background: rgba(255, 255, 255, 0.1);
-          padding: 4px 10px;
-          border-radius: 4px;
-          width: 100%;
-          box-sizing: border-box;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        "
-      >
-        <i
-          class="fa-solid fa-building-user"
-          style="margin-right: 6px; color: #a5d6a7"
-        ></i>
-        <span th:text="${truSo?.tenTruSo}">Tên Trụ Sở Mẫu</span>
+      <div class="tru-so-info" th:if="${truSo != null}">
+        <i class="fa-solid fa-building-user"></i>
+        <span th:text="${truSo?.tenTruSo}"> Tên Trụ Sở Mẫu </span>
       </div>
 
-      <button
-        class="toggle-btn"
-        onclick="toggleSidebar()"
-        style="position: absolute; right: 10px; top: 15px"
-      >
+      <button class="toggle-btn" onclick="toggleSidebar()">
         <i class="fa-solid fa-chevron-left" id="toggle-icon"></i>
       </button>
     </div>
@@ -74,7 +40,8 @@
         href="/truso/da-tiep-nhan"
         th:class="${activePage == 'received'} ? 'nav-item active' : 'nav-item'"
       >
-        <i class="fa-solid fa-inbox"></i> <span>Đã tiếp nhận</span>
+        <i class="fa-solid fa-inbox"></i>
+        <span>Đã tiếp nhận</span>
       </a>
 
       <a
@@ -109,14 +76,19 @@
         <span>Lịch sử hủy xử lý</span>
       </a>
 
-      <button
-        type="button"
-        class="nav-item logout-item"
-        onclick="logoutTruSo()"
-      >
-        <i class="fa-solid fa-right-from-bracket"></i>
-        <span>Đăng xuất</span>
-      </button>
+      <!-- LOGOUT -->
+      <li class="logout-wrapper">
+        <form th:action="@{/logout}" method="post" style="margin: 0">
+          <button
+            id="truSoLogoutBtn"
+            type="submit"
+            class="nav-item logout-item"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Đăng xuất</span>
+          </button>
+        </form>
+      </li>
     </nav>
   </aside>
 </div>

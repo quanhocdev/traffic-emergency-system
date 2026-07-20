@@ -36,8 +36,7 @@ public class SecurityConfig {
                 .requestMatchers("/ws-suco/**", "/ws-suco-web/**").permitAll()
                 
                 // 2. Cho phép các trang login truy cập tự do
-                .requestMatchers("/admin/login", "/admin/logout", "/api/auth/**").permitAll()
-                .requestMatchers("/truso/login", "/truso/logout").permitAll()
+                .requestMatchers("/admin/login", "/truso/login", "/logout", "/api/auth/**").permitAll()
                 
                 // Bản đồ công khai
                 .requestMatchers("/api/su-co/map", "/api/sos/map").permitAll()
@@ -59,16 +58,7 @@ public class SecurityConfig {
                 .bearerTokenResolver(request -> {
                     if (request.getCookies() != null) {
                         for (Cookie cookie : request.getCookies()) {
-                            String uri = request.getRequestURI();
-                            
-                            // NẾU request chạy vào vùng /truso HOẶC các API gọi dữ liệu ngầm /api/
-                            // THÌ ưu tiên bóc cookie của Trụ sở trước
-                            if ((uri.startsWith("/truso") || uri.startsWith("/api")) && "accessToken_truso".equals(cookie.getName())) {
-                                return cookie.getValue();
-                            }
-                            
-                            // NẾU request chạy vào vùng /admin HOẶC api hệ thống của admin
-                            if ((uri.startsWith("/admin") || uri.startsWith("/api/admin")) && "accessToken_admin".equals(cookie.getName())) {
+                            if ("accessToken".equals(cookie.getName())) {
                                 return cookie.getValue();
                             }
                         }
@@ -82,12 +72,18 @@ public class SecurityConfig {
                 .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
             )
             .logout(logout -> logout
-                .logoutUrl("/admin/logout")          
-                .deleteCookies("accessToken_admin", "accessToken_truso") // Xóa sạch cả 2 loại cookie khi logout
-                .clearAuthentication(true)          
-                .invalidateHttpSession(true)        
+                .logoutUrl("/logout")
+                .deleteCookies("accessToken")
+                .clearAuthentication(true)
+                .invalidateHttpSession(true)
                 .permitAll()
-                .logoutSuccessUrl("/admin/login?logout=true") 
+                .logoutSuccessHandler((request, response, authentication) -> {
+                    response.setStatus(200);
+                    response.setContentType("application/json");
+                    response.getWriter().write("""
+                        {"message":"Logout success"}
+                    """);
+                })
             );
 
         // Đặt FirebaseFilter chạy trước để gánh phần xác thực Admin Firebase
