@@ -1,47 +1,120 @@
-    package com.example.suco.config;
+package com.example.suco.config;
 
-    import com.example.suco.security.WebSocketAuthInterceptor;
-    import org.springframework.context.annotation.Configuration;
-    import org.springframework.messaging.simp.config.ChannelRegistration;
-    import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-    import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-    import org.springframework.web.socket.config.annotation.*;
-    import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
-    @Configuration
-    @EnableWebSocketMessageBroker
-    public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+import com.example.suco.security.WebSocketAuthInterceptor;
 
-        private final WebSocketAuthInterceptor webSocketAuthInterceptor;
+import org.springframework.context.annotation.Configuration;
 
-        public WebSocketConfig(WebSocketAuthInterceptor webSocketAuthInterceptor) {
-            this.webSocketAuthInterceptor = webSocketAuthInterceptor;
-        }
+import org.springframework.messaging.simp.config.ChannelRegistration;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 
-        @Override
-        public void configureMessageBroker(MessageBrokerRegistry config) {
+import org.springframework.web.socket.config.annotation.*;
 
-            config.enableSimpleBroker("/topic", "/queue");
 
-            config.setApplicationDestinationPrefixes("/app");
-            config.setUserDestinationPrefix("/user");
-        }
 
-        @Override
-        public void registerStompEndpoints(StompEndpointRegistry registry) {
-            // Endpoint cho mobile (App Android / iOS)
-            registry.addEndpoint("/ws-suco")
-                    .setAllowedOriginPatterns("*");
+@Configuration
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-            // Endpoint cho Web Trụ sở / Admin
-            registry.addEndpoint("/ws-suco-web")
-                    .setAllowedOriginPatterns("*")
-                    .addInterceptors(new HttpSessionHandshakeInterceptor()) // 🌟 Bắt Cookie đưa vào Session Attributes
-                    .withSockJS();
-        }
 
-        @Override
-        public void configureClientInboundChannel(ChannelRegistration registration) {
-            registration.interceptors(webSocketAuthInterceptor);
-        }
+
+    private final WebSocketAuthInterceptor webSocketAuthInterceptor;
+
+
+
+    public WebSocketConfig(
+            WebSocketAuthInterceptor webSocketAuthInterceptor
+    ) {
+
+        this.webSocketAuthInterceptor = webSocketAuthInterceptor;
     }
+
+
+
+
+
+    @Override
+    public void configureMessageBroker(
+            MessageBrokerRegistry config
+    ) {
+
+
+        config.enableSimpleBroker(
+                "/topic",
+                "/queue"
+        );
+
+
+        config.setApplicationDestinationPrefixes(
+                "/app"
+        );
+
+
+        config.setUserDestinationPrefix(
+                "/user"
+        );
+
+    }
+
+
+
+
+
+
+
+    @Override
+    public void registerStompEndpoints(
+            StompEndpointRegistry registry
+    ) {
+
+
+        /*
+         * Android
+         *
+         * Sau này dùng:
+         * Authorization: Bearer Firebase/JWT
+         */
+        registry.addEndpoint(
+                "/ws-suco"
+        )
+        .setAllowedOriginPatterns("*");
+
+
+
+
+
+
+        /*
+         * Web Admin + Trụ sở
+         *
+         * JWT nằm trong HttpOnly Cookie
+         *
+         * WebSocketAuthInterceptor
+         * sẽ đọc Cookie accessToken
+         */
+        registry.addEndpoint(
+                "/ws-suco-web"
+        )
+        .setAllowedOriginPatterns("*")
+        .withSockJS();
+
+    }
+
+
+
+
+
+
+
+    @Override
+    public void configureClientInboundChannel(
+            ChannelRegistration registration
+    ) {
+
+        registration.interceptors(
+                webSocketAuthInterceptor
+        );
+
+    }
+
+}
