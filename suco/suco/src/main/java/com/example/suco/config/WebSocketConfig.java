@@ -4,7 +4,6 @@
     import org.springframework.context.annotation.Configuration;
     import org.springframework.messaging.simp.config.ChannelRegistration;
     import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-    import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
     import org.springframework.web.socket.config.annotation.*;
     import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
