@@ -3,18 +3,28 @@ document.addEventListener("DOMContentLoaded", function () {
   const logoutBtn = document.getElementById("adminLogoutBtn");
 
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", function (e) {
-      // Chặn form gửi đi ngay lập tức để hiện confirm trước
+    logoutBtn.addEventListener("click", async function (e) {
       e.preventDefault();
 
-      if (confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
-        // Nếu chọn OK, tìm thẻ form cha bao quanh nút này và submit thuần backend
-        const form = logoutBtn.closest("form");
-        if (form) {
-          form.submit();
-        }
+      if (!confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+        return;
       }
-      // Nếu chọn Cancel, không làm gì cả, form sẽ không bị gửi đi
+
+      try {
+        const res = await fetch("/logout", {
+          method: "POST",
+          credentials: "include",
+        });
+
+        if (res.ok) {
+          window.location.href = "/admin/login";
+        } else {
+          alert("Đăng xuất thất bại!");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Không thể kết nối đến máy chủ.");
+      }
     });
   }
 });
