@@ -36,10 +36,6 @@ public class RefreshTokens {
     private Instant expiresAt;
 
 
-    @Column(nullable = false)
-    private boolean revoked = false;
-
-
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -95,13 +91,6 @@ public class RefreshTokens {
     }
 
 
-    public boolean isRevoked() {
-        return revoked;
-    }
-
-    public void setRevoked(boolean revoked) {
-        this.revoked = revoked;
-    }
 
 
     public Instant getCreatedAt() {

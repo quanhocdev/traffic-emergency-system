@@ -10,10 +10,14 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       try {
+        console.log("CALL LOGOUT");
+
         const res = await fetch("/logout", {
           method: "POST",
           credentials: "include",
         });
+
+        console.log("LOGOUT STATUS:", res.status);
 
         if (res.ok) {
           window.location.href = "/truso/login";
@@ -21,7 +25,8 @@ document.addEventListener("DOMContentLoaded", function () {
           alert("Đăng xuất thất bại!");
         }
       } catch (err) {
-        console.error(err);
+        console.error("LOGOUT ERROR:", err);
+
         alert("Không thể kết nối đến máy chủ.");
       }
     });
