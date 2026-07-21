@@ -1,182 +1,60 @@
-// package com.example.suco.config;
-
-// import com.example.suco.security.FirebaseFilter;
-// import jakarta.servlet.http.Cookie;
-// import org.springframework.context.annotation.Bean;
-// import org.springframework.context.annotation.Configuration;
-// import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-// import org.springframework.security.config.http.SessionCreationPolicy;
-// import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-// import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-// import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
-// import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
-// import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
-// import org.springframework.security.web.SecurityFilterChain;
-// import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-// @Configuration
-// public class SecurityConfig {
-
-//     private final FirebaseFilter firebaseFilter;
-
-//     public SecurityConfig(FirebaseFilter firebaseFilter) {
-//         this.firebaseFilter = firebaseFilter;
-//     }
-
-//     @Bean
-//     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//         http
-//             .csrf(csrf -> csrf.disable())
-//             .sessionManagement(session -> 
-//                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//             )
-//             .authorizeHttpRequests(auth -> auth
-//                 // 1. Cho phép tài nguyên tĩnh công khai công cộng
-//                 .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**", "/favicon.ico").permitAll()
-//                 .requestMatchers("/ws-suco/**", "/ws-suco-web/**").permitAll()
-                
-//                 // 2. Cho phép các trang login truy cập tự do
-//                 .requestMatchers("/admin/login", "/truso/login", "/logout", "/api/auth/**").permitAll()
-                
-//                 // Bản đồ công khai
-//                 .requestMatchers("/api/su-co/map", "/api/sos/map").permitAll()
-
-//                 // 3. Phân quyền cụ thể dựa trên SCOPE (Từ JWT của Trụ sở) và ROLE (Từ Admin)
-//                 .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SCOPE_ADMIN")
-//                 .requestMatchers("/api/goi/**", "/api/admin/**").hasAnyAuthority("SCOPE_ADMIN", "ROLE_ADMIN")
-                
-//                 // Phân vùng dành riêng cho trụ sở
-//                 .requestMatchers("/truso/**").hasAnyAuthority("SCOPE_TRUSO", "ROLE_TRUSO")
-
-//                 // 4. Tất cả các api vận hành còn lại yêu cầu phải xác thực
-//                 .requestMatchers("/api/map/**", "/api/qua/**", "/api/su-co/**", 
-//                                  "/api/sos/**", "/api/doi-tien/**", "/api/quyen-gop/**").authenticated()
-
-//                 .anyRequest().authenticated()
-//             )
-//             .oauth2ResourceServer(oauth2 -> oauth2
-//                 .bearerTokenResolver(request -> {
-//                     if (request.getCookies() != null) {
-//                         for (Cookie cookie : request.getCookies()) {
-//                             if ("accessToken".equals(cookie.getName())) {
-//                                 return cookie.getValue();
-//                             }
-//                         }
-//                     }
-//                     return new DefaultBearerTokenResolver().resolve(request);
-//                 })
-//                 .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
-//                 .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-//             )
-//             .exceptionHandling(ex -> ex
-//                 .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
-//             )
-//             .logout(logout -> logout
-//                 .logoutUrl("/logout")
-//                 .deleteCookies("accessToken")
-//                 .clearAuthentication(true)
-//                 .invalidateHttpSession(true)
-//                 .permitAll()
-//                 .logoutSuccessHandler((request, response, authentication) -> {
-//                     response.setStatus(200);
-//                     response.setContentType("application/json");
-//                     response.getWriter().write("""
-//                         {"message":"Logout success"}
-//                     """);
-//                 })
-//             );
-
-//         // Đặt FirebaseFilter chạy trước để gánh phần xác thực Admin Firebase
-//         http.addFilterBefore(firebaseFilter, UsernamePasswordAuthenticationFilter.class);
-
-//         return http.build();
-//     }
-
-//     @Bean
-//     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-//         JwtGrantedAuthoritiesConverter scopeConverter = new JwtGrantedAuthoritiesConverter();
-//         scopeConverter.setAuthoritiesClaimName("scope");
-//         scopeConverter.setAuthorityPrefix("SCOPE_");
-
-//         JwtGrantedAuthoritiesConverter roleConverter = new JwtGrantedAuthoritiesConverter();
-//         roleConverter.setAuthoritiesClaimName("scope");
-//         roleConverter.setAuthorityPrefix("ROLE_");
-
-//         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-//         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-//             var authorities = scopeConverter.convert(jwt);
-//             authorities.addAll(roleConverter.convert(jwt));
-//             return authorities;
-//         });
-//         return converter;
-//     }
-// }
-
-
 package com.example.suco.config;
 
-
 import com.example.suco.security.FirebaseFilter;
+import com.example.suco.service.xacthuc.LogoutService;
 
 import jakarta.servlet.http.Cookie;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
-
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-
+import com.example.suco.repository.RefreshTokenRepository;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 @Configuration
 public class SecurityConfig {
 
-
     private final FirebaseFilter firebaseFilter;
 
 
+    private final LogoutService logoutService;
 
-    public SecurityConfig(
-            FirebaseFilter firebaseFilter
-    ) {
+    private final RefreshTokenRepository refreshTokenRepository;
 
-        this.firebaseFilter = firebaseFilter;
-    }
+        private final JwtDecoder jwtDecoder;
 
+public SecurityConfig(
+        FirebaseFilter firebaseFilter,
+        RefreshTokenRepository refreshTokenRepository,
+        JwtDecoder jwtDecoder,
+        LogoutService logoutService
+) {
 
-
-
-
+    this.firebaseFilter = firebaseFilter;
+    this.refreshTokenRepository = refreshTokenRepository;
+    this.jwtDecoder = jwtDecoder;
+    this.logoutService = logoutService;
+}
     @Bean
     public SecurityFilterChain filterChain(
             HttpSecurity http
     ) throws Exception {
-
-
         http
-
             // JWT stateless
             .csrf(csrf -> csrf.disable())
-
-
             .sessionManagement(session ->
                     session.sessionCreationPolicy(
                             SessionCreationPolicy.STATELESS
                     )
             )
-
-
-
             .authorizeHttpRequests(auth -> auth
 
 
@@ -340,47 +218,92 @@ public class SecurityConfig {
 
             .logout(logout -> logout
 
+        .logoutUrl("/logout")
 
-                    .logoutUrl("/logout")
-
-
-                    // JWT không có session
-                    .clearAuthentication(true)
+        .clearAuthentication(true)
 
 
-
-                    // xóa cả 2 cookie
-                    .deleteCookies(
-                            "accessToken",
-                            "refreshToken"
-                    )
+        .deleteCookies(
+                "accessToken",
+                "refreshToken"
+        )
 
 
-
-                    .permitAll()
-
+        .permitAll()
 
 
-                    .logoutSuccessHandler(
-                            (request, response, authentication) -> {
-
-                                response.setStatus(200);
-
-                                response.setContentType(
-                                        "application/json"
-                                );
+        .logoutSuccessHandler(
+                (request, response, authentication) -> {
 
 
-                                response.getWriter()
-                                        .write("""
-                                        {
-                                          "message":"Logout success"
-                                        }
-                                        """);
+                    /*
+                     * Xóa refresh token trong DB
+                     */
+                    Cookie[] cookies =
+                            request.getCookies();
+
+
+                    if (cookies != null) {
+
+                        for (Cookie cookie : cookies) {
+
+
+                            if ("refreshToken"
+                                    .equals(cookie.getName())) {
+
+
+                                try {
+
+
+                                    Jwt jwt =
+                                            jwtDecoder.decode(
+                                                    cookie.getValue()
+                                            );
+
+
+                                    String jti =
+                                            jwt.getId();
+
+
+                                    if (jti != null) {
+
+                                        logoutService.deleteRefreshToken(jti);
+                                    }
+
+
+                                } catch (Exception e) {
+
+                                    System.out.println(
+                                            "Không thể xóa refresh token DB: "
+                                                    + e.getMessage()
+                                    );
+                                }
+
+
+                                break;
                             }
-                    )
-            );
+                        }
+                    }
 
+
+
+
+                    response.setStatus(200);
+
+                    response.setContentType(
+                            "application/json"
+                    );
+
+
+                    response.getWriter()
+                            .write("""
+                            {
+                              "message":"Logout success"
+                            }
+                            """);
+                }
+        )
+);
 
 
 

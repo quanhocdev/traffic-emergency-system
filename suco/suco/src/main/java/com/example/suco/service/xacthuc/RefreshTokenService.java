@@ -94,24 +94,8 @@ public class RefreshTokenService {
 
 
 
-
         /*
-         * 4. Kiểm tra token đã bị thu hồi chưa
-         */
-        if (refreshToken.isRevoked()) {
-
-            throw new RuntimeException(
-                    "Refresh token đã bị thu hồi"
-            );
-        }
-
-
-
-
-
-
-        /*
-         * 5. Kiểm tra thời gian hết hạn
+         * 4. Kiểm tra thời gian hết hạn
          */
         if (refreshToken.getExpiresAt()
                 .isBefore(Instant.now())) {
@@ -127,7 +111,7 @@ public class RefreshTokenService {
 
 
         /*
-         * 6. Sinh access token mới
+         * 5. Sinh access token mới
          */
         return tokenProvider.generateAccessToken(
                 refreshToken.getAccountId(),
