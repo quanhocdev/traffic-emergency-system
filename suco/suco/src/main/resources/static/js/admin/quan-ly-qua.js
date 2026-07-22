@@ -14,18 +14,10 @@ function toggleEditVoucherFields() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Toggle Sidebar
-  const toggleBtn = document.querySelector(".toggle-btn");
-  const sidebar = document.getElementById("sidebar");
+  const formAddQua = document.getElementById("formAddQua");
 
-  if (toggleBtn && sidebar) {
-    toggleBtn.addEventListener("click", () => {
-      sidebar.classList.toggle("collapsed");
-    });
-  }
-  document
-    .getElementById("formAddQua")
-    .addEventListener("submit", function (e) {
+  if (formAddQua) {
+    formAddQua.addEventListener("submit", function (e) {
       e.preventDefault();
 
       const formData = new FormData(this);
@@ -35,12 +27,17 @@ document.addEventListener("DOMContentLoaded", function () {
         body: formData,
       })
         .then((res) => res.json())
+
         .then((data) => {
           alert(data.message);
           location.reload();
         })
-        .catch(() => alert("Lỗi server"));
+
+        .catch(() => {
+          alert("Lỗi server");
+        });
     });
+  }
 
   // Voucher logic
   const loaiSelect = document.getElementById("selectLoaiQua");

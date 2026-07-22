@@ -3,204 +3,324 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Quản Lý & Điều Phối Sự Cố</title>
 
+    <!-- Bootstrap -->
     <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
       rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+
+    <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+
+    <!-- CSS -->
     <link rel="stylesheet" th:href="@{/css/admin/quan-ly-su-co.css}" />
+
     <link rel="stylesheet" th:href="@{/css/fragments/sidebar-admin.css}" />
   </head>
+
   <body>
     <div id="main-container">
+      <!-- SIDEBAR -->
+
       <div th:replace="fragments/sidebar-admin :: sidebar"></div>
 
-      <div class="main-content">
-        <div class="header-area">
-          <h2 class="header-title">
-            Trung tâm Điều phối & Giám sát Sự cố Realtime
-          </h2>
-          <div class="system-status-badge">
-            <i class="fa-solid fa-circle status-pulse-icon"></i>
-            <span>Hệ thống đang lắng nghe trực tuyến...</span>
-          </div>
-        </div>
+      <!-- CONTENT -->
 
-        <div class="filter-panel-section">
-          <div class="system-tabs">
-            <div class="tab-item active" onclick="switchTab('all', this)">
-              Tất cả Sự cố
-              <span class="tab-count" th:text="${#lists.size(allSuCo)}">0</span>
+      <main class="main-content">
+        <div class="container-fluid p-0">
+          <!-- HEADER -->
+
+          <div class="header-area">
+            <div>
+              <h2 class="header-title">Điều phối & Giám sát Sự cố</h2>
             </div>
-            <div class="tab-item" onclick="switchTab('pending', this)">
-              Đã Tiếp Nhận <span class="tab-count">0</span>
-            </div>
-            <div class="tab-item" onclick="switchTab('waiting', this)">
-              Chờ Xử Lý <span class="tab-count">0</span>
-            </div>
-            <div class="tab-item" onclick="switchTab('processing', this)">
-              Đang Xử Lý <span class="tab-count">0</span>
-            </div>
-            <div class="tab-item" onclick="switchTab('done', this)">
-              Hoàn Thành <span class="tab-count">0</span>
-            </div>
-            <div class="tab-item" onclick="switchTab('cancel', this)">
-              Đã Hủy Bỏ <span class="tab-count">0</span>
+
+            <div class="system-status-badge">
+              <i class="fa-solid fa-circle status-pulse-icon"></i>
+
+              <span> Hệ thống đang lắng nghe trực tuyến... </span>
             </div>
           </div>
+
+          <!-- FILTER TAB -->
+
+          <div class="filter-panel-section">
+            <div class="system-tabs">
+              <div class="tab-item active" onclick="switchTab('all', this)">
+                Tất cả sự cố
+
+                <span class="tab-count" th:text="${#lists.size(allSuCo)}">
+                  0
+                </span>
+              </div>
+
+              <div class="tab-item" onclick="switchTab('pending', this)">
+                Đã tiếp nhận
+
+                <span class="tab-count"> 0 </span>
+              </div>
+
+              <div class="tab-item" onclick="switchTab('waiting', this)">
+                Chờ xử lý
+
+                <span class="tab-count"> 0 </span>
+              </div>
+
+              <div class="tab-item" onclick="switchTab('processing', this)">
+                Đang xử lý
+
+                <span class="tab-count"> 0 </span>
+              </div>
+
+              <div class="tab-item" onclick="switchTab('done', this)">
+                Hoàn thành
+
+                <span class="tab-count"> 0 </span>
+              </div>
+
+              <div class="tab-item" onclick="switchTab('cancel', this)">
+                Đã hủy bỏ
+
+                <span class="tab-count"> 0 </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABLE -->
+
+          <div class="table-card-wrapper">
+            <div class="table-responsive">
+              <table class="admin-table table mb-0">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+
+                    <th>Hiện trường</th>
+
+                    <th>Loại sự cố</th>
+
+                    <th>Mức độ</th>
+
+                    <th>Người báo cáo</th>
+
+                    <th>Địa chỉ & tọa độ</th>
+
+                    <th>Thời gian</th>
+
+                    <th>Tin cậy</th>
+
+                    <th class="status-column">Trạng thái / Trụ sở</th>
+
+                    <th>Camera</th>
+                  </tr>
+                </thead>
+
+                <tbody id="table-body-main">
+                  <tr
+                    th:each="item : ${allSuCo}"
+                    class="incident-row"
+                    th:id="'report-' + ${item.id}"
+                    th:data-lat="${item.viDo}"
+                    th:data-lng="${item.kinhDo}"
+                    th:data-status="${item.trangThaiXuLy}"
+                    th:style="${item.trangThaiXuLy == 'HUY_BO' ? 'opacity:0.5;' : ''}"
+                  >
+                    <!-- ID -->
+
+                    <td class="row-id-cell" th:text="${item.id}"></td>
+
+                    <!-- HÌNH ẢNH -->
+
+                    <td>
+                      <img
+                        th:src="${item.hinhAnhUrl != null 
+                ? item.hinhAnhUrl 
+                : '/images/no-image.png'}"
+                        class="img-table"
+                      />
+                    </td>
+
+                    <!-- LOẠI SỰ CỐ -->
+
+                    <td>
+                      <span class="fw-semibold" th:text="${item.loaiSuCo.ten}">
+                      </span>
+                    </td>
+
+                    <!-- MỨC ĐỘ -->
+
+                    <td>
+                      <span
+                        th:class="'badge-level ' + ${item.mucDoSuCo}"
+                        th:text="${item.mucDoSuCo}"
+                      >
+                      </span>
+                    </td>
+
+                    <!-- NGƯỜI BÁO CÁO -->
+
+                    <td>
+                      <div
+                        class="fw-semibold"
+                        th:text="${item.reporter.name != null 
+                ? item.reporter.name 
+                : 'Người dân'}"
+                      ></div>
+
+                      <div
+                        class="reporter-email"
+                        th:text="${item.reporter.email}"
+                      ></div>
+                    </td>
+
+                    <!-- ĐỊA CHỈ -->
+
+                    <td>
+                      <div
+                        class="address-text"
+                        th:text="${item.diaChi != null 
+                ? item.diaChi 
+                : 'Không xác định'}"
+                      ></div>
+
+                      <div class="coordinate-subtext">
+                        <i class="fa-solid fa-location-dot"></i>
+
+                        Lat:
+
+                        <span th:text="${item.viDo}"> 0.0 </span>
+
+                        , Lng:
+
+                        <span th:text="${item.kinhDo}"> 0.0 </span>
+                      </div>
+                    </td>
+
+                    <!-- THỜI GIAN -->
+
+                    <td
+                      class="time-cell"
+                      th:text="${#temporals.format(
+            item.thoiGianTao,
+            'dd/MM/yyyy HH:mm:ss'
+        )}"
+                    ></td>
+
+                    <!-- ĐỘ TIN CẬY -->
+
+                    <td>
+                      <span class="confidence-val" th:text="${item.doTinCay}">
+                        1
+                      </span>
+                    </td>
+
+                    <!-- TRẠNG THÁI -->
+
+                    <td class="status-cell">
+                      <!-- ĐÃ TIẾP NHẬN -->
+
+                      <span
+                        th:if="${item.trangThaiXuLy == 'DA_TIEP_NHAN'}"
+                        class="status-label status-received"
+                      >
+                        <i class="fa-solid fa-bell"></i>
+
+                        <span> Đã tiếp nhận </span>
+
+                        <span
+                          th:text="${item.truSoTiepNhan != null 
+                ? '(Trụ sở #' + item.truSoTiepNhan.id + ')' 
+                : '(Chưa gán)'}"
+                        >
+                        </span>
+                      </span>
+
+                      <!-- ĐANG DI CHUYỂN -->
+
+                      <span
+                        th:if="${item.trangThaiXuLy == 'DANG_DI_CHUYEN'}"
+                        class="status-label status-waiting"
+                      >
+                        <i class="fa-solid fa-clock"></i>
+
+                        <span> Chờ xử lý </span>
+                      </span>
+
+                      <!-- ĐANG XỬ LÝ -->
+
+                      <span
+                        th:if="${item.trangThaiXuLy == 'DANG_XU_LY'}"
+                        class="status-label status-processing"
+                      >
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+
+                        <span
+                          th:text="${item.truSoTiepNhan != null 
+                ? 'Trụ sở #' + item.truSoTiepNhan.id 
+                : 'Trụ sở'}"
+                        >
+                        </span>
+
+                        <span> đang xử lý </span>
+                      </span>
+
+                      <!-- HOÀN THÀNH -->
+
+                      <span
+                        th:if="${item.trangThaiXuLy == 'HOAN_THANH'}"
+                        class="status-label status-done"
+                      >
+                        <i class="fa-solid fa-circle-check"></i>
+
+                        <span> Đã hoàn thành </span>
+                      </span>
+
+                      <!-- HỦY -->
+
+                      <span
+                        th:if="${item.trangThaiXuLy == 'HUY_BO'}"
+                        class="status-label status-cancelled"
+                      >
+                        <i class="fa-solid fa-circle-xmark"></i>
+
+                        <span> Đã hủy bỏ </span>
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-
-        <div id="incident-table-container" class="table-card-wrapper">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th style="width: 50px">ID</th>
-                <th style="width: 70px">Hiện trường</th>
-                <th>Loại Sự Cố</th>
-                <th style="width: 100px">Mức Độ</th>
-                <th>Người Báo Cáo</th>
-                <th>Địa Chỉ & Tọa Độ</th>
-                <th style="width: 130px">Thời Gian Tạo</th>
-                <th style="width: 70px">Tin Cậy</th>
-                <th>Trạng Thái / Trụ Sở</th>
-                <th>Camera Lân Cận</th>
-              </tr>
-            </thead>
-            <tbody id="table-body-main">
-              <tr
-                th:each="item : ${allSuCo}"
-                class="incident-row"
-                th:id="'report-' + ${item.id}"
-                th:data-lat="${item.viDo}"
-                th:data-lng="${item.kinhDo}"
-                th:data-status="${item.trangThaiXuLy}"
-                th:style="${item.trangThaiXuLy == 'HUY_BO' ? 'opacity: 0.5;' : ''}"
-              >
-                <td th:text="${item.id}" class="row-id-cell"></td>
-
-                <td>
-                  <img
-                    th:src="${item.hinhAnhUrl != null ? item.hinhAnhUrl : '/images/no-image.png'}"
-                    class="img-table"
-                  />
-                </td>
-
-                <td
-                  th:text="${item.loaiSuCo.ten}"
-                  style="font-weight: 600; color: #1e293b"
-                ></td>
-
-                <td>
-                  <small
-                    th:class="'badge-level ' + ${item.mucDoSuCo}"
-                    th:text="${item.mucDoSuCo}"
-                  ></small>
-                </td>
-
-                <td>
-                  <div
-                    th:text="${item.reporter.name != null ? item.reporter.name : 'Người dân'}"
-                    style="font-weight: 500"
-                  ></div>
-                  <div
-                    class="reporter-email"
-                    th:text="${item.reporter.email}"
-                  ></div>
-                </td>
-
-                <td>
-                  <div
-                    class="address-text"
-                    th:text="${item.diaChi != null ? item.diaChi : 'Không xác định'}"
-                  ></div>
-                  <div class="coordinate-subtext">
-                    <i class="fa-solid fa-location-dot"></i>
-                    Lat: <span th:text="${item.viDo}">0.0</span>, Lng:
-                    <span th:text="${item.kinhDo}">0.0</span>
-                  </div>
-                </td>
-
-                <td
-                  class="time-cell"
-                  th:text="${#temporals.format(item.thoiGianTao, 'dd/MM/yyyy HH:mm:ss')}"
-                ></td>
-
-                <td class="confidence-val" th:text="${item.doTinCay}">1</td>
-
-                <td class="status-cell">
-                  <span
-                    th:if="${item.trangThaiXuLy == 'DA_TIEP_NHAN'}"
-                    class="status-label status-received"
-                  >
-                    <i class="fa-solid fa-bell"></i> Đã tiếp nhận
-                    <span
-                      th:text="${item.truSoTiepNhan != null ? '(Trụ sở #' + item.truSoTiepNhan.id + ')' : '(Chưa gán)'}"
-                    ></span>
-                  </span>
-
-                  <span
-                    th:if="${item.trangThaiXuLy == 'DANG_DI_CHUYEN'}"
-                    class="status-label status-waiting"
-                  >
-                    <i class="fa-solid fa-clock"></i> Chờ xử lý
-                  </span>
-
-                  <span
-                    th:if="${item.trangThaiXuLy == 'DANG_XU_LY'}"
-                    class="status-label status-processing"
-                  >
-                    <i class="fa-solid fa-spinner fa-spin"></i>
-                    <span
-                      th:text="${item.truSoTiepNhan != null ? 'Trụ sở #' + item.truSoTiepNhan.id : 'Trụ sở'}"
-                    ></span>
-                    đang xử lý
-                  </span>
-
-                  <span
-                    th:if="${item.trangThaiXuLy == 'HOAN_THANH'}"
-                    class="status-label status-done"
-                  >
-                    <i class="fa-solid fa-circle-check"></i> Đã hoàn thành
-                  </span>
-
-                  <span
-                    th:if="${item.trangThaiXuLy == 'HUY_BO'}"
-                    class="status-label status-cancelled"
-                  >
-                    <i class="fa-solid fa-circle-xmark"></i> Đã hủy bỏ
-                  </span>
-                </td>
-
-                <td>
-                  <div
-                    th:id="'cam-area-' + ${item.id}"
-                    class="camera-zone-wrapper"
-                    style="display: none"
-                  >
-                    <div
-                      th:id="'cam-list-' + ${item.id}"
-                      class="camera-badge-flex"
-                    ></div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      </main>
     </div>
-
+    <!-- JS WEBSOCKET -->
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <!-- JS RIÊNG TRANG QUẢN LÝ SỰ CỐ -->
     <script th:src="@{/js/admin/quan-ly-su-co.js}"></script>
+
+    <!-- SIDEBAR -->
     <script th:src="@{/js/fragments/sidebar-admin.js}"></script>
+
+    <!-- API CLIENT JWT -->
     <script src="/js/api-client.js"></script>
   </body>
 </html>

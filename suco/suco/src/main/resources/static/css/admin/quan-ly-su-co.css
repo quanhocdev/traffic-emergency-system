@@ -1,10 +1,7 @@
 :root {
-  --primary-color: #1a1a1a;
   --accent-color: #3b82f6;
-  --sidebar-width: 260px;
-  --font-main: "Inter", system-ui, -apple-system, sans-serif;
+  --font-main: "Inter", sans-serif;
 
-  /* Status Colors */
   --color-received: #f59e0b;
   --color-waiting: #d97706;
   --color-processing: #3b82f6;
@@ -12,321 +9,465 @@
   --color-cancelled: #ef4444;
 }
 
-/* RESET & LAYOUT CONTAINER */
+/* =========================
+   BODY + LAYOUT
+========================= */
+
 html,
 body {
-  font-family: var(--font-main);
   margin: 0;
   padding: 0;
-  background-color: #f8fafc; /* Màu xám dịu mắt của Tailwind */
-  height: 100vh;
-  overflow: hidden;
+
+  height: 100%;
+
+  font-family: var(--font-main);
+
+  background: #f8fafc;
 }
 
 #main-container {
   display: flex;
-  width: 100%;
+
   height: 100vh;
+
+  overflow: hidden;
 }
 
-/* WORKSPACE CONTENT AREA */
 .main-content {
-  flex-grow: 1;
+  flex: 1;
+
   overflow-y: auto;
-  padding: 32px;
-  box-sizing: border-box;
+
+  padding: 30px;
 }
 
-/* HEADER STYLE */
+/* =========================
+   HEADER
+========================= */
+
 .header-area {
   display: flex;
+
   justify-content: space-between;
+
   align-items: center;
-  margin-bottom: 28px;
+
+  gap: 20px;
+
+  margin-bottom: 25px;
 }
 
 .header-title {
   font-size: 24px;
+
   font-weight: 700;
+
   color: #0f172a;
+
   border-left: 5px solid var(--accent-color);
-  padding-left: 14px;
+
+  padding-left: 15px;
+
   margin: 0;
 }
 
 .system-status-badge {
-  font-size: 13px;
-  color: #64748b;
   background: white;
-  padding: 8px 16px;
-  border-radius: 20px;
+
   border: 1px solid #e2e8f0;
+
+  padding: 10px 16px;
+
+  border-radius: 30px;
+
   display: flex;
+
   align-items: center;
+
   gap: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+
+  font-size: 13px;
+
+  color: #64748b;
+
+  white-space: nowrap;
 }
 
 .status-pulse-icon {
   color: #10b981;
+
   font-size: 10px;
-  animation: pulse-glow 2s infinite;
+
+  animation: pulse 2s infinite;
 }
 
-@keyframes pulse-glow {
+@keyframes pulse {
   0% {
-    transform: scale(0.95);
-    opacity: 0.5;
+    opacity: 0.4;
+    transform: scale(0.8);
   }
+
   50% {
-    transform: scale(1.2);
     opacity: 1;
+    transform: scale(1.2);
   }
+
   100% {
-    transform: scale(0.95);
-    opacity: 0.5;
+    opacity: 0.4;
+    transform: scale(0.8);
   }
 }
 
-/* SECTION TÁCH BIỆT BỘ LỌC TRẠNG THÁI (ĐÚNG Ý BẠN) */
+/* =========================
+   FILTER TAB
+========================= */
+
 .filter-panel-section {
   background: white;
-  padding: 6px 12px;
+
   border-radius: 12px;
+
+  padding: 8px;
+
+  margin-bottom: 25px;
+
   border: 1px solid #e2e8f0;
-  margin-bottom: 24px; /* Tạo khoảng cách tách biệt hoàn toàn với bảng bên dưới */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-  display: inline-block; /* Ôm vừa vặn các tabs nút bấm */
+
+  overflow-x: auto;
 }
 
 .system-tabs {
   display: flex;
-  gap: 4px;
+
+  flex-direction: row;
+
+  gap: 5px;
+
+  width: max-content;
 }
 
 .tab-item {
-  padding: 10px 20px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
-  color: #64748b;
-  border-radius: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
+
   align-items: center;
-  gap: 8px;
+
+  gap: 7px;
+
+  padding: 10px 18px;
+
+  border-radius: 8px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  color: #64748b;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  transition: 0.2s;
 }
 
 .tab-item:hover {
   background: #f1f5f9;
-  color: #334155;
 }
 
 .tab-item.active {
-  color: var(--accent-color);
-  background: #eff6ff; /* Nền xanh nhạt nhẹ nhàng */
+  background: #eff6ff;
+
+  color: #2563eb;
 }
 
 .tab-count {
-  font-size: 11px;
   background: #e2e8f0;
+
   color: #475569;
+
   padding: 2px 7px;
+
   border-radius: 20px;
-  font-weight: 700;
+
+  font-size: 11px;
 }
 
 .tab-item.active .tab-count {
-  background: var(--accent-color);
+  background: #3b82f6;
+
   color: white;
 }
 
-/* VÙNG CHỨA BẢNG DỮ LIỆU CAO CẤP */
+/* =========================
+   TABLE
+========================= */
+
 .table-card-wrapper {
   background: white;
+
   border-radius: 14px;
-  border: 1px solid #e2e8f0;
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.02),
-    0 2px 4px -1px rgba(0, 0, 0, 0.01);
+
   overflow: hidden;
+
+  border: 1px solid #e2e8f0;
+}
+
+.table-responsive {
+  overflow-x: auto;
 }
 
 .admin-table {
   width: 100%;
+
+  min-width: 1500px;
+
   border-collapse: collapse;
-  text-align: left;
 }
 
 .admin-table th {
   background: #f8fafc;
-  padding: 14px 18px;
+
+  padding: 15px;
+
   font-size: 12px;
+
   font-weight: 700;
+
   color: #64748b;
+
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+
+  white-space: nowrap;
+
   border-bottom: 1px solid #e2e8f0;
 }
 
 .admin-table td {
-  padding: 16px 18px;
+  padding: 15px;
+
   border-bottom: 1px solid #f1f5f9;
-  font-size: 13.5px;
-  color: #334155;
+
   vertical-align: middle;
+
+  font-size: 13px;
 }
 
-.admin-table tr:last-child td {
-  border-bottom: none;
+.admin-table tr:hover {
+  background: #f8fafc;
 }
 
-.admin-table .incident-row {
-  transition: background-color 0.15s ease;
-}
-
-.admin-table .incident-row:hover {
-  background-color: #f8fafc; /* Highlight dòng nhẹ nhàng khi hover chuột */
-}
-
-/* UI CELLS DETAILS */
-.row-id-cell {
-  font-weight: 700;
-  color: #94a3b8;
-}
+/* =========================
+   IMAGE
+========================= */
 
 .img-table {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
+  width: 50px;
+
+  height: 50px;
+
   object-fit: cover;
+
+  border-radius: 8px;
+
   border: 1px solid #e2e8f0;
 }
 
-.reporter-email {
-  font-size: 11.5px;
-  color: #94a3b8;
-  margin-top: 2px;
-}
+/* =========================
+   ADDRESS
+========================= */
 
-.address-cell {
-  max-width: 250px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.confidence-val {
-  font-weight: 700;
-  color: #475569;
-}
-
-/* BADGES MỨC ĐỘ SỰ CỐ */
-.badge-level {
-  display: inline-block;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  margin-top: 4px;
-}
-.badge-level.HIGH {
-  background: #fee2e2;
-  color: #ef4444;
-}
-.badge-level.MEDIUM {
-  background: #ffedd5;
-  color: #f97316;
-}
-.badge-level.LOW {
-  background: #f0fdf4;
-  color: #16a34a;
-}
-.badge-level.NONE {
-  background: #f1f5f9;
-  color: #64748b;
-}
-
-/* TRẠNG THÁI XỬ LÝ TRONG BẢNG */
-.status-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 600;
-  font-size: 13px;
-}
-.status-received {
-  color: var(--color-received);
-}
-.status-waiting {
-  color: var(--color-waiting);
-}
-.status-processing {
-  color: var(--color-processing);
-}
-.status-done {
-  color: var(--color-done);
-}
-.status-cancelled {
-  color: var(--color-cancelled);
-}
-
-/* VÙNG HIỂN THỊ CAMERA */
-.camera-zone-wrapper {
-  display: flex;
-  flex-direction: column;
-}
-
-.camera-badge-flex {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.camera-badge-flex div {
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 11.5px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
-  transition: all 0.15s ease;
-}
-
-.camera-badge-flex div:hover {
-  background: #e2e8f0;
-  border-color: #94a3b8;
-  transform: translateY(-1px);
-}
 .address-text {
-  font-weight: 500;
-  color: #1e293b;
   max-width: 280px;
-  white-space: nowrap;
+
   overflow: hidden;
+
   text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  font-weight: 500;
 }
 
 .coordinate-subtext {
-  font-size: 11px;
-  color: #64748b;
-  margin-top: 4px;
   display: flex;
+
   align-items: center;
+
   gap: 4px;
+
+  margin-top: 5px;
+
+  font-size: 11px;
+
+  color: #64748b;
 }
 
 .coordinate-subtext i {
   color: #ef4444;
 }
 
-/* Định dạng cột thời gian tạo */
-.time-cell {
-  font-size: 12.5px;
-  color: #475569;
+/* =========================
+   STATUS
+========================= */
+
+.status-column {
+  min-width: 230px;
+}
+
+.status-cell {
+  min-width: 230px;
+}
+
+.status-label {
+  display: flex;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+
+  font-weight: 600;
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+.status-label span {
   font-weight: 500;
+}
+
+.status-received {
+  color: var(--color-received);
+}
+
+.status-waiting {
+  color: var(--color-waiting);
+}
+
+.status-processing {
+  color: var(--color-processing);
+}
+
+.status-done {
+  color: var(--color-done);
+}
+
+.status-cancelled {
+  color: var(--color-cancelled);
+}
+
+/* =========================
+   LEVEL
+========================= */
+
+.badge-level {
+  padding: 4px 8px;
+
+  border-radius: 6px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.badge-level.HIGH {
+  background: #fee2e2;
+
+  color: #ef4444;
+}
+
+.badge-level.MEDIUM {
+  background: #ffedd5;
+
+  color: #f97316;
+}
+
+.badge-level.LOW {
+  background: #dcfce7;
+
+  color: #16a34a;
+}
+
+.badge-level.NONE {
+  background: #e2e8f0;
+
+  color: #64748b;
+}
+
+/* =========================
+   USER
+========================= */
+
+.reporter-email {
+  color: #94a3b8;
+
+  font-size: 12px;
+}
+
+.row-id-cell {
+  font-weight: 700;
+
+  color: #94a3b8;
+}
+
+.confidence-val {
+  font-weight: 700;
+
+  color: #475569;
+}
+
+/* =========================
+   CAMERA
+========================= */
+
+.camera-zone-wrapper {
+  min-width: 150px;
+}
+
+.camera-badge-flex {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+}
+
+.camera-badge-flex div {
+  padding: 5px 10px;
+
+  background: #f1f5f9;
+
+  border: 1px solid #cbd5e1;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 992px) {
+  .main-content {
+    padding: 15px;
+  }
+
+  .header-area {
+    flex-direction: column;
+
+    align-items: flex-start;
+  }
+
+  .system-status-badge {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .header-title {
+    font-size: 18px;
+  }
 }

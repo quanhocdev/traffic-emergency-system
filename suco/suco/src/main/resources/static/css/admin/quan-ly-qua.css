@@ -1,10 +1,12 @@
 :root {
-  --primary-color: #1a1a1a;
   --accent-color: #3b82f6;
-  --sidebar-width: 260px;
   --sidebar-collapsed-width: 75px;
   --font-main: "Inter", system-ui, sans-serif;
 }
+
+/* ===============================
+   GLOBAL
+================================ */
 
 html,
 body {
@@ -16,6 +18,7 @@ body {
   background: #f1f5f9;
   overflow: hidden;
 }
+
 #main-container {
   display: flex;
   width: 100%;
@@ -23,42 +26,214 @@ body {
   overflow: hidden;
 }
 
-/* ===== MAIN CONTENT ===== */
+/* ===============================
+   MAIN CONTENT
+================================ */
+
 .main-content {
-  flex-grow: 1;
+  flex: 1;
   min-width: 0;
-  overflow-y: auto;
   padding: 30px;
+  overflow-y: auto;
   box-sizing: border-box;
 }
 
 .page-title {
   font-size: 24px;
   font-weight: 700;
+  color: #0f172a;
+
   border-left: 5px solid var(--accent-color);
+
   padding-left: 15px;
   margin-bottom: 25px;
-  color: #0f172a;
 }
 
-/* Style cho khung Voucher */
-.voucher-box {
-  background: #eff6ff;
-  border: 1px dashed #3b82f6;
-  padding: 15px;
+/* ===============================
+   CARD
+================================ */
+
+.card {
+  border-radius: 15px;
+}
+
+.card-header {
+  border-radius: 15px 15px 0 0 !important;
+}
+
+/* ===============================
+   FORM
+================================ */
+
+.form-control,
+.form-select {
   border-radius: 8px;
 }
-.modal-content {
-  background: white;
-  width: 500px;
-  margin: 80px auto;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #3b82f6;
+
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.15);
 }
 
-.modal h4 {
-  font-weight: 600;
-  border-left: 4px solid #3b82f6;
-  padding-left: 10px;
+/* ===============================
+   VOUCHER BOX
+================================ */
+
+.voucher-box {
+  background: #eff6ff;
+
+  border: 1px dashed #3b82f6;
+
+  padding: 15px;
+
+  border-radius: 12px;
+}
+
+/* ===============================
+   TABLE
+================================ */
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  font-size: 13px;
+
+  font-weight: 700;
+
+  color: #64748b;
+
+  text-transform: uppercase;
+
+  white-space: nowrap;
+}
+
+.table tbody td {
+  color: #334155;
+}
+
+.table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* ===============================
+ IMAGE
+================================ */
+
+.gift-image {
+  width: 55px;
+
+  height: 55px;
+
+  object-fit: cover;
+
+  border-radius: 10px;
+
+  border: 1px solid #e2e8f0;
+}
+
+.no-image {
+  width: 55px;
+
+  height: 55px;
+
+  border-radius: 10px;
+
+  background: #f1f5f9;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #94a3b8;
+}
+
+/* ===============================
+ BUTTON
+================================ */
+
+.btn {
+  border-radius: 8px;
+}
+
+.btn-primary {
+  background: #3b82f6;
+
+  border-color: #3b82f6;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+/* ===============================
+ MODAL BOOTSTRAP CUSTOM
+================================ */
+
+/* Không dùng .modal display:none nữa
+   vì Bootstrap tự quản lý */
+
+.modal-content {
+  border-radius: 16px;
+
+  border: none;
+
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-footer {
+  border-top: 1px solid #e5e7eb;
+}
+
+/* ===============================
+ SIDEBAR COLLAPSE
+================================ */
+
+/*
+Không copy width sidebar ở đây.
+sidebar-admin.css đang quản lý.
+*/
+
+/* ===============================
+ RESPONSIVE
+================================ */
+
+@media (max-width: 992px) {
+  .main-content {
+    padding: 20px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
+  }
+
+  .table-responsive {
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .page-title {
+    font-size: 18px;
+  }
+
+  .table td,
+  .table th {
+    font-size: 13px;
+  }
 }

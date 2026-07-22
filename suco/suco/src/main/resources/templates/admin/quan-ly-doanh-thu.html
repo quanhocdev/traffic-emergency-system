@@ -2,53 +2,80 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
+
     <title>Quản Lý Doanh Thu</title>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Bootstrap -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
 
+    <!-- Google Font -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
 
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    />
-
+    <!-- CSS -->
     <link rel="stylesheet" th:href="@{/css/admin/quan-ly-doanh-thu.css}" />
+
     <link rel="stylesheet" th:href="@{/css/fragments/sidebar-admin.css}" />
   </head>
 
   <body>
-    <div id="main-container">
+    <div id="main-container" class="d-flex">
+      <!-- SIDEBAR -->
       <div th:replace="fragments/sidebar-admin :: sidebar"></div>
 
-      <div class="main-content">
+      <!-- MAIN CONTENT -->
+      <main class="main-content flex-grow-1">
         <!-- TITLE -->
-        <h2 class="page-title">Quản Lý Doanh Thu</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2 class="page-title mb-0">
+            <i class="fa-solid fa-chart-line text-success"></i>
+            Quản Lý Doanh Thu
+          </h2>
+        </div>
 
-        <!-- TOTAL -->
+        <!-- TOTAL REVENUE -->
+
         <div class="row mb-4">
           <div class="col-md-4">
-            <div class="card text-white bg-success shadow-sm border-0">
-              <div class="card-body p-4">
-                <h6 class="text-uppercase mb-2" style="opacity: 0.8">
-                  Tổng Doanh Thu
-                </h6>
+            <div class="card revenue-card shadow-sm border-0">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <p class="text-muted mb-1">Tổng doanh thu</p>
 
-                <h3
-                  class="card-title mb-0"
-                  th:text="${#numbers.formatDecimal(tongDoanhThu, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"
-                >
-                  0 VNĐ
-                </h3>
+                    <h3
+                      class="fw-bold mb-0"
+                      th:text="${#numbers.formatDecimal(
+                        tongDoanhThu,
+                        0,
+                        'COMMA',
+                        0,
+                        'POINT'
+                        ) + ' VNĐ'}"
+                    >
+                      0 VNĐ
+                    </h3>
+                  </div>
 
-                <small class="mt-2 d-block">
+                  <div class="revenue-icon">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                  </div>
+                </div>
+
+                <small class="text-muted d-block mt-3">
                   Tổng tiền từ các giao dịch thành công.
                 </small>
               </div>
@@ -56,38 +83,62 @@
           </div>
         </div>
 
-        <!-- TABLE -->
+        <!-- PAYMENT TABLE -->
+
         <div class="card shadow-sm border-0">
-          <div class="card-header bg-white py-3 border-bottom">
-            <h5 class="m-0 text-primary">Danh sách thanh toán</h5>
+          <div class="card-header bg-white py-3">
+            <h5 class="mb-0 text-primary">
+              <i class="fa-solid fa-file-invoice-dollar"></i>
+
+              Danh sách thanh toán
+            </h5>
           </div>
 
           <div class="card-body p-0">
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0">
-                <thead class="table-light">
+                <thead class="table-light text-center">
                   <tr>
                     <th>ID TT</th>
-                    <th>Hóa đơn</th>
+
+                    <th>Mã SOS</th>
+
                     <th>Trụ sở</th>
-                    <th>Phương thức</th>
-                    <th>Tổng tiền</th>
-                    <th class="text-center">Trạng thái</th>
-                    <th class="text-center">Hành động</th>
+
+                    <th>Nội dung xử lý</th>
+
+                    <th>Số tiền</th>
+
+                    <th>Trạng thái</th>
+
+                    <th>Hành động</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  <tr th:each="hd : ${listDoanhThu}">
-                    <td th:text="${hd.id}"></td>
+                  <tr th:each="hd:${listDoanhThu}">
+                    <td class="text-center" th:text="${hd.id}"></td>
+
                     <td th:text="${hd.sosId}"></td>
+
                     <td th:text="${hd.trusoId}"></td>
-                    <td th:text="${hd.userId}"></td>
+
                     <td th:text="${hd.noiDungXuLy}"></td>
 
-                    <td
-                      th:text="${#numbers.formatDecimal(hd.thanhTien, 0, 'COMMA', 0, 'POINT')}"
-                    ></td>
+                    <td class="fw-bold text-success">
+                      <span
+                        th:text="${#numbers.formatDecimal(
+                        hd.thanhTien,
+                        0,
+                        'COMMA',
+                        0,
+                        'POINT'
+                        )}"
+                      >
+                      </span>
+
+                      VNĐ
+                    </td>
 
                     <td class="text-center">
                       <span
@@ -106,7 +157,7 @@
 
                       <span
                         th:if="${hd.trangThai == 'FAILED'}"
-                        class="badge bg-secondary"
+                        class="badge bg-danger"
                       >
                         Thất bại
                       </span>
@@ -114,16 +165,18 @@
 
                     <td class="text-center">
                       <button
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-sm btn-outline-primary"
                         th:attr="onclick=|openDetail(${hd.id})|"
                       >
-                        Xem chi tiết
+                        <i class="fa-solid fa-eye"></i>
+
+                        Chi tiết
                       </button>
                     </td>
                   </tr>
 
                   <tr th:if="${#lists.isEmpty(listDoanhThu)}">
-                    <td colspan="7" class="text-center py-4 text-muted">
+                    <td colspan="7" class="text-center text-muted py-4">
                       Không có dữ liệu
                     </td>
                   </tr>
@@ -132,15 +185,22 @@
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
+    <!-- =========================
+         MODAL CHI TIẾT HÓA ĐƠN
+    ========================= -->
 
-    <!-- MODAL -->
     <div class="modal fade" id="detailModal" tabindex="-1">
-      <div class="modal-dialog modal-lg">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">Chi tiết hóa đơn</h5>
+            <h5 class="modal-title">
+              <i class="fa-solid fa-file-invoice text-primary"></i>
+
+              Chi tiết hóa đơn
+            </h5>
+
             <button
               type="button"
               class="btn-close"
@@ -149,30 +209,54 @@
           </div>
 
           <div class="modal-body">
-            <div id="hoaDonInfo" class="mb-3 text-muted">Đang tải...</div>
+            <!-- THÔNG TIN HÓA ĐƠN -->
 
-            <table class="table table-sm">
-              <thead>
-                <tr>
-                  <th>Thời gian</th>
-                  <th>Phương thức</th>
-                  <th>Số tiền</th>
-                  <th>Trạng thái</th>
-                </tr>
-              </thead>
+            <div id="hoaDonInfo" class="mb-4">Đang tải dữ liệu...</div>
 
-              <tbody id="paymentTable"></tbody>
-            </table>
+            <!-- LỊCH SỬ THANH TOÁN -->
+
+            <h6 class="fw-bold mb-3">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+
+              Lịch sử thanh toán
+            </h6>
+
+            <div class="table-responsive">
+              <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                  <tr>
+                    <th>Thời gian</th>
+
+                    <th>Nội dung xử lý</th>
+
+                    <th>Số tiền</th>
+
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+
+                <tbody id="paymentTable"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- SCRIPT -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- BOOTSTRAP JS -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- API CLIENT -->
+
+    <script src="/js/api-client.js"></script>
+
+    <!-- SIDEBAR -->
+
+    <script th:src="@{/js/fragments/sidebar-admin.js}"></script>
+
+    <!-- PAGE JS -->
 
     <script th:src="@{/js/admin/quan-ly-doanh-thu.js}"></script>
-    <script th:src="@{/js/fragments/sidebar-admin.js}"></script>
-    <script src="/js/api-client.js"></script>
   </body>
 </html>

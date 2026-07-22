@@ -3,383 +3,466 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Quản lý Camera - SOS System</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <!-- Bootstrap -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+
+    <!-- Font Awesome -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+
+    <!-- Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSS -->
     <link rel="stylesheet" th:href="@{/css/admin/quan-ly-camera.css}" />
     <link rel="stylesheet" th:href="@{/css/fragments/sidebar-admin.css}" />
   </head>
+
   <body>
-    <div id="main-container">
+    <div id="main-container" class="d-flex">
+      <!-- Sidebar -->
       <div th:replace="fragments/sidebar-admin :: sidebar"></div>
 
-      <div class="main-content">
-        <div class="header-section">
-          <h2 class="header-title">Danh Sách Camera Hệ Thống</h2>
-          <button class="btn-add" onclick="openModal()">
-            <i class="fa-solid fa-plus"></i> Thêm Camera Mới
+      <!-- Main -->
+      <main class="main-content flex-grow-1">
+        <!-- Header -->
+        <div
+          class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3"
+        >
+          <h2 class="fw-bold text-dark m-0">
+            <i class="fa-solid fa-video text-primary"></i>
+            Danh Sách Camera Hệ Thống
+          </h2>
+
+          <button class="btn btn-primary" onclick="openModal()">
+            <i class="fa-solid fa-plus"></i>
+            Thêm Camera
           </button>
         </div>
 
-        <div class="toolbar">
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input
-              type="text"
-              id="searchInput"
-              onkeyup="filterTable()"
-              placeholder="Tìm kiếm tên camera hoặc vị trí..."
-            />
+        <!-- Search -->
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <div class="input-group">
+              <span class="input-group-text">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </span>
+
+              <input
+                type="text"
+                id="searchInput"
+                class="form-control"
+                onkeyup="filterTable()"
+                placeholder="Tìm kiếm camera hoặc vị trí..."
+              />
+            </div>
           </div>
         </div>
 
-        <div class="table-container">
-          <table id="cameraTable">
-            <thead>
-              <tr>
-                <th>Ảnh Camera</th>
-                <th>Tên Camera</th>
-                <th>Kinh độ (Lng)</th>
-                <th>Vĩ độ (Lat)</th>
-                <th>Địa chỉ</th>
-                <th>Trạng thái</th>
-                <th style="text-align: center">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="cam : ${danhSachCamera}">
-                <td>
-                  <div
-                    style="
-                      width: 80px;
-                      height: 60px;
-                      overflow: hidden;
-                      border-radius: 6px;
-                      cursor: pointer;
-                    "
-                    th:onclick="'openCameraDetail(' + ${cam.id} + ')'"
-                    title="Click để xem chi tiết"
-                  >
-                    <img
-                      th:if="${cam.anhCamera}"
-                      th:src="${cam.anhCamera}"
-                      style="width: 100%; height: 100%; object-fit: cover"
-                      onerror="
-                        this.src =
-                          'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'60\'%3E%3Crect fill=\'%23ddd\' width=\'80\' height=\'60\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\' font-size=\'12\'%3ENo Image%3C/text%3E%3C/svg%3E'
-                      "
-                    />
-                    <div
-                      th:unless="${cam.anhCamera}"
-                      style="
-                        width: 100%;
-                        height: 100%;
-                        background: #f1f5f9;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: #94a3b8;
-                      "
-                    >
-                      <i class="fa-solid fa-camera" style="font-size: 20px"></i>
-                    </div>
-                  </div>
-                </td>
-                <td th:text="${cam.tenCamera}" style="font-weight: 600"></td>
-                <td th:text="${cam.kinhDo != 0 ? cam.kinhDo : '---'}"></td>
-                <td th:text="${cam.viDo != 0 ? cam.viDo : '---'}"></td>
-                <td
-                  th:text="${cam.diaChi ?: 'Chưa xác định'}"
-                  th:title="${cam.diaChi}"
-                  class="address-cell"
-                ></td>
-                <td>
-                  <span
-                    th:class="${cam.kinhDo != 0 ? 'status-badge status-ready' : 'status-badge status-pending'}"
-                    th:text="${cam.kinhDo != 0 ? 'Hoạt động' : 'Chờ định vị'}"
-                  >
-                  </span>
-                </td>
-                <td style="text-align: center">
-                  <button
-                    class="btn-action btn-edit"
-                    th:onclick="'openEditCamera(' + ${cam.id} + ')'"
-                  >
-                    <i class="fa-solid fa-pen"></i>
-                    Sửa
-                  </button>
+        <!-- Table -->
 
-                  <a
-                    th:href="@{/admin/trang-chu}"
-                    class="btn-action btn-edit"
-                    title="Gán vị trí trên bản đồ"
-                  >
-                    <i class="fa-solid fa-location-crosshairs"></i>
-                    Định vị
-                  </a>
+        <div class="card shadow-sm">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table
+                class="table table-hover align-middle mb-0"
+                id="cameraTable"
+              >
+                <thead class="table-light">
+                  <tr>
+                    <th>Ảnh</th>
 
-                  <button
-                    type="button"
-                    class="btn-action btn-delete"
-                    th:onclick="'confirmDelete(' + ${cam.id} + ')'"
-                  >
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                    <th>Tên Camera</th>
+
+                    <th>Kinh độ</th>
+
+                    <th>Vĩ độ</th>
+
+                    <th>Địa chỉ</th>
+
+                    <th>Trạng thái</th>
+
+                    <th class="text-center">Thao tác</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  <tr th:each="cam:${danhSachCamera}">
+                    <!-- Image -->
+
+                    <td>
+                      <div
+                        class="camera-image"
+                        th:onclick="'openCameraDetail('+${cam.id}+')'"
+                      >
+                        <img
+                          th:if="${cam.anhCamera}"
+                          th:src="${cam.anhCamera}"
+                          class="rounded"
+                          alt="camera"
+                        />
+
+                        <div th:unless="${cam.anhCamera}" class="no-image">
+                          <i class="fa-solid fa-camera"></i>
+                        </div>
+                      </div>
+                    </td>
+
+                    <!-- Name -->
+
+                    <td class="fw-semibold" th:text="${cam.tenCamera}"></td>
+
+                    <!-- Longitude -->
+
+                    <td th:text="${cam.kinhDo !=0 ? cam.kinhDo:'---'}"></td>
+
+                    <!-- Latitude -->
+
+                    <td th:text="${cam.viDo !=0 ? cam.viDo:'---'}"></td>
+
+                    <!-- Address -->
+
+                    <td
+                      class="text-truncate address-cell"
+                      th:title="${cam.diaChi}"
+                      th:text="${cam.diaChi ?: 'Chưa xác định'}"
+                    ></td>
+
+                    <!-- Status -->
+
+                    <td>
+                      <span
+                        th:class="${cam.kinhDo!=0 
+                                    ? 'badge bg-success'
+                                    : 'badge bg-warning text-dark'}"
+                      >
+                        <i class="fa-solid fa-circle"></i>
+
+                        <span
+                          th:text="${cam.kinhDo!=0 
+                                    ? 'Hoạt động'
+                                    : 'Chờ định vị'}"
+                        >
+                        </span>
+                      </span>
+                    </td>
+
+                    <!-- Action -->
+
+                    <td class="text-center">
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        th:onclick="'openEditCamera('+${cam.id}+')'"
+                      >
+                        <i class="fa-solid fa-pen"></i>
+                      </button>
+
+                      <a
+                        th:href="@{/admin/trang-chu}"
+                        class="btn btn-sm btn-outline-success"
+                      >
+                        <i class="fa-solid fa-location-dot"></i>
+                      </a>
+
+                      <button
+                        class="btn btn-sm btn-outline-danger"
+                        th:onclick="'confirmDelete('+${cam.id}+')'"
+                      >
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
+    <!-- =========================
+     MODAL THÊM CAMERA
+========================= -->
 
-    <!-- Modal thêm camera -->
-    <div id="cameraModal" class="modal">
-      <div class="modal-content">
-        <div
-          class="modal-header"
-          style="
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-          "
-        >
-          <h3 style="margin: 0">Thêm Camera Mới</h3>
-          <i
-            class="fa-solid fa-xmark"
-            style="cursor: pointer"
-            onclick="closeModal()"
-          ></i>
-        </div>
-        <form
-          id="addCameraForm"
-          onsubmit="handleFormSubmit(event)"
-          enctype="multipart/form-data"
-        >
-          <div class="form-group">
-            <label>Tên Camera <span style="color: red">*</span></label>
-            <input
-              type="text"
-              name="tenCamera"
-              id="tenCamera"
-              placeholder="Nhập tên camera (VD: Camera Cổng Chính)"
-              required
-            />
-          </div>
+    <div class="modal fade" id="cameraModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fa-solid fa-camera text-primary"></i>
+              Thêm Camera Mới
+            </h5>
 
-          <div class="form-group">
-            <label>Ảnh chụp camera</label>
-            <input
-              type="file"
-              name="anhCamera"
-              id="anhCamera"
-              accept="image/*"
-              style="
-                width: 100%;
-                padding: 8px;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-              "
-            />
-            <small
-              style="
-                color: #64748b;
-                font-size: 12px;
-                display: block;
-                margin-top: 5px;
-              "
-            >
-              Chọn ảnh chụp thực tế của camera (JPG, PNG)
-            </small>
-          </div>
-
-          <div class="form-group">
-            <label>Video demo camera (tùy chọn)</label>
-            <input
-              type="file"
-              name="videoFile"
-              id="videoFile"
-              accept="video/*"
-              style="
-                width: 100%;
-                padding: 8px;
-                border: 1px solid #e2e8f0;
-                border-radius: 8px;
-              "
-            />
-            <small
-              style="
-                color: #64748b;
-                font-size: 12px;
-                display: block;
-                margin-top: 5px;
-              "
-            >
-              Upload video giả để demo (MP4, MOV, AVI)
-            </small>
-          </div>
-
-          <div class="modal-footer">
             <button
               type="button"
-              onclick="closeModal()"
-              style="
-                padding: 10px 20px;
-                border: none;
-                background: #f1f5f9;
-                border-radius: 8px;
-                cursor: pointer;
-              "
-            >
-              Hủy
-            </button>
-            <button type="submit" class="btn-add">Lưu Camera</button>
-          </div>
-        </form>
-      </div>
-    </div>
-    <div id="editCameraModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Sửa Camera</h3>
-
-          <i class="fa-solid fa-xmark" onclick="closeEditCamera()"> </i>
-        </div>
-
-        <form
-          id="editCameraForm"
-          onsubmit="handleEditSubmit(event)"
-          enctype="multipart/form-data"
-        >
-          <input type="hidden" id="editCameraId" />
-
-          <div class="form-group">
-            <label>Tên Camera</label>
-
-            <input id="editTenCamera" name="tenCamera" type="text" />
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
           </div>
 
-          <div class="form-group">
-            <label>Kinh độ</label>
+          <form
+            id="addCameraForm"
+            onsubmit="handleFormSubmit(event)"
+            enctype="multipart/form-data"
+          >
+            <div class="modal-body">
+              <div class="mb-3">
+                <label class="form-label">
+                  Tên Camera
+                  <span class="text-danger">*</span>
+                </label>
 
-            <input id="editKinhDo" name="kinhDo" type="number" step="any" />
-          </div>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="tenCamera"
+                  id="tenCamera"
+                  placeholder="VD: Camera cổng chính"
+                  required
+                />
+              </div>
 
-          <div class="form-group">
-            <label>Vĩ độ</label>
+              <div class="mb-3">
+                <label class="form-label"> Ảnh Camera </label>
 
-            <input id="editViDo" name="viDo" type="number" step="any" />
-          </div>
+                <input
+                  type="file"
+                  class="form-control"
+                  name="anhCamera"
+                  accept="image/*"
+                />
+              </div>
 
-          <div class="form-group">
-            <label>Ảnh mới</label>
+              <div class="mb-3">
+                <label class="form-label"> Video Demo </label>
 
-            <input type="file" name="anhCamera" accept="image/*" />
-          </div>
+                <input
+                  type="file"
+                  class="form-control"
+                  name="videoFile"
+                  accept="video/*"
+                />
 
-          <div class="form-group">
-            <label>Video mới</label>
+                <small class="text-muted"> MP4, MOV, AVI </small>
+              </div>
+            </div>
 
-            <input type="file" name="videoFile" accept="video/*" />
-          </div>
-
-          <div class="modal-footer">
-            <button type="button" onclick="closeEditCamera()">Hủy</button>
-
-            <button class="btn-add" type="submit">Lưu thay đổi</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Modal xem chi tiết camera -->
-    <div id="cameraDetailModal" class="modal" style="display: none">
-      <div class="modal-detail-content">
-        <div
-          class="modal-header"
-          style="
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-          "
-        >
-          <h3 style="margin: 0" id="detailCameraName">Chi tiết Camera</h3>
-          <i
-            class="fa-solid fa-xmark"
-            style="cursor: pointer; font-size: 20px"
-            onclick="closeCameraDetail()"
-          ></i>
-        </div>
-
-        <div id="cameraDetailVideoContainer" style="display: none">
-          <video id="cameraDetailVideo" class="camera-detail-video" controls>
-            <source id="videoSource" src="" type="video/mp4" />
-            Trình duyệt của bạn không hỗ trợ video.
-          </video>
-        </div>
-
-        <div
-          id="cameraDetailImageContainer"
-          style="display: none; margin-bottom: 20px"
-        >
-          <img
-            id="cameraDetailImage"
-            src=""
-            style="
-              width: 100%;
-              border-radius: 8px;
-              max-height: 400px;
-              object-fit: contain;
-              background: #f1f5f9;
-            "
-          />
-        </div>
-
-        <div class="camera-detail-info">
-          <h4><i class="fa-solid fa-info-circle"></i> Thông tin Camera</h4>
-          <div class="info-row">
-            <span class="info-label">Tên Camera:</span>
-            <span class="info-value" id="detailName">-</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Địa chỉ:</span>
-            <span class="info-value" id="detailDiaChi">-</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Kinh độ:</span>
-            <span class="info-value" id="detailKinhDo">-</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Vĩ độ:</span>
-            <span class="info-value" id="detailViDo">-</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Vị trí:</span>
-            <span class="info-value">
-              <a
-                id="detailMapLink"
-                href="#"
-                target="_blank"
-                style="color: #3b82f6; text-decoration: none"
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
               >
-                <i class="fa-solid fa-map-marker-alt"></i> Xem trên Google Maps
-              </a>
-            </span>
+                Hủy
+              </button>
+
+              <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-save"></i>
+                Lưu Camera
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================
+     MODAL SỬA CAMERA
+========================= -->
+
+    <div class="modal fade" id="editCameraModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fa-solid fa-pen"></i>
+              Sửa Camera
+            </h5>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <form
+            id="editCameraForm"
+            onsubmit="handleEditSubmit(event)"
+            enctype="multipart/form-data"
+          >
+            <div class="modal-body">
+              <input type="hidden" id="editCameraId" />
+
+              <div class="mb-3">
+                <label class="form-label"> Tên Camera </label>
+
+                <input
+                  class="form-control"
+                  id="editTenCamera"
+                  name="tenCamera"
+                />
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Kinh độ </label>
+
+                  <input
+                    class="form-control"
+                    id="editKinhDo"
+                    name="kinhDo"
+                    type="number"
+                    step="any"
+                  />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                  <label class="form-label"> Vĩ độ </label>
+
+                  <input
+                    class="form-control"
+                    id="editViDo"
+                    name="viDo"
+                    type="number"
+                    step="any"
+                  />
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label"> Ảnh mới </label>
+
+                <input
+                  class="form-control"
+                  type="file"
+                  name="anhCamera"
+                  accept="image/*"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label"> Video mới </label>
+
+                <input
+                  class="form-control"
+                  type="file"
+                  name="videoFile"
+                  accept="video/*"
+                />
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Hủy
+              </button>
+
+              <button class="btn btn-primary" type="submit">
+                Lưu thay đổi
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================
+     MODAL CHI TIẾT CAMERA
+========================= -->
+
+    <div class="modal fade" id="cameraDetailModal" tabindex="-1">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="detailCameraName">Chi tiết Camera</h5>
+
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+
+          <div class="modal-body">
+            <!-- Video -->
+
+            <div id="cameraDetailVideoContainer" style="display: none">
+              <video id="cameraDetailVideo" class="w-100 rounded" controls>
+                <source id="videoSource" src="" type="video/mp4" />
+              </video>
+            </div>
+
+            <!-- Image -->
+
+            <div id="cameraDetailImageContainer" style="display: none">
+              <img
+                id="cameraDetailImage"
+                class="img-fluid rounded"
+                style="max-height: 400px; width: 100%; object-fit: contain"
+              />
+            </div>
+
+            <div class="card mt-3">
+              <div class="card-body">
+                <h6 class="fw-bold mb-3">
+                  <i class="fa-solid fa-circle-info"></i>
+                  Thông tin Camera
+                </h6>
+
+                <p>
+                  <b>Tên:</b>
+                  <span id="detailName"> - </span>
+                </p>
+
+                <p>
+                  <b>Địa chỉ:</b>
+                  <span id="detailDiaChi"> - </span>
+                </p>
+
+                <p>
+                  <b>Kinh độ:</b>
+                  <span id="detailKinhDo"> - </span>
+                </p>
+
+                <p>
+                  <b>Vĩ độ:</b>
+                  <span id="detailViDo"> - </span>
+                </p>
+
+                <a
+                  id="detailMapLink"
+                  target="_blank"
+                  class="btn btn-outline-primary"
+                >
+                  <i class="fa-solid fa-map-location-dot"></i>
+                  Xem Google Maps
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Bootstrap JS -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="/js/api-client.js"></script>
 
     <script th:src="@{/js/admin/quan-ly-camera.js}"></script>
+
     <script th:src="@{/js/fragments/sidebar-admin.js}"></script>
   </body>
 </html>

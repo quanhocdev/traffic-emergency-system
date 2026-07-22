@@ -1,97 +1,174 @@
-// Mở modal chỉnh sửa
-function openEdit(btn) {
-  const id = btn.getAttribute("data-id");
-  const ten = btn.getAttribute("data-ten");
-  const icon = btn.getAttribute("data-icon");
+// ==============================
+// BIẾN MODAL BOOTSTRAP
+// ==============================
 
-  document.getElementById("editId").value = id;
-  document.getElementById("editTen").value = ten;
-  const preview = document.getElementById("previewIcon");
-  if (icon) {
-    preview.src = icon;
-    preview.style.display = "block";
-  } else {
-    preview.style.display = "none";
+let editModal;
+
+document.addEventListener("DOMContentLoaded", function () {
+  const modalElement = document.getElementById("editModal");
+
+  if (modalElement) {
+    editModal = new bootstrap.Modal(modalElement);
   }
 
-  document.getElementById("editModal").style.display = "block";
+  // CREATE FORM
+
+  const createForm = document.getElementById("createForm");
+
+  if (createForm) {
+    createForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(this);
+
+      fetch("/admin/quan-ly-loai-su-co", {
+        method: "POST",
+
+        body: formData,
+      })
+        .then((res) => {
+          if (res.ok) {
+            alert("Tạo thành công!");
+
+            location.reload();
+          } else {
+            return res.json().then((data) => {
+              alert(data.message || "Có lỗi xảy ra");
+            });
+          }
+        })
+
+        .catch((err) => {
+          console.error(err);
+
+          alert("Lỗi kết nối server");
+        });
+    });
+  }
+});
+
+// ==============================
+// MỞ MODAL EDIT
+// ==============================
+
+function openEdit(btn) {
+  const id = btn.dataset.id;
+
+  const ten = btn.dataset.ten;
+
+  const icon = btn.dataset.icon;
+
+  document.getElementById("editId").value = id;
+
+  document.getElementById("editTen").value = ten;
+
+  const preview = document.getElementById("previewIcon");
+
+  if (icon) {
+    preview.src = icon;
+
+    preview.classList.remove("d-none");
+  } else {
+    preview.classList.add("d-none");
+  }
+
+  // mở bootstrap modal
+
+  editModal.show();
 }
-// Đóng modal chỉnh sửa
+
+// ==============================
+// ĐÓNG MODAL
+// ==============================
+
 function closeEdit() {
-  document.getElementById("editModal").style.display = "none";
+  editModal.hide();
 }
 
-// Xử lý submit form tạo mới
-document.getElementById("createForm").addEventListener("submit", function (e) {
-  e.preventDefault();
+// ==============================
+// PREVIEW ICON MỚI
+// ==============================
 
-  const formData = new FormData(this);
+document.addEventListener("change", function (e) {
+  if (e.target.id === "editFile") {
+    const file = e.target.files[0];
 
-  fetch("/admin/loai-su-co", {
-    method: "POST",
+    if (file) {
+      const img = document.getElementById("previewIcon");
+
+      img.src = URL.createObjectURL(file);
+
+      img.classList.remove("d-none");
+    }
+  }
+});
+
+// ==============================
+// UPDATE
+// ==============================
+
+function submitEdit() {
+  const id = document.getElementById("editId").value;
+
+  const ten = document.getElementById("editTen").value;
+
+  const file = document.getElementById("editFile").files[0];
+
+  const formData = new FormData();
+
+  formData.append("ten", ten);
+
+  if (file) {
+    formData.append("iconFile", file);
+  }
+
+  fetch(`/admin/quan-ly-loai-su-co/${id}`, {
+    method: "PATCH",
+
     body: formData,
   })
     .then((res) => {
       if (res.ok) {
-        alert("Tạo thành công!");
+        alert("Cập nhật thành công!");
+
         location.reload();
       } else {
         return res.json().then((data) => {
-          alert(data.message || "Có lỗi xảy ra");
+          alert(data.message || "Cập nhật thất bại");
         });
       }
     })
+
     .catch((err) => {
       console.error(err);
+
       alert("Lỗi kết nối server");
     });
-});
-
-// Xử lý submit form chỉnh sửa
-function submitEdit() {
-  const id = document.getElementById("editId").value;
-  const ten = document.getElementById("editTen").value;
-  const file = document.getElementById("editFile").files[0];
-
-  const formData = new FormData();
-  if (ten) formData.append("ten", ten);
-  if (file) formData.append("iconFile", file);
-
-  fetch(`/admin/loai-su-co/${id}`, {
-    method: "PATCH",
-    body: formData,
-  }).then((res) => {
-    if (res.ok) {
-      alert("Cập nhật thành công!");
-      location.reload();
-    } else {
-      res.json().then((data) => alert(data.message));
-    }
-  });
 }
-document.getElementById("editFile").onchange = function (e) {
-  const file = e.target.files[0];
-  if (file) {
-    const img = document.getElementById("previewIcon");
-    img.src = URL.createObjectURL(file);
-    img.style.display = "block";
-  }
-};
 
-// Xử lý xóa
+// ==============================
+// DELETE
+// ==============================
+
 function deleteSuCo(id) {
   if (!confirm("Bạn có chắc muốn xóa loại sự cố này?")) return;
 
-  fetch(`/admin/loai-su-co/${id}`, {
+  fetch(`/admin/quan-ly-loai-su-co/${id}`, {
     method: "DELETE",
   })
-    .then((response) => {
-      if (response.ok) {
+    .then((res) => {
+      if (res.ok) {
         alert("Xóa thành công!");
-        location.reload(); // Load lại trang để cập nhật danh sách
+
+        location.reload();
       } else {
         alert("Xóa thất bại!");
       }
     })
-    .catch((error) => console.error("Error:", error));
+
+    .catch((err) => {
+      console.error(err);
+
+      alert("Lỗi kết nối server");
+    });
 }

@@ -1,86 +1,255 @@
 :root {
-  --primary-color: #1a1a1a;
   --accent-color: #3b82f6;
-  --sidebar-width: 260px;
-  --sidebar-collapsed-width: 75px;
   --font-main: "Inter", system-ui, sans-serif;
 }
+
+/* ===============================
+   GLOBAL
+================================ */
+
 html,
 body {
   margin: 0;
+
   padding: 0;
+
+  width: 100%;
+
   height: 100vh;
+
   font-family: var(--font-main);
+
   background: #f1f5f9;
-  overflow: hidden;
-}
-#main-container {
-  display: flex;
-  height: 100vh;
+
   overflow: hidden;
 }
 
-/* Main Content Styles */
-.main-content {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 30px;
-  min-width: 0;
+/* ===============================
+   MAIN CONTAINER
+================================ */
+
+#main-container {
+  display: flex;
+
+  width: 100%;
+
+  height: 100vh;
+
+  overflow: hidden;
 }
+
+/* ===============================
+   CONTENT
+================================ */
+
+.main-content {
+  flex: 1;
+
+  min-width: 0;
+
+  padding: 30px;
+
+  overflow-y: auto;
+
+  box-sizing: border-box;
+}
+
+/* ===============================
+   TITLE
+================================ */
+
 .page-title {
   font-size: 24px;
+
   font-weight: 700;
-  border-left: 5px solid var(--accent-color);
-  padding-left: 15px;
-  margin-bottom: 25px;
+
   color: #0f172a;
+
+  border-left: 5px solid var(--accent-color);
+
+  padding-left: 15px;
 }
-/* Sidebar Collapsed State */
-#sidebar.collapsed {
-  width: var(--sidebar-collapsed-width);
+
+/* ===============================
+   REVENUE CARD
+================================ */
+
+.revenue-card {
+  border-radius: 16px;
+
+  background: white;
+
+  transition: 0.25s;
 }
-#sidebar.collapsed .menu-item span,
-#sidebar.collapsed .sidebar-header span {
-  display: none;
+
+.revenue-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
-#sidebar.collapsed .menu-item {
+
+.revenue-card h3 {
+  color: #16a34a;
+
+  font-size: 28px;
+}
+
+.revenue-icon {
+  width: 55px;
+
+  height: 55px;
+
+  border-radius: 50%;
+
+  background: #dcfce7;
+
+  display: flex;
+
+  align-items: center;
+
   justify-content: center;
+
+  font-size: 25px;
+
+  color: #16a34a;
 }
-#sidebar.collapsed .toggle-btn i {
-  transform: rotate(180deg);
+
+/* ===============================
+   TABLE
+================================ */
+
+.card {
+  border-radius: 14px;
 }
-.toggle-btn i {
-  transition: transform 0.3s;
+
+.card-header {
+  border-radius: 14px 14px 0 0 !important;
 }
 
 .table {
-  font-size: 14px;
+  margin-bottom: 0;
 }
 
 .table thead th {
-  font-weight: 600;
+  font-size: 13px;
+
+  font-weight: 700;
+
+  color: #64748b;
+
+  text-transform: uppercase;
+
+  white-space: nowrap;
+}
+
+.table tbody td {
   color: #334155;
+
+  vertical-align: middle;
+}
+
+.table tbody tr {
+  transition: 0.2s;
 }
 
 .table tbody tr:hover {
   background: #f8fafc;
-  transition: 0.2s;
 }
+
+/* ===============================
+   BADGE
+================================ */
+
 .badge {
-  padding: 6px 10px;
-  font-weight: 500;
+  padding: 7px 12px;
+
+  border-radius: 8px;
+
+  font-size: 12px;
+
+  font-weight: 600;
+}
+
+/* ===============================
+   BUTTON
+================================ */
+
+.btn {
   border-radius: 8px;
 }
-.btn-primary {
-  border-radius: 8px;
+
+.btn-outline-primary {
   font-size: 13px;
-  padding: 4px 10px;
+
+  padding: 5px 12px;
 }
+
+/* ===============================
+   MODAL
+================================ */
+
 .modal-content {
-  border-radius: 12px;
+  border-radius: 16px;
+
   border: none;
+
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
 .modal-header {
   border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-title {
+  font-weight: 700;
+}
+
+#hoaDonInfo {
+  background: #f8fafc;
+
+  padding: 15px;
+
+  border-radius: 10px;
+}
+
+/* ===============================
+   PAYMENT TABLE
+================================ */
+
+#paymentTable td {
+  vertical-align: middle;
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 992px) {
+  .main-content {
+    padding: 20px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 15px;
+  }
+
+  .table {
+    font-size: 13px;
+  }
+
+  .revenue-card h3 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 576px) {
+  .page-title {
+    font-size: 18px;
+  }
 }
