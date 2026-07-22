@@ -1,16 +1,8 @@
-const toggleBtn = document.querySelector(".toggle-btn");
-const sidebar = document.getElementById("sidebar");
-
-if (toggleBtn && sidebar) {
-  toggleBtn.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-  });
-}
-
 let detailModal;
 
 document.addEventListener("DOMContentLoaded", () => {
   const modalEl = document.getElementById("detailModal");
+
   if (modalEl) {
     detailModal = new bootstrap.Modal(modalEl);
   }
@@ -55,12 +47,24 @@ function renderHoaDonInfo(hd) {
 
   document.getElementById("hoaDonInfo").innerHTML = `
     <div>
-      <strong>ID:</strong> ${hd.id} <br/>
-      <strong>SOS:</strong> ${hd.sosId} <br/>
-      <strong>User:</strong> ${hd.userId} <br/>
-      <strong>Nội dung:</strong> ${hd.noiDungXuLy || ""} <br/>
-      <strong>Trạng thái:</strong> ${hd.trangThai} <br/>
+
+      <strong>ID:</strong> ${hd.id}
+      <br/>
+
+      <strong>Mã SOS:</strong> ${hd.sosId}
+      <br/>
+
+      <strong>Trụ sở:</strong> ${hd.trusoId}
+      <br/>
+
+      <strong>Phương thức:</strong> ${hd.phuongThuc || ""}
+      <br/>
+
+      <strong>Trạng thái:</strong> ${hd.trangThai}
+      <br/>
+
       <strong>Thành tiền:</strong> ${formatMoney(hd.thanhTien)}
+
     </div>
   `;
 }
