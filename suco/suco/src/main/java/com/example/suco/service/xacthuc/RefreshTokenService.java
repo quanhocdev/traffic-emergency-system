@@ -115,9 +115,9 @@ public class RefreshTokenService {
          * 5. Sinh access token mới
          */
         return tokenProvider.generateAccessToken(
-                refreshToken.getAccountId(),
-                refreshToken.getAccountType().name()
-        );
+        refreshToken.getAccountId(),
+        refreshToken.getRole()
+);
 
     }
       @Transactional

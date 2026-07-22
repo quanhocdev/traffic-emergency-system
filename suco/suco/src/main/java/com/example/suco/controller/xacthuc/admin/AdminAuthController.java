@@ -159,6 +159,10 @@ refreshTokenService.deleteOldRefreshToken(
                 RefreshTokenType.USER
         );
 
+        refreshToken.setRole(
+        user.getRole()
+);
+
 
         refreshToken.setExpiresAt(
                 refreshInfo.expiresAt()

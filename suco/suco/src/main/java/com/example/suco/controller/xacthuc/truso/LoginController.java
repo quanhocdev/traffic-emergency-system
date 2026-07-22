@@ -169,6 +169,10 @@ refreshTokenService.deleteOldRefreshToken(
                 RefreshTokenType.TRUSO
         );
 
+        refreshToken.setRole(
+        "TRUSO"
+);
+
 
         refreshToken.setExpiresAt(
                 refreshInfo.expiresAt()
