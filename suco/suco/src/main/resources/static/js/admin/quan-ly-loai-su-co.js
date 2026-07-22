@@ -27,7 +27,7 @@ document.getElementById("createForm").addEventListener("submit", function (e) {
 
   const formData = new FormData(this);
 
-  fetch("/admin/loai-su-co", {
+  fetch("/admin/quan-ly-loai-su-co", {
     method: "POST",
     body: formData,
   })
@@ -57,7 +57,7 @@ function submitEdit() {
   if (ten) formData.append("ten", ten);
   if (file) formData.append("iconFile", file);
 
-  fetch(`/admin/loai-su-co/${id}`, {
+  fetch(`/admin/quan-ly-loai-su-co/${id}`, {
     method: "PATCH",
     body: formData,
   }).then((res) => {
@@ -82,7 +82,7 @@ document.getElementById("editFile").onchange = function (e) {
 function deleteSuCo(id) {
   if (!confirm("Bạn có chắc muốn xóa loại sự cố này?")) return;
 
-  fetch(`/admin/loai-su-co/${id}`, {
+  fetch(`/admin/quan-ly-loai-su-co/${id}`, {
     method: "DELETE",
   })
     .then((response) => {

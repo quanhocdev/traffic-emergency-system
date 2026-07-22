@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @Controller
-@RequestMapping("/admin/loai-su-co")
+@RequestMapping("/admin/quan-ly-loai-su-co")
 public class CRUDLoaiSuCoController {
 
     @Autowired

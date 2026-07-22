@@ -1,22 +1,42 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
   <body>
-    <nav id="sidebar" th:fragment="sidebar">
+    <button class="mobile-toggle" type="button">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <div class="mobile-overlay"></div>
+    <nav id="sidebar" class="sidebar" th:fragment="sidebar">
+      <!-- Header -->
+
       <div class="sidebar-header">
-        <span>DASHBOARD</span>
-        <button class="toggle-btn" onclick="toggleSidebar()">
-          <i class="fa-solid fa-chevron-left" id="toggle-icon"></i>
+        <div class="sidebar-logo">
+          <i class="fa-solid fa-shield-halved"></i>
+
+          <span>DASHBOARD</span>
+        </div>
+
+        <button
+          id="toggleSidebarBtn"
+          class="btn btn-sm btn-dark toggle-btn"
+          type="button"
+        >
+          <i id="toggle-icon" class="fa-solid fa-chevron-left"> </i>
         </button>
       </div>
+
+      <!-- Menu -->
 
       <ul class="sidebar-menu">
         <li>
           <a
             href="/admin/trang-chu"
             class="menu-item"
-            th:classappend="${activePage == 'trang-chu'} ? 'active' : ''"
+            th:classappend="${activePage=='trang-chu'}?' active':''"
           >
-            <i class="fa-solid fa-house"></i><span>Trang Chủ</span>
+            <i class="fa-solid fa-house"></i>
+
+            <span>Trang Chủ</span>
           </a>
         </li>
 
@@ -24,9 +44,11 @@
           <a
             href="/admin/quan-ly-user"
             class="menu-item"
-            th:classappend="${activePage == 'quan-ly-user'} ? 'active' : ''"
+            th:classappend="${activePage=='quan-ly-user'}?' active':''"
           >
-            <i class="fa-solid fa-users"></i><span>Quản Lý User</span>
+            <i class="fa-solid fa-users"></i>
+
+            <span>Quản Lý User</span>
           </a>
         </li>
 
@@ -34,9 +56,10 @@
           <a
             href="/admin/quan-ly-loai-su-co"
             class="menu-item"
-            th:classappend="${activePage == 'quan-ly-loai-su-co'} ? 'active' : ''"
+            th:classappend="${activePage=='quan-ly-loai-su-co'}?' active':''"
           >
             <i class="fa-solid fa-triangle-exclamation"></i>
+
             <span>Quản Lý Loại Sự Cố</span>
           </a>
         </li>
@@ -45,19 +68,22 @@
           <a
             href="/admin/quan-ly-su-co"
             class="menu-item"
-            th:classappend="${activePage == 'quan-ly-su-co'} ? 'active' : ''"
+            th:classappend="${activePage=='quan-ly-su-co'}?' active':''"
           >
             <i class="fa-solid fa-file-signature"></i>
+
             <span>Quản Lý Sự Cố</span>
           </a>
         </li>
+
         <li>
           <a
             href="/admin/quan-ly-sos"
             class="menu-item"
-            th:classappend="${activePage == 'quan-ly-sos'} ? 'active' : ''"
+            th:classappend="${activePage=='quan-ly-sos'}?' active':''"
           >
-            <i class="fa-solid fa-file-signature"></i>
+            <i class="fa-solid fa-bell"></i>
+
             <span>Quản Lý SOS</span>
           </a>
         </li>
@@ -66,9 +92,10 @@
           <a
             href="/admin/quan-ly-tru-so"
             class="menu-item"
-            th:classappend="${activePage == 'quan-ly-tru-so'} ? 'active' : ''"
+            th:classappend="${activePage=='quan-ly-tru-so'}?' active':''"
           >
             <i class="fa-solid fa-building"></i>
+
             <span>Quản Lý Trụ Sở</span>
           </a>
         </li>
@@ -77,20 +104,21 @@
           <a
             href="/admin/quan-ly-camera"
             class="menu-item"
-            th:classappend="${activePage == 'quan-ly-camera'} ? 'active' : ''"
+            th:classappend="${activePage=='quan-ly-camera'}?' active':''"
           >
             <i class="fa-solid fa-camera"></i>
+
             <span>Quản Lý Camera</span>
           </a>
         </li>
-
         <li>
           <a
             href="/admin/goi"
             class="menu-item"
-            th:classappend="${activePage == 'quan-ly-goi'} ? 'active' : ''"
+            th:classappend="${activePage=='quan-ly-goi'}?' active':''"
           >
             <i class="fa-solid fa-box"></i>
+
             <span>Quản Lý Gói SOS</span>
           </a>
         </li>
@@ -99,9 +127,10 @@
           <a
             href="/admin/quan-ly-qua"
             class="menu-item"
-            th:classappend="${activePage == 'quan-ly-qua'} ? 'active' : ''"
+            th:classappend="${activePage=='quan-ly-qua'}?' active':''"
           >
             <i class="fa-solid fa-gift"></i>
+
             <span>Quản Lý Quà</span>
           </a>
         </li>
@@ -110,25 +139,29 @@
           <a
             href="/admin/quan-ly-doanh-thu"
             class="menu-item"
-            th:classappend="${activePage == 'quan-ly-doanh-thu'} ? 'active' : ''"
+            th:classappend="${activePage=='quan-ly-doanh-thu'}?' active':''"
           >
-            <i class="fas fa-money-bill-wave"></i>
+            <i class="fa-solid fa-money-bill-wave"></i>
+
             <span>Quản Lý Doanh Thu</span>
           </a>
         </li>
-        <li class="logout-wrapper">
-          <!-- Form gửi POST thuần backend -->
-          <form th:action="@{/logout}" method="POST" style="margin: 0">
+
+        <!-- Logout -->
+
+        <div class="logout-wrapper">
+          <form th:action="@{/logout}" method="POST">
             <button
               id="adminLogoutBtn"
               type="submit"
               class="menu-item logout-btn"
             >
               <i class="fa-solid fa-right-from-bracket"></i>
+
               <span>Đăng xuất</span>
             </button>
           </form>
-        </li>
+        </div>
       </ul>
     </nav>
   </body>
