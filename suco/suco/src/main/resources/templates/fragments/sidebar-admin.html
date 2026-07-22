@@ -1,17 +1,16 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
   <body>
-    <button class="mobile-toggle" type="button">
-      <i class="fa-solid fa-bars"></i>
-    </button>
-
-    <div class="mobile-overlay"></div>
     <nav id="sidebar" class="sidebar" th:fragment="sidebar">
-      <!-- Header -->
+      <button class="mobile-toggle" type="button">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <div class="mobile-overlay"></div>
 
       <div class="sidebar-header">
         <div class="sidebar-logo">
-          <i class="fa-solid fa-shield-halved"></i>
+          <i class="fa-solid fa-shield-halved" style="font-size: 23px"></i>
 
           <span>DASHBOARD</span>
         </div>
@@ -24,7 +23,6 @@
           <i id="toggle-icon" class="fa-solid fa-chevron-left"> </i>
         </button>
       </div>
-
       <!-- Menu -->
 
       <ul class="sidebar-menu">
