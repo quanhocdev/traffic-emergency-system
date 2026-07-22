@@ -6,7 +6,7 @@ import com.example.suco.model.enums.RefreshTokenType;
 import com.example.suco.repository.RefreshTokenRepository;
 import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.security.TokenProvider;
-
+import com.example.suco.service.xacthuc.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +35,8 @@ public class AdminAuthController {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
+    @Autowired
+    private RefreshTokenService refreshTokenService;   
 
     @Value("${jwt.access-expiration}")
     private long accessExpirationMs;
@@ -120,7 +122,7 @@ public class AdminAuthController {
 /*
  * 2. Xóa refresh token cũ
  */
-refreshTokenRepository.deleteByAccountIdAndAccountType(
+refreshTokenService.deleteOldRefreshToken(
         user.getUid(),
         RefreshTokenType.USER
 );
