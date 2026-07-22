@@ -1,9 +1,29 @@
+function showBootstrapModal(id) {
+  const modalElement = document.getElementById(id);
+
+  const modal = new bootstrap.Modal(modalElement);
+
+  modal.show();
+
+  return modal;
+}
+
+function hideBootstrapModal(id) {
+  const modalElement = document.getElementById(id);
+
+  const modal = bootstrap.Modal.getInstance(modalElement);
+
+  if (modal) {
+    modal.hide();
+  }
+}
+
 function openModal() {
-  document.getElementById("cameraModal").style.display = "flex";
+  showBootstrapModal("cameraModal");
 }
 
 function closeModal() {
-  document.getElementById("cameraModal").style.display = "none";
+  hideBootstrapModal("cameraModal");
 }
 
 function filterTable() {
@@ -82,7 +102,7 @@ function openEditCamera(id) {
 
       document.getElementById("editViDo").value = data.viDo ?? "";
 
-      document.getElementById("editCameraModal").style.display = "flex";
+      showBootstrapModal("editCameraModal");
     })
 
     .catch((error) => {
@@ -93,7 +113,7 @@ function openEditCamera(id) {
 }
 
 function closeEditCamera() {
-  document.getElementById("editCameraModal").style.display = "none";
+  hideBootstrapModal("editCameraModal");
 }
 
 function handleEditSubmit(event) {
@@ -215,12 +235,10 @@ function displayCameraDetail(data) {
     mapLink.style.display = "none";
   }
 
-  modal.style.display = "flex";
+  showBootstrapModal("cameraDetailModal");
 }
 
 function closeCameraDetail() {
-  const modal = document.getElementById("cameraDetailModal");
-
   const video = document.getElementById("cameraDetailVideo");
 
   if (video) {
@@ -229,7 +247,7 @@ function closeCameraDetail() {
     video.currentTime = 0;
   }
 
-  modal.style.display = "none";
+  hideBootstrapModal("cameraDetailModal");
 }
 
 /*
@@ -284,17 +302,3 @@ function openMapPicker() {
     }
   });
 }
-
-window.onclick = function (e) {
-  const cameraModal = document.getElementById("cameraModal");
-
-  const detailModal = document.getElementById("cameraDetailModal");
-
-  const editModal = document.getElementById("editCameraModal");
-
-  if (e.target === cameraModal) closeModal();
-
-  if (e.target === detailModal) closeCameraDetail();
-
-  if (e.target === editModal) closeEditCamera();
-};
