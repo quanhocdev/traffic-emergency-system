@@ -1,6 +1,7 @@
 package com.example.suco.config;
 
 import com.example.suco.security.FirebaseFilter;
+import com.example.suco.security.JwtAuthenticationEntryPoint;
 import com.example.suco.service.xacthuc.LogoutService;
 
 import jakarta.servlet.http.Cookie;
@@ -29,19 +30,23 @@ public class SecurityConfig {
 
     private final RefreshTokenRepository refreshTokenRepository;
 
-        private final JwtDecoder jwtDecoder;
+    private final JwtDecoder jwtDecoder;
+
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
 public SecurityConfig(
         FirebaseFilter firebaseFilter,
         RefreshTokenRepository refreshTokenRepository,
         JwtDecoder jwtDecoder,
-        LogoutService logoutService
+        LogoutService logoutService,
+        JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint
 ) {
 
     this.firebaseFilter = firebaseFilter;
     this.refreshTokenRepository = refreshTokenRepository;
     this.jwtDecoder = jwtDecoder;
     this.logoutService = logoutService;
+    this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
 }
     @Bean
     public SecurityFilterChain filterChain(
@@ -200,8 +205,8 @@ public SecurityConfig(
 
 
                     .authenticationEntryPoint(
-                            new BearerTokenAuthenticationEntryPoint()
-                    )
+                                jwtAuthenticationEntryPoint
+                        )
             )
 
 
