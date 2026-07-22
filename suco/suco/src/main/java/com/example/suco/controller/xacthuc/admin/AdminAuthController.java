@@ -117,10 +117,16 @@ public class AdminAuthController {
                         user.getRole()
                 );
 
-
+/*
+ * 2. Xóa refresh token cũ
+ */
+refreshTokenRepository.deleteByAccountIdAndAccountType(
+        user.getUid(),
+        RefreshTokenType.USER
+);
 
         /*
-         * 2. Tạo Refresh Token
+         * 3. Tạo Refresh Token
          */
         TokenProvider.RefreshTokenInfo refreshInfo =
                 tokenProvider.generateRefreshToken(
@@ -130,8 +136,10 @@ public class AdminAuthController {
 
 
 
+                
+
         /*
-         * 3. Lưu jti refresh token xuống DB
+         * 4. Lưu jti refresh token xuống DB
          */
         RefreshTokens refreshToken = new RefreshTokens();
 
@@ -160,7 +168,7 @@ public class AdminAuthController {
 
 
         /*
-         * 4. Lưu JWT vào Cookie
+         * 5. Lưu JWT vào Cookie
          */
 
         ResponseCookie accessCookie =

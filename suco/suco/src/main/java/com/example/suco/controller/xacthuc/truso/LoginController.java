@@ -3,8 +3,6 @@ package com.example.suco.controller.xacthuc.truso;
 
 import java.util.Optional;
 import java.util.Map;
-
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -126,6 +124,14 @@ public class LoginController {
                 );
 
 
+
+                /*
+ * Xóa refresh token cũ
+ */
+refreshTokenRepository.deleteByAccountIdAndAccountType(
+        String.valueOf(t.getId()),
+        RefreshTokenType.TRUSO
+);
 
 
 
