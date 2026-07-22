@@ -2,9 +2,10 @@ package com.example.suco.service.xacthuc;
 
 
 import com.example.suco.model.RefreshTokens;
+import com.example.suco.model.enums.RefreshTokenType;
 import com.example.suco.repository.RefreshTokenRepository;
 import com.example.suco.security.TokenProvider;
-
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
@@ -114,9 +115,19 @@ public class RefreshTokenService {
          * 5. Sinh access token mới
          */
         return tokenProvider.generateAccessToken(
-                refreshToken.getAccountId(),
-                refreshToken.getAccountType().name()
-        );
+        refreshToken.getAccountId(),
+        refreshToken.getRole()
+);
 
+    }
+      @Transactional
+    public void deleteOldRefreshToken(
+            String accountId,
+            RefreshTokenType accountType
+    ) {
+        refreshTokenRepository.deleteByAccountIdAndAccountType(
+                accountId,
+                accountType
+        );
     }
 }

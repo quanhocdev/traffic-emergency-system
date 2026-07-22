@@ -12,7 +12,6 @@ import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Component;
 import com.example.suco.service.xacthuc.user.token.FirebaseService;
-import java.util.Map;
 
 @Component
 public class WebSocketAuthInterceptor implements ChannelInterceptor {

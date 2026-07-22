@@ -6,7 +6,7 @@ import com.example.suco.model.enums.RefreshTokenType;
 import com.example.suco.repository.RefreshTokenRepository;
 import com.example.suco.repository.vanhanh.UserRepository;
 import com.example.suco.security.TokenProvider;
-
+import com.example.suco.service.xacthuc.RefreshTokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +35,8 @@ public class AdminAuthController {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
+    @Autowired
+    private RefreshTokenService refreshTokenService;   
 
     @Value("${jwt.access-expiration}")
     private long accessExpirationMs;
@@ -117,10 +119,16 @@ public class AdminAuthController {
                         user.getRole()
                 );
 
-
+/*
+ * 2. Xóa refresh token cũ
+ */
+refreshTokenService.deleteOldRefreshToken(
+        user.getUid(),
+        RefreshTokenType.USER
+);
 
         /*
-         * 2. Tạo Refresh Token
+         * 3. Tạo Refresh Token
          */
         TokenProvider.RefreshTokenInfo refreshInfo =
                 tokenProvider.generateRefreshToken(
@@ -130,8 +138,10 @@ public class AdminAuthController {
 
 
 
+                
+
         /*
-         * 3. Lưu jti refresh token xuống DB
+         * 4. Lưu jti refresh token xuống DB
          */
         RefreshTokens refreshToken = new RefreshTokens();
 
@@ -149,6 +159,10 @@ public class AdminAuthController {
                 RefreshTokenType.USER
         );
 
+        refreshToken.setRole(
+        user.getRole()
+);
+
 
         refreshToken.setExpiresAt(
                 refreshInfo.expiresAt()
@@ -160,7 +174,7 @@ public class AdminAuthController {
 
 
         /*
-         * 4. Lưu JWT vào Cookie
+         * 5. Lưu JWT vào Cookie
          */
 
         ResponseCookie accessCookie =

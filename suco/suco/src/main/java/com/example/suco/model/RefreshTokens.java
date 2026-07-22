@@ -39,6 +39,10 @@ public class RefreshTokens {
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(nullable = false, length = 20)
+    private String role;
+
+
 
     public RefreshTokens() {
     }
@@ -91,9 +95,15 @@ public class RefreshTokens {
     }
 
 
-
-
     public Instant getCreatedAt() {
         return createdAt;
     }
+
+    public String getRole() {
+    return role;
+}
+
+public void setRole(String role) {
+    this.role = role;
+}
 }

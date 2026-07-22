@@ -3,8 +3,6 @@ package com.example.suco.controller.xacthuc.truso;
 
 import java.util.Optional;
 import java.util.Map;
-
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -12,8 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-
+import com.example.suco.service.xacthuc.RefreshTokenService;
 import com.example.suco.model.RefreshTokens;
 import com.example.suco.model.TruSo;
 import com.example.suco.model.enums.RefreshTokenType;
@@ -36,6 +33,7 @@ public class LoginController {
 
     private final TokenProvider tokenProvider;
 
+    private final RefreshTokenService refreshTokenService;
 
     private final BCryptPasswordEncoder passwordEncoder =
             new BCryptPasswordEncoder();
@@ -55,7 +53,8 @@ public class LoginController {
     public LoginController(
             TruSoRepository truSoRepository,
             RefreshTokenRepository refreshTokenRepository,
-            TokenProvider tokenProvider
+            TokenProvider tokenProvider,
+            RefreshTokenService refreshTokenService
     ) {
 
         this.truSoRepository = truSoRepository;
@@ -63,6 +62,8 @@ public class LoginController {
         this.refreshTokenRepository = refreshTokenRepository;
 
         this.tokenProvider = tokenProvider;
+
+        this.refreshTokenService = refreshTokenService;
     }
 
 
@@ -127,8 +128,13 @@ public class LoginController {
 
 
 
-
-
+                /*
+ * Xóa refresh token cũ
+ */
+refreshTokenService.deleteOldRefreshToken(
+        String.valueOf(t.getId()),
+        RefreshTokenType.TRUSO
+);
         /*
          * 2. Tạo Refresh Token
          */
@@ -162,6 +168,10 @@ public class LoginController {
         refreshToken.setAccountType(
                 RefreshTokenType.TRUSO
         );
+
+        refreshToken.setRole(
+        "TRUSO"
+);
 
 
         refreshToken.setExpiresAt(

@@ -26,6 +26,7 @@ public class User {
     @Column(name = "role")
     private String role; // USER / ADMIN
 
+    
     @Transient 
     private String tenGoi;
 

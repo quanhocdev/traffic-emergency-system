@@ -8,11 +8,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-
+import java.io.IOException;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
-
-
 
 @RestController
 @RequestMapping("/api/auth")
@@ -43,6 +41,99 @@ public class RefreshTokenController {
 
 
 
+
+    @GetMapping("/refresh")
+public void refreshPage(
+        @CookieValue(
+                name = "refreshToken",
+                required = false
+        )
+        String refreshToken,
+
+        @RequestParam("redirect")
+        String redirect,
+
+        HttpServletResponse response
+) throws IOException {
+
+
+    /*
+     * Không có refresh token
+     */
+    if (refreshToken == null) {
+
+        response.sendRedirect("/admin/login");
+
+        return;
+    }
+
+
+
+    try {
+
+
+        /*
+         * Tạo access token mới
+         */
+        String newAccessToken =
+                refreshTokenService.refreshAccessToken(
+                        refreshToken
+                );
+
+
+
+        ResponseCookie accessCookie =
+                ResponseCookie
+                        .from(
+                                "accessToken",
+                                newAccessToken
+                        )
+
+                        .httpOnly(true)
+
+                        .secure(false)
+
+                        .path("/")
+
+                        .sameSite("Lax")
+
+                        .maxAge(
+                                accessExpirationMs / 1000
+                        )
+
+                        .build();
+
+
+
+
+        response.addHeader(
+                HttpHeaders.SET_COOKIE,
+                accessCookie.toString()
+        );
+
+
+
+        /*
+         * quay lại trang người dùng đang mở
+         */
+        response.sendRedirect(
+                redirect
+        );
+
+
+    } catch (Exception e) {
+
+
+        /*
+         * refresh token hết hạn
+         */
+        response.sendRedirect(
+                "/admin/login"
+        );
+
+    }
+
+}
 
     @PostMapping("/refresh")
     public ResponseEntity<?> refresh(
