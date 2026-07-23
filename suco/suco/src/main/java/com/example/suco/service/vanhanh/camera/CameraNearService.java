@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import com.example.suco.service.geohash.GeoHashHelperService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,6 +30,10 @@ public class CameraNearService {
     @Autowired
 private DistanceService distanceService;
 
+
+        @Autowired
+    private GeoHashHelperService geoHashHelperService;
+
     /**
      * Tìm camera trong bán kính 20m quanh sự cố
      */
@@ -42,18 +46,12 @@ private DistanceService distanceService;
         log.info("[Vị trí sự cố]: {}, {}", lat, lng);
 
         // 1. Geohash của vị trí sự cố
-        GeoHash center = GeoHash.withCharacterPrecision(lat, lng, 8);
-
-        List<String> area = new ArrayList<>();
-        area.add(center.toBase32());
-
-        for (GeoHash adjacent : center.getAdjacent()) {
-            area.add(adjacent.toBase32());
-        }
+        List<String> area =
+        geoHashHelperService.getNeighborPrefixes(lat, lng, 8);
 
         log.info(
                 "[Geohash]: Quét vùng 9 ô xung quanh mã: {}",
-                center.toBase32()
+                area.get(0)
         );
 
         // 2. Lấy các camera trong 9 ô Geohash

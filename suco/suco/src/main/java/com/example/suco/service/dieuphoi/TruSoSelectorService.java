@@ -3,6 +3,7 @@ package com.example.suco.service.dieuphoi;
 import com.example.suco.model.TruSo;
 import com.example.suco.model.enums.TrangThaiHoatDongTruSo;
 import com.example.suco.repository.vanhanh.TruSoRepository;
+import com.example.suco.service.distance.DistanceService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class TruSoSelectorService {
     private GeoHashService geoHashService;
 
     @Autowired
-    private DieuPhoiDistanceService distanceService;
+    private DistanceService distanceService;
 
     @Autowired
     private TruSoRepository truSoRepository;
@@ -40,7 +41,7 @@ public class TruSoSelectorService {
         return candidates.stream()
                 .filter(this::isAvailable)
                 .min(Comparator.comparingDouble(ts ->
-                        distanceService.distance(lat, lng, ts.getViDo(), ts.getKinhDo())
+                        distanceService.calculateDistanceInMeters(lat, lng, ts.getViDo(), ts.getKinhDo())
                 ))
                 .orElse(null);
     }
@@ -53,7 +54,7 @@ public class TruSoSelectorService {
         return candidates.stream()
         
                 .sorted(Comparator.comparingDouble(ts ->
-                        distanceService.distance(lat, lng, ts.getViDo(), ts.getKinhDo())
+                        distanceService.calculateDistanceInMeters(lat, lng, ts.getViDo(), ts.getKinhDo())
                 ))
                 .toList();
     }
