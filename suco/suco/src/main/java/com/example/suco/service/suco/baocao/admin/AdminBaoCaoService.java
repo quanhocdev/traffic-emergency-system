@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.example.suco.service.dieuphoi.TruSoSelectorService;
+import com.example.suco.service.dieuphoi.SelectTruSoService;
 import com.example.suco.service.file.FileStorageService;
 import com.example.suco.service.location.GeocodingService;
 
@@ -37,7 +37,7 @@ public class AdminBaoCaoService {
     private LoaiSuCoRepository loaiSuCoRepository;
 
     @Autowired
-    private TruSoSelectorService truSoSelectorService;
+    private SelectTruSoService truSoSelectorService;
 
     @Autowired
     private FileStorageService imageStorageService;

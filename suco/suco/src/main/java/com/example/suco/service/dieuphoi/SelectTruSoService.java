@@ -12,10 +12,10 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
-public class TruSoSelectorService {
+public class SelectTruSoService {
 
     @Autowired
-    private GeoHashService geoHashService;
+    private SearchTruSoService geoHashService;
 
     @Autowired
     private DistanceService distanceService;

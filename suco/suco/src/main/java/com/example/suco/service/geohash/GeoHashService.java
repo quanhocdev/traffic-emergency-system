@@ -7,7 +7,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class GeoHashHelperService {
+public class GeoHashService {
+
+    // Lưu geo hash của vị trí 
+    public String getGeoHash(
+        double lat,
+        double lng,
+        int precision
+) {
+    return GeoHash.withCharacterPrecision(
+            lat,
+            lng,
+            precision
+    ).toBase32();
+}
+
 
     /* Trả về danh sách GeoHash gồm: Ô trung tâm và 8 ô lân cận */
     public List<String> getNeighborPrefixes(

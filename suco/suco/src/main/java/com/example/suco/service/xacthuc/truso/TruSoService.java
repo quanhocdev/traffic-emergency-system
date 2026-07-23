@@ -7,14 +7,16 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.example.suco.service.geohash.GeoHashService;
 import com.example.suco.service.location.GeocodingService;
+
 import com.example.suco.dto.info.truso.TruSoMapDto;
 import com.example.suco.dto.vanhanh.truso.TruSoCreateRequestDTO;
 import com.example.suco.mapper.info.InfoTruSoMapper;
 import com.example.suco.model.TruSo;
 import com.example.suco.repository.vanhanh.TruSoRepository;
 
-import ch.hsr.geohash.GeoHash;
 
 @Service
 public class TruSoService {
@@ -37,6 +39,9 @@ public class TruSoService {
     @Autowired
     private TruSoRealtimeService truSoRealtimeService;
 
+    @Autowired
+private GeoHashService geoHashHelperService;
+
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -53,13 +58,13 @@ public TruSoMapDto createTruSo(TruSoCreateRequestDTO dto) {
 @Transactional
 public TruSo saveTruSo(TruSo truSo) {
 
-    String gh = GeoHash.withCharacterPrecision(
-            truSo.getViDo(),
-            truSo.getKinhDo(),
-            6
-    ).toBase32();
-
-    truSo.setGeohash(gh);
+    truSo.setGeohash(
+        geoHashHelperService.getGeoHash(
+                truSo.getViDo(),
+                truSo.getKinhDo(),
+                6
+        )
+    );
 
     truSo.setDiaChi(
             geocodingService.getAddress(
@@ -79,7 +84,7 @@ public TruSo saveTruSo(TruSo truSo) {
 
                     existing.setKinhDo(truSo.getKinhDo());
                     existing.setViDo(truSo.getViDo());
-                    existing.setGeohash(gh);
+                    existing.setGeohash(truSo.getGeohash());
                     existing.setDiaChi(truSo.getDiaChi());
 
                     if (truSo.getTenTruSo() != null) {

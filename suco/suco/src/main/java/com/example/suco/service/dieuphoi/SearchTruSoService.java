@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.example.suco.service.geohash.GeoHashHelperService;
+import com.example.suco.service.geohash.GeoHashService;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -16,10 +16,10 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class GeoHashService {
+public class SearchTruSoService {
 
     private static final Logger log =
-            LoggerFactory.getLogger(GeoHashService.class);
+            LoggerFactory.getLogger(SearchTruSoService.class);
 
     @Autowired
     private TruSoRepository truSoRepository;
@@ -28,7 +28,7 @@ public class GeoHashService {
     private DistanceService distanceService;
 
     @Autowired
-    private GeoHashHelperService geoHashHelperService;
+    private GeoHashService geoHashHelperService;
 
     public List<TruSo> findTruSoInArea(double lat, double lng) {
 
@@ -41,7 +41,7 @@ public class GeoHashService {
             String base = center.toBase32();
 
             List<String> prefixes =
-            geoHashHelperService.getNeighborPrefixes(lat, lng, precision);
+                geoHashHelperService.getNeighborPrefixes(lat, lng, precision);
 
             List<TruSo> temp = new ArrayList<>();
 

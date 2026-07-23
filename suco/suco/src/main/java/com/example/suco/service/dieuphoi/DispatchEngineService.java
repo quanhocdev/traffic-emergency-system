@@ -18,7 +18,7 @@ public class DispatchEngineService {
 
 
     @Autowired
-    private TruSoSelectorService truSoSelectorService;
+    private SelectTruSoService truSoSelectorService;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
