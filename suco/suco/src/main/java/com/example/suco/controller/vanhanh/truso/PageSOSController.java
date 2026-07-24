@@ -7,7 +7,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController; 
-import com.example.suco.model.TinHieuSOS;
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
 import com.example.suco.dto.sos.tinhieu.truso.TruSoSOSDetailResponseDTO;
 import com.example.suco.mapper.TinHieuMapper;
@@ -23,7 +22,6 @@ public class PageSOSController {
     @Autowired
     private TinHieuMapper tinHieuMapper; 
 
-    // PHÒNG THỦ: Kiểm tra bảo mật token tránh lỗi 500 trắng trang
     private Long getTruSoId(Jwt jwt) {
         if (jwt == null || jwt.getSubject() == null) {
             throw new BadCredentialsException("Token không hợp lệ hoặc đã hết hạn");

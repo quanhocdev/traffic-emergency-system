@@ -18,7 +18,6 @@ public class PageSuCoController {
     private SuCoTruSoRepository suCoTruSoRepository;
 
     private Long getTruSoId(Jwt jwt) {
-        // Ép kiểu subject từ String sang Long (hoặc lấy trực tiếp claim "id" nếu bạn cấu hình lưu riêng)
         return Long.parseLong(jwt.getSubject());
     }
 
