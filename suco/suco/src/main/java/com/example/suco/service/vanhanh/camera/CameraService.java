@@ -11,12 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import com.example.suco.service.file.FileStorageService;
+import com.example.suco.service.geohash.GeoHashService;
 import com.example.suco.service.location.GeocodingService;
 import java.util.List;
 import java.util.stream.Collectors;
-import ch.hsr.geohash.GeoHash;
 
 
 @Service
@@ -36,6 +35,8 @@ private GeocodingService geocodingService;
 @Autowired
 private FileStorageService fileStorageService;
 
+@Autowired
+private GeoHashService geoHashHelperService;
 
 
     public CameraResponseDTO createCamera(CameraRequestDTO dto){
@@ -156,14 +157,13 @@ private Camera saveCamera(Camera camera) {
             && camera.getKinhDo() != null
             && camera.getViDo() != 0) {
 
-        String gh = GeoHash.withCharacterPrecision(
-                camera.getViDo(),
-                camera.getKinhDo(),
-                8
-        ).toBase32();
-
-        camera.setGeohash(gh);
-
+        camera.setGeohash(
+                geoHashHelperService.getGeoHash(
+                    camera.getViDo(),
+                    camera.getKinhDo(),
+                    8
+                )
+        );
         camera.setDiaChi(
                 geocodingService.getAddress(
                         camera.getViDo(),

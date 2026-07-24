@@ -6,7 +6,7 @@ import com.example.suco.dto.suco.baocao.user.SuCoRequestDTO;
 import com.example.suco.model.BaoCaoSuCo;
 import com.example.suco.model.LoaiSuCo;
 import com.example.suco.model.enums.TrangThaiXuLy;
-import com.example.suco.service.dieuphoi.TruSoSelectorService;
+import com.example.suco.service.dieuphoi.SelectTruSoService;
 import com.example.suco.service.suco.baocao.system.reward.NewReportRewardPolicy;
 import com.example.suco.service.suco.baocao.system.reward.RewardEngine;
 import com.example.suco.service.suco.baocao.user.workflow.gui.BaoCaoAiService;
@@ -45,7 +45,7 @@ public class GuiBaoCaoService {
     private SuCoAdminRepository reportRepository;
 
 @Autowired
-    private TruSoSelectorService truSoSelectorService;
+    private SelectTruSoService truSoSelectorService;
     @Autowired
 private LoaiSuCoService loaiSuCoService;
 

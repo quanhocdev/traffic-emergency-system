@@ -2,24 +2,18 @@ package com.example.suco.service.dieuphoi;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
-import com.example.suco.model.enums.TrangThaiHoatDongTruSo;
 import com.example.suco.model.enums.TrangThaiXuLy; 
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class DispatchEngineService {
 
-    @Autowired
-    private GeoHashService geoHashService;
 
     @Autowired
-    private DieuPhoiDistanceService distanceService;
+    private SelectTruSoService truSoSelectorService;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -32,16 +26,7 @@ public class DispatchEngineService {
         double lat = event.getViDo();
         double lng = event.getKinhDo();
 
-        List<TruSo> candidates =
-                geoHashService.findTruSoInArea(lat, lng);
-
-        TruSo best = candidates.stream()
-                .filter(this::isAvailable)
-                .min((a, b) -> Double.compare(
-                        distanceService.distance(lat, lng, a.getViDo(), a.getKinhDo()),
-                        distanceService.distance(lat, lng, b.getViDo(), b.getKinhDo())
-                ))
-                .orElse(null);
+        TruSo best = truSoSelectorService.selectNearest(lat, lng);
 
         if (best == null) {
             event.setTrangThai(TrangThaiXuLy.CHO_ADMIN);
@@ -59,11 +44,6 @@ public class DispatchEngineService {
         tinHieuSOSRepository.save(event);
 
         send(event, best.getId());
-    }
-
-    private boolean isAvailable(TruSo truSo) {
-        return truSo.getTrangThaiHoatDong()
-                == TrangThaiHoatDongTruSo.SAN_SANG;
     }
 
     private void send(TinHieuSOS event, Long truSoId) {
