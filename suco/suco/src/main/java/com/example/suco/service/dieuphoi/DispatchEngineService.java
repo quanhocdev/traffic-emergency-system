@@ -2,16 +2,11 @@ package com.example.suco.service.dieuphoi;
 
 import com.example.suco.model.TinHieuSOS;
 import com.example.suco.model.TruSo;
-import com.example.suco.model.enums.TrangThaiHoatDongTruSo;
 import com.example.suco.model.enums.TrangThaiXuLy; 
 import com.example.suco.repository.sos.tinhieu.TinHieuSOSRepository;
-import com.example.suco.service.distance.DistanceService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class DispatchEngineService {
