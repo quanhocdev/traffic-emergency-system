@@ -94,7 +94,7 @@ public class PageTruSoController {
         }
     }
 
-    // 5. ĐÃ BỔ SUNG: LỊCH SỬ CỨU HỘ (ĐÃ XỬ LÝ)
+    // 5. LỊCH SỬ CỨU HỘ (ĐÃ XỬ LÝ)
     @GetMapping("/da-xu-ly")
     public String daXuLy(@AuthenticationPrincipal Jwt jwt, Model model) {
         if (jwt == null || jwt.getSubject() == null) return "redirect:/truso/login?error=session_expired";
